@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package things.test.io;
 
-option go_package = "github.com/solo-io/autopilot/codegen/test/api/things.test.io/v1";
+option go_package = "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1";
 
 message PaintSpec {
     PaintColor color = 1;

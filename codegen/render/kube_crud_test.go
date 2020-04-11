@@ -6,20 +6,19 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/solo-io/autopilot/pkg/reconcile"
+	"github.com/solo-io/skv2/pkg/reconcile"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/autopilot/cli/pkg/utils"
-	. "github.com/solo-io/autopilot/codegen/test/api/things.test.io/v1"
-	"github.com/solo-io/autopilot/codegen/test/api/things.test.io/v1/controller"
-	"github.com/solo-io/autopilot/codegen/util"
-	"github.com/solo-io/autopilot/test"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/go-utils/randutils"
 	kubehelp "github.com/solo-io/go-utils/testutils/kube"
+	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+	"github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/controller"
+	"github.com/solo-io/skv2/codegen/util"
+	"github.com/solo-io/skv2/test"
 	"go.uber.org/zap"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -34,7 +33,7 @@ func applyFile(file string) error {
 	if err != nil {
 		return err
 	}
-	return utils.KubectlApply(b)
+	return util.KubectlApply(b)
 }
 
 var _ = Describe("Generated Code", func() {

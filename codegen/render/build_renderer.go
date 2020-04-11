@@ -1,6 +1,6 @@
 package render
 
-import "github.com/solo-io/autopilot/codegen/model"
+import "github.com/solo-io/skv2/codegen/model"
 
 // renders files used to build the operator
 type BuildRenderer struct {

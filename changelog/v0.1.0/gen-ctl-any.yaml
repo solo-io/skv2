@@ -1,3 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Generate Kubernetes controllers for resources in another Go module.

@@ -4,10 +4,10 @@ package controller
 import (
 	"context"
 
-	things_test_io_v1 "github.com/solo-io/autopilot/codegen/test/api/things.test.io/v1"
+	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
 	"github.com/pkg/errors"
-	"github.com/solo-io/autopilot/pkg/events"
+	"github.com/solo-io/skv2/pkg/events"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"

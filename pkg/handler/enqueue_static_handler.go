@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/solo-io/autopilot/pkg/request"
-	apqueue "github.com/solo-io/autopilot/pkg/workqueue"
+	"github.com/solo-io/skv2/pkg/request"
+	skqueue "github.com/solo-io/skv2/pkg/workqueue"
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -17,14 +17,14 @@ var _ handler.EventHandler = &BroadcastRequests{}
 // BroadcastRequests enqueues statically defined requests across clusters
 // whenever an event is received. Use this to propagate a list of requests
 // to queues shared across cluster managers.
-// This is used by Autopilot to enqueueRequestsAllClusters requests for a primary level resource
+// This is used by SKv2 to enqueueRequestsAllClusters requests for a primary level resource
 // whenever a watched input resource changes, regardless of the cluster the primary resource lives in.
 type BroadcastRequests struct {
 	// the set of all requests to enqueueRequestsAllClusters by the target cluster (where the primary resource lives)
 	RequestsToEnqueue *request.MultiClusterRequests
 
 	// use this to queue requests to controllers registered to another manager
-	WorkQueues *apqueue.MultiClusterQueues
+	WorkQueues *skqueue.MultiClusterQueues
 }
 
 // Create implements EventHandler

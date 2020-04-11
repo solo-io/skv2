@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: remove all "old/unused" framework code from repository. (Preparing to migrate to new repo).

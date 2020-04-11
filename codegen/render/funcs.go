@@ -13,8 +13,8 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
 	"github.com/iancoleman/strcase"
-	"github.com/solo-io/autopilot/codegen/model"
-	"github.com/solo-io/autopilot/codegen/util"
+	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/codegen/util"
 	"sigs.k8s.io/yaml"
 )
 
@@ -40,7 +40,7 @@ func makeTemplateFuncs() template.FuncMap {
 		"split":           splitTrimEmpty,
 		"string_contains": strings.Contains,
 
-		// autopilot funcs
+		// skv2 funcs
 		"group_import_path": func(grp Group) string {
 			return util.GoPackage(grp)
 		},

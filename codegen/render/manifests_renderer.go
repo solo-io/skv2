@@ -3,7 +3,8 @@ package render
 import (
 	"strings"
 
-	"github.com/solo-io/autopilot/codegen/templates/deploy"
+	"github.com/solo-io/skv2/codegen/kuberesource"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -26,7 +27,7 @@ func RenderManifests(appName, manifestDir string, grp Group) ([]OutFile, error) 
 		ResourceFuncs: map[OutFile]MakeResourceFunc{
 			{
 				Path: manifestDir + "/crds/" + grp.Group + "_" + grp.Version + "_" + "crds.yaml",
-			}: deploy.CustomResourceDefinitions,
+			}: kuberesource.CustomResourceDefinitions,
 		},
 	}
 	return defaultManifestsRenderer.RenderManifests(grp)

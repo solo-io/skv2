@@ -7,7 +7,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-//go:generate mockgen -destination ./mocks/dynamic_client.go github.com/solo-io/autopilot/pkg/ezkube Ensurer
+//go:generate mockgen -destination ./mocks/dynamic_client.go github.com/solo-io/skv2/pkg/ezkube Ensurer
 
 // Our manager returns a manager.Manager
 type ManagerGetter interface {

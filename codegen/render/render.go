@@ -3,7 +3,7 @@ package render
 import (
 	"os"
 
-	"github.com/solo-io/autopilot/codegen/model"
+	"github.com/solo-io/skv2/codegen/model"
 )
 
 type Group = model.Group

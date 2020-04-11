@@ -3,11 +3,11 @@ package codegen_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/autopilot/codegen/model"
+	. "github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	. "github.com/solo-io/autopilot/codegen"
+	. "github.com/solo-io/skv2/codegen"
 )
 
 var _ = Describe("Cmd", func() {
@@ -20,7 +20,7 @@ var _ = Describe("Cmd", func() {
 						Group:   "things.test.io",
 						Version: "v1",
 					},
-					Module: "github.com/solo-io/autopilot",
+					Module: "github.com/solo-io/skv2",
 					Resources: []Resource{
 						{
 							Kind:   "Paint",
@@ -61,9 +61,9 @@ var _ = Describe("Cmd", func() {
 					Description: "",
 					Name:        "Painting Operator",
 					Version:     "v0.0.1",
-					Home:        "https://docs.solo.io/autopilot/latest",
+					Home:        "https://docs.solo.io/skv2/latest",
 					Sources: []string{
-						"https://github.com/solo-io/autopilot",
+						"https://github.com/solo-io/skv2",
 					},
 				},
 			},

@@ -3,7 +3,7 @@ package util
 import (
 	"strings"
 
-	"github.com/solo-io/autopilot/codegen/model"
+	"github.com/solo-io/skv2/codegen/model"
 )
 
 // gets the go package for the group

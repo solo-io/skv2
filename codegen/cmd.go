@@ -14,12 +14,12 @@ import (
 	"github.com/solo-io/anyvendor/pkg/manager"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 
-	"github.com/solo-io/autopilot/builder"
-	"github.com/solo-io/autopilot/codegen/model"
-	"github.com/solo-io/autopilot/codegen/proto"
-	"github.com/solo-io/autopilot/codegen/render"
-	"github.com/solo-io/autopilot/codegen/util"
-	"github.com/solo-io/autopilot/codegen/writer"
+	"github.com/solo-io/skv2/builder"
+	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/codegen/proto"
+	"github.com/solo-io/skv2/codegen/render"
+	"github.com/solo-io/skv2/codegen/util"
+	"github.com/solo-io/skv2/codegen/writer"
 )
 
 // runs the codegen compilation for the current Go module
@@ -48,7 +48,7 @@ type Command struct {
 	BuildRoot string
 
 	// custom builder to shim Go Build and Docker Build commands (for testing)
-	// If not provided, Autopilot will exec
+	// If not provided, skv2 will exec
 	// go and docker commands
 	Builder builder.Builder
 
@@ -65,7 +65,7 @@ type Command struct {
 	ctx context.Context
 }
 
-// function to execute Autopilot code gen from another repository
+// function to execute skv2 code gen from another repository
 func (c Command) Execute() error {
 	c.ctx = context.Background()
 	c.moduleRoot = util.GetModuleRoot()

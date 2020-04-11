@@ -101,7 +101,7 @@ type Type struct {
 	// name of the type.
 	Name string
 
-	// proto message for the type, if the proto message is compiled with Autopilot
+	// proto message for the type, if the proto message is compiled with skv2
 	Message proto.Message
 
 	/*
@@ -109,7 +109,7 @@ type Type struct {
 		The go package containing the type, if different than group root api directory (where the resource itself lives).
 		Will be set automatically for proto-based types.
 
-		If unset, AutoPilot uses the default types package for the type.
+		If unset, SKv2 uses the default types package for the type.
 	*/
 	GoPackage string
 }

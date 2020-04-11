@@ -1,4 +1,4 @@
-# Notes for using autopilot/render
+# Notes for using skv2/render
 
 As no main file is generated, the user is responsible
 for running

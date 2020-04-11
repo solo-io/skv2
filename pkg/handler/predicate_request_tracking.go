@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/solo-io/autopilot/pkg/request"
+	"github.com/solo-io/skv2/pkg/request"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"

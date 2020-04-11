@@ -1,4 +1,4 @@
-module github.com/solo-io/autopilot
+module github.com/solo-io/skv2
 
 go 1.13
 

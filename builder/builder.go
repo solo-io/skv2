@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/solo-io/autopilot/codegen/util"
+	"github.com/solo-io/skv2/codegen/util"
 )
 
 // Builder is responsible for building go binaries and docker images

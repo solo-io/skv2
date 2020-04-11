@@ -2,7 +2,6 @@
 package util
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -11,10 +10,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/solo-io/autopilot/pkg/defaults"
-
 	"github.com/mitchellh/go-homedir"
-	"github.com/pkg/errors"
 	"github.com/rogpeppe/go-internal/modfile"
 	log "github.com/sirupsen/logrus"
 )
@@ -114,28 +110,6 @@ func parseGoPkg(gopath string) string {
 	// Make sure package only contains the "/" separator and no others, and
 	// trim any leading/trailing "/".
 	return strings.Trim(filepath.ToSlash(pathedPkg), "/")
-}
-
-// MustInProjectRoot checks if the current dir is the project root, and exits
-// if not.
-func MustInProjectRoot() {
-	if err := CheckProjectRoot(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// CheckProjectRoot checks if the current dir is the project root, and returns
-// an error if not.
-func CheckProjectRoot() error {
-	// If the current directory has a "build/Dockerfile", then it is safe to say
-	// we are at the project root.
-	if _, err := os.Stat(defaults.AutopilotFile); err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("must run command in project root dir: project structure requires %s", defaults.AutopilotFile)
-		}
-		return errors.Wrap(err, "error while checking if current directory is the project root")
-	}
-	return nil
 }
 
 func MustGetwd() string {

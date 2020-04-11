@@ -1,6 +1,6 @@
 apiVersion: v1
-home: https://docs.solo.io/autopilot/latest
+home: https://docs.solo.io/skv2/latest
 name: Painting Operator
 sources:
-- https://github.com/solo-io/autopilot
+- https://github.com/solo-io/skv2
 version: v0.0.1
