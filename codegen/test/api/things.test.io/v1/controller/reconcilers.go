@@ -5,18 +5,25 @@ import (
 	"context"
 
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
-	"github.com/solo-io/skv2/pkg/ezkube"
 
 	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Reconcile the Paint Resource
+// Reconcile Upsert events for the Paint Resource.
 // implemented by the user
 type PaintReconciler interface {
 	ReconcilePaint(obj *things_test_io_v1.Paint) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the Paint Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type PaintDeletionReconciler interface {
 	ReconcilePaintDeletion(req reconcile.Request)
 }
 
@@ -98,7 +105,9 @@ func (r genericPaintReconciler) Reconcile(object ezkube.Object) (reconcile.Resul
 }
 
 func (r genericPaintReconciler) ReconcileDeletion(request reconcile.Request) {
-	r.reconciler.ReconcilePaintDeletion(request)
+	if deletionReconciler, ok := r.reconciler.(PaintDeletionReconciler); ok {
+		deletionReconciler.ReconcilePaintDeletion(request)
+	}
 }
 
 // genericPaintFinalizer implements a generic reconcile.FinalizingReconciler

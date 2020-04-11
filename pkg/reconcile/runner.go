@@ -26,7 +26,9 @@ type Reconciler interface {
 	// reconcile an object
 	// requeue the object if returning an error, or a non-zero "requeue-after" duration
 	Reconcile(object ezkube.Object) (Result, error)
+}
 
+type DeletionReconciler interface {
 	// we received a reconcile request for an object that was removed from the cache
 	ReconcileDeletion(request Request)
 }
@@ -115,7 +117,9 @@ func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error)
 		logger.V(2).Info(fmt.Sprintf("unable to fetch %T", obj), "request", request, "err", err)
 
 		// call OnDelete
-		ec.reconciler.ReconcileDeletion(request)
+		if deletionReconciler, ok := ec.reconciler.(DeletionReconciler); ok {
+			deletionReconciler.ReconcileDeletion(request)
+		}
 
 		return reconcile.Result{}, nil
 	}

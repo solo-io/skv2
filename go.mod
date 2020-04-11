@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.0.0
 	github.com/coreos/go-systemd/v22 v22.0.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/fsnotify/fsnotify v1.4.7
+	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v0.1.0
 	github.com/gobuffalo/envy v1.8.1 // indirect
@@ -27,8 +27,8 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v1.2.1
-	github.com/prometheus/common v0.7.0
+	github.com/prometheus/client_golang v1.2.1 // indirect
+	github.com/prometheus/common v0.7.0 // indirect
 	github.com/pseudomuto/protoc-gen-doc v1.3.0 // indirect
 	github.com/pseudomuto/protokit v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.5.2
@@ -37,9 +37,9 @@ require (
 	github.com/solo-io/go-utils v0.11.7
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/solo-kit v0.12.2
-	github.com/spf13/cobra v0.0.5
-	github.com/spf13/pflag v1.0.5
-	go.uber.org/atomic v1.5.0
+	github.com/spf13/cobra v0.0.5 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	go.uber.org/atomic v1.5.0 // indirect
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
@@ -50,8 +50,8 @@ require (
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v8.0.0+incompatible
 	k8s.io/code-generator v0.17.2
-	k8s.io/gengo v0.0.0-20190822140433-26a664648505
-	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+	k8s.io/gengo v0.0.0-20190822140433-26a664648505 // indirect
+	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f // indirect
 	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.1.0
 )

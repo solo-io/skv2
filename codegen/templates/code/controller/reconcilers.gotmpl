@@ -18,10 +18,17 @@ import (
 
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 
-// Reconcile the {{ $resource.Kind }} Resource
+// Reconcile Upsert events for the {{ $resource.Kind }} Resource.
 // implemented by the user
 type {{ $resource.Kind }}Reconciler interface {
     Reconcile{{ $resource.Kind }}(obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the {{ $resource.Kind }} Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type {{ $resource.Kind }}DeletionReconciler interface {
     Reconcile{{ $resource.Kind }}Deletion(req reconcile.Request)
 }
 
@@ -103,7 +110,9 @@ func (r generic{{ $resource.Kind }}Reconciler) Reconcile(object ezkube.Object) (
 }
 
 func (r generic{{ $resource.Kind }}Reconciler) ReconcileDeletion(request reconcile.Request) {
-    r.reconciler.Reconcile{{ $resource.Kind }}Deletion(request)
+    if deletionReconciler, ok := r.reconciler.({{ $resource.Kind }}DeletionReconciler); ok {
+        deletionReconciler.Reconcile{{ $resource.Kind }}Deletion(request)
+    }
 }
 
 // generic{{ $resource.Kind }}Finalizer implements a generic reconcile.FinalizingReconciler
