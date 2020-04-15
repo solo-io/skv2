@@ -16,7 +16,7 @@ if [ ! -f .gitignore ]; then
   echo "_output" > .gitignore
 fi
 
-make update-deps
+make install-deps
 
 set +e
 
