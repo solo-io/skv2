@@ -16,6 +16,8 @@ install-deps: mod-download
 	go get -v github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 	go get -v github.com/solo-io/protoc-gen-ext
 	go get -v github.com/golang/mock/mockgen
+	go get -v golang.org/x/tools/cmd/goimports
+	go mod tidy
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
