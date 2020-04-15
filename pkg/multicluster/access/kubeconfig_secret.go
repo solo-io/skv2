@@ -8,8 +8,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
-// KubeConfigSecretLabel is applied to a kubernetes secret to indicate that the secret contains a kubeconfig.
-const KubeConfigSecretLabel = "solo.io/kubeconfig"
+// KubeConfigSecretType is used to indicate which kubernetes secrets contain a KubeConfig.
+const KubeConfigSecretType = "solo.io/kubeconfig"
 
 // KubeConfig wraps kubernetes KubeConfigs and also indicates the name of the cluster the KubeConfig belongs to.
 // Used to persist KubeConfigs to kubernetes secrets.
@@ -21,31 +21,24 @@ type KubeConfig struct {
 	Cluster string
 }
 
-// KubeConfigToSecret converts a single KubeConfig to a secret with the provided name and namespace.
+// KubeConfigToSecret converts a KubeConfig to a secret with the provided name and namespace.
 func KubeConfigToSecret(name string, namespace string, kc *KubeConfig) (*kubev1.Secret, error) {
-	return KubeConfigsToSecret(name, namespace, []*KubeConfig{kc})
-}
-
-// KubeConfigsToSecret converts a list of KubeConfigs to a KubeConfig secret with the provided name and namespace.
-func KubeConfigsToSecret(name string, namespace string, kcs []*KubeConfig) (*kubev1.Secret, error) {
 	secretData := map[string][]byte{}
-	for _, kc := range kcs {
-		rawKubeConfig, err := clientcmd.Write(kc.Config)
-		if err != nil {
-			return nil, FailedToConvertKubeConfigToSecret(err)
-		}
-		if _, exists := secretData[kc.Cluster]; exists {
-			return nil, DuplicateClusterName(kc.Cluster)
-		}
-		secretData[kc.Cluster] = rawKubeConfig
+	rawKubeConfig, err := clientcmd.Write(kc.Config)
+	if err != nil {
+		return nil, FailedToConvertKubeConfigToSecret(err)
 	}
+	if _, exists := secretData[kc.Cluster]; exists {
+		return nil, DuplicateClusterName(kc.Cluster)
+	}
+	secretData[kc.Cluster] = rawKubeConfig
+
 	return &kubev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels:    map[string]string{KubeConfigSecretLabel: "true"},
 			Name:      name,
 			Namespace: namespace,
 		},
-		Type: kubev1.SecretTypeOpaque,
+		Type: KubeConfigSecretType,
 		Data: secretData,
 	}, nil
 }
@@ -60,11 +53,6 @@ type Config struct {
 // SecretToConfigConverter functions extract the cluster name and *Config from a KubeConfig secret.
 // If the provided secret is not a KubeConfig secret, an error is returned.
 type SecretToConfigConverter func(secret *kubev1.Secret) (clusterName string, config *Config, err error)
-
-// SecretToConfigConverterProvider returns an implemented SecretToConfigConverter
-func SecretToConfigConverterProvider() SecretToConfigConverter {
-	return SecretToConfig
-}
 
 // SecretToKubeConfig is an implementation of SecretToConfigConverter.
 func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, err error) {
