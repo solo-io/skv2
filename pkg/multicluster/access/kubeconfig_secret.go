@@ -11,18 +11,8 @@ import (
 // KubeConfigSecretType is used to indicate which kubernetes secrets contain a KubeConfig.
 const KubeConfigSecretType = "solo.io/kubeconfig"
 
-// KubeConfig wraps kubernetes KubeConfigs and also indicates the name of the cluster the KubeConfig belongs to.
-// Used to persist KubeConfigs to kubernetes secrets.
-type KubeConfig struct {
-	// the actual KubeConfig
-	Config api.Config
-	// expected to be used as an identifier string for a cluster
-	// stored as the key for the KubeConfig data in a kubernetes secret
-	Cluster string
-}
-
 // KubeConfigToSecret converts a KubeConfig to a secret with the provided name and namespace.
-func KubeConfigToSecret(name string, namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
+func KubeConfigToSecret(name string, namespace string, cluster string, kc *api.Config) (*kubev1.Secret, error) {
 	rawKubeConfig, err := clientcmd.Write(kc)
 	if err != nil {
 		return nil, FailedToConvertKubeConfigToSecret(err)

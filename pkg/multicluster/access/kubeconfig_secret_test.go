@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	. "github.com/solo-io/skv2/pkg/multicluster/access"
+	"k8s.io/client-go/tools/clientcmd/api"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,8 +15,8 @@ import (
 
 var _ = Describe("KubeConfig Secret Conversions", func() {
 	var (
-		clusterName1  = "test-name1"
-		kubeConfigRaw = `apiVersion: v1
+		clusterName      = "test-name1"
+		kubeConfigFormat = `apiVersion: v1
 clusters:
 - cluster:
     server: test-server
@@ -33,17 +34,14 @@ users:
   user:
     token: alphanumericgarbage
 `
-		kubeConfigRaw1 = fmt.Sprintf(kubeConfigRaw, clusterName1)
-		kubeConfig1    KubeConfig
+		kubeConfigRaw = fmt.Sprintf(kubeConfigFormat, clusterName)
+		config        *api.Config
+		err           error
 	)
 
 	BeforeEach(func() {
-		config1, err := clientcmd.Load([]byte(kubeConfigRaw1))
+		config, err = clientcmd.Load([]byte(kubeConfigRaw))
 		Expect(err).NotTo(HaveOccurred())
-		kubeConfig1 = KubeConfig{
-			Config:  *config1,
-			Cluster: clusterName1,
-		}
 	})
 
 	Describe("KubeConfigToSecret", func() {
@@ -56,11 +54,11 @@ users:
 					Namespace: namespace,
 				},
 				Data: map[string][]byte{
-					clusterName1: []byte(kubeConfigRaw1),
+					clusterName: []byte(kubeConfigRaw),
 				},
 				Type: KubeConfigSecretType,
 			}
-			secret, err := KubeConfigToSecret(name, namespace, &kubeConfig1)
+			secret, err := KubeConfigToSecret(name, namespace, clusterName, config)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).To(Equal(expectedSecret))
 		})
