@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	. "github.com/solo-io/go-utils/testutils"
+	. "github.com/solo-io/skv2/pkg/multicluster/access"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
