@@ -46,21 +46,23 @@ users:
 		}
 	})
 
-	It("should convert a single KubeConfig to a single secret", func() {
-		name := "secret-name"
-		namespace := "secret-namespace"
-		expectedSecret := &v1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-			Data: map[string][]byte{
-				clusterName1: []byte(kubeConfigRaw1),
-			},
-			Type: KubeConfigSecretType,
-		}
-		secret, err := KubeConfigToSecret(name, namespace, &kubeConfig1)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(secret).To(Equal(expectedSecret))
+	Describe("KubeConfigToSecret", func() {
+		It("should convert a single KubeConfig to a single secret", func() {
+			name := "secret-name"
+			namespace := "secret-namespace"
+			expectedSecret := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      name,
+					Namespace: namespace,
+				},
+				Data: map[string][]byte{
+					clusterName1: []byte(kubeConfigRaw1),
+				},
+				Type: KubeConfigSecretType,
+			}
+			secret, err := KubeConfigToSecret(name, namespace, &kubeConfig1)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(secret).To(Equal(expectedSecret))
+		})
 	})
 })

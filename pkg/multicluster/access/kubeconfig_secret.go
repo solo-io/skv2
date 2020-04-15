@@ -22,16 +22,11 @@ type KubeConfig struct {
 }
 
 // KubeConfigToSecret converts a KubeConfig to a secret with the provided name and namespace.
-func KubeConfigToSecret(name string, namespace string, kc *KubeConfig) (*kubev1.Secret, error) {
-	secretData := map[string][]byte{}
-	rawKubeConfig, err := clientcmd.Write(kc.Config)
+func KubeConfigToSecret(name string, namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
+	rawKubeConfig, err := clientcmd.Write(kc)
 	if err != nil {
 		return nil, FailedToConvertKubeConfigToSecret(err)
 	}
-	if _, exists := secretData[kc.Cluster]; exists {
-		return nil, DuplicateClusterName(kc.Cluster)
-	}
-	secretData[kc.Cluster] = rawKubeConfig
 
 	return &kubev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -39,7 +34,7 @@ func KubeConfigToSecret(name string, namespace string, kc *KubeConfig) (*kubev1.
 			Namespace: namespace,
 		},
 		Type: KubeConfigSecretType,
-		Data: secretData,
+		Data: map[string][]byte{cluster: rawKubeConfig},
 	}, nil
 }
 
@@ -50,11 +45,8 @@ type Config struct {
 	RestConfig   *rest.Config
 }
 
-// SecretToConfigConverter functions extract the cluster name and *Config from a KubeConfig secret.
+// SecretToKubeConfig extracts the cluster name and *Config from a KubeConfig secret.
 // If the provided secret is not a KubeConfig secret, an error is returned.
-type SecretToConfigConverter func(secret *kubev1.Secret) (clusterName string, config *Config, err error)
-
-// SecretToKubeConfig is an implementation of SecretToConfigConverter.
 func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, err error) {
 	if len(secret.Data) > 1 {
 		return "", nil, SecretHasMultipleKeys(secret.ObjectMeta)
