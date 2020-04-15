@@ -21,6 +21,7 @@ install-deps: mod-download
 .PHONY: generated-code
 generated-code:
 	go generate ./...
+	goimports -w .
 
 #----------------------------------------------------------------------------------
 # Test
