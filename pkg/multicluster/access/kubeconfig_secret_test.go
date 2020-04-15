@@ -1,4 +1,4 @@
-package multicluster
+package registration
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-var _ = Describe("Secret KubeConfig Conversions", func() {
+var _ = Describe("KubeConfig Secret Conversions", func() {
 	var (
 		clusterName1  = "test-name1"
 		clusterName2  = "test-name2"

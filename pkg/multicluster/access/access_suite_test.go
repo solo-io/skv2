@@ -1,4 +1,4 @@
-package multicluster_test
+package registration_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestMulticluster(t *testing.T) {
+func TestRegistration(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Multicluster Suite")
+	RunSpecs(t, "Registration Suite")
 }
