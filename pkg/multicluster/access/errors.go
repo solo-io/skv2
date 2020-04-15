@@ -1,4 +1,4 @@
-package registration
+package access
 
 import (
 	"github.com/rotisserie/eris"

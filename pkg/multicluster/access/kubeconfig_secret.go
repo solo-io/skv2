@@ -1,4 +1,4 @@
-package registration
+package access
 
 import (
 	kubev1 "k8s.io/api/core/v1"

@@ -1,4 +1,4 @@
-package registration
+package access_test
 
 import (
 	"fmt"

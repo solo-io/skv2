@@ -1,4 +1,4 @@
-package registration_test
+package access_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestRegistration(t *testing.T) {
+func TestAccess(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Registration Suite")
+	RunSpecs(t, "Access Suite")
 }
