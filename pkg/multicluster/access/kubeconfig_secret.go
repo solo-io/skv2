@@ -12,7 +12,7 @@ import (
 const KubeConfigSecretType = "solo.io/kubeconfig"
 
 // KubeConfigToSecret converts a KubeConfig to a secret with the provided name and namespace.
-func KubeConfigToSecret(name string, namespace string, cluster string, kc *api.Config) (*kubev1.Secret, error) {
+func KubeConfigToSecret(name string, namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
 	rawKubeConfig, err := clientcmd.Write(kc)
 	if err != nil {
 		return nil, FailedToConvertKubeConfigToSecret(err)

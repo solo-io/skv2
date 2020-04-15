@@ -58,7 +58,7 @@ users:
 				},
 				Type: KubeConfigSecretType,
 			}
-			secret, err := KubeConfigToSecret(name, namespace, clusterName, config)
+			secret, err := KubeConfigToSecret(name, namespace, clusterName, *config)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).To(Equal(expectedSecret))
 		})
