@@ -1,7 +1,6 @@
 package registration
 
 import (
-	"github.com/rotisserie/eris"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
@@ -21,31 +20,6 @@ type KubeConfig struct {
 	// stored as the key for the KubeConfig data in a kubernetes secret
 	Cluster string
 }
-
-var (
-	FailedToConvertKubeConfigToSecret = func(err error) error {
-		return eris.Wrap(err, "Could not serialize KubeConfig to yaml while generating secret.")
-	}
-	DuplicateClusterName = func(repeatedClusterName string) error {
-		return eris.Errorf("Error converting KubeConfigs to secret, duplicate cluster name found: %s", repeatedClusterName)
-	}
-	FailedToConvertSecretToKubeConfig = func(err error) error {
-		return eris.Wrapf(err, "Could not deserialize string to KubeConfig while generating KubeConfig")
-	}
-	NoDataInKubeConfigSecret = func(secret *kubev1.Secret) error {
-		return eris.Errorf("No data in kube config secret %s.%s", secret.ObjectMeta.Name, secret.ObjectMeta.Namespace)
-	}
-	FailedToConvertSecretToClientConfig = func(err error) error {
-		return eris.Wrap(err, "Could not convert config to ClientConfig")
-	}
-	SecretHasMultipleKeys = func(meta metav1.ObjectMeta) error {
-		return eris.Errorf("kube config secret %s.%s has multiple keys in its data, this is unexpected",
-			meta.GetNamespace(), meta.GetName())
-	}
-	FailedToConvertSecretToRestConfig = func(err error) error {
-		return eris.Wrap(err, "Could not convert config to *rest.Config")
-	}
-)
 
 // KubeConfigToSecret converts a single KubeConfig to a secret with the provided name and namespace.
 func KubeConfigToSecret(name string, namespace string, kc *KubeConfig) (*kubev1.Secret, error) {
@@ -119,5 +93,5 @@ func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, 
 		}, nil
 	}
 
-	return "", nil, NoDataInKubeConfigSecret(secret)
+	return "", nil, NoDataInKubeConfigSecret(secret.ObjectMeta)
 }
