@@ -102,7 +102,7 @@ func (s *DynamicSource) Add(id string, src Stoppable) error {
 	defer s.lock.Unlock()
 
 	if _, exists := s.cache[id]; exists {
-		return errors.Errorf("source %v already exists")
+		return errors.Errorf("source %v already exists", id)
 	}
 
 	ctx, cancel := context.WithCancel(s.ctx)
