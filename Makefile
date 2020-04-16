@@ -37,6 +37,7 @@ run-tests:
 		-progress \
 		-compilers=4 \
 		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG)
+	goimports -w .
 
 
 #----------------------------------------------------------------------------------

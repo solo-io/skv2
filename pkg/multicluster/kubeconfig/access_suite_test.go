@@ -1,4 +1,4 @@
-package access_test
+package kubeconfig_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestAccess(t *testing.T) {
+func TestKubeconfig(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Access Suite")
+	RunSpecs(t, "Kubeconfig Suite")
 }

@@ -1,9 +1,9 @@
-package access_test
+package kubeconfig_test
 
 import (
 	"fmt"
 
-	. "github.com/solo-io/skv2/pkg/multicluster/access"
+	. "github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"k8s.io/client-go/tools/clientcmd/api"
 
 	. "github.com/onsi/ginkgo"
