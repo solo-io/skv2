@@ -35,7 +35,7 @@ jobs:
         run: |
           ./ci/check-code-and-docs-gen.sh
   test:
-    name: run-all-tests
+    name: Tests
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
