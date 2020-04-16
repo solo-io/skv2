@@ -44,7 +44,7 @@ users:
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	Describe("KubeConfigToSecret", func() {
+	Describe("ToSecret", func() {
 		It("should convert a single KubeConfig to a single secret", func() {
 			name := "secret-name"
 			namespace := "secret-namespace"
@@ -56,9 +56,9 @@ users:
 				Data: map[string][]byte{
 					clusterName: []byte(kubeConfigRaw),
 				},
-				Type: KubeConfigSecretType,
+				Type: SecretType,
 			}
-			secret, err := KubeConfigToSecret(name, namespace, clusterName, *config)
+			secret, err := ToSecret(name, namespace, clusterName, *config)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).To(Equal(expectedSecret))
 		})

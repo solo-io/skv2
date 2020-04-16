@@ -8,11 +8,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
-// KubeConfigSecretType is used to indicate which kubernetes secrets contain a KubeConfig.
-const KubeConfigSecretType = "solo.io/kubeconfig"
+// SecretType is used to indicate which kubernetes secrets contain a KubeConfig.
+const SecretType = "solo.io/kubeconfig"
 
-// KubeConfigToSecret converts a KubeConfig to a secret with the provided name and namespace.
-func KubeConfigToSecret(name string, namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
+// ToSecret converts a kubernetes api.Config to a secret with the provided name and namespace.
+func ToSecret(name string, namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
 	rawKubeConfig, err := clientcmd.Write(kc)
 	if err != nil {
 		return nil, FailedToConvertKubeConfigToSecret(err)
@@ -23,7 +23,7 @@ func KubeConfigToSecret(name string, namespace string, cluster string, kc api.Co
 			Name:      name,
 			Namespace: namespace,
 		},
-		Type: KubeConfigSecretType,
+		Type: SecretType,
 		Data: map[string][]byte{cluster: rawKubeConfig},
 	}, nil
 }
@@ -35,7 +35,7 @@ type Config struct {
 	RestConfig   *rest.Config
 }
 
-// SecretToKubeConfig extracts the cluster name and *Config from a KubeConfig secret.
+// SecretToConfig extracts the cluster name and *Config from a KubeConfig secret.
 // If the provided secret is not a KubeConfig secret, an error is returned.
 func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, err error) {
 	if len(secret.Data) > 1 {
