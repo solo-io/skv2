@@ -15,12 +15,14 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/gophercloud/gophercloud v0.2.0 // indirect
+	github.com/hashicorp/go-multierror v1.0.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.8.1
+	github.com/prometheus/procfs v0.0.8 // indirect
 	github.com/rogpeppe/go-internal v1.5.2
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.4.2

@@ -14,6 +14,7 @@ import (
 )
 
 // Handle events for the Paint Resource
+// DEPRECATED: Prefer reconciler pattern.
 type PaintEventHandler interface {
 	CreatePaint(obj *things_test_io_v1.Paint) error
 	UpdatePaint(old, new *things_test_io_v1.Paint) error

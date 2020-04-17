@@ -18,6 +18,7 @@ import (
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 
 // Handle events for the {{ $resource.Kind }} Resource
+// DEPRECATED: Prefer reconciler pattern.
 type {{ $resource.Kind }}EventHandler interface {
     Create{{ $resource.Kind }}(obj *{{ group_import_name $ }}.{{ $resource.Kind }}) error
     Update{{ $resource.Kind }}(old, new *{{ group_import_name $ }}.{{ $resource.Kind }}) error
