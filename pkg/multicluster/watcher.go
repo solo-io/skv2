@@ -31,18 +31,19 @@ func example(local manager.Manager) {
 	}
 
 	var getter ClientGetter = clusterController
-	fooClient, err := getter.Cluster("foo")
-	if err != nil {
-		// oh no!
-	}
-
-	fooSecretClient := skv2_corev1.NewSecretClient(fooClient)
-	err = fooSecretClient.DeleteAllOfSecret(context.TODO())
+	multiclusterClients := NewMCClientSet(getter)
+	fooSet, err := multiclusterClients.Cluster("foo")
 	if err != nil {
 		// uh oh
 	}
+
+	fooSet.Secrets().DeleteAllOfSecret(context.TODO())
+
 }
 
+/**
+Rough sketch of a typed multicluster reconcile loop
+*/
 // TODO generate
 type multiclusterConfigmapReconcileLoop struct {
 	rec             controller.ConfigMapReconciler
@@ -61,6 +62,31 @@ func (c multiclusterConfigmapReconcileLoop) HandleAddCluster(ctx context.Context
 
 func (c multiclusterConfigmapReconcileLoop) HandleRemoveCluster(cluster string) {
 	c.onRemoveCluster(cluster)
+}
+
+/**
+Rough sketch of a typed multicluster clientset
+
+Alternative is to have a structure like "set.Resource().Cluster().Action()", wdyt?
+*/
+// TODO generate
+
+type multiclusterClientSet interface {
+	Cluster(cluster string) (skv2_corev1.Clientset, error)
+}
+
+type mccs struct{ getter ClientGetter }
+
+func (m mccs) Cluster(cluster string) (skv2_corev1.Clientset, error) {
+	c, err := m.getter.Cluster(cluster)
+	if err != nil {
+		return nil, eris.Wrapf(err, "Failed to get client for cluster %v")
+	}
+	return skv2_corev1.NewClientset(c), nil
+}
+
+func NewMCClientSet(getter ClientGetter) multiclusterClientSet {
+	return mccs{getter: getter}
 }
 
 // ClientGetter provides access to a client.Client for any registered cluster
@@ -90,6 +116,7 @@ type ClusterWatcher interface {
 	ClientGetter
 }
 
+// TODO register local cluster before returning
 func NewClusterWatcher(ctx context.Context, handlers ...ClusterHandler) ClusterWatcher {
 	return &clusterWatcher{
 		ctx:      ctx,
