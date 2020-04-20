@@ -59,7 +59,7 @@ func (c multiclusterConfigmapReconcileLoop) HandleAddCluster(ctx context.Context
 /**
 Rough sketch of a typed multicluster clientset
 
-Alternative is to have a structure like "set.Resource().Cluster().Action()", wdyt?
+Alternative is to have a structure like "setManager.Resource().Cluster().Action()", wdyt?
 */
 // TODO generate
 
@@ -72,7 +72,7 @@ type mccs struct{ getter ClientGetter }
 func (m mccs) Cluster(cluster string) (skv2_corev1.Clientset, error) {
 	c, err := m.getter.Cluster(cluster)
 	if err != nil {
-		return nil, eris.Wrapf(err, "Failed to get client for cluster %v")
+		return nil, eris.Wrapf(err, "Failed to getManager client for cluster %v")
 	}
 	return skv2_corev1.NewClientset(c), nil
 }

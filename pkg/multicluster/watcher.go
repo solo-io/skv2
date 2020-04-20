@@ -2,7 +2,6 @@ package multicluster
 
 import (
 	"context"
-	"sync"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
@@ -12,7 +11,6 @@ import (
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -20,74 +18,37 @@ const (
 	LocalCluster = ""
 )
 
-// ClientGetter provides access to a client.Client for any registered cluster
-type ClientGetter interface {
-	// Cluster returns a client.Client for the given cluster if one is available, else errors.
-	Cluster(name string) (client.Client, error)
-}
-
 // AddClusterHandler is called when a new cluster is added.
 // The provided context is cancelled when a cluster is removed, so any teardown behavior for removed clusters
 // should take place when ctx is cancelled.
 type AddClusterHandler func(ctx context.Context, cluster string, mgr manager.Manager) error
 
-// ClusterWatcher calls ClusterHandlers and maintains a set of active cluster credentials.
+// ClusterWatcher calls ClusterHandlers and maintains a setManager of active cluster credentials.
 type ClusterWatcher interface {
 	controller.SecretReconciler
-	ClientGetter
 }
 
 type clusterWatcher struct {
 	ctx      context.Context
 	handlers []AddClusterHandler
-	managers managerSet
+	clients  ClientSet
 }
 
-// TODO probably going to want the client getter before this object returns
-// RunClusterWatcher initializes and runs a reconciler for KubeConfig secrets and returns an accessor for multicluster clients.
-func RunClusterWatcher(ctx context.Context, localManager manager.Manager, handlers ...AddClusterHandler) (ClientGetter, error) {
+// RunClusterWatcher initializes and runs a reconciler for KubeConfig secrets.
+func RunClusterWatcher(ctx context.Context, localManager manager.Manager, clients ClientSet, handlers ...AddClusterHandler) error {
 	watcher := &clusterWatcher{
 		ctx:      ctx,
 		handlers: handlers,
-		managers: managerSet{
-			mutex:    sync.RWMutex{},
-			managers: make(map[string]managerWithCancel),
-		},
+		clients:  clients,
 	}
 
 	err := watcher.registerManager(LocalCluster, localManager)
 	if err != nil {
-		return nil, eris.Wrap(err, "Failed to register local kube config with multicluster watcher")
+		return eris.Wrap(err, "Failed to register local kube config with multicluster watcher")
 	}
 
 	loop := controller.NewSecretReconcileLoop("cluster watcher", localManager)
-
-	go func() {
-		if err := loop.RunSecretReconciler(ctx, watcher, kubeconfig.SecretPredicate{}); err != nil {
-			contextutils.LoggerFrom(ctx).Panicw("Error encountered while watching multicluster kube configs", zap.Error(err))
-		}
-	}()
-
-	return watcher, nil
-}
-
-// NewClusterWatcher returns an implementation of ClusterWatcher with localManager already registered.
-func NewClusterWatcher(ctx context.Context, localManager manager.Manager, handlers ...AddClusterHandler) ClusterWatcher {
-	watcher := &clusterWatcher{
-		ctx:      ctx,
-		handlers: handlers,
-		managers: managerSet{
-			mutex:    sync.RWMutex{},
-			managers: make(map[string]managerWithCancel),
-		},
-	}
-
-	err := watcher.registerManager(LocalCluster, localManager)
-	if err != nil {
-		contextutils.LoggerFrom(ctx).Panicw("Failed to register local kube config with multicluster watcher", zap.Error(err))
-	}
-
-	return watcher
+	return loop.RunSecretReconciler(ctx, watcher, kubeconfig.SecretPredicate{})
 }
 
 func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
@@ -96,7 +57,7 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
 	}
 
-	if _, err := c.managers.get(clusterName); err != nil {
+	if _, err := c.clients.getManager(clusterName); err != nil {
 		return reconcile.Result{}, err
 	}
 
@@ -123,7 +84,7 @@ func (c *clusterWatcher) registerManager(clusterName string, mgr manager.Manager
 		}
 	}()
 
-	c.managers.set(clusterName, mgr, cancel)
+	c.clients.setManager(clusterName, mgr, cancel)
 
 	errs := &multierror.Error{}
 	for _, handler := range c.handlers {
@@ -140,65 +101,11 @@ func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
 	// TODO we have to enforce that the cluster name is the resource name
 	// we can't lookup the deleted resource to find the name on the spec, because the resource is deleted.
 	clusterName := req.Name
-	_, err := c.managers.get(clusterName)
+	_, err := c.clients.getManager(clusterName)
 	if err != nil {
-		contextutils.LoggerFrom(c.ctx).Debugw("reconciled delete on cluster secret for nonexistent cluster %v", clusterName)
+		contextutils.LoggerFrom(c.ctx).Debugw("reconciled deleteManager on cluster secret for nonexistent cluster %v", clusterName)
 		return
 	}
 
-	c.managers.delete(clusterName)
-}
-
-func (c *clusterWatcher) Cluster(name string) (client.Client, error) {
-	mgr, err := c.managers.get(name)
-	if err != nil {
-		return nil, err
-	}
-
-	return mgr.GetClient(), nil
-}
-
-// managerWithCancel contains a manager and a cancel function to stop it.
-type managerWithCancel struct {
-	cancel context.CancelFunc
-	mgr    manager.Manager
-}
-
-// managerSet maintains a set of managers and cancel functions.
-type managerSet struct {
-	mutex    sync.RWMutex
-	managers map[string]managerWithCancel
-}
-
-func (m managerSet) get(cluster string) (manager.Manager, error) {
-	m.mutex.RLock()
-	defer m.mutex.RUnlock()
-
-	mgrCancel, ok := m.managers[cluster]
-	if !ok {
-		return nil, eris.Errorf("Failed to get manager for cluster %v", cluster)
-	}
-	return mgrCancel.mgr, nil
-}
-
-func (m managerSet) set(cluster string, mgr manager.Manager, cancel context.CancelFunc) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	m.managers[cluster] = managerWithCancel{
-		cancel: cancel,
-		mgr:    mgr,
-	}
-}
-
-func (m managerSet) delete(cluster string) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	mgrCancel, ok := m.managers[cluster]
-	if !ok {
-		return
-	}
-	mgrCancel.cancel()
-	delete(m.managers, cluster)
+	c.clients.deleteManager(clusterName)
 }
