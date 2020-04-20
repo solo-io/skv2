@@ -588,7 +588,7 @@ func (c *podClient) PatchPodStatus(ctx context.Context, obj *Pod, patch client.P
 // Reader knows how to read and list Namespaces.
 type NamespaceReader interface {
 	// Get retrieves a Namespace for the given object key
-	GetNamespace(ctx context.Context, key client.ObjectKey) (*Namespace, error)
+	GetNamespace(ctx context.Context, name string) (*Namespace, error)
 
 	// List retrieves list of Namespaces for a given namespace and list options.
 	ListNamespace(ctx context.Context, opts ...client.ListOption) (*NamespaceList, error)
@@ -600,7 +600,7 @@ type NamespaceWriter interface {
 	CreateNamespace(ctx context.Context, obj *Namespace, opts ...client.CreateOption) error
 
 	// Delete deletes the Namespace object.
-	DeleteNamespace(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	DeleteNamespace(ctx context.Context, name string, opts ...client.DeleteOption) error
 
 	// Update updates the given Namespace object.
 	UpdateNamespace(ctx context.Context, obj *Namespace, opts ...client.UpdateOption) error
@@ -637,8 +637,11 @@ func NewNamespaceClient(client client.Client) *namespaceClient {
 	return &namespaceClient{client: client}
 }
 
-func (c *namespaceClient) GetNamespace(ctx context.Context, key client.ObjectKey) (*Namespace, error) {
+func (c *namespaceClient) GetNamespace(ctx context.Context, name string) (*Namespace, error) {
 	obj := &Namespace{}
+	key := client.ObjectKey{
+		Name: name,
+	}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -657,10 +660,9 @@ func (c *namespaceClient) CreateNamespace(ctx context.Context, obj *Namespace, o
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *namespaceClient) DeleteNamespace(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+func (c *namespaceClient) DeleteNamespace(ctx context.Context, name string, opts ...client.DeleteOption) error {
 	obj := &Namespace{}
-	obj.SetName(key.Name)
-	obj.SetNamespace(key.Namespace)
+	obj.SetName(name)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
@@ -688,7 +690,7 @@ func (c *namespaceClient) PatchNamespaceStatus(ctx context.Context, obj *Namespa
 // Reader knows how to read and list Nodes.
 type NodeReader interface {
 	// Get retrieves a Node for the given object key
-	GetNode(ctx context.Context, key client.ObjectKey) (*Node, error)
+	GetNode(ctx context.Context, name string) (*Node, error)
 
 	// List retrieves list of Nodes for a given namespace and list options.
 	ListNode(ctx context.Context, opts ...client.ListOption) (*NodeList, error)
@@ -700,7 +702,7 @@ type NodeWriter interface {
 	CreateNode(ctx context.Context, obj *Node, opts ...client.CreateOption) error
 
 	// Delete deletes the Node object.
-	DeleteNode(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	DeleteNode(ctx context.Context, name string, opts ...client.DeleteOption) error
 
 	// Update updates the given Node object.
 	UpdateNode(ctx context.Context, obj *Node, opts ...client.UpdateOption) error
@@ -737,8 +739,11 @@ func NewNodeClient(client client.Client) *nodeClient {
 	return &nodeClient{client: client}
 }
 
-func (c *nodeClient) GetNode(ctx context.Context, key client.ObjectKey) (*Node, error) {
+func (c *nodeClient) GetNode(ctx context.Context, name string) (*Node, error) {
 	obj := &Node{}
+	key := client.ObjectKey{
+		Name: name,
+	}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -757,10 +762,9 @@ func (c *nodeClient) CreateNode(ctx context.Context, obj *Node, opts ...client.C
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *nodeClient) DeleteNode(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+func (c *nodeClient) DeleteNode(ctx context.Context, name string, opts ...client.DeleteOption) error {
 	obj := &Node{}
-	obj.SetName(key.Name)
-	obj.SetNamespace(key.Namespace)
+	obj.SetName(name)
 	return c.client.Delete(ctx, obj, opts...)
 }
 

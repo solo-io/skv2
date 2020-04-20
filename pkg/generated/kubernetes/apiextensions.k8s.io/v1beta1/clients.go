@@ -46,7 +46,7 @@ func (c *clientSet) CustomResourceDefinitions() CustomResourceDefinitionClient {
 // Reader knows how to read and list CustomResourceDefinitions.
 type CustomResourceDefinitionReader interface {
 	// Get retrieves a CustomResourceDefinition for the given object key
-	GetCustomResourceDefinition(ctx context.Context, key client.ObjectKey) (*CustomResourceDefinition, error)
+	GetCustomResourceDefinition(ctx context.Context, name string) (*CustomResourceDefinition, error)
 
 	// List retrieves list of CustomResourceDefinitions for a given namespace and list options.
 	ListCustomResourceDefinition(ctx context.Context, opts ...client.ListOption) (*CustomResourceDefinitionList, error)
@@ -58,7 +58,7 @@ type CustomResourceDefinitionWriter interface {
 	CreateCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, opts ...client.CreateOption) error
 
 	// Delete deletes the CustomResourceDefinition object.
-	DeleteCustomResourceDefinition(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	DeleteCustomResourceDefinition(ctx context.Context, name string, opts ...client.DeleteOption) error
 
 	// Update updates the given CustomResourceDefinition object.
 	UpdateCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, opts ...client.UpdateOption) error
@@ -95,8 +95,11 @@ func NewCustomResourceDefinitionClient(client client.Client) *customResourceDefi
 	return &customResourceDefinitionClient{client: client}
 }
 
-func (c *customResourceDefinitionClient) GetCustomResourceDefinition(ctx context.Context, key client.ObjectKey) (*CustomResourceDefinition, error) {
+func (c *customResourceDefinitionClient) GetCustomResourceDefinition(ctx context.Context, name string) (*CustomResourceDefinition, error) {
 	obj := &CustomResourceDefinition{}
+	key := client.ObjectKey{
+		Name: name,
+	}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -115,10 +118,9 @@ func (c *customResourceDefinitionClient) CreateCustomResourceDefinition(ctx cont
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *customResourceDefinitionClient) DeleteCustomResourceDefinition(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+func (c *customResourceDefinitionClient) DeleteCustomResourceDefinition(ctx context.Context, name string, opts ...client.DeleteOption) error {
 	obj := &CustomResourceDefinition{}
-	obj.SetName(key.Name)
-	obj.SetNamespace(key.Namespace)
+	obj.SetName(name)
 	return c.client.Delete(ctx, obj, opts...)
 }
 

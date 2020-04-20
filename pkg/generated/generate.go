@@ -44,15 +44,16 @@ func main() {
 						Kind: "Pod",
 					},
 					{
-						Kind: "Namespace",
+						Kind:          "Namespace",
+						ClusterScoped: true,
 					},
 					{
-						Kind: "Node",
-
+						Kind:          "Node",
+						ClusterScoped: true,
 					},
 				},
-				RenderController: true,
-				RenderClients:    true,
+				RenderController:      true,
+				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/core/v1",
 				ApiRoot:               kubeGeneratedPackage,
 			},
@@ -70,8 +71,8 @@ func main() {
 						Kind: "ReplicaSet",
 					},
 				},
-				RenderController: true,
-				RenderClients:    true,
+				RenderController:      true,
+				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/apps/v1",
 				ApiRoot:               kubeGeneratedPackage,
 			},
@@ -86,8 +87,34 @@ func main() {
 						Kind: "ValidatingWebhookConfiguration",
 					},
 				},
-				RenderClients: true,
+				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/admissionregistration/v1",
+				ApiRoot:               kubeGeneratedPackage,
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "rbac.authorization.k8s.io",
+					Version: "v1",
+				},
+				Module: "k8s.io/apiextensions-apiserver",
+				Resources: []model.Resource{
+					{
+						Kind: "Role",
+					},
+					{
+						Kind: "RoleBinding",
+					},
+					{
+						Kind:          "ClusterRole",
+						ClusterScoped: true,
+					},
+					{
+						Kind:          "ClusterRoleBinding",
+						ClusterScoped: true,
+					},
+				},
+				RenderClients:         true,
+				CustomTypesImportPath: "k8s.io/api/rbac/v1",
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -98,10 +125,11 @@ func main() {
 				Module: "k8s.io/apiextensions-apiserver",
 				Resources: []model.Resource{
 					{
-						Kind: "CustomResourceDefinition",
+						Kind:          "CustomResourceDefinition",
+						ClusterScoped: true,
 					},
 				},
-				RenderClients: true,
+				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
 				ApiRoot:               kubeGeneratedPackage,
 			},
