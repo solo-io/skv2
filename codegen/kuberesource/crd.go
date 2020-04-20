@@ -32,6 +32,11 @@ func CustomResourceDefinition(resource model.Resource) *apiextv1beta1.CustomReso
 		status = &apiextv1beta1.CustomResourceSubresourceStatus{}
 	}
 
+	scope := apiextv1beta1.NamespaceScoped
+	if resource.ClusterScoped {
+		scope = apiextv1beta1.ClusterScoped
+	}
+
 	crd := &apiextv1beta1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: apiextv1beta1.SchemeGroupVersion.String(),
@@ -45,7 +50,7 @@ func CustomResourceDefinition(resource model.Resource) *apiextv1beta1.CustomReso
 		},
 		Spec: apiextv1beta1.CustomResourceDefinitionSpec{
 			Group: group,
-			Scope: apiextv1beta1.NamespaceScoped,
+			Scope: scope,
 			Versions: []apiextv1beta1.CustomResourceDefinitionVersion{{
 				Name:                     version,
 				Served:                   true,

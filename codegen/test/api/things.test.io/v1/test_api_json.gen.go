@@ -72,6 +72,17 @@ func (this *PaintStatus) UnmarshalJSON(b []byte) error {
 	return TestApiUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for ClusterResourceSpec
+func (this *ClusterResourceSpec) MarshalJSON() ([]byte, error) {
+	str, err := TestApiMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for ClusterResourceSpec
+func (this *ClusterResourceSpec) UnmarshalJSON(b []byte) error {
+	return TestApiUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 var (
 	TestApiMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	TestApiUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
