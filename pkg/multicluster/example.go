@@ -18,7 +18,7 @@ func example(local manager.Manager) {
 	mccs := NewClientSet()
 
 	go func() {
-		err := RunClusterWatcher(context.TODO(), local, mccs, StartConfigMapReconcileLoop)
+		err := RunClusterWatcher(context.TODO(), local, mccs, configMapClusterHandler{})
 		if err != nil {
 			panic("cluster watcher errored")
 		}
@@ -34,8 +34,10 @@ func example(local manager.Manager) {
 
 }
 
+type configMapClusterHandler struct{}
+
 // User-provided reconcile loop starters
-func StartConfigMapReconcileLoop(ctx context.Context, cluster string, mgr manager.Manager) error {
+func (configMapClusterHandler) HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) error {
 	go func() {
 		err := controller.NewConfigMapReconcileLoop(cluster, mgr).RunConfigMapReconciler(ctx, *new(controller.ConfigMapReconciler))
 		if err != nil {
@@ -56,16 +58,16 @@ type typedClientSet interface {
 	Cluster(cluster string) (skv2_corev1.Clientset, error)
 }
 
-type typedCs struct{ getter ClientSet }
+type typedCs struct{ getter Client }
 
 func (m typedCs) Cluster(cluster string) (skv2_corev1.Clientset, error) {
 	c, err := m.getter.Cluster(cluster)
 	if err != nil {
-		return nil, eris.Wrapf(err, "Failed to getManager client for cluster %v")
+		return nil, eris.Wrapf(err, "Failed to getManager client for cluster %v", cluster)
 	}
 	return skv2_corev1.NewClientset(c), nil
 }
 
-func NewTypedClientSet(getter ClientSet) typedClientSet {
+func NewTypedClientSet(getter Client) typedClientSet {
 	return typedCs{getter: getter}
 }

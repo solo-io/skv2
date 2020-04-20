@@ -9,9 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// ClientSet provides access to a client.Client for any registered cluster.
-// Only one ClientSet should be created within a multicluster system.
-type ClientSet interface {
+// Client provides access to a client.Client for any registered cluster.
+// Only one Client should be created within a multicluster system.
+type Client interface {
 	// Cluster returns a client.Client for the given cluster if one is available, else errors.
 	Cluster(name string) (client.Client, error)
 	getManager(cluster string) (manager.Manager, error)
@@ -31,7 +31,7 @@ type set struct {
 	managers map[string]managerWithCancel
 }
 
-func NewClientSet() ClientSet {
+func NewClientSet() Client {
 	return set{
 		mutex:    sync.RWMutex{},
 		managers: make(map[string]managerWithCancel),

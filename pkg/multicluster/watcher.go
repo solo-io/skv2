@@ -18,24 +18,22 @@ const (
 	LocalCluster = ""
 )
 
-// AddClusterHandler is called when a new cluster is added.
-// The provided context is cancelled when a cluster is removed, so any teardown behavior for removed clusters
-// should take place when ctx is cancelled.
-type AddClusterHandler func(ctx context.Context, cluster string, mgr manager.Manager) error
-
-// ClusterWatcher calls ClusterHandlers and maintains a setManager of active cluster credentials.
-type ClusterWatcher interface {
-	controller.SecretReconciler
+// ClusterHandler is passed to RunClusterWatcher to handle select cluster events.
+type ClusterHandler interface {
+	// ClusterHandler is called when a new cluster is identified by a cluster watch.
+	// The provided context is cancelled when a cluster is removed, so any teardown behavior for removed clusters
+	// should take place when ctx is cancelled.
+	HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) error
 }
 
 type clusterWatcher struct {
 	ctx      context.Context
-	handlers []AddClusterHandler
-	clients  ClientSet
+	handlers []ClusterHandler
+	clients  Client
 }
 
 // RunClusterWatcher initializes and runs a reconciler for KubeConfig secrets.
-func RunClusterWatcher(ctx context.Context, localManager manager.Manager, clients ClientSet, handlers ...AddClusterHandler) error {
+func RunClusterWatcher(ctx context.Context, localManager manager.Manager, clients Client, handlers ...ClusterHandler) error {
 	watcher := &clusterWatcher{
 		ctx:      ctx,
 		handlers: handlers,
@@ -88,7 +86,7 @@ func (c *clusterWatcher) registerManager(clusterName string, mgr manager.Manager
 
 	errs := &multierror.Error{}
 	for _, handler := range c.handlers {
-		err := handler(ctx, clusterName, mgr)
+		err := handler.HandleAddCluster(ctx, clusterName, mgr)
 		if err != nil {
 			errs.Errors = append(errs.Errors, err)
 		}
