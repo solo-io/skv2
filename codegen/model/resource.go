@@ -89,6 +89,10 @@ type Resource struct {
 	Spec   Field
 	Status *Field
 
+	// Whether or not the resource is cluster-scoped.
+	// This is important when rendering the CustomResourceDefinition manifest.
+	ClusterScoped bool
+
 	// The set of additional printer columns to apply to the CustomResourceDefinition
 	AdditionalPrinterColumns []apiextv1beta1.CustomResourceColumnDefinition
 }

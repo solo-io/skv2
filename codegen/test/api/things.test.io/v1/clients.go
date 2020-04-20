@@ -12,6 +12,8 @@ import (
 type Clientset interface {
 	// clienset for the things.test.io/v1/v1 APIs
 	Paints() PaintClient
+	// clienset for the things.test.io/v1/v1 APIs
+	ClusterResources() ClusterResourceClient
 }
 
 type clientSet struct {
@@ -39,6 +41,11 @@ func NewClientset(client client.Client) *clientSet {
 // clienset for the things.test.io/v1/v1 APIs
 func (c *clientSet) Paints() PaintClient {
 	return NewPaintClient(c.client)
+}
+
+// clienset for the things.test.io/v1/v1 APIs
+func (c *clientSet) ClusterResources() ClusterResourceClient {
+	return NewClusterResourceClient(c.client)
 }
 
 // Reader knows how to read and list Paints.
@@ -138,5 +145,107 @@ func (c *paintClient) UpdatePaintStatus(ctx context.Context, obj *Paint, opts ..
 }
 
 func (c *paintClient) PatchPaintStatus(ctx context.Context, obj *Paint, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Reader knows how to read and list ClusterResources.
+type ClusterResourceReader interface {
+	// Get retrieves a ClusterResource for the given object key
+	GetClusterResource(ctx context.Context, name string) (*ClusterResource, error)
+
+	// List retrieves list of ClusterResources for a given namespace and list options.
+	ListClusterResource(ctx context.Context, opts ...client.ListOption) (*ClusterResourceList, error)
+}
+
+// Writer knows how to create, delete, and update ClusterResources.
+type ClusterResourceWriter interface {
+	// Create saves the ClusterResource object.
+	CreateClusterResource(ctx context.Context, obj *ClusterResource, opts ...client.CreateOption) error
+
+	// Delete deletes the ClusterResource object.
+	DeleteClusterResource(ctx context.Context, name string, opts ...client.DeleteOption) error
+
+	// Update updates the given ClusterResource object.
+	UpdateClusterResource(ctx context.Context, obj *ClusterResource, opts ...client.UpdateOption) error
+
+	// Patch patches the given ClusterResource object.
+	PatchClusterResource(ctx context.Context, obj *ClusterResource, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all ClusterResource objects matching the given options.
+	DeleteAllOfClusterResource(ctx context.Context, opts ...client.DeleteAllOfOption) error
+}
+
+// StatusWriter knows how to update status subresource of a ClusterResource object.
+type ClusterResourceStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given ClusterResource object.
+	UpdateClusterResourceStatus(ctx context.Context, obj *ClusterResource, opts ...client.UpdateOption) error
+
+	// Patch patches the given ClusterResource object's subresource.
+	PatchClusterResourceStatus(ctx context.Context, obj *ClusterResource, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on ClusterResources.
+type ClusterResourceClient interface {
+	ClusterResourceReader
+	ClusterResourceWriter
+	ClusterResourceStatusWriter
+}
+
+type clusterResourceClient struct {
+	client client.Client
+}
+
+func NewClusterResourceClient(client client.Client) *clusterResourceClient {
+	return &clusterResourceClient{client: client}
+}
+
+func (c *clusterResourceClient) GetClusterResource(ctx context.Context, name string) (*ClusterResource, error) {
+	obj := &ClusterResource{}
+	key := client.ObjectKey{
+		Name: name,
+	}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *clusterResourceClient) ListClusterResource(ctx context.Context, opts ...client.ListOption) (*ClusterResourceList, error) {
+	list := &ClusterResourceList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *clusterResourceClient) CreateClusterResource(ctx context.Context, obj *ClusterResource, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *clusterResourceClient) DeleteClusterResource(ctx context.Context, name string, opts ...client.DeleteOption) error {
+	obj := &ClusterResource{}
+	obj.SetName(name)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *clusterResourceClient) UpdateClusterResource(ctx context.Context, obj *ClusterResource, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *clusterResourceClient) PatchClusterResource(ctx context.Context, obj *ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *clusterResourceClient) DeleteAllOfClusterResource(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &ClusterResource{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *clusterResourceClient) UpdateClusterResourceStatus(ctx context.Context, obj *ClusterResource, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *clusterResourceClient) PatchClusterResourceStatus(ctx context.Context, obj *ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
