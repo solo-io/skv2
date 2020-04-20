@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	skv2_corev1 "github.com/solo-io/skv2/pkg/api/kube/core/v1"
 	"github.com/solo-io/skv2/pkg/api/kube/core/v1/controller"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/reconcile"
@@ -17,77 +16,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-func example(local manager.Manager) {
-	loop := controller.NewSecretReconcileLoop("cluster controller", local)
-	clusterController := NewClusterWatcher(
-		context.TODO(),
-		multiclusterConfigmapReconcileLoop{},
-	)
-
-	// TODO predicate for kubeconfig secrets
-	err := loop.RunSecretReconciler(context.TODO(), clusterController)
-	if err != nil {
-		// oh no
-	}
-
-	var getter ClientGetter = clusterController
-	multiclusterClients := NewMCClientSet(getter)
-	fooSet, err := multiclusterClients.Cluster("foo")
-	if err != nil {
-		// uh oh
-	}
-
-	fooSet.Secrets().DeleteAllOfSecret(context.TODO())
-
-}
-
-/**
-Rough sketch of a typed multicluster reconcile loop
-*/
-// TODO generate
-type multiclusterConfigmapReconcileLoop struct {
-	rec             controller.ConfigMapReconciler
-	onRemoveCluster func(cluster string)
-}
-
-func (c multiclusterConfigmapReconcileLoop) HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) error {
-	go func() {
-		err := controller.NewConfigMapReconcileLoop(cluster, mgr).RunConfigMapReconciler(ctx, c.rec)
-		if err != nil {
-			contextutils.LoggerFrom(ctx).DPanicw("ConfigMap reconcile loop stopped with error", zap.Error(err))
-		}
-	}()
-	return nil
-}
-
-func (c multiclusterConfigmapReconcileLoop) HandleRemoveCluster(cluster string) {
-	c.onRemoveCluster(cluster)
-}
-
-/**
-Rough sketch of a typed multicluster clientset
-
-Alternative is to have a structure like "set.Resource().Cluster().Action()", wdyt?
-*/
-// TODO generate
-
-type multiclusterClientSet interface {
-	Cluster(cluster string) (skv2_corev1.Clientset, error)
-}
-
-type mccs struct{ getter ClientGetter }
-
-func (m mccs) Cluster(cluster string) (skv2_corev1.Clientset, error) {
-	c, err := m.getter.Cluster(cluster)
-	if err != nil {
-		return nil, eris.Wrapf(err, "Failed to get client for cluster %v")
-	}
-	return skv2_corev1.NewClientset(c), nil
-}
-
-func NewMCClientSet(getter ClientGetter) multiclusterClientSet {
-	return mccs{getter: getter}
-}
+const (
+	LocalCluster = ""
+)
 
 // ClientGetter provides access to a client.Client for any registered cluster
 type ClientGetter interface {
@@ -95,20 +26,10 @@ type ClientGetter interface {
 	Cluster(name string) (client.Client, error)
 }
 
-// ClusterHandler can be passed to the ClusterWatcher to allow components to respond to cluster events.
-type ClusterHandler interface {
-	// HandleAddCluster is called when a new cluster is added.
-	// The provided context is cancelled when a cluster is removed.
-	HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) error
-	// HandleRemoveCluster is called when a cluster is deleted.
-	HandleRemoveCluster(cluster string)
-}
-
-type clusterWatcher struct {
-	ctx      context.Context
-	handlers []ClusterHandler
-	managers managerSet
-}
+// AddClusterHandler is called when a new cluster is added.
+// The provided context is cancelled when a cluster is removed, so any teardown behavior for removed clusters
+// should take place when ctx is cancelled.
+type AddClusterHandler func(ctx context.Context, cluster string, mgr manager.Manager) error
 
 // ClusterWatcher calls ClusterHandlers and maintains a set of active cluster credentials.
 type ClusterWatcher interface {
@@ -116,9 +37,15 @@ type ClusterWatcher interface {
 	ClientGetter
 }
 
-// TODO register local cluster before returning
-func NewClusterWatcher(ctx context.Context, handlers ...ClusterHandler) ClusterWatcher {
-	return &clusterWatcher{
+type clusterWatcher struct {
+	ctx      context.Context
+	handlers []AddClusterHandler
+	managers managerSet
+}
+
+// NewClusterWatcher returns an implementation of ClusterWatcher with localManager already registered.
+func NewClusterWatcher(ctx context.Context, localManager manager.Manager, handlers ...AddClusterHandler) ClusterWatcher {
+	watcher := &clusterWatcher{
 		ctx:      ctx,
 		handlers: handlers,
 		managers: managerSet{
@@ -126,6 +53,13 @@ func NewClusterWatcher(ctx context.Context, handlers ...ClusterHandler) ClusterW
 			managers: make(map[string]managerWithCancel),
 		},
 	}
+
+	err := watcher.registerManager(LocalCluster, localManager)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Panicw("Failed to register local kube config with multicluster watcher", zap.Error(err))
+	}
+
+	return watcher
 }
 
 func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
@@ -134,7 +68,7 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
 	}
 
-	if _, err := c.managers.getManager(clusterName); err != nil {
+	if _, err := c.managers.get(clusterName); err != nil {
 		return reconcile.Result{}, err
 	}
 
@@ -147,47 +81,48 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		return reconcile.Result{}, err
 	}
 
-	ctx, cancel := context.WithCancel(contextutils.WithLoggerValues(context.WithValue(c.ctx, "cluster", clusterName)))
+	return reconcile.Result{}, c.registerManager(clusterName, mgr)
+}
+
+func (c *clusterWatcher) registerManager(clusterName string, mgr manager.Manager) error {
+	ctx, cancel := context.WithCancel(
+		contextutils.WithLoggerValues(context.WithValue(c.ctx, "cluster", clusterName), zap.String("cluster", clusterName)))
 	go func() {
-		err = mgr.Start(ctx.Done())
+		err := mgr.Start(ctx.Done())
 		if err != nil {
 			cancel()
 			contextutils.LoggerFrom(ctx).DPanicw("manager start failed for cluster %v", clusterName)
 		}
 	}()
 
-	c.managers.setManager(clusterName, mgr, cancel)
+	c.managers.set(clusterName, mgr, cancel)
 
 	errs := &multierror.Error{}
 	for _, handler := range c.handlers {
-		err := handler.HandleAddCluster(ctx, clusterName, mgr)
+		err := handler(ctx, clusterName, mgr)
 		if err != nil {
 			errs.Errors = append(errs.Errors, err)
 		}
 	}
 
-	return reconcile.Result{}, errs.ErrorOrNil()
+	return errs.ErrorOrNil()
 }
 
 func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
 	// TODO we have to enforce that the cluster name is the resource name
 	// we can't lookup the deleted resource to find the name on the spec, because the resource is deleted.
 	clusterName := req.Name
-	_, err := c.managers.getManager(clusterName)
+	_, err := c.managers.get(clusterName)
 	if err != nil {
 		contextutils.LoggerFrom(c.ctx).Debugw("reconciled delete on cluster secret for nonexistent cluster %v", clusterName)
 		return
 	}
 
-	for _, handler := range c.handlers {
-		handler.HandleRemoveCluster(clusterName)
-	}
-
-	c.managers.deleteManager(clusterName)
+	c.managers.delete(clusterName)
 }
 
 func (c *clusterWatcher) Cluster(name string) (client.Client, error) {
-	mgr, err := c.managers.getManager(name)
+	mgr, err := c.managers.get(name)
 	if err != nil {
 		return nil, err
 	}
@@ -201,14 +136,13 @@ type managerWithCancel struct {
 	mgr    manager.Manager
 }
 
-// TODO should this be extracted? we could add GetClient to this and pass it around instead of the controller
-// managerSet maintains a set of managers and cancel functions
+// managerSet maintains a set of managers and cancel functions.
 type managerSet struct {
 	mutex    sync.RWMutex
 	managers map[string]managerWithCancel
 }
 
-func (m managerSet) getManager(cluster string) (manager.Manager, error) {
+func (m managerSet) get(cluster string) (manager.Manager, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
@@ -219,7 +153,7 @@ func (m managerSet) getManager(cluster string) (manager.Manager, error) {
 	return mgrCancel.mgr, nil
 }
 
-func (m managerSet) setManager(cluster string, mgr manager.Manager, cancel context.CancelFunc) {
+func (m managerSet) set(cluster string, mgr manager.Manager, cancel context.CancelFunc) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -229,9 +163,10 @@ func (m managerSet) setManager(cluster string, mgr manager.Manager, cancel conte
 	}
 }
 
-func (m managerSet) deleteManager(cluster string) {
+func (m managerSet) delete(cluster string) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+
 	mgrCancel, ok := m.managers[cluster]
 	if !ok {
 		return
