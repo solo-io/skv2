@@ -15,20 +15,16 @@ import (
 Example of how the watcher could fit into an app setup flow.
 */
 func example(local manager.Manager) {
-	loop := controller.NewSecretReconcileLoop("cluster controller", local)
-	clusterController := NewClusterWatcher(
-		context.TODO(),
-		local,
-		multiclusterConfigmapReconcileLoop{}.HandleAddCluster,
-	)
+	mccs := NewClientSet()
 
-	err := loop.RunSecretReconciler(context.TODO(), clusterController)
-	if err != nil {
-		// oh no
-	}
+	go func() {
+		err := RunClusterWatcher(context.TODO(), local, mccs, StartConfigMapReconcileLoop)
+		if err != nil {
+			panic("cluster watcher errored")
+		}
+	}()
 
-	var getter ClientGetter = clusterController
-	multiclusterClients := NewMCClientSet(getter)
+	multiclusterClients := NewTypedClientSet(mccs)
 	fooSet, err := multiclusterClients.Cluster("foo")
 	if err != nil {
 		// uh oh
@@ -38,17 +34,10 @@ func example(local manager.Manager) {
 
 }
 
-/**
-Rough sketch of a typed multicluster reconcile loop
-*/
-// TODO generate
-type multiclusterConfigmapReconcileLoop struct {
-	rec controller.ConfigMapReconciler
-}
-
-func (c multiclusterConfigmapReconcileLoop) HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) error {
+// User-provided reconcile loop starters
+func StartConfigMapReconcileLoop(ctx context.Context, cluster string, mgr manager.Manager) error {
 	go func() {
-		err := controller.NewConfigMapReconcileLoop(cluster, mgr).RunConfigMapReconciler(ctx, c.rec)
+		err := controller.NewConfigMapReconcileLoop(cluster, mgr).RunConfigMapReconciler(ctx, *new(controller.ConfigMapReconciler))
 		if err != nil {
 			contextutils.LoggerFrom(ctx).DPanicw("ConfigMap reconcile loop stopped with error", zap.Error(err))
 		}
@@ -63,13 +52,13 @@ Alternative is to have a structure like "setManager.Resource().Cluster().Action(
 */
 // TODO generate
 
-type multiclusterClientSet interface {
+type typedClientSet interface {
 	Cluster(cluster string) (skv2_corev1.Clientset, error)
 }
 
-type mccs struct{ getter ClientGetter }
+type typedCs struct{ getter ClientSet }
 
-func (m mccs) Cluster(cluster string) (skv2_corev1.Clientset, error) {
+func (m typedCs) Cluster(cluster string) (skv2_corev1.Clientset, error) {
 	c, err := m.getter.Cluster(cluster)
 	if err != nil {
 		return nil, eris.Wrapf(err, "Failed to getManager client for cluster %v")
@@ -77,6 +66,6 @@ func (m mccs) Cluster(cluster string) (skv2_corev1.Clientset, error) {
 	return skv2_corev1.NewClientset(c), nil
 }
 
-func NewMCClientSet(getter ClientGetter) multiclusterClientSet {
-	return mccs{getter: getter}
+func NewTypedClientSet(getter ClientSet) typedClientSet {
+	return typedCs{getter: getter}
 }
