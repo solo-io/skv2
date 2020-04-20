@@ -27,6 +27,11 @@ var _ = Describe("Cmd", func() {
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
 						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
 					},
 					RenderProtos:     true,
 					RenderManifests:  true,

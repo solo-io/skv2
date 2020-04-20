@@ -3,5 +3,6 @@ _output/
 vendor*/
 
 .idea/
+.vscode/
 # ignore packr files
 *-packr.go
