@@ -43,6 +43,34 @@ type clusterWatcher struct {
 	managers managerSet
 }
 
+// TODO probably going to want the client getter before this object returns
+// RunClusterWatcher initializes and runs a reconciler for KubeConfig secrets and returns an accessor for multicluster clients.
+func RunClusterWatcher(ctx context.Context, localManager manager.Manager, handlers ...AddClusterHandler) (ClientGetter, error) {
+	watcher := &clusterWatcher{
+		ctx:      ctx,
+		handlers: handlers,
+		managers: managerSet{
+			mutex:    sync.RWMutex{},
+			managers: make(map[string]managerWithCancel),
+		},
+	}
+
+	err := watcher.registerManager(LocalCluster, localManager)
+	if err != nil {
+		return nil, eris.Wrap(err, "Failed to register local kube config with multicluster watcher")
+	}
+
+	loop := controller.NewSecretReconcileLoop("cluster watcher", localManager)
+
+	go func() {
+		if err := loop.RunSecretReconciler(ctx, watcher, kubeconfig.SecretPredicate{}); err != nil {
+			contextutils.LoggerFrom(ctx).Panicw("Error encountered while watching multicluster kube configs", zap.Error(err))
+		}
+	}()
+
+	return watcher, nil
+}
+
 // NewClusterWatcher returns an implementation of ClusterWatcher with localManager already registered.
 func NewClusterWatcher(ctx context.Context, localManager manager.Manager, handlers ...AddClusterHandler) ClusterWatcher {
 	watcher := &clusterWatcher{

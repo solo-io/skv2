@@ -22,7 +22,6 @@ func example(local manager.Manager) {
 		multiclusterConfigmapReconcileLoop{}.HandleAddCluster,
 	)
 
-	// TODO predicate for kubeconfig secrets
 	err := loop.RunSecretReconciler(context.TODO(), clusterController)
 	if err != nil {
 		// oh no
