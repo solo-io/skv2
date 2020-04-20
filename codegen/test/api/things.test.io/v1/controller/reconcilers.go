@@ -127,3 +127,118 @@ func (r genericPaintFinalizer) Finalize(object ezkube.Object) error {
 	}
 	return r.finalizingReconciler.FinalizePaint(obj)
 }
+
+// Reconcile Upsert events for the ClusterResource Resource.
+// implemented by the user
+type ClusterResourceReconciler interface {
+	ReconcileClusterResource(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the ClusterResource Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type ClusterResourceDeletionReconciler interface {
+	ReconcileClusterResourceDeletion(req reconcile.Request)
+}
+
+type ClusterResourceReconcilerFuncs struct {
+	OnReconcileClusterResource         func(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
+	OnReconcileClusterResourceDeletion func(req reconcile.Request)
+}
+
+func (f *ClusterResourceReconcilerFuncs) ReconcileClusterResource(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error) {
+	if f.OnReconcileClusterResource == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileClusterResource(obj)
+}
+
+func (f *ClusterResourceReconcilerFuncs) ReconcileClusterResourceDeletion(req reconcile.Request) {
+	if f.OnReconcileClusterResourceDeletion == nil {
+		return
+	}
+	f.OnReconcileClusterResourceDeletion(req)
+}
+
+// Reconcile and finalize the ClusterResource Resource
+// implemented by the user
+type ClusterResourceFinalizer interface {
+	ClusterResourceReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	ClusterResourceFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeClusterResource(obj *things_test_io_v1.ClusterResource) error
+}
+
+type ClusterResourceReconcileLoop interface {
+	RunClusterResourceReconciler(ctx context.Context, rec ClusterResourceReconciler, predicates ...predicate.Predicate) error
+}
+
+type clusterResourceReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewClusterResourceReconcileLoop(name string, mgr manager.Manager) ClusterResourceReconcileLoop {
+	return &clusterResourceReconcileLoop{
+		loop: reconcile.NewLoop(name, mgr, &things_test_io_v1.ClusterResource{}),
+	}
+}
+
+func (c *clusterResourceReconcileLoop) RunClusterResourceReconciler(ctx context.Context, reconciler ClusterResourceReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericClusterResourceReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(ClusterResourceFinalizer); ok {
+		reconcilerWrapper = genericClusterResourceFinalizer{
+			genericClusterResourceReconciler: genericReconciler,
+			finalizingReconciler:             finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericClusterResourceHandler implements a generic reconcile.Reconciler
+type genericClusterResourceReconciler struct {
+	reconciler ClusterResourceReconciler
+}
+
+func (r genericClusterResourceReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*things_test_io_v1.ClusterResource)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: ClusterResource handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileClusterResource(obj)
+}
+
+func (r genericClusterResourceReconciler) ReconcileDeletion(request reconcile.Request) {
+	if deletionReconciler, ok := r.reconciler.(ClusterResourceDeletionReconciler); ok {
+		deletionReconciler.ReconcileClusterResourceDeletion(request)
+	}
+}
+
+// genericClusterResourceFinalizer implements a generic reconcile.FinalizingReconciler
+type genericClusterResourceFinalizer struct {
+	genericClusterResourceReconciler
+	finalizingReconciler ClusterResourceFinalizer
+}
+
+func (r genericClusterResourceFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.ClusterResourceFinalizerName()
+}
+
+func (r genericClusterResourceFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*things_test_io_v1.ClusterResource)
+	if !ok {
+		return errors.Errorf("internal error: ClusterResource handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeClusterResource(obj)
+}
