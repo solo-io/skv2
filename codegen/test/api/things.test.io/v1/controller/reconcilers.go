@@ -19,7 +19,7 @@ type PaintReconciler interface {
 	ReconcilePaint(obj *things_test_io_v1.Paint) (reconcile.Result, error)
 }
 
-type MulticlutserPaintReconciler interface {
+type MulticlusterPaintReconciler interface {
 	ReconcilePaint(clusterName string, obj *things_test_io_v1.Paint) (reconcile.Result, error)
 }
 
@@ -100,14 +100,14 @@ func (c *paintReconcileLoop) RunPaintReconciler(ctx context.Context, reconciler 
 }
 
 type MulticlusterPaintReconcileLoop interface {
-	RunPaintReconciler(ctx context.Context, rec MulticlutserPaintReconciler, predicates ...predicate.Predicate) error
+	RunPaintReconciler(ctx context.Context, rec MulticlusterPaintReconciler, predicates ...predicate.Predicate) error
 }
 
 type multiclusterPaintReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterPaintReconcileLoop) RunPaintReconciler(ctx context.Context, rec MulticlutserPaintReconciler, predicates ...predicate.Predicate) error {
+func (m *multiclusterPaintReconcileLoop) RunPaintReconciler(ctx context.Context, rec MulticlusterPaintReconciler, predicates ...predicate.Predicate) error {
 	genericReconciler := genericPaintMulticlusterReconciler{reconciler: rec}
 
 	return m.loop.RunReconciler(ctx, genericReconciler, predicates...)
@@ -118,7 +118,7 @@ func NewPaintMulticlusterReconcileLoop(name string, cw multicluster.ClusterWatch
 }
 
 type genericPaintMulticlusterReconciler struct {
-	reconciler MulticlutserPaintReconciler
+	reconciler MulticlusterPaintReconciler
 }
 
 func (g genericPaintMulticlusterReconciler) ReconcilePaintDeletion(cluster string, req reconcile.Request) {
