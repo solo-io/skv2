@@ -19,6 +19,10 @@ const (
 	LocalCluster = ""
 )
 
+type ClusterWatcher interface {
+	RegisterClusterHandler(ClusterHandler)
+}
+
 type clusterWatcher struct {
 	ctx      context.Context
 	handlers []ClusterHandler
