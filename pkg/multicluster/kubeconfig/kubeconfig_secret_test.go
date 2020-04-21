@@ -15,7 +15,7 @@ import (
 
 var _ = Describe("KubeConfig Secret Conversions", func() {
 	var (
-		clusterName      = "test-name1"
+		clusterName      = "test-name"
 		kubeConfigFormat = `apiVersion: v1
 clusters:
 - cluster:
@@ -34,6 +34,7 @@ users:
   user:
     token: alphanumericgarbage
 `
+		namespace     = "secret-namespace"
 		kubeConfigRaw = fmt.Sprintf(kubeConfigFormat, clusterName)
 		config        *api.Config
 		err           error
@@ -46,7 +47,6 @@ users:
 
 	Describe("ToSecret", func() {
 		It("should convert a single KubeConfig to a single secret", func() {
-			namespace := "secret-namespace"
 			expectedSecret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
@@ -60,6 +60,26 @@ users:
 			secret, err := ToSecret(namespace, clusterName, *config)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).To(Equal(expectedSecret))
+		})
+	})
+
+	Describe("SecretToConfig", func() {
+		It("works", func() {
+			secret := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      clusterName,
+					Namespace: namespace,
+				},
+				Data: map[string][]byte{
+					Key: []byte(kubeConfigRaw),
+				},
+				Type: SecretType,
+			}
+
+			actualCluster, actualConfig, err := SecretToConfig(secret)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(actualCluster).To(Equal(clusterName))
+			Expect(actualConfig).NotTo(BeNil())
 		})
 	})
 })
