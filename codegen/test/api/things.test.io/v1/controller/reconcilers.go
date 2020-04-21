@@ -4,10 +4,10 @@ package controller
 import (
 	"context"
 
-	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
-
 	"github.com/pkg/errors"
+	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -19,12 +19,20 @@ type PaintReconciler interface {
 	ReconcilePaint(obj *things_test_io_v1.Paint) (reconcile.Result, error)
 }
 
+type MulticlutserPaintReconciler interface {
+	ReconcilePaint(clusterName string, obj *things_test_io_v1.Paint) (reconcile.Result, error)
+}
+
 // Reconcile deletion events for the Paint Resource.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
 type PaintDeletionReconciler interface {
 	ReconcilePaintDeletion(req reconcile.Request)
+}
+
+type MulticlusterPaintDeletionReconciler interface {
+	ReconcilePaintDeletion(clusterName string, req reconcile.Request)
 }
 
 type PaintReconcilerFuncs struct {
@@ -89,6 +97,42 @@ func (c *paintReconcileLoop) RunPaintReconciler(ctx context.Context, reconciler 
 		reconcilerWrapper = genericReconciler
 	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+type MulticlusterPaintReconcileLoop interface {
+	RunPaintReconciler(ctx context.Context, rec MulticlutserPaintReconciler, predicates ...predicate.Predicate) error
+}
+
+type multiclusterPaintReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterPaintReconcileLoop) RunPaintReconciler(ctx context.Context, rec MulticlutserPaintReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericPaintMulticlusterReconciler{reconciler: rec}
+
+	return m.loop.RunReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewPaintMulticlusterReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterPaintReconcileLoop {
+	return &multiclusterPaintReconcileLoop{loop: multicluster.NewLoop(name, cw, &things_test_io_v1.Paint{})}
+}
+
+type genericPaintMulticlusterReconciler struct {
+	reconciler MulticlutserPaintReconciler
+}
+
+func (g genericPaintMulticlusterReconciler) ReconcilePaintDeletion(cluster string, req reconcile.Request) {
+	if deletionReconciler, ok := g.reconciler.(PaintDeletionReconciler); ok {
+		deletionReconciler.ReconcilePaintDeletion(req)
+	}
+}
+
+func (g genericPaintMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*things_test_io_v1.Paint)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: Paint handler received event for %T", object)
+	}
+	return g.reconciler.ReconcilePaint(cluster, obj)
 }
 
 // genericPaintHandler implements a generic reconcile.Reconciler

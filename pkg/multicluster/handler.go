@@ -12,5 +12,5 @@ type ClusterHandler interface {
 	// ClusterHandler is called when a new cluster is identified by a cluster watch.
 	// The provided context is cancelled when a cluster is removed, so any teardown behavior for removed clusters
 	// should take place when ctx is cancelled.
-	HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) error
+	HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager)
 }
