@@ -15,16 +15,17 @@ import (
 Example of how the watcher could fit into an app setup flow.
 */
 func example(local manager.Manager) {
-	mccs := NewClientSet()
+	ms := NewManagerSet()
 
 	go func() {
-		err := RunClusterWatcher(context.TODO(), local, mccs, configMapClusterHandler{})
+		err := RunClusterWatcher(context.TODO(), local, ms, configMapClusterHandler{})
 		if err != nil {
 			panic("cluster watcher errored")
 		}
 	}()
 
-	multiclusterClients := NewTypedClientSet(mccs)
+	mcClient := NewClient(ms)
+	multiclusterClients := NewTypedClientSet(mcClient)
 	fooSet, err := multiclusterClients.Cluster("foo")
 	if err != nil {
 		// uh oh

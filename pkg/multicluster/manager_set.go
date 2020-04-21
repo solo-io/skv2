@@ -5,15 +5,12 @@ import (
 	"sync"
 
 	"github.com/rotisserie/eris"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// Client provides access to a client.Client for any registered cluster.
-// Only one Client should be created within a multicluster system.
-type Client interface {
-	// Cluster returns a client.Client for the given cluster if one is available, else errors.
-	Cluster(name string) (client.Client, error)
+// ManagerSet maintains a manager.Manager for every cluster registered in the system.
+// It is implemented as an interface with private methods to enforce that the provided implementation is used.
+type ManagerSet interface {
 	getManager(cluster string) (manager.Manager, error)
 	setManager(cluster string, mgr manager.Manager, cancel context.CancelFunc)
 	deleteManager(cluster string)
@@ -25,40 +22,34 @@ type managerWithCancel struct {
 	mgr    manager.Manager
 }
 
-// setManager maintains a setManager of managers and cancel functions.
-type set struct {
+// managerSet maintains a set of managers and cancel functions.
+type managerSet struct {
 	mutex    sync.RWMutex
 	managers map[string]managerWithCancel
 }
 
-func NewClientSet() Client {
-	return set{
+var _ ManagerSet = &managerSet{}
+
+// NewManagerSet returns a ManagerSet. One ManagerSet should be used for every active clusterWatcher.
+func NewManagerSet() *managerSet {
+	return &managerSet{
 		mutex:    sync.RWMutex{},
 		managers: make(map[string]managerWithCancel),
 	}
 }
 
-func (s set) Cluster(name string) (client.Client, error) {
-	mgr, err := s.getManager(name)
-	if err != nil {
-		return nil, err
-	}
-
-	return mgr.GetClient(), nil
-}
-
-func (s set) getManager(cluster string) (manager.Manager, error) {
+func (s *managerSet) getManager(cluster string) (manager.Manager, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
 	mgrCancel, ok := s.managers[cluster]
 	if !ok {
-		return nil, eris.Errorf("Failed to getManager manager for cluster %v", cluster)
+		return nil, eris.Errorf("Failed to get manager for cluster %v", cluster)
 	}
 	return mgrCancel.mgr, nil
 }
 
-func (s set) setManager(cluster string, mgr manager.Manager, cancel context.CancelFunc) {
+func (s *managerSet) setManager(cluster string, mgr manager.Manager, cancel context.CancelFunc) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -68,7 +59,7 @@ func (s set) setManager(cluster string, mgr manager.Manager, cancel context.Canc
 	}
 }
 
-func (s set) deleteManager(cluster string) {
+func (s *managerSet) deleteManager(cluster string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 

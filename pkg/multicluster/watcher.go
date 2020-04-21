@@ -29,15 +29,17 @@ type ClusterHandler interface {
 type clusterWatcher struct {
 	ctx      context.Context
 	handlers []ClusterHandler
-	clients  Client
+	managers ManagerSet
 }
 
 // RunClusterWatcher initializes and runs a reconciler for KubeConfig secrets.
-func RunClusterWatcher(ctx context.Context, localManager manager.Manager, clients Client, handlers ...ClusterHandler) error {
+// It starts and runs provided ClusterHandlers for the localManager, and maintains a set of
+// active cluster manager.Managers in mangers.
+func RunClusterWatcher(ctx context.Context, localManager manager.Manager, managers ManagerSet, handlers ...ClusterHandler) error {
 	watcher := &clusterWatcher{
 		ctx:      ctx,
 		handlers: handlers,
-		clients:  clients,
+		managers: managers,
 	}
 
 	err := watcher.registerManager(LocalCluster, localManager)
@@ -55,7 +57,7 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
 	}
 
-	if _, err := c.clients.getManager(clusterName); err != nil {
+	if _, err := c.managers.getManager(clusterName); err != nil {
 		return reconcile.Result{}, err
 	}
 
@@ -82,7 +84,7 @@ func (c *clusterWatcher) registerManager(clusterName string, mgr manager.Manager
 		}
 	}()
 
-	c.clients.setManager(clusterName, mgr, cancel)
+	c.managers.setManager(clusterName, mgr, cancel)
 
 	errs := &multierror.Error{}
 	for _, handler := range c.handlers {
@@ -96,14 +98,12 @@ func (c *clusterWatcher) registerManager(clusterName string, mgr manager.Manager
 }
 
 func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
-	// TODO we have to enforce that the cluster name is the resource name
-	// we can't lookup the deleted resource to find the name on the spec, because the resource is deleted.
 	clusterName := req.Name
-	_, err := c.clients.getManager(clusterName)
+	_, err := c.managers.getManager(clusterName)
 	if err != nil {
-		contextutils.LoggerFrom(c.ctx).Debugw("reconciled deleteManager on cluster secret for nonexistent cluster %v", clusterName)
+		contextutils.LoggerFrom(c.ctx).Debugw("reconciled delete on cluster secret for nonexistent cluster %v", clusterName)
 		return
 	}
 
-	c.clients.deleteManager(clusterName)
+	c.managers.deleteManager(clusterName)
 }
