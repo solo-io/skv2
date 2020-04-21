@@ -25,7 +25,7 @@ type clientSet struct {
     client client.Client
 }
 
-func NewClientsetFromConfig(cfg *rest.Config) (*clientSet, error) {
+func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
     scheme := scheme.Scheme
     if err := AddToScheme(scheme); err != nil{
         return nil, err
@@ -39,7 +39,7 @@ func NewClientsetFromConfig(cfg *rest.Config) (*clientSet, error) {
     return NewClientset(client), nil
 }
 
-func NewClientset(client client.Client) *clientSet {
+func NewClientset(client client.Client) Clientset {
     return &clientSet{client: client}
 }
 
