@@ -2,6 +2,7 @@ package multicluster
 
 import (
 	"context"
+	"sync"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
@@ -18,33 +19,24 @@ const (
 	LocalCluster = ""
 )
 
-// ClusterHandler is passed to RunClusterWatcher to handle select cluster events.
-type ClusterHandler interface {
-	// ClusterHandler is called when a new cluster is identified by a cluster watch.
-	// The provided context is cancelled when a cluster is removed, so any teardown behavior for removed clusters
-	// should take place when ctx is cancelled.
-	HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) error
-}
-
 type clusterWatcher struct {
 	ctx      context.Context
 	handlers []ClusterHandler
-	managers ManagerSet
+	cancels  *cancelSet
 }
 
 // RunClusterWatcher initializes and runs a reconciler for KubeConfig secrets.
-// It starts and runs provided ClusterHandlers for the localManager, and maintains a set of
-// active cluster manager.Managers in mangers.
-func RunClusterWatcher(ctx context.Context, localManager manager.Manager, managers ManagerSet, handlers ...ClusterHandler) error {
+// It starts and runs ClusterHandlers for the localManager as if it were discovered by the watcher.
+func RunClusterWatcher(ctx context.Context, localManager manager.Manager, handlers ...ClusterHandler) error {
 	watcher := &clusterWatcher{
 		ctx:      ctx,
 		handlers: handlers,
-		managers: managers,
+		cancels:  newCancelSet(),
 	}
 
-	err := watcher.registerManager(LocalCluster, localManager)
+	err := watcher.startManager(LocalCluster, localManager)
 	if err != nil {
-		return eris.Wrap(err, "Failed to register local kube config with multicluster watcher")
+		return eris.Wrap(err, "failed to register local kube config with multicluster watcher")
 	}
 
 	loop := controller.NewSecretReconcileLoop("cluster watcher", localManager)
@@ -57,8 +49,8 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
 	}
 
-	if _, err := c.managers.getManager(clusterName); err != nil {
-		return reconcile.Result{}, err
+	if _, err := c.cancels.get(clusterName); err == nil {
+		return reconcile.Result{}, eris.Errorf("cluster %v already initialized", clusterName)
 	}
 
 	mgr, err := manager.New(cfg.RestConfig, manager.Options{
@@ -70,10 +62,10 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		return reconcile.Result{}, err
 	}
 
-	return reconcile.Result{}, c.registerManager(clusterName, mgr)
+	return reconcile.Result{}, c.startManager(clusterName, mgr)
 }
 
-func (c *clusterWatcher) registerManager(clusterName string, mgr manager.Manager) error {
+func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) error {
 	ctx, cancel := context.WithCancel(
 		contextutils.WithLoggerValues(context.WithValue(c.ctx, "cluster", clusterName), zap.String("cluster", clusterName)))
 	go func() {
@@ -84,7 +76,7 @@ func (c *clusterWatcher) registerManager(clusterName string, mgr manager.Manager
 		}
 	}()
 
-	c.managers.setManager(clusterName, mgr, cancel)
+	c.cancels.set(clusterName, cancel)
 
 	errs := &multierror.Error{}
 	for _, handler := range c.handlers {
@@ -99,11 +91,50 @@ func (c *clusterWatcher) registerManager(clusterName string, mgr manager.Manager
 
 func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
 	clusterName := req.Name
-	_, err := c.managers.getManager(clusterName)
+	cancel, err := c.cancels.get(clusterName)
 	if err != nil {
-		contextutils.LoggerFrom(c.ctx).Debugw("reconciled delete on cluster secret for nonexistent cluster %v", clusterName)
+		contextutils.LoggerFrom(c.ctx).Debugw("reconciled delete on cluster secret for uninitialized cluster %v", clusterName)
 		return
 	}
 
-	c.managers.deleteManager(clusterName)
+	cancel()
+	c.cancels.delete(clusterName)
+}
+
+// cancelSet maintains a set of cancel functions.
+type cancelSet struct {
+	mutex   sync.RWMutex
+	cancels map[string]context.CancelFunc
+}
+
+func newCancelSet() *cancelSet {
+	return &cancelSet{
+		mutex:   sync.RWMutex{},
+		cancels: make(map[string]context.CancelFunc),
+	}
+}
+
+func (s *cancelSet) get(cluster string) (context.CancelFunc, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	cancel, ok := s.cancels[cluster]
+	if !ok {
+		return nil, eris.Errorf("Failed to get cancel function for cluster %v", cluster)
+	}
+	return cancel, nil
+}
+
+func (s *cancelSet) set(cluster string, cancel context.CancelFunc) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s.cancels[cluster] = cancel
+}
+
+func (s *cancelSet) delete(cluster string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	delete(s.cancels, cluster)
 }
