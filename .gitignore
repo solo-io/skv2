@@ -6,4 +6,3 @@ vendor*/
 .vscode/
 # ignore packr files
 *-packr.go
-g
