@@ -15,7 +15,6 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/gophercloud/gophercloud v0.2.0 // indirect
-	github.com/hashicorp/go-multierror v1.0.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.12.0
@@ -33,7 +32,7 @@ require (
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
-	golang.org/x/tools v0.0.0-20200421134321-4b6a508a9cc0
+	golang.org/x/tools v0.0.0-20200422022333-3d57cf2e726e
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2

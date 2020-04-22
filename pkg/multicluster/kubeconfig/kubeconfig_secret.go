@@ -43,9 +43,10 @@ type Config struct {
 // SecretToConfig extracts the cluster name and *Config from a KubeConfig secret.
 // If the provided secret is not a KubeConfig secret, an error is returned.
 func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, err error) {
+	clusterName = secret.Name
 	kubeConfigBytes, ok := secret.Data[Key]
 	if !ok {
-		return secret.Name, nil, SecretHasNoKubeConfig(secret.ObjectMeta)
+		return clusterName, nil, SecretHasNoKubeConfig(secret.ObjectMeta)
 	}
 
 	clientConfig, err := clientcmd.NewClientConfigFromBytes(kubeConfigBytes)
