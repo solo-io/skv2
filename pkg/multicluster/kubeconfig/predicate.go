@@ -1,31 +1,34 @@
 package kubeconfig
 
 import (
+	"reflect"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-var _ predicate.Predicate = SecretPredicate{}
-
-// SecretPredicate is a controller-runtime predicate that filters for KubeConfig secrets.
-type SecretPredicate struct{}
-
-func (p SecretPredicate) Create(e event.CreateEvent) bool {
-	return isKubeConfigSecret(e.Object)
-}
-
-func (p SecretPredicate) Delete(e event.DeleteEvent) bool {
-	return isKubeConfigSecret(e.Object)
-}
-
-func (p SecretPredicate) Update(e event.UpdateEvent) bool {
-	return isKubeConfigSecret(e.ObjectNew)
-}
-
-func (p SecretPredicate) Generic(e event.GenericEvent) bool {
-	return isKubeConfigSecret(e.Object)
+func Predicate() predicate.Predicate {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return isKubeConfigSecret(e.Object)
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return isKubeConfigSecret(e.Object)
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			if isKubeConfigSecret(e.ObjectNew) {
+				// Ignore metadata changes.
+				oldSecret, newSecret := e.ObjectOld.(*corev1.Secret), e.ObjectNew.(*corev1.Secret)
+				return !reflect.DeepEqual(oldSecret.Data, newSecret.Data)
+			}
+			return false
+		},
+		GenericFunc: func(e event.GenericEvent) bool {
+			return isKubeConfigSecret(e.Object)
+		},
+	}
 }
 
 func isKubeConfigSecret(obj runtime.Object) bool {

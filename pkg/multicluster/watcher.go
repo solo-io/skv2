@@ -47,7 +47,7 @@ func NewClusterWatcher(ctx context.Context) *clusterWatcher {
 func (c *clusterWatcher) Run(local manager.Manager) error {
 	c.startManager(LocalCluster, local)
 	loop := controller.NewSecretReconcileLoop("cluster watcher", local)
-	return loop.RunSecretReconciler(c.ctx, c, kubeconfig.SecretPredicate{})
+	return loop.RunSecretReconciler(c.ctx, c, kubeconfig.Predicate())
 }
 
 func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
