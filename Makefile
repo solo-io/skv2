@@ -21,7 +21,7 @@ install-deps: mod-download
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
-generated-code: install-deps
+generated-code:
 	go generate ./...
 	goimports -w .
 
