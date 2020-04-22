@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	gen_multicluster "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/controller/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"k8s.io/apimachinery/pkg/types"
@@ -236,11 +237,11 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// TODO joekelley update to MulticlusterPaintReconcileLoop
-			loop := controller.NewPaintMulticlusterReconcileLoop("paint", cw)
+			loop := gen_multicluster.NewPaintMulticlusterReconcileLoop("paint", cw)
 
 			var reconciled *Paint
 			var deleted reconcile.Request
-			loop.AddMulticlusterPaintReconciler(ctx, &controller.MulticlusterPaintReconcilerFuncs{
+			loop.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
 				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
 					reconciled = obj
 					return result, e

@@ -14,6 +14,7 @@ import (
 )
 
 // Handle events for the Secret Resource
+// DEPRECATED: Prefer reconciler pattern.
 type SecretEventHandler interface {
 	CreateSecret(obj *core_v1.Secret) error
 	UpdateSecret(old, new *core_v1.Secret) error
@@ -120,6 +121,7 @@ func (h genericSecretHandler) Generic(object runtime.Object) error {
 }
 
 // Handle events for the ServiceAccount Resource
+// DEPRECATED: Prefer reconciler pattern.
 type ServiceAccountEventHandler interface {
 	CreateServiceAccount(obj *core_v1.ServiceAccount) error
 	UpdateServiceAccount(old, new *core_v1.ServiceAccount) error
@@ -226,6 +228,7 @@ func (h genericServiceAccountHandler) Generic(object runtime.Object) error {
 }
 
 // Handle events for the ConfigMap Resource
+// DEPRECATED: Prefer reconciler pattern.
 type ConfigMapEventHandler interface {
 	CreateConfigMap(obj *core_v1.ConfigMap) error
 	UpdateConfigMap(old, new *core_v1.ConfigMap) error
@@ -332,6 +335,7 @@ func (h genericConfigMapHandler) Generic(object runtime.Object) error {
 }
 
 // Handle events for the Service Resource
+// DEPRECATED: Prefer reconciler pattern.
 type ServiceEventHandler interface {
 	CreateService(obj *core_v1.Service) error
 	UpdateService(old, new *core_v1.Service) error
@@ -438,6 +442,7 @@ func (h genericServiceHandler) Generic(object runtime.Object) error {
 }
 
 // Handle events for the Pod Resource
+// DEPRECATED: Prefer reconciler pattern.
 type PodEventHandler interface {
 	CreatePod(obj *core_v1.Pod) error
 	UpdatePod(old, new *core_v1.Pod) error
@@ -544,6 +549,7 @@ func (h genericPodHandler) Generic(object runtime.Object) error {
 }
 
 // Handle events for the Namespace Resource
+// DEPRECATED: Prefer reconciler pattern.
 type NamespaceEventHandler interface {
 	CreateNamespace(obj *core_v1.Namespace) error
 	UpdateNamespace(old, new *core_v1.Namespace) error
@@ -650,6 +656,7 @@ func (h genericNamespaceHandler) Generic(object runtime.Object) error {
 }
 
 // Handle events for the Node Resource
+// DEPRECATED: Prefer reconciler pattern.
 type NodeEventHandler interface {
 	CreateNode(obj *core_v1.Node) error
 	UpdateNode(old, new *core_v1.Node) error

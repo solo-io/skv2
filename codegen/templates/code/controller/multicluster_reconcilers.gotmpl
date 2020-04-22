@@ -1,5 +1,5 @@
-// Definitions for the Kubernetes Controllers
-package controller
+// Definitions for the multicluster Kubernetes Controllers
+package multicluster
 
 import (
 	"context"
@@ -63,7 +63,7 @@ func (m *multicluster{{ $resource.Kind }}ReconcileLoop) AddMulticluster{{ $resou
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func New{{ $resource.Kind }}MulticlusterReconcileLoop(name string, cw multicluster.ClusterWatcher) Multicluster{{ $resource.Kind }}ReconcileLoop {
+func NewMulticluster{{ $resource.Kind }}ReconcileLoop(name string, cw multicluster.ClusterWatcher) Multicluster{{ $resource.Kind }}ReconcileLoop {
 	return &multicluster{{ $resource.Kind }}ReconcileLoop{loop: multicluster.NewLoop(name, cw, &{{ group_import_name $ }}.{{ $resource.Kind }}{})}
 }
 

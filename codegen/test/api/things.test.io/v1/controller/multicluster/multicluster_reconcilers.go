@@ -1,5 +1,5 @@
-// Definitions for the Kubernetes Controllers
-package controller
+// Definitions for the multicluster Kubernetes Controllers
+package multicluster
 
 import (
 	"context"
@@ -61,7 +61,7 @@ func (m *multiclusterPaintReconcileLoop) AddMulticlusterPaintReconciler(ctx cont
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewPaintMulticlusterReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterPaintReconcileLoop {
+func NewMulticlusterPaintReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterPaintReconcileLoop {
 	return &multiclusterPaintReconcileLoop{loop: multicluster.NewLoop(name, cw, &things_test_io_v1.Paint{})}
 }
 
@@ -131,7 +131,7 @@ func (m *multiclusterClusterResourceReconcileLoop) AddMulticlusterClusterResourc
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewClusterResourceMulticlusterReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterClusterResourceReconcileLoop {
+func NewMulticlusterClusterResourceReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterClusterResourceReconcileLoop {
 	return &multiclusterClusterResourceReconcileLoop{loop: multicluster.NewLoop(name, cw, &things_test_io_v1.ClusterResource{})}
 }
 
@@ -139,9 +139,9 @@ type genericClusterResourceMulticlusterReconciler struct {
 	reconciler MulticlusterClusterResourceReconciler
 }
 
-func (g genericClusterResourceMulticlusterReconciler) ReconcileClusterResourceDeletion(cluster string, req reconcile.Request) {
-	if deletionReconciler, ok := g.reconciler.(ClusterResourceDeletionReconciler); ok {
-		deletionReconciler.ReconcileClusterResourceDeletion(req)
+func (g genericClusterResourceMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterClusterResourceDeletionReconciler); ok {
+		deletionReconciler.ReconcileClusterResourceDeletion(cluster, req)
 	}
 }
 
