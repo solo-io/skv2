@@ -38,3 +38,9 @@ func ManagerWithOpts(cfg *rest.Config, opts manager.Options) (manager.Manager, f
 
 	return mgr, cancel
 }
+
+func ManagerNotStarted(opts manager.Options) manager.Manager {
+	mgr, err := manager.New(MustConfig(), opts)
+	Expect(err).NotTo(HaveOccurred())
+	return mgr
+}

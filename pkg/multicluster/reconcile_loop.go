@@ -24,8 +24,8 @@ type DeletionReconciler interface {
 
 // a Reconcile Loop runs resource reconcilers until the context gets cancelled
 type Loop interface {
-	// RunReconciler adds a reconciler to a slice of reconcilers that will be run against
-	RunReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) error
+	// AddReconciler adds a reconciler to a slice of reconcilers that will be run against
+	AddReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate)
 }
 
 var _ Loop = &runner{}
@@ -52,12 +52,11 @@ func NewLoop(name string, cw ClusterWatcher, resource ezkube.Object) *runner {
 	return runner
 }
 
-func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) error {
+func (r *runner) AddReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) {
 	r.userReconcilers = append(r.userReconcilers, userReconciler{
 		reconciler: reconciler,
 		predicates: predicates,
 	})
-	return nil
 }
 
 func (r *runner) HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) {

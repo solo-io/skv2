@@ -50,17 +50,17 @@ func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.
 
 type Multicluster{{ $resource.Kind }}ReconcileLoop interface {
 	// AddMulticluster{{ $resource.Kind }}Reconciler adds a Multicluster{{ $resource.Kind }}Reconciler to the Multicluster{{ $resource.Kind }}ReconcileLoop.
-	AddMulticluster{{ $resource.Kind }}Reconciler(ctx context.Context, rec Multicluster{{ $resource.Kind }}Reconciler, predicates ...predicate.Predicate) error
+	AddMulticluster{{ $resource.Kind }}Reconciler(ctx context.Context, rec Multicluster{{ $resource.Kind }}Reconciler, predicates ...predicate.Predicate)
 }
 
 type multicluster{{ $resource.Kind }}ReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multicluster{{ $resource.Kind }}ReconcileLoop) AddMulticluster{{ $resource.Kind }}Reconciler(ctx context.Context, rec Multicluster{{ $resource.Kind }}Reconciler, predicates ...predicate.Predicate) error {
+func (m *multicluster{{ $resource.Kind }}ReconcileLoop) AddMulticluster{{ $resource.Kind }}Reconciler(ctx context.Context, rec Multicluster{{ $resource.Kind }}Reconciler, predicates ...predicate.Predicate) {
 	genericReconciler := generic{{ $resource.Kind }}MulticlusterReconciler{reconciler: rec}
 
-	return m.loop.RunReconciler(ctx, genericReconciler, predicates...)
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
 func New{{ $resource.Kind }}MulticlusterReconcileLoop(name string, cw multicluster.ClusterWatcher) Multicluster{{ $resource.Kind }}ReconcileLoop {

@@ -48,17 +48,17 @@ func (f *MulticlusterPaintReconcilerFuncs) ReconcilePaintDeletion(clusterName st
 
 type MulticlusterPaintReconcileLoop interface {
 	// AddMulticlusterPaintReconciler adds a MulticlusterPaintReconciler to the MulticlusterPaintReconcileLoop.
-	AddMulticlusterPaintReconciler(ctx context.Context, rec MulticlusterPaintReconciler, predicates ...predicate.Predicate) error
+	AddMulticlusterPaintReconciler(ctx context.Context, rec MulticlusterPaintReconciler, predicates ...predicate.Predicate)
 }
 
 type multiclusterPaintReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterPaintReconcileLoop) AddMulticlusterPaintReconciler(ctx context.Context, rec MulticlusterPaintReconciler, predicates ...predicate.Predicate) error {
+func (m *multiclusterPaintReconcileLoop) AddMulticlusterPaintReconciler(ctx context.Context, rec MulticlusterPaintReconciler, predicates ...predicate.Predicate) {
 	genericReconciler := genericPaintMulticlusterReconciler{reconciler: rec}
 
-	return m.loop.RunReconciler(ctx, genericReconciler, predicates...)
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
 func NewPaintMulticlusterReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterPaintReconcileLoop {
@@ -118,17 +118,17 @@ func (f *MulticlusterClusterResourceReconcilerFuncs) ReconcileClusterResourceDel
 
 type MulticlusterClusterResourceReconcileLoop interface {
 	// AddMulticlusterClusterResourceReconciler adds a MulticlusterClusterResourceReconciler to the MulticlusterClusterResourceReconcileLoop.
-	AddMulticlusterClusterResourceReconciler(ctx context.Context, rec MulticlusterClusterResourceReconciler, predicates ...predicate.Predicate) error
+	AddMulticlusterClusterResourceReconciler(ctx context.Context, rec MulticlusterClusterResourceReconciler, predicates ...predicate.Predicate)
 }
 
 type multiclusterClusterResourceReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterClusterResourceReconcileLoop) AddMulticlusterClusterResourceReconciler(ctx context.Context, rec MulticlusterClusterResourceReconciler, predicates ...predicate.Predicate) error {
+func (m *multiclusterClusterResourceReconcileLoop) AddMulticlusterClusterResourceReconciler(ctx context.Context, rec MulticlusterClusterResourceReconciler, predicates ...predicate.Predicate) {
 	genericReconciler := genericClusterResourceMulticlusterReconciler{reconciler: rec}
 
-	return m.loop.RunReconciler(ctx, genericReconciler, predicates...)
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
 func NewClusterResourceMulticlusterReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterClusterResourceReconcileLoop {

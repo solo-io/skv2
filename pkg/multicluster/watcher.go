@@ -24,6 +24,8 @@ type ClusterWatcher interface {
 	Run(local manager.Manager) error
 	// RegisterClusterHandler adds a ClusterHandler to the ClusterWatcher.
 	RegisterClusterHandler(handler ClusterHandler)
+	// Stop cancels the context on every manager.Manager.
+	Stop()
 }
 
 type clusterWatcher struct {
@@ -95,6 +97,7 @@ func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
 }
 
 func (c *clusterWatcher) removeCluster(clusterName string) {
+	// TODO joekelley update cancels.delete to also call cancel
 	cancel, err := c.cancels.get(clusterName)
 	if err != nil {
 		contextutils.LoggerFrom(c.ctx).Debugw("reconciled delete on cluster secret for uninitialized cluster %v", clusterName)
@@ -107,6 +110,10 @@ func (c *clusterWatcher) removeCluster(clusterName string) {
 
 func (c *clusterWatcher) RegisterClusterHandler(handler ClusterHandler) {
 	c.handlers.add(handler)
+}
+
+func (c *clusterWatcher) Stop() {
+	c.cancels.cancelAll()
 }
 
 // cancelSet maintains a set of cancel functions.
@@ -145,6 +152,16 @@ func (s *cancelSet) delete(cluster string) {
 	defer s.mutex.Unlock()
 
 	delete(s.cancels, cluster)
+}
+
+func (s *cancelSet) cancelAll() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	for cluster, cancel := range s.cancels {
+		cancel()
+		delete(s.cancels, cluster)
+	}
 }
 
 type handlerList struct {

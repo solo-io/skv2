@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -166,6 +167,90 @@ var _ = Describe("Generated Code", func() {
 				},
 			}
 			err = loop.RunPaintReconciler(ctx, reconciler)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() *Paint {
+				return reconciled
+			}, time.Second).ShouldNot(BeNil())
+
+			// update
+			paint.Spec.Color = &PaintColor{Value: 0.7}
+
+			err = clientSet.Paints().UpdatePaint(ctx, paint)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() PaintSpec {
+				return reconciled.Spec
+			}, time.Second).Should(Equal(paint.Spec))
+
+			// delete
+			err = clientSet.Paints().DeletePaint(ctx, client.ObjectKey{
+				Name:      paint.Name,
+				Namespace: paint.Namespace,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() reconcile.Request {
+				return deleted
+			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
+				Name:      paint.Name,
+				Namespace: paint.Namespace,
+			}}))
+		})
+	})
+
+	FContext("multicluster kube reconciler", func() {
+		var (
+			ctx = context.TODO()
+			mgr manager.Manager
+			cw  multicluster.ClusterWatcher
+		)
+		BeforeEach(func() {
+			mgr = test.ManagerNotStarted(manager.Options{Namespace: ns})
+			cw = multicluster.NewClusterWatcher(ctx)
+		})
+		AfterEach(func() {
+			cw.Stop()
+		})
+
+		It("works", func() {
+			paint := &Paint{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "paint-2",
+					Namespace: ns,
+				},
+				Spec: PaintSpec{
+					Color: &PaintColor{
+						Hue:   "prussian blue",
+						Value: 0.5,
+					},
+					PaintType: &PaintSpec_Acrylic{
+						Acrylic: &AcrylicType{
+							Body: AcrylicType_Heavy,
+						},
+					},
+				},
+			}
+
+			err := clientSet.Paints().CreatePaint(ctx, paint)
+			Expect(err).NotTo(HaveOccurred())
+
+			// TODO joekelley update to MulticlusterPaintReconcileLoop
+			loop := controller.NewPaintMulticlusterReconcileLoop("paint", cw)
+
+			var reconciled *Paint
+			var deleted reconcile.Request
+			loop.AddMulticlusterPaintReconciler(ctx, &controller.MulticlusterPaintReconcilerFuncs{
+				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
+					reconciled = obj
+					return result, e
+				},
+				OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) {
+					deleted = req
+				},
+			})
+
+			err = cw.Run(mgr)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() *Paint {
