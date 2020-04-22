@@ -202,17 +202,17 @@ var _ = Describe("Generated Code", func() {
 
 	Context("multicluster kube reconciler", func() {
 		var (
-			ctx = context.TODO()
-			mgr manager.Manager
-			cw  multicluster.ClusterWatcher
+			ctx    context.Context
+			cancel = func() {}
+			mgr    manager.Manager
+			cw     multicluster.ClusterWatcher
 		)
 		BeforeEach(func() {
-			mgr = test.ManagerNotStarted(manager.Options{Namespace: ns})
+			ctx, cancel = context.WithCancel(context.Background())
+			mgr = test.MustManagerNotStarted(manager.Options{Namespace: ns})
 			cw = multicluster.NewClusterWatcher(ctx)
 		})
-		AfterEach(func() {
-			cw.Stop()
-		})
+		AfterEach(cancel)
 
 		It("works", func() {
 			paint := &Paint{

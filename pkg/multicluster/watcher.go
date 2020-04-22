@@ -18,19 +18,18 @@ const (
 	LocalCluster = ""
 )
 
+// ClusterWatcher watches for KubeConfig secrets on the master cluster.
+// It is responsible for starting cluster managers and calling ClusterHandler functions.
 type ClusterWatcher interface {
-	// Run starts a watch for KubeConfig secrets on the cluster managed by the local manager.Manager.
-	// Note that Run will call Start on the local manager and run all registered ClusterHandlers.
-	Run(local manager.Manager) error
+	// Run starts a watch for KubeConfig secrets on the cluster managed by the given manager.Manager.
+	// Note that Run will call Start on the given manager and run all registered ClusterHandlers.
+	Run(master manager.Manager) error
 	// RegisterClusterHandler adds a ClusterHandler to the ClusterWatcher.
 	RegisterClusterHandler(handler ClusterHandler)
-	// Stop cancels the context on every manager.Manager.
-	Stop()
 }
 
 type clusterWatcher struct {
 	ctx      context.Context
-	mutex    sync.RWMutex
 	handlers *handlerList
 	cancels  *cancelSet
 }
@@ -40,7 +39,6 @@ var _ ClusterWatcher = &clusterWatcher{}
 func NewClusterWatcher(ctx context.Context) *clusterWatcher {
 	return &clusterWatcher{
 		ctx:      ctx,
-		mutex:    sync.RWMutex{},
 		handlers: newHandlerList(),
 		cancels:  newCancelSet(),
 	}
@@ -88,7 +86,7 @@ func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
 	}()
 
 	c.cancels.set(clusterName, cancel)
-	c.handlers.HandleAddCluster(ctx, clusterName, mgr)
+	c.handlers.AddCluster(ctx, clusterName, mgr)
 }
 
 func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
@@ -183,11 +181,11 @@ func (h *handlerList) add(handler ClusterHandler) {
 	h.handlers = append(h.handlers, handler)
 }
 
-func (h *handlerList) HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
+func (h *handlerList) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
 	h.mutex.RLock()
 	defer h.mutex.RUnlock()
 
 	for _, handler := range h.handlers {
-		handler.HandleAddCluster(ctx, cluster, mgr)
+		handler.AddCluster(ctx, cluster, mgr)
 	}
 }

@@ -59,7 +59,7 @@ func (r *runner) AddReconciler(ctx context.Context, reconciler Reconciler, predi
 	})
 }
 
-func (r *runner) HandleAddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
+func (r *runner) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
 	loopForCluster := reconcile.NewLoop(r.name+"-"+cluster, mgr, r.resource)
 	for _, userRec := range r.userReconcilers {
 		mcReconciler := &multiclusterReconciler{
