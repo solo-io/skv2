@@ -237,7 +237,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// TODO joekelley update to MulticlusterPaintReconcileLoop
-			loop := gen_multicluster.NewPaintMulticlusterReconcileLoop("paint", cw)
+			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("paint", cw)
 
 			var reconciled *Paint
 			var deleted reconcile.Request
