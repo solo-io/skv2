@@ -50,6 +50,9 @@ var ControllerTemplates = inputTemplates{
 	"code/controller/reconcilers.gotmpl": {
 		Path: "controller/reconcilers.go",
 	},
+	"code/controller/multicluster_reconcilers.gotmpl": {
+		Path: "controller/multicluster_reconcilers.go",
+	},
 }
 
 func RenderApiTypes(grp Group) ([]OutFile, error) {

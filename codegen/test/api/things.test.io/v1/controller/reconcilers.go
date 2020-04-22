@@ -4,8 +4,9 @@ package controller
 import (
 	"context"
 
-	"github.com/pkg/errors"
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+
+	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
