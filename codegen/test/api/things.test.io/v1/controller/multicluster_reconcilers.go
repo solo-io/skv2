@@ -69,9 +69,9 @@ type genericPaintMulticlusterReconciler struct {
 	reconciler MulticlusterPaintReconciler
 }
 
-func (g genericPaintMulticlusterReconciler) ReconcilePaintDeletion(cluster string, req reconcile.Request) {
-	if deletionReconciler, ok := g.reconciler.(PaintDeletionReconciler); ok {
-		deletionReconciler.ReconcilePaintDeletion(req)
+func (g genericPaintMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterPaintDeletionReconciler); ok {
+		deletionReconciler.ReconcilePaintDeletion(cluster, req)
 	}
 }
 

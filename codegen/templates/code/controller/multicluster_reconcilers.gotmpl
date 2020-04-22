@@ -71,9 +71,9 @@ type generic{{ $resource.Kind }}MulticlusterReconciler struct {
 	reconciler Multicluster{{ $resource.Kind }}Reconciler
 }
 
-func (g generic{{ $resource.Kind }}MulticlusterReconciler) Reconcile{{ $resource.Kind }}Deletion(cluster string, req reconcile.Request) {
-	if deletionReconciler, ok := g.reconciler.({{ $resource.Kind }}DeletionReconciler); ok {
-		deletionReconciler.Reconcile{{ $resource.Kind }}Deletion(req)
+func (g generic{{ $resource.Kind }}MulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+	if deletionReconciler, ok := g.reconciler.(Multicluster{{ $resource.Kind }}DeletionReconciler); ok {
+		deletionReconciler.Reconcile{{ $resource.Kind }}Deletion(cluster, req)
 	}
 }
 
