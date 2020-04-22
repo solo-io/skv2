@@ -19,7 +19,12 @@ func MustConfig() *rest.Config {
 
 func MustManager(ns string) (manager.Manager, func()) {
 	cfg := MustConfig()
-	return ManagerWithOpts(cfg, manager.Options{Namespace: ns})
+	return ManagerWithOpts(cfg, manager.Options{
+		Namespace: ns,
+		// Disable metrics and health probe to allow tests to run in parallel.
+		MetricsBindAddress:     "0",
+		HealthProbeBindAddress: "0",
+	})
 }
 
 func ManagerWithOpts(cfg *rest.Config, opts manager.Options) (manager.Manager, func()) {

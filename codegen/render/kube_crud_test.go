@@ -200,7 +200,7 @@ var _ = Describe("Generated Code", func() {
 		})
 	})
 
-	FContext("multicluster kube reconciler", func() {
+	Context("multicluster kube reconciler", func() {
 		var (
 			ctx = context.TODO()
 			mgr manager.Manager
@@ -236,7 +236,6 @@ var _ = Describe("Generated Code", func() {
 			err := clientSet.Paints().CreatePaint(ctx, paint)
 			Expect(err).NotTo(HaveOccurred())
 
-			// TODO joekelley update to MulticlusterPaintReconcileLoop
 			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("paint", cw)
 
 			var reconciled *Paint
