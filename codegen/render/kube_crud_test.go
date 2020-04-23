@@ -4,11 +4,14 @@ import (
 	"context"
 	"io/ioutil"
 	"path/filepath"
+	"sync"
 	"time"
 
 	gen_multicluster "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/controller/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/reconcile"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -202,19 +205,33 @@ var _ = Describe("Generated Code", func() {
 
 	Context("multicluster kube reconciler", func() {
 		var (
-			ctx    context.Context
-			cancel = func() {}
-			mgr    manager.Manager
-			cw     multicluster.ClusterWatcher
+			ctx      context.Context
+			cancel   = func() {}
+			mgr      manager.Manager
+			cw       multicluster.ClusterWatcher
+			cluster  = "foo"
+			kcSecret *corev1.Secret
 		)
 		BeforeEach(func() {
 			ctx, cancel = context.WithCancel(context.Background())
 			mgr = test.MustManagerNotStarted(manager.Options{Namespace: ns})
 			cw = multicluster.NewClusterWatcher(ctx)
+
+			localKubeConfig, err := kubeutils.GetKubeConfig("", "")
+			Expect(err).NotTo(HaveOccurred())
+			kcSecret, err = kubeconfig.ToSecret(ns, cluster, *localKubeConfig)
+			Expect(err).NotTo(HaveOccurred())
+			kcSecret, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(kcSecret)
+			Expect(err).NotTo(HaveOccurred())
 		})
-		AfterEach(cancel)
+		AfterEach(func() {
+			cancel()
+			err := kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
+			Expect(err).NotTo(HaveOccurred())
+		})
 
 		It("works", func() {
+
 			paint := &Paint{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "paint-2",
@@ -238,23 +255,30 @@ var _ = Describe("Generated Code", func() {
 
 			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("paint", cw)
 
-			var reconciled *Paint
-			var deleted reconcile.Request
+			cpm := newConcurrentPaintMap()
+			crm := newConcurrentRequestMap()
+
 			loop.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
 				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
-					reconciled = obj
+					cpm.add(cluster, obj)
 					return result, e
 				},
 				OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) {
-					deleted = req
+					crm.add(cluster, req)
 				},
 			})
 
 			err = cw.Run(mgr)
 			Expect(err).NotTo(HaveOccurred())
 
+			time.Sleep(2 * time.Second)
+
 			Eventually(func() *Paint {
-				return reconciled
+				return cpm.get(multicluster.MasterCluster)
+			}, time.Second).ShouldNot(BeNil())
+
+			Eventually(func() *Paint {
+				return cpm.get(cluster)
 			}, time.Second).ShouldNot(BeNil())
 
 			// update
@@ -264,7 +288,11 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() PaintSpec {
-				return reconciled.Spec
+				return cpm.get(multicluster.MasterCluster).Spec
+			}, time.Second).Should(Equal(paint.Spec))
+
+			Eventually(func() PaintSpec {
+				return cpm.get(cluster).Spec
 			}, time.Second).Should(Equal(paint.Spec))
 
 			// delete
@@ -275,7 +303,14 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() reconcile.Request {
-				return deleted
+				return crm.get(multicluster.MasterCluster)
+			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
+				Name:      paint.Name,
+				Namespace: paint.Namespace,
+			}}))
+
+			Eventually(func() reconcile.Request {
+				return crm.get(cluster)
 			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 				Name:      paint.Name,
 				Namespace: paint.Namespace,
@@ -283,3 +318,53 @@ var _ = Describe("Generated Code", func() {
 		})
 	})
 })
+
+type concurrentPaintMap struct {
+	m     map[string]*Paint
+	mutex sync.Mutex
+}
+
+func newConcurrentPaintMap() *concurrentPaintMap {
+	return &concurrentPaintMap{
+		m:     make(map[string]*Paint),
+		mutex: sync.Mutex{},
+	}
+}
+
+func (c *concurrentPaintMap) add(cluster string, paint *Paint) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.m[cluster] = paint
+}
+
+func (c *concurrentPaintMap) get(cluster string) *Paint {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	paint := c.m[cluster]
+	return paint
+}
+
+type concurrentRequestMap struct {
+	m     map[string]reconcile.Request
+	mutex sync.Mutex
+}
+
+func newConcurrentRequestMap() *concurrentRequestMap {
+	return &concurrentRequestMap{
+		m:     make(map[string]reconcile.Request),
+		mutex: sync.Mutex{},
+	}
+}
+
+func (c *concurrentRequestMap) add(cluster string, req reconcile.Request) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.m[cluster] = req
+}
+
+func (c *concurrentRequestMap) get(cluster string) reconcile.Request {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	req := c.m[cluster]
+	return req
+}

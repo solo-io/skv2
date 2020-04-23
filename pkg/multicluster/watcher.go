@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	LocalCluster = ""
+	// MasterCluster is the clusterName for the cluster ClusterWatcher watches.
+	MasterCluster = ""
 )
 
 // ClusterWatcher watches for KubeConfig secrets on the master cluster.
@@ -45,7 +46,7 @@ func NewClusterWatcher(ctx context.Context) *clusterWatcher {
 }
 
 func (c *clusterWatcher) Run(local manager.Manager) error {
-	c.startManager(LocalCluster, local)
+	c.startManager(MasterCluster, local)
 	loop := controller.NewSecretReconcileLoop("cluster watcher", local)
 	return loop.RunSecretReconciler(c.ctx, c, kubeconfig.Predicate())
 }
