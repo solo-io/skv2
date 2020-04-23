@@ -230,8 +230,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("works", func() {
-
+		It("works when a loop is registered before the watcher is started", func() {
 			paint := &Paint{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "paint-2",
@@ -253,18 +252,18 @@ var _ = Describe("Generated Code", func() {
 			err := clientSet.Paints().CreatePaint(ctx, paint)
 			Expect(err).NotTo(HaveOccurred())
 
-			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("paint", cw)
+			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("pre-run-paint", cw)
 
-			cpm := newConcurrentPaintMap()
-			crm := newConcurrentRequestMap()
+			preRunReconciledPaint := newConcurrentPaintMap()
+			preRunReconciledDeleteRequests := newConcurrentRequestMap()
 
 			loop.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
 				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
-					cpm.add(clusterName, obj)
+					preRunReconciledPaint.add(clusterName, obj)
 					return result, e
 				},
 				OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) {
-					crm.add(clusterName, req)
+					preRunReconciledDeleteRequests.add(clusterName, req)
 				},
 			})
 
@@ -272,11 +271,11 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() *Paint {
-				return cpm.get(multicluster.MasterCluster)
+				return preRunReconciledPaint.get(multicluster.MasterCluster)
 			}, time.Second).ShouldNot(BeNil())
 
 			Eventually(func() *Paint {
-				return cpm.get(cluster2)
+				return preRunReconciledPaint.get(cluster2)
 			}, time.Second).ShouldNot(BeNil())
 
 			// update
@@ -286,11 +285,11 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() PaintSpec {
-				return cpm.get(multicluster.MasterCluster).Spec
+				return preRunReconciledPaint.get(multicluster.MasterCluster).Spec
 			}, time.Second).Should(Equal(paint.Spec))
 
 			Eventually(func() PaintSpec {
-				return cpm.get(cluster2).Spec
+				return preRunReconciledPaint.get(cluster2).Spec
 			}, time.Second).Should(Equal(paint.Spec))
 
 			// delete
@@ -301,14 +300,78 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() reconcile.Request {
-				return crm.get(multicluster.MasterCluster)
+				return preRunReconciledDeleteRequests.get(multicluster.MasterCluster)
 			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 				Name:      paint.Name,
 				Namespace: paint.Namespace,
 			}}))
 
 			Eventually(func() reconcile.Request {
-				return crm.get(cluster2)
+				return preRunReconciledDeleteRequests.get(cluster2)
+			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
+				Name:      paint.Name,
+				Namespace: paint.Namespace,
+			}}))
+
+		})
+
+		It("works when a loop is registered after the watcher is started", func() {
+			paint := &Paint{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "paint-2",
+					Namespace: ns,
+				},
+				Spec: PaintSpec{
+					Color: &PaintColor{
+						Hue:   "prussian blue",
+						Value: 0.5,
+					},
+					PaintType: &PaintSpec_Acrylic{
+						Acrylic: &AcrylicType{
+							Body: AcrylicType_Heavy,
+						},
+					},
+				},
+			}
+
+			err := clientSet.Paints().CreatePaint(ctx, paint)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = cw.Run(mgr)
+			Expect(err).NotTo(HaveOccurred())
+
+			loop2 := gen_multicluster.NewMulticlusterPaintReconcileLoop("mid-run-paint", cw)
+
+			midRunReconciledPaint := newConcurrentPaintMap()
+			midRunReconciledDeleteRequests := newConcurrentRequestMap()
+
+			loop2.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
+				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
+					midRunReconciledPaint.add(clusterName, obj)
+					return result, e
+				},
+				OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) {
+					midRunReconciledDeleteRequests.add(clusterName, req)
+				},
+			})
+
+			Eventually(func() *Paint {
+				return midRunReconciledPaint.get(multicluster.MasterCluster)
+			}, time.Second).ShouldNot(BeNil())
+
+			Eventually(func() *Paint {
+				return midRunReconciledPaint.get(cluster2)
+			}, time.Second).ShouldNot(BeNil())
+
+			Eventually(func() reconcile.Request {
+				return midRunReconciledDeleteRequests.get(multicluster.MasterCluster)
+			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
+				Name:      paint.Name,
+				Namespace: paint.Namespace,
+			}}))
+
+			Eventually(func() reconcile.Request {
+				return midRunReconciledDeleteRequests.get(cluster2)
 			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 				Name:      paint.Name,
 				Namespace: paint.Namespace,
