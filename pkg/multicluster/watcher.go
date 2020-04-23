@@ -33,15 +33,20 @@ type clusterWatcher struct {
 	ctx      context.Context
 	handlers *handlerList
 	cancels  *cancelSet
+	options  manager.Options
 }
 
 var _ ClusterWatcher = &clusterWatcher{}
 
-func NewClusterWatcher(ctx context.Context) *clusterWatcher {
+// NewClusterWatcher returns a *clusterWatcher.
+// When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
+// Provided manager.Options are applied to all managers started by the clusterWatcher.
+func NewClusterWatcher(ctx context.Context, options manager.Options) *clusterWatcher {
 	return &clusterWatcher{
 		ctx:      ctx,
 		handlers: newHandlerList(),
 		cancels:  newCancelSet(),
+		options:  options,
 	}
 }
 
@@ -62,11 +67,7 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		c.removeCluster(clusterName)
 	}
 
-	mgr, err := manager.New(cfg.RestConfig, manager.Options{
-		// TODO these should be configurable, disable for now
-		MetricsBindAddress:     "0",
-		HealthProbeBindAddress: "0",
-	})
+	mgr, err := manager.New(cfg.RestConfig, c.optionsWithDefaults())
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -74,6 +75,15 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 	c.startManager(clusterName, mgr)
 
 	return reconcile.Result{}, nil
+}
+
+func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
+	// TODO update to namespace.name
+	c.removeCluster(req.Name)
+}
+
+func (c *clusterWatcher) RegisterClusterHandler(handler ClusterHandler) {
+	c.handlers.add(handler)
 }
 
 func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
@@ -90,11 +100,6 @@ func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
 	c.handlers.AddCluster(ctx, clusterName, mgr)
 }
 
-func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
-	// TODO update to namespace.name
-	c.removeCluster(req.Name)
-}
-
 func (c *clusterWatcher) removeCluster(clusterName string) {
 	// TODO joekelley update cancels.delete to also call cancel
 	cancel, err := c.cancels.get(clusterName)
@@ -107,12 +112,11 @@ func (c *clusterWatcher) removeCluster(clusterName string) {
 	c.cancels.delete(clusterName)
 }
 
-func (c *clusterWatcher) RegisterClusterHandler(handler ClusterHandler) {
-	c.handlers.add(handler)
-}
-
-func (c *clusterWatcher) Stop() {
-	c.cancels.cancelAll()
+func (c *clusterWatcher) optionsWithDefaults() manager.Options {
+	options := c.options
+	options.HealthProbeBindAddress = "0"
+	options.MetricsBindAddress = "0"
+	return options
 }
 
 // cancelSet maintains a set of cancel functions.

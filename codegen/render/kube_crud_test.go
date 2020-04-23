@@ -206,20 +206,20 @@ var _ = Describe("Generated Code", func() {
 	Context("multicluster kube reconciler", func() {
 		var (
 			ctx      context.Context
-			cancel   = func() {}
+			cancel   context.CancelFunc
 			mgr      manager.Manager
 			cw       multicluster.ClusterWatcher
-			cluster  = "foo"
+			cluster2 = "foo"
 			kcSecret *corev1.Secret
 		)
 		BeforeEach(func() {
 			ctx, cancel = context.WithCancel(context.Background())
 			mgr = test.MustManagerNotStarted(manager.Options{Namespace: ns})
-			cw = multicluster.NewClusterWatcher(ctx)
+			cw = multicluster.NewClusterWatcher(ctx, manager.Options{Namespace: ns})
 
 			localKubeConfig, err := kubeutils.GetKubeConfig("", "")
 			Expect(err).NotTo(HaveOccurred())
-			kcSecret, err = kubeconfig.ToSecret(ns, cluster, *localKubeConfig)
+			kcSecret, err = kubeconfig.ToSecret(ns, cluster2, *localKubeConfig)
 			Expect(err).NotTo(HaveOccurred())
 			kcSecret, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(kcSecret)
 			Expect(err).NotTo(HaveOccurred())
@@ -260,25 +260,23 @@ var _ = Describe("Generated Code", func() {
 
 			loop.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
 				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
-					cpm.add(cluster, obj)
+					cpm.add(clusterName, obj)
 					return result, e
 				},
 				OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) {
-					crm.add(cluster, req)
+					crm.add(clusterName, req)
 				},
 			})
 
 			err = cw.Run(mgr)
 			Expect(err).NotTo(HaveOccurred())
 
-			time.Sleep(2 * time.Second)
-
 			Eventually(func() *Paint {
 				return cpm.get(multicluster.MasterCluster)
 			}, time.Second).ShouldNot(BeNil())
 
 			Eventually(func() *Paint {
-				return cpm.get(cluster)
+				return cpm.get(cluster2)
 			}, time.Second).ShouldNot(BeNil())
 
 			// update
@@ -292,7 +290,7 @@ var _ = Describe("Generated Code", func() {
 			}, time.Second).Should(Equal(paint.Spec))
 
 			Eventually(func() PaintSpec {
-				return cpm.get(cluster).Spec
+				return cpm.get(cluster2).Spec
 			}, time.Second).Should(Equal(paint.Spec))
 
 			// delete
@@ -310,7 +308,7 @@ var _ = Describe("Generated Code", func() {
 			}}))
 
 			Eventually(func() reconcile.Request {
-				return crm.get(cluster)
+				return crm.get(cluster2)
 			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 				Name:      paint.Name,
 				Namespace: paint.Namespace,
