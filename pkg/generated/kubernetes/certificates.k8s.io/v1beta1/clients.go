@@ -12,9 +12,9 @@ import (
 	. "k8s.io/api/certificates/v1beta1"
 )
 
-// clienset for the certificates.k8s.io/v1beta1/v1beta1 APIs
+// clienset for the certificates.k8s.io/v1beta1 APIs
 type Clientset interface {
-	// clienset for the certificates.k8s.io/v1beta1/v1beta1/v1beta1 APIs
+	// clienset for the certificates.k8s.io/v1beta1/v1beta1 APIs
 	CertificateSigningRequests() CertificateSigningRequestClient
 }
 
@@ -40,7 +40,7 @@ func NewClientset(client client.Client) Clientset {
 	return &clientSet{client: client}
 }
 
-// clienset for the certificates.k8s.io/v1beta1/v1beta1/v1beta1 APIs
+// clienset for the certificates.k8s.io/v1beta1/v1beta1 APIs
 func (c *clientSet) CertificateSigningRequests() CertificateSigningRequestClient {
 	return NewCertificateSigningRequestClient(c.client)
 }

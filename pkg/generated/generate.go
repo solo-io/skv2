@@ -120,7 +120,7 @@ func main() {
 			},
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "certificates.k8s.io/v1beta1",
+					Group:   "certificates.k8s.io",
 					Version: "v1beta1",
 				},
 				Resources: []model.Resource{
