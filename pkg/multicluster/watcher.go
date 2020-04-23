@@ -29,6 +29,12 @@ type ClusterWatcher interface {
 	RegisterClusterHandler(handler ClusterHandler)
 }
 
+// ManagerSet maintains a manager for every cluster in the system.
+type ManagerSet interface {
+	// Cluster returns a manager for the given cluster, or an error if one does not exist.
+	Cluster(cluster string) (manager.Manager, error)
+}
+
 type clusterWatcher struct {
 	ctx      context.Context
 	handlers *handlerList
@@ -37,6 +43,7 @@ type clusterWatcher struct {
 }
 
 var _ ClusterWatcher = &clusterWatcher{}
+var _ ManagerSet = &clusterWatcher{}
 
 // NewClusterWatcher returns a *clusterWatcher.
 // When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
@@ -87,6 +94,10 @@ func (c *clusterWatcher) RegisterClusterHandler(handler ClusterHandler) {
 	c.managers.applyHandler(handler)
 	// Add the handler to the list of active handlers to be called on clusters discovered later.
 	c.handlers.add(handler)
+}
+
+func (c *clusterWatcher) Cluster(cluster string) (manager.Manager, error) {
+	return c.managers.get(cluster)
 }
 
 func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
