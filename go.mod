@@ -32,7 +32,7 @@ require (
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
-	golang.org/x/tools v0.0.0-20200422022333-3d57cf2e726e
+	golang.org/x/tools v0.0.0-20200423172136-7b212d60a147
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2

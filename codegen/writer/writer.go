@@ -1,6 +1,7 @@
 package writer
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -17,7 +18,8 @@ type FileWriter interface {
 
 // writes to the filesystem
 type DefaultFileWriter struct {
-	Root string
+	Root   string
+	Header string // prepended to files before write
 }
 
 func (w *DefaultFileWriter) WriteFiles(files []render.OutFile) error {
@@ -36,6 +38,17 @@ func (w *DefaultFileWriter) WriteFiles(files []render.OutFile) error {
 
 		log.Printf("Writing %v", name)
 
+		// set default comment char to "#" as this is the most common
+		commentChar := "#"
+		switch filepath.Ext(name) {
+		case ".go":
+			commentChar = "//"
+		}
+
+		if w.Header != "" {
+			content = fmt.Sprintf("%s %s\n\n", commentChar, w.Header) + content
+		}
+
 		if err := ioutil.WriteFile(name, []byte(content), perm); err != nil {
 			return err
 		}
@@ -49,7 +62,7 @@ func (w *DefaultFileWriter) WriteFiles(files []render.OutFile) error {
 			return err
 		}
 
-		if err := ioutil.WriteFile(name, []byte(formatted), 0644); err != nil {
+		if err := ioutil.WriteFile(name, formatted, 0644); err != nil {
 			return err
 		}
 	}

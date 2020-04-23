@@ -98,7 +98,6 @@ func main() {
 					Group:   "rbac.authorization.k8s.io",
 					Version: "v1",
 				},
-				Module: "k8s.io/apiextensions-apiserver",
 				Resources: []model.Resource{
 					{
 						Kind: "Role",
@@ -117,6 +116,20 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/rbac/v1",
+				ApiRoot:               kubeGeneratedPackage,
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "certificates.k8s.io",
+					Version: "v1beta1",
+				},
+				Resources: []model.Resource{
+					{
+						Kind: "CertificateSigningRequest",
+					},
+				},
+				RenderClients:         true,
+				CustomTypesImportPath: "k8s.io/api/certificates/v1beta1",
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
