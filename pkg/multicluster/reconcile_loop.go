@@ -2,6 +2,7 @@ package multicluster
 
 import (
 	"context"
+	"sync"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -28,52 +29,70 @@ type Loop interface {
 	AddReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate)
 }
 
-var _ Loop = &runner{}
+var _ Loop = &clusterLoopRunner{}
 
-type runner struct {
-	name            string
-	resource        ezkube.Object
-	userReconcilers []userReconciler
+type clusterLoopRunner struct {
+	name         string
+	resource     ezkube.Object
+	cw           ClusterWatcher
+	clusterLoops clusterLoopSet
 }
 
-type userReconciler struct {
-	reconciler Reconciler
-	predicates []predicate.Predicate
-}
-
-func NewLoop(name string, cw ClusterWatcher, resource ezkube.Object) *runner {
-	runner := &runner{
-		name:            name,
-		resource:        resource,
-		userReconcilers: make([]userReconciler, 0, 1),
+func NewLoop(name string, cw ClusterWatcher, resource ezkube.Object) *clusterLoopRunner {
+	runner := &clusterLoopRunner{
+		name:         name,
+		resource:     resource,
+		clusterLoops: newClusterLoopSet(),
+		cw:           cw,
 	}
 	cw.RegisterClusterHandler(runner)
 
 	return runner
 }
 
-func (r *runner) AddReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) {
-	r.userReconcilers = append(r.userReconcilers, userReconciler{
-		reconciler: reconciler,
-		predicates: predicates,
-	})
+// AddCluster creates a reconcile loop for the cluster.
+func (r *clusterLoopRunner) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
+	loopForCluster := reconcile.NewLoop(r.name+"-"+cluster, mgr, r.resource)
+	r.clusterLoops.add(cluster, loopForCluster)
 }
 
-func (r *runner) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
-	loopForCluster := reconcile.NewLoop(r.name+"-"+cluster, mgr, r.resource)
-	for _, userRec := range r.userReconcilers {
-		mcReconciler := &multiclusterReconciler{
-			cluster:        cluster,
-			userReconciler: userRec.reconciler,
-		}
-		err := loopForCluster.RunReconciler(ctx, mcReconciler, userRec.predicates...)
-		if err != nil {
-			contextutils.LoggerFrom(ctx).Debug("Error occurred when adding reconciler for cluster",
-				zap.Error(err),
-				zap.String("cluster", cluster),
-				zap.String("reconciler", r.name),
-			)
-		}
+// AddReconciler registers a cluster handler for the reconciler.
+func (r *clusterLoopRunner) AddReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) {
+	recRunner := reconcilerRunner{
+		clusterLoopRunner: r,
+		reconciler:        reconciler,
+		predicates:        predicates,
+	}
+	r.cw.RegisterClusterHandler(recRunner)
+}
+
+type reconcilerRunner struct {
+	reconcilerName    string
+	clusterLoopRunner *clusterLoopRunner
+	reconciler        Reconciler
+	predicates        []predicate.Predicate
+}
+
+// AddCluster runs a reconciler on an existing cluster reconcile loop.
+func (r reconcilerRunner) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
+	loop, ok := r.clusterLoopRunner.clusterLoops.get(cluster)
+	if !ok {
+		contextutils.LoggerFrom(ctx).Debug("Attempted to run reconciler for nonexistent cluster loop",
+			zap.String("cluster", cluster),
+			zap.String("loop", r.clusterLoopRunner.name))
+		return
+	}
+
+	mcReconciler := &multiclusterReconciler{
+		cluster:        cluster,
+		userReconciler: r.reconciler,
+	}
+	err := loop.RunReconciler(ctx, mcReconciler, r.predicates...)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Debug("Error occurred when adding reconciler for cluster",
+			zap.Error(err),
+			zap.String("cluster", cluster),
+			zap.String("loop", r.clusterLoopRunner.name))
 	}
 }
 
@@ -90,4 +109,29 @@ func (m multiclusterReconciler) ReconcileDeletion(request reconcile.Request) {
 	if deletionReconciler, ok := m.userReconciler.(DeletionReconciler); ok {
 		deletionReconciler.ReconcileDeletion(m.cluster, request)
 	}
+}
+
+type clusterLoopSet struct {
+	mutex        sync.RWMutex
+	clusterLoops map[string]reconcile.Loop
+}
+
+func newClusterLoopSet() clusterLoopSet {
+	return clusterLoopSet{
+		mutex:        sync.RWMutex{},
+		clusterLoops: make(map[string]reconcile.Loop),
+	}
+}
+
+func (s clusterLoopSet) add(cluster string, loop reconcile.Loop) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.clusterLoops[cluster] = loop
+}
+
+func (s clusterLoopSet) get(cluster string) (reconcile.Loop, bool) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	loop, ok := s.clusterLoops[cluster]
+	return loop, ok
 }

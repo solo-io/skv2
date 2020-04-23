@@ -44,8 +44,13 @@ func ManagerWithOpts(cfg *rest.Config, opts manager.Options) (manager.Manager, f
 	return mgr, cancel
 }
 
-func MustManagerNotStarted(opts manager.Options) manager.Manager {
-	mgr, err := manager.New(MustConfig(), opts)
+func MustManagerNotStarted(ns string) manager.Manager {
+	mgr, err := manager.New(MustConfig(), manager.Options{
+		Namespace: ns,
+		// Disable metrics and health probe to allow tests to run in parallel.
+		MetricsBindAddress:     "0",
+		HealthProbeBindAddress: "0",
+	})
 	Expect(err).NotTo(HaveOccurred())
 	return mgr
 }

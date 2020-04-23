@@ -32,7 +32,7 @@ type ClusterWatcher interface {
 type clusterWatcher struct {
 	ctx      context.Context
 	handlers *handlerList
-	cancels  *cancelSet
+	managers *managerSet
 	options  manager.Options
 }
 
@@ -45,14 +45,14 @@ func NewClusterWatcher(ctx context.Context, options manager.Options) *clusterWat
 	return &clusterWatcher{
 		ctx:      ctx,
 		handlers: newHandlerList(),
-		cancels:  newCancelSet(),
+		managers: newManagerSet(),
 		options:  options,
 	}
 }
 
-func (c *clusterWatcher) Run(local manager.Manager) error {
-	c.startManager(MasterCluster, local)
-	loop := controller.NewSecretReconcileLoop("cluster watcher", local)
+func (c *clusterWatcher) Run(master manager.Manager) error {
+	c.startManager(MasterCluster, master)
+	loop := controller.NewSecretReconcileLoop("cluster watcher", master)
 	return loop.RunSecretReconciler(c.ctx, c, kubeconfig.Predicate())
 }
 
@@ -63,7 +63,7 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 	}
 
 	// If the cluster already has a manager, remove the existing instance and start again.
-	if _, err := c.cancels.get(clusterName); err == nil {
+	if _, err := c.managers.get(clusterName); err == nil {
 		c.removeCluster(clusterName)
 	}
 
@@ -83,6 +83,9 @@ func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
 }
 
 func (c *clusterWatcher) RegisterClusterHandler(handler ClusterHandler) {
+	// Call the handler on all previously discovered clusters.
+	c.managers.applyHandler(handler)
+	// Add the handler to the list of active handlers to be called on clusters discovered later.
 	c.handlers.add(handler)
 }
 
@@ -96,20 +99,12 @@ func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
 		}
 	}()
 
-	c.cancels.set(clusterName, cancel)
+	c.managers.set(clusterName, mgr, ctx, cancel)
 	c.handlers.AddCluster(ctx, clusterName, mgr)
 }
 
 func (c *clusterWatcher) removeCluster(clusterName string) {
-	// TODO joekelley update cancels.delete to also call cancel
-	cancel, err := c.cancels.get(clusterName)
-	if err != nil {
-		contextutils.LoggerFrom(c.ctx).Debugw("reconciled delete on cluster secret for uninitialized cluster %v", clusterName)
-		return
-	}
-
-	cancel()
-	c.cancels.delete(clusterName)
+	c.managers.delete(clusterName)
 }
 
 func (c *clusterWatcher) optionsWithDefaults() manager.Options {
@@ -119,51 +114,65 @@ func (c *clusterWatcher) optionsWithDefaults() manager.Options {
 	return options
 }
 
-// cancelSet maintains a set of cancel functions.
-type cancelSet struct {
-	mutex   sync.RWMutex
-	cancels map[string]context.CancelFunc
+type discoveredManager struct {
+	manager manager.Manager
+	ctx     context.Context
+	cancel  context.CancelFunc
 }
 
-func newCancelSet() *cancelSet {
-	return &cancelSet{
-		mutex:   sync.RWMutex{},
-		cancels: make(map[string]context.CancelFunc),
+// managerSet maintains a set of managers.
+type managerSet struct {
+	mutex              sync.RWMutex
+	discoveredManagers map[string]discoveredManager
+}
+
+func newManagerSet() *managerSet {
+	return &managerSet{
+		mutex:              sync.RWMutex{},
+		discoveredManagers: make(map[string]discoveredManager),
 	}
 }
 
-func (s *cancelSet) get(cluster string) (context.CancelFunc, error) {
+func (s *managerSet) get(cluster string) (manager.Manager, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	cancel, ok := s.cancels[cluster]
+	dm, ok := s.discoveredManagers[cluster]
 	if !ok {
-		return nil, eris.Errorf("Failed to get cancel function for cluster %v", cluster)
+		return nil, eris.Errorf("Failed to get manager for cluster %v", cluster)
 	}
-	return cancel, nil
+	return dm.manager, nil
 }
 
-func (s *cancelSet) set(cluster string, cancel context.CancelFunc) {
+func (s *managerSet) set(cluster string, manager manager.Manager, ctx context.Context, cancel context.CancelFunc) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	s.cancels[cluster] = cancel
+	s.discoveredManagers[cluster] = discoveredManager{
+		manager: manager,
+		ctx:     ctx,
+		cancel:  cancel,
+	}
 }
 
-func (s *cancelSet) delete(cluster string) {
+func (s *managerSet) delete(cluster string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	delete(s.cancels, cluster)
+	dm, ok := s.discoveredManagers[cluster]
+	if !ok {
+		return
+	}
+	dm.cancel()
+	delete(s.discoveredManagers, cluster)
 }
 
-func (s *cancelSet) cancelAll() {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+func (s *managerSet) applyHandler(h ClusterHandler) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 
-	for cluster, cancel := range s.cancels {
-		cancel()
-		delete(s.cancels, cluster)
+	for cluster, dm := range s.discoveredManagers {
+		h.AddCluster(dm.ctx, cluster, dm.manager)
 	}
 }
 

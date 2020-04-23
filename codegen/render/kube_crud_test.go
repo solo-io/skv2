@@ -211,10 +211,11 @@ var _ = Describe("Generated Code", func() {
 			cw       multicluster.ClusterWatcher
 			cluster2 = "foo"
 			kcSecret *corev1.Secret
+			paint    *Paint
 		)
 		BeforeEach(func() {
 			ctx, cancel = context.WithCancel(context.Background())
-			mgr = test.MustManagerNotStarted(manager.Options{Namespace: ns})
+			mgr = test.MustManagerNotStarted(ns)
 			cw = multicluster.NewClusterWatcher(ctx, manager.Options{Namespace: ns})
 
 			localKubeConfig, err := kubeutils.GetKubeConfig("", "")
@@ -223,15 +224,8 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 			kcSecret, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(kcSecret)
 			Expect(err).NotTo(HaveOccurred())
-		})
-		AfterEach(func() {
-			cancel()
-			err := kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
-			Expect(err).NotTo(HaveOccurred())
-		})
 
-		It("works when a loop is registered before the watcher is started", func() {
-			paint := &Paint{
+			paint = &Paint{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "paint-2",
 					Namespace: ns,
@@ -249,9 +243,16 @@ var _ = Describe("Generated Code", func() {
 				},
 			}
 
-			err := clientSet.Paints().CreatePaint(ctx, paint)
+			err = clientSet.Paints().CreatePaint(ctx, paint)
 			Expect(err).NotTo(HaveOccurred())
+		})
+		AfterEach(func() {
+			cancel()
+			err := kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
+			Expect(err).NotTo(HaveOccurred())
+		})
 
+		It("works when a loop is registered before the watcher is started", func() {
 			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("pre-run-paint", cw)
 
 			preRunReconciledPaint := newConcurrentPaintMap()
@@ -267,7 +268,7 @@ var _ = Describe("Generated Code", func() {
 				},
 			})
 
-			err = cw.Run(mgr)
+			err := cw.Run(mgr)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() *Paint {
@@ -316,36 +317,15 @@ var _ = Describe("Generated Code", func() {
 		})
 
 		It("works when a loop is registered after the watcher is started", func() {
-			paint := &Paint{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "paint-2",
-					Namespace: ns,
-				},
-				Spec: PaintSpec{
-					Color: &PaintColor{
-						Hue:   "prussian blue",
-						Value: 0.5,
-					},
-					PaintType: &PaintSpec_Acrylic{
-						Acrylic: &AcrylicType{
-							Body: AcrylicType_Heavy,
-						},
-					},
-				},
-			}
-
-			err := clientSet.Paints().CreatePaint(ctx, paint)
+			err := cw.Run(mgr)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = cw.Run(mgr)
-			Expect(err).NotTo(HaveOccurred())
-
-			loop2 := gen_multicluster.NewMulticlusterPaintReconcileLoop("mid-run-paint", cw)
+			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("mid-run-paint", cw)
 
 			midRunReconciledPaint := newConcurrentPaintMap()
 			midRunReconciledDeleteRequests := newConcurrentRequestMap()
 
-			loop2.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
+			loop.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
 				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
 					midRunReconciledPaint.add(clusterName, obj)
 					return result, e
@@ -362,6 +342,12 @@ var _ = Describe("Generated Code", func() {
 			Eventually(func() *Paint {
 				return midRunReconciledPaint.get(cluster2)
 			}, time.Second).ShouldNot(BeNil())
+
+			err = clientSet.Paints().DeletePaint(ctx, client.ObjectKey{
+				Name:      paint.Name,
+				Namespace: paint.Namespace,
+			})
+			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() reconcile.Request {
 				return midRunReconciledDeleteRequests.get(multicluster.MasterCluster)
