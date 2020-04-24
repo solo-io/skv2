@@ -1,5 +1,5 @@
 // Definitions for the multicluster Kubernetes Controllers
-package multicluster
+package controller
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	mc_reconcile "github.com/solo-io/skv2/pkg/multicluster/reconcile"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -64,7 +65,7 @@ func (m *multicluster{{ $resource.Kind }}ReconcileLoop) AddMulticluster{{ $resou
 }
 
 func NewMulticluster{{ $resource.Kind }}ReconcileLoop(name string, cw multicluster.ClusterWatcher) Multicluster{{ $resource.Kind }}ReconcileLoop {
-	return &multicluster{{ $resource.Kind }}ReconcileLoop{loop: multicluster.NewLoop(name, cw, &{{ group_import_name $ }}.{{ $resource.Kind }}{})}
+	return &multicluster{{ $resource.Kind }}ReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &{{ group_import_name $ }}.{{ $resource.Kind }}{})}
 }
 
 type generic{{ $resource.Kind }}MulticlusterReconciler struct {

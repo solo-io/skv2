@@ -1,4 +1,4 @@
-package multicluster
+package reconcile
 
 import (
 	"context"
@@ -6,31 +6,13 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
-
-type Reconciler interface {
-	// reconcile an object
-	// requeue the object if returning an error, or a non-zero "requeue-after" duration
-	Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error)
-}
-
-type DeletionReconciler interface {
-	// we received a reconcile request for an object that was removed from the cache
-	ReconcileDeletion(cluster string, request reconcile.Request)
-}
-
-// a Reconcile Loop runs resource reconcilers until the context gets cancelled
-type Loop interface {
-	// AddReconciler adds a reconciler to a slice of reconcilers that will be run against
-	AddReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate)
-}
-
-var _ Loop = &clusterLoopRunner{}
 
 type clusterLoopRunner struct {
 	name         string
@@ -39,7 +21,10 @@ type clusterLoopRunner struct {
 	reconcilers  *reconcilerList
 }
 
-func NewLoop(name string, cw ClusterWatcher, resource ezkube.Object) *clusterLoopRunner {
+var _ multicluster.Loop = &clusterLoopRunner{}
+var _ multicluster.ClusterHandler = &clusterLoopRunner{}
+
+func NewLoop(name string, cw multicluster.ClusterWatcher, resource ezkube.Object) *clusterLoopRunner {
 	runner := &clusterLoopRunner{
 		name:         name,
 		resource:     resource,
@@ -65,14 +50,14 @@ func (r *clusterLoopRunner) AddCluster(ctx context.Context, cluster string, mgr 
 }
 
 // AddReconciler registers a cluster handler for the reconciler.
-func (r *clusterLoopRunner) AddReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) {
+func (r *clusterLoopRunner) AddReconciler(ctx context.Context, reconciler multicluster.Reconciler, predicates ...predicate.Predicate) {
 	r.reconcilers.add(ctx, reconciler, predicates...)
 	r.clusterLoops.ensureReconcilers(r.reconcilers)
 }
 
 type multiclusterReconciler struct {
 	cluster        string
-	userReconciler Reconciler
+	userReconciler multicluster.Reconciler
 }
 
 func (m multiclusterReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
@@ -80,7 +65,7 @@ func (m multiclusterReconciler) Reconcile(object ezkube.Object) (reconcile.Resul
 }
 
 func (m multiclusterReconciler) ReconcileDeletion(request reconcile.Request) {
-	if deletionReconciler, ok := m.userReconciler.(DeletionReconciler); ok {
+	if deletionReconciler, ok := m.userReconciler.(multicluster.DeletionReconciler); ok {
 		deletionReconciler.ReconcileDeletion(m.cluster, request)
 	}
 }
@@ -121,7 +106,7 @@ func (s *clusterLoopSet) ensureReconcilers(list *reconcilerList) {
 
 type runnableReconciler struct {
 	ctx            context.Context
-	reconciler     Reconciler
+	reconciler     multicluster.Reconciler
 	predicates     []predicate.Predicate
 	activeClusters sets.String
 }
@@ -138,7 +123,7 @@ func newReconcilerList() *reconcilerList {
 	}
 }
 
-func (r *reconcilerList) add(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) {
+func (r *reconcilerList) add(ctx context.Context, reconciler multicluster.Reconciler, predicates ...predicate.Predicate) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 

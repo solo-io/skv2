@@ -51,7 +51,7 @@ var ControllerTemplates = inputTemplates{
 		Path: "controller/reconcilers.go",
 	},
 	"code/controller/multicluster_reconcilers.gotmpl": {
-		Path: "controller/multicluster/multicluster_reconcilers.go",
+		Path: "controller/multicluster_reconcilers.go",
 	},
 }
 

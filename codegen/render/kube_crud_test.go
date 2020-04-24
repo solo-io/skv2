@@ -7,9 +7,10 @@ import (
 	"sync"
 	"time"
 
-	gen_multicluster "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/controller/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"github.com/solo-io/skv2/pkg/multicluster/constants"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
+	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -216,7 +217,7 @@ var _ = Describe("Generated Code", func() {
 		BeforeEach(func() {
 			ctx, cancel = context.WithCancel(context.Background())
 			mgr = test.MustManagerNotStarted(ns)
-			cw = multicluster.NewClusterWatcher(ctx, manager.Options{Namespace: ns})
+			cw = watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns})
 
 			localKubeConfig, err := kubeutils.GetKubeConfig("", "")
 			Expect(err).NotTo(HaveOccurred())
@@ -253,12 +254,12 @@ var _ = Describe("Generated Code", func() {
 		})
 
 		It("works when a loop is registered before the watcher is started", func() {
-			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("pre-run-paint", cw)
+			loop := controller.NewMulticlusterPaintReconcileLoop("pre-run-paint", cw)
 
 			preRunReconciledPaint := newConcurrentPaintMap()
 			preRunReconciledDeleteRequests := newConcurrentRequestMap()
 
-			loop.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
+			loop.AddMulticlusterPaintReconciler(ctx, &controller.MulticlusterPaintReconcilerFuncs{
 				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
 					preRunReconciledPaint.add(clusterName, obj)
 					return result, e
@@ -272,7 +273,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() *Paint {
-				return preRunReconciledPaint.get(multicluster.MasterCluster)
+				return preRunReconciledPaint.get(constants.MasterCluster)
 			}, time.Second).ShouldNot(BeNil())
 
 			Eventually(func() *Paint {
@@ -286,7 +287,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() PaintSpec {
-				return preRunReconciledPaint.get(multicluster.MasterCluster).Spec
+				return preRunReconciledPaint.get(constants.MasterCluster).Spec
 			}, time.Second).Should(Equal(paint.Spec))
 
 			Eventually(func() PaintSpec {
@@ -301,7 +302,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() reconcile.Request {
-				return preRunReconciledDeleteRequests.get(multicluster.MasterCluster)
+				return preRunReconciledDeleteRequests.get(constants.MasterCluster)
 			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 				Name:      paint.Name,
 				Namespace: paint.Namespace,
@@ -320,12 +321,12 @@ var _ = Describe("Generated Code", func() {
 			err := cw.Run(mgr)
 			Expect(err).NotTo(HaveOccurred())
 
-			loop := gen_multicluster.NewMulticlusterPaintReconcileLoop("mid-run-paint", cw)
+			loop := controller.NewMulticlusterPaintReconcileLoop("mid-run-paint", cw)
 
 			midRunReconciledPaint := newConcurrentPaintMap()
 			midRunReconciledDeleteRequests := newConcurrentRequestMap()
 
-			loop.AddMulticlusterPaintReconciler(ctx, &gen_multicluster.MulticlusterPaintReconcilerFuncs{
+			loop.AddMulticlusterPaintReconciler(ctx, &controller.MulticlusterPaintReconcilerFuncs{
 				OnReconcilePaint: func(clusterName string, obj *Paint) (result reconcile.Result, e error) {
 					midRunReconciledPaint.add(clusterName, obj)
 					return result, e
@@ -336,7 +337,7 @@ var _ = Describe("Generated Code", func() {
 			})
 
 			Eventually(func() *Paint {
-				return midRunReconciledPaint.get(multicluster.MasterCluster)
+				return midRunReconciledPaint.get(constants.MasterCluster)
 			}, time.Second).ShouldNot(BeNil())
 
 			Eventually(func() *Paint {
@@ -350,7 +351,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() reconcile.Request {
-				return midRunReconciledDeleteRequests.get(multicluster.MasterCluster)
+				return midRunReconciledDeleteRequests.get(constants.MasterCluster)
 			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 				Name:      paint.Name,
 				Namespace: paint.Namespace,
