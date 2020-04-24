@@ -3,6 +3,7 @@ package {{.Version}}
 import (
     "context"
 
+    "github.com/solo-io/skv2/pkg/multicluster"
     "k8s.io/client-go/kubernetes/scheme"
     "k8s.io/client-go/rest"
     "sigs.k8s.io/controller-runtime/pkg/client"
@@ -12,6 +13,28 @@ import (
     . "{{ $.CustomTypesImportPath }}"
     {{- end}}
 )
+
+// MulticlusterClientset for the {{.Group}}/{{.Version}} APIs
+type MulticlusterClientset interface {
+    // Cluster returns a Clientset for the given cluster
+    Cluster(cluster string) (Clientset, error)
+}
+
+type multiclusterClientset struct {
+    client multicluster.Client
+}
+
+func NewMulticlusterClientset(client multicluster.Client) MulticlusterClientset {
+    return &multiclusterClientset{client: client}
+}
+
+func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
+    client, err := m.client.Cluster(cluster)
+    if err != nil {
+        return nil, err
+    }
+    return NewClientset(client), nil
+}
 
 // clienset for the {{.Group}}/{{.Version}} APIs
 type Clientset interface {
@@ -47,7 +70,7 @@ func NewClientset(client client.Client) Clientset {
 
 // clienset for the {{.Group}}/{{.Version}} APIs
 func (c *clientSet) {{ pluralize $resource.Kind }}() {{ $resource.Kind }}Client {
-	return New{{ $resource.Kind }}Client(c.client)
+    return New{{ $resource.Kind }}Client(c.client)
 }
 {{- end }}
 
