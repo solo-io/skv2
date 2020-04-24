@@ -105,7 +105,7 @@ func (c *clusterWatcher) optionsWithDefaults() manager.Options {
 	return options
 }
 
-type discoveredManager struct {
+type asyncManager struct {
 	manager manager.Manager
 	ctx     context.Context
 	cancel  context.CancelFunc
@@ -113,14 +113,14 @@ type discoveredManager struct {
 
 // managerSet maintains a set of managers.
 type managerSet struct {
-	mutex              sync.RWMutex
-	discoveredManagers map[string]discoveredManager
+	mutex         sync.RWMutex
+	asyncManagers map[string]asyncManager
 }
 
 func newManagerSet() *managerSet {
 	return &managerSet{
-		mutex:              sync.RWMutex{},
-		discoveredManagers: make(map[string]discoveredManager),
+		mutex:         sync.RWMutex{},
+		asyncManagers: make(map[string]asyncManager),
 	}
 }
 
@@ -128,18 +128,18 @@ func (s *managerSet) get(cluster string) (manager.Manager, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	dm, ok := s.discoveredManagers[cluster]
+	am, ok := s.asyncManagers[cluster]
 	if !ok {
 		return nil, eris.Errorf("Failed to get manager for cluster %v", cluster)
 	}
-	return dm.manager, nil
+	return am.manager, nil
 }
 
 func (s *managerSet) set(cluster string, manager manager.Manager, ctx context.Context, cancel context.CancelFunc) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	s.discoveredManagers[cluster] = discoveredManager{
+	s.asyncManagers[cluster] = asyncManager{
 		manager: manager,
 		ctx:     ctx,
 		cancel:  cancel,
@@ -150,20 +150,20 @@ func (s *managerSet) delete(cluster string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	dm, ok := s.discoveredManagers[cluster]
+	am, ok := s.asyncManagers[cluster]
 	if !ok {
 		return
 	}
-	dm.cancel()
-	delete(s.discoveredManagers, cluster)
+	am.cancel()
+	delete(s.asyncManagers, cluster)
 }
 
 func (s *managerSet) applyHandler(h multicluster.ClusterHandler) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	for cluster, dm := range s.discoveredManagers {
-		h.AddCluster(dm.ctx, cluster, dm.manager)
+	for cluster, am := range s.asyncManagers {
+		h.AddCluster(am.ctx, cluster, am.manager)
 	}
 }
 
