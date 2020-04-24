@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/skv2/pkg/multicluster/constants"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"github.com/solo-io/skv2/pkg/reconcile"
@@ -273,7 +272,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() *Paint {
-				return preRunReconciledPaint.get(constants.MasterCluster)
+				return preRunReconciledPaint.get(multicluster.MasterCluster)
 			}, time.Second).ShouldNot(BeNil())
 
 			Eventually(func() *Paint {
@@ -287,7 +286,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() PaintSpec {
-				return preRunReconciledPaint.get(constants.MasterCluster).Spec
+				return preRunReconciledPaint.get(multicluster.MasterCluster).Spec
 			}, time.Second).Should(Equal(paint.Spec))
 
 			Eventually(func() PaintSpec {
@@ -302,7 +301,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() reconcile.Request {
-				return preRunReconciledDeleteRequests.get(constants.MasterCluster)
+				return preRunReconciledDeleteRequests.get(multicluster.MasterCluster)
 			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 				Name:      paint.Name,
 				Namespace: paint.Namespace,
@@ -337,7 +336,7 @@ var _ = Describe("Generated Code", func() {
 			})
 
 			Eventually(func() *Paint {
-				return midRunReconciledPaint.get(constants.MasterCluster)
+				return midRunReconciledPaint.get(multicluster.MasterCluster)
 			}, time.Second).ShouldNot(BeNil())
 
 			Eventually(func() *Paint {
@@ -351,7 +350,7 @@ var _ = Describe("Generated Code", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() reconcile.Request {
-				return midRunReconciledDeleteRequests.get(constants.MasterCluster)
+				return midRunReconciledDeleteRequests.get(multicluster.MasterCluster)
 			}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 				Name:      paint.Name,
 				Namespace: paint.Namespace,

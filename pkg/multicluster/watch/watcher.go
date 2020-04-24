@@ -8,7 +8,6 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1/controller"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/skv2/pkg/multicluster/constants"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"go.uber.org/zap"
@@ -39,7 +38,7 @@ func NewClusterWatcher(ctx context.Context, options manager.Options) *clusterWat
 }
 
 func (c *clusterWatcher) Run(master manager.Manager) error {
-	c.startManager(constants.MasterCluster, master)
+	c.startManager(multicluster.MasterCluster, master)
 	loop := controller.NewSecretReconcileLoop("cluster watcher", master)
 	return loop.RunSecretReconciler(c.ctx, c, kubeconfig.Predicate)
 }
