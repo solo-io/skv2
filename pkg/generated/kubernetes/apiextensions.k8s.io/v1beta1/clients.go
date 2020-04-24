@@ -5,12 +5,35 @@ package v1beta1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	. "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
+
+// MulticlusterClientset for the apiextensions.k8s.io/v1beta1 APIs
+type MulticlusterClientset interface {
+	// Cluster returns a Clientset for the given cluster
+	Cluster(cluster string) (Clientset, error)
+}
+
+type multiclusterClientset struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterClientset(client multicluster.Client) MulticlusterClientset {
+	return &multiclusterClientset{client: client}
+}
+
+func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewClientset(client), nil
+}
 
 // clienset for the apiextensions.k8s.io/v1beta1 APIs
 type Clientset interface {
