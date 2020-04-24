@@ -39,14 +39,14 @@ func NewLoop(name string, cw multicluster.ClusterWatcher, resource ezkube.Object
 // AddCluster creates a reconcile loop for the cluster.
 func (r *clusterLoopRunner) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
 	loopForCluster := reconcile.NewLoop(r.name+"-"+cluster, mgr, r.resource)
+
+	// Cleanup any potentially stale references to the cluster.
+	r.clusterLoops.remove(cluster)
+	r.reconcilers.unset(cluster)
+
+	// Add the cluster loop to the set of active loops and start reconcilers.
 	r.clusterLoops.add(cluster, loopForCluster)
 	r.clusterLoops.ensureReconcilers(r.reconcilers)
-
-	go func() {
-		<-ctx.Done()
-		r.clusterLoops.remove(cluster)
-		r.reconcilers.clusterRemoved(cluster)
-	}()
 }
 
 // AddReconciler registers a cluster handler for the reconciler.
@@ -160,8 +160,8 @@ func (r *reconcilerList) runAll(cluster string, loop reconcile.Loop) {
 	}
 }
 
-// clusterRemoved removes cluster from the set of active clusters.
-func (r *reconcilerList) clusterRemoved(cluster string) {
+// unset removes cluster from the set of active clusters on each reconciler.
+func (r *reconcilerList) unset(cluster string) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
