@@ -66,7 +66,6 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 }
 
 func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
-	// TODO update to namespace.name
 	c.removeCluster(req.Name)
 }
 
