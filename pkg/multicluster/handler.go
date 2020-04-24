@@ -14,3 +14,11 @@ type ClusterHandler interface {
 	// should take place when ctx is cancelled.
 	AddCluster(ctx context.Context, cluster string, mgr manager.Manager)
 }
+
+// ClusterRemovedHandler can be implemented by ClusterHandlers to perform cleanup when a cluster is deleted.
+// NOTE: in most cases, cleanup should be handled when the cluster manager's context is cancelled without
+// the need for implementing ClusterRemovedHandler.
+type ClusterRemovedHandler interface {
+	// RemoveCluster is called when a cluster watch identifies a cluster as deleted.
+	RemoveCluster(cluster string)
+}

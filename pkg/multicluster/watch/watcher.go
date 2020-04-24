@@ -95,6 +95,7 @@ func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
 
 func (c *clusterWatcher) removeCluster(clusterName string) {
 	c.managers.delete(clusterName)
+	c.handlers.RemoveCluster(clusterName)
 }
 
 func (c *clusterWatcher) optionsWithDefaults() manager.Options {
@@ -191,5 +192,17 @@ func (h *handlerList) AddCluster(ctx context.Context, cluster string, mgr manage
 
 	for _, handler := range h.handlers {
 		handler.AddCluster(ctx, cluster, mgr)
+	}
+}
+
+func (h *handlerList) RemoveCluster(cluster string) {
+	h.mutex.RLock()
+	defer h.mutex.RUnlock()
+
+	for _, handler := range h.handlers {
+		removeHandler, ok := handler.(multicluster.ClusterRemovedHandler)
+		if ok {
+			removeHandler.RemoveCluster(cluster)
+		}
 	}
 }

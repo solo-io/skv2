@@ -23,6 +23,7 @@ type clusterLoopRunner struct {
 
 var _ multicluster.Loop = &clusterLoopRunner{}
 var _ multicluster.ClusterHandler = &clusterLoopRunner{}
+var _ multicluster.ClusterRemovedHandler = &clusterLoopRunner{}
 
 func NewLoop(name string, cw multicluster.ClusterWatcher, resource ezkube.Object) *clusterLoopRunner {
 	runner := &clusterLoopRunner{
@@ -40,13 +41,15 @@ func NewLoop(name string, cw multicluster.ClusterWatcher, resource ezkube.Object
 func (r *clusterLoopRunner) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
 	loopForCluster := reconcile.NewLoop(r.name+"-"+cluster, mgr, r.resource)
 
-	// Cleanup any potentially stale references to the cluster.
-	r.clusterLoops.remove(cluster)
-	r.reconcilers.unset(cluster)
-
 	// Add the cluster loop to the set of active loops and start reconcilers.
 	r.clusterLoops.add(cluster, loopForCluster)
 	r.clusterLoops.ensureReconcilers(r.reconcilers)
+}
+
+// RemoveCluster clears any state related to the removed cluster.
+func (r *clusterLoopRunner) RemoveCluster(cluster string) {
+	r.clusterLoops.remove(cluster)
+	r.reconcilers.unset(cluster)
 }
 
 // AddReconciler registers a cluster handler for the reconciler.
