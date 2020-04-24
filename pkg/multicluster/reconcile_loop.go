@@ -54,8 +54,14 @@ func NewLoop(name string, cw ClusterWatcher, resource ezkube.Object) *clusterLoo
 // AddCluster creates a reconcile loop for the cluster.
 func (r *clusterLoopRunner) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
 	loopForCluster := reconcile.NewLoop(r.name+"-"+cluster, mgr, r.resource)
-	r.clusterLoops.addClusterLoop(cluster, loopForCluster)
+	r.clusterLoops.add(cluster, loopForCluster)
 	r.clusterLoops.ensureReconcilers(r.reconcilers)
+
+	go func() {
+		<-ctx.Done()
+		r.clusterLoops.remove(cluster)
+		r.reconcilers.clusterRemoved(cluster)
+	}()
 }
 
 // AddReconciler registers a cluster handler for the reconciler.
@@ -91,10 +97,16 @@ func newClusterLoopSet() *clusterLoopSet {
 	}
 }
 
-func (s *clusterLoopSet) addClusterLoop(cluster string, loop reconcile.Loop) {
+func (s *clusterLoopSet) add(cluster string, loop reconcile.Loop) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.clusterLoops[cluster] = loop
+}
+
+func (s *clusterLoopSet) remove(cluster string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	delete(s.clusterLoops, cluster)
 }
 
 // ensureReconcilers ensures the given reconcilers are running on every cluster loop.
@@ -129,6 +141,7 @@ func newReconcilerList() *reconcilerList {
 func (r *reconcilerList) add(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
 	r.reconcilers = append(r.reconcilers, runnableReconciler{
 		ctx:            ctx,
 		reconciler:     reconciler,
@@ -159,5 +172,15 @@ func (r *reconcilerList) runAll(cluster string, loop reconcile.Loop) {
 				zap.String("cluster", cluster))
 		}
 		rr.activeClusters.Insert(cluster)
+	}
+}
+
+// clusterRemoved removes cluster from the set of active clusters.
+func (r *reconcilerList) clusterRemoved(cluster string) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	for _, rr := range r.reconcilers {
+		rr.activeClusters.Delete(cluster)
 	}
 }
