@@ -8,6 +8,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.0.0
 	github.com/avast/retry-go v2.4.3+incompatible
+	github.com/aws/aws-sdk-go v1.30.14
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gertd/go-pluralize v0.1.1
@@ -31,7 +32,7 @@ require (
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pborman/uuid v1.2.0
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/procfs v0.0.8 // indirect
 	github.com/rogpeppe/go-internal v1.5.2
 	github.com/rotisserie/eris v0.2.0
@@ -51,6 +52,7 @@ require (
 	k8s.io/code-generator v0.17.4
 	k8s.io/gengo v0.0.0-20200114144118-36b2048a9120 // indirect
 	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
+	sigs.k8s.io/aws-iam-authenticator v0.5.0
 	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.2.0
 )
