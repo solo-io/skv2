@@ -25,5 +25,3 @@ func (in *ClusterResourceSpec) DeepCopyInto(out *ClusterResourceSpec) {
 	p := proto.Clone(in).(*ClusterResourceSpec)
 	*out = *p
 }
-
-// DeepCopyInto for the ClusterResource.Status
