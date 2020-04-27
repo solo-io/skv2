@@ -5,11 +5,12 @@
 package mock_kubeconfig
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	rest "k8s.io/client-go/rest"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/client-go/tools/clientcmd/api"
-	reflect "reflect"
 )
 
 // MockKubeLoader is a mock of KubeLoader interface.

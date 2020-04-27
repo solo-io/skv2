@@ -145,8 +145,8 @@ var _ = Describe("Registrant", func() {
 			},
 			Contexts: map[string]*api.Context{
 				clusterName: {
-					Cluster:          clusterName,
-					AuthInfo:         clusterName,
+					Cluster:  clusterName,
+					AuthInfo: clusterName,
 				},
 			},
 			CurrentContext: clusterName,

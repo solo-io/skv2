@@ -3,12 +3,11 @@ module github.com/solo-io/skv2
 go 1.13
 
 require (
-	cloud.google.com/go v0.50.0
+	cloud.google.com/go v0.50.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.9.4 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.0.0
 	github.com/avast/retry-go v2.4.3+incompatible
-	github.com/aws/aws-sdk-go v1.30.14
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gertd/go-pluralize v0.1.1
@@ -32,7 +31,7 @@ require (
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pborman/uuid v1.2.0
-	github.com/pkg/errors v0.9.1
+	github.com/pkg/errors v0.8.1
 	github.com/prometheus/procfs v0.0.8 // indirect
 	github.com/rogpeppe/go-internal v1.5.2
 	github.com/rotisserie/eris v0.2.0
@@ -43,11 +42,8 @@ require (
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/cast v1.3.1 // indirect
 	go.uber.org/zap v1.13.0
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
-	golang.org/x/tools v0.0.0-20200422205258-72e4a01eba43
-	google.golang.org/api v0.14.0
-	google.golang.org/genproto v0.0.0-20191216164720-4f79533eabd1
+	golang.org/x/tools v0.0.0-20200427153019-a90b7300be7c
 	k8s.io/api v0.17.4
 	k8s.io/apiextensions-apiserver v0.17.4
 	k8s.io/apimachinery v0.17.4
@@ -55,7 +51,6 @@ require (
 	k8s.io/code-generator v0.17.4
 	k8s.io/gengo v0.0.0-20200114144118-36b2048a9120 // indirect
 	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
-	sigs.k8s.io/aws-iam-authenticator v0.5.0
 	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.2.0
 )

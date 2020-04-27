@@ -6,9 +6,10 @@ package mock_register
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
-	reflect "reflect"
 )
 
 // MockClusterRegistrant is a mock of ClusterRegistrant interface.

@@ -14,7 +14,6 @@ import (
 // given a path to a kube config file, convert it into either creds for hitting the API server of the cluster it points to,
 // or return the contexts/clusters it is aware of
 
-
 // only the pieces from a kube config that we need to operate on
 // mainly just used to simplify from the complexity of the actual object
 type KubeContext struct {
