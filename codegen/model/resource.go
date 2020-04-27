@@ -67,9 +67,6 @@ type Group struct {
 	// Should we generate kubernetes Go clients?
 	RenderClients bool
 
-	// Should we render Deepcopy Methods?
-	RenderDeepcopyMethods bool
-
 	// Deprecated: use RenderDeepcopyMethods instead
 	// Should we run kubernetes code generators? (see https://github.com/kubernetes/code-generator/blob/master/generate-groups.sh)
 	// Note: if this field is nil and RenderTypes is true,
