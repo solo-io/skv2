@@ -17,15 +17,3 @@ type GkeConfigBuilder interface {
 type EksConfigBuilder interface {
 	ConfigForCluster(ctx context.Context, cluster *eks.Cluster) (clientcmd.ClientConfig, error)
 }
-
-type ClusterRegistrant interface {
-	RegisterCluster(
-		ctx context.Context,
-		remoteCfg, remoteCtx, clusterName, namespace string,
-	) error
-	RegisterClusterFromConfig(
-		ctx context.Context,
-		config clientcmd.ClientConfig,
-		clusterName, namespace string,
-	) error
-}

@@ -9,6 +9,8 @@ import (
 	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
 
+//go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
+
 type EksClient interface {
 	DescribeCluster(ctx context.Context, name string) (*eks.Cluster, error)
 	ListClusters(ctx context.Context, input *eks.ListClustersInput) (*eks.ListClustersOutput, error)

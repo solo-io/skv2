@@ -9,7 +9,6 @@ import (
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -75,7 +74,7 @@ func (c *clusterRegistrant) RegisterClusterFromConfig(
 	secret, err := kubeconfig.ToSecret(
 		namespace,
 		clusterName,
-		buildRemoteCfg(remoteCluster, remoteContext, clusterName, token),
+		kubeconfig.BuildRemoteCfg(remoteCluster, remoteContext, clusterName, token),
 	)
 	if err != nil {
 		return err
@@ -88,35 +87,6 @@ func (c *clusterRegistrant) RegisterClusterFromConfig(
 	return nil
 }
 
-func buildRemoteCfg(
-	remoteCluster *api.Cluster,
-	remoteCtx *api.Context,
-	clusterName, token string,
-) api.Config {
-	return api.Config{
-		Kind:        "Secret",
-		APIVersion:  "kubernetes_core",
-		Preferences: api.Preferences{},
-		Clusters: map[string]*api.Cluster{
-			clusterName: remoteCluster,
-		},
-		AuthInfos: map[string]*api.AuthInfo{
-			clusterName: {
-				Token: token,
-			},
-		},
-		Contexts: map[string]*api.Context{
-			clusterName: {
-				LocationOfOrigin: remoteCtx.LocationOfOrigin,
-				Cluster:          clusterName,
-				AuthInfo:         clusterName,
-				Namespace:        remoteCtx.Namespace,
-				Extensions:       remoteCtx.Extensions,
-			},
-		},
-		CurrentContext: clusterName,
-	}
-}
 
 func (c *clusterRegistrant) upsertSecretData(
 	ctx context.Context,
