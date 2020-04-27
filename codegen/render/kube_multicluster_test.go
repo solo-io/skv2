@@ -64,6 +64,15 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		}
 	})
 
+	AfterEach(func() {
+		for _, kubeContext := range []string{"", remoteContext} {
+			cfg := test.MustConfig(kubeContext)
+			kube := kubernetes.NewForConfigOrDie(cfg)
+			err := kubeutils.DeleteNamespacesInParallelBlocking(kube, ns)
+			Expect(err).NotTo(HaveOccurred())
+		}
+	})
+
 	Context("multicluster", func() {
 		var (
 			cancel        = func() {}
