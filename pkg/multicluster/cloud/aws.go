@@ -4,14 +4,16 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
 
-func NewAwsClient(region string) (AwsClient, error) {
+func NewEksClient(region string, creds *credentials.Credentials) (EksClient, error) {
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region),
+		Region:      aws.String(region),
+		Credentials: creds,
 	})
 	if err != nil {
 		return nil, err
@@ -46,7 +48,7 @@ func (a *awsClient) ListClusters(ctx context.Context, input *eks.ListClustersInp
 	return eksSvc.ListClustersWithContext(ctx, input)
 }
 
-func (a *awsClient) GetTokenForCluster(ctx context.Context, name string) (token.Token, error) {
+func (a *awsClient) Token(ctx context.Context, name string) (token.Token, error) {
 	gen, err := token.NewGenerator(true, false)
 	if err != nil {
 		return token.Token{}, err

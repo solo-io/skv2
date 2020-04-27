@@ -10,7 +10,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func NewGkeConfigBuilder(gkeClient cloud.GkeClient) GkeCLusterConfigBuilder {
+func NewGkeConfigBuilder(gkeClient cloud.GkeClient) GkeConfigBuilder {
 	return &gkeConfigBuilder{gkeClient: gkeClient}
 }
 

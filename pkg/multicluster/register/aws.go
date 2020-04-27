@@ -11,12 +11,16 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
+func NewEksConfigBuilder() {
+
+}
+
 type awsClusterConfigBuilder struct {
-	awsClient cloud.AwsClient
+	awsClient cloud.EksClient
 }
 
 func (a *awsClusterConfigBuilder) ConfigForCluster(ctx context.Context, cluster *eks.Cluster) (clientcmd.ClientConfig, error) {
-	tok, err := a.awsClient.GetTokenForCluster(ctx, aws.StringValue(cluster.Name))
+	tok, err := a.awsClient.Token(ctx, aws.StringValue(cluster.Name))
 	if err != nil {
 		return nil, err
 	}

@@ -9,10 +9,10 @@ import (
 	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
 
-type AwsClient interface {
+type EksClient interface {
 	DescribeCluster(ctx context.Context, name string) (*eks.Cluster, error)
 	ListClusters(ctx context.Context, input *eks.ListClustersInput) (*eks.ListClustersOutput, error)
-	GetTokenForCluster(ctx context.Context, name string) (token.Token, error)
+	Token(ctx context.Context, name string) (token.Token, error)
 }
 
 type GkeClient interface {
