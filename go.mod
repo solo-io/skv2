@@ -43,7 +43,7 @@ require (
 	github.com/spf13/cast v1.3.1 // indirect
 	go.uber.org/zap v1.13.0
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
-	golang.org/x/tools v0.0.0-20200422205258-72e4a01eba43
+	golang.org/x/tools v0.0.0-20200427153019-a90b7300be7c
 	k8s.io/api v0.17.4
 	k8s.io/apiextensions-apiserver v0.17.4
 	k8s.io/apimachinery v0.17.4

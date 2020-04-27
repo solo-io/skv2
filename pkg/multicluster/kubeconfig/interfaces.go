@@ -14,4 +14,3 @@ type KubeLoader interface {
 	GetClientConfigForContext(path, context string) (clientcmd.ClientConfig, error)
 	GetRestConfigFromBytes(config []byte) (*rest.Config, error)
 }
-
