@@ -1,31 +1,22 @@
 package register
 
 import (
+	"context"
 	"encoding/base64"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/solo-io/skv2/pkg/multicluster/cloud"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-
-	"github.com/aws/aws-sdk-go/service/eks"
-
-	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
 
-
 type awsClusterConfigBuilder struct {
+	awsClient cloud.AwsClient
 }
 
-func (a *awsClusterConfigBuilder) ConfigForCluster(cluster *eks.Cluster) (clientcmd.ClientConfig, error) {
-	gen, err := token.NewGenerator(true, false)
-	if err != nil {
-		return nil, err
-	}
-	opts := &token.GetTokenOptions{
-		ClusterID: aws.StringValue(cluster.Name),
-	}
-	tok, err := gen.GetWithOptions(opts)
+func (a *awsClusterConfigBuilder) ConfigForCluster(ctx context.Context, cluster *eks.Cluster) (clientcmd.ClientConfig, error) {
+	tok, err := a.awsClient.GetTokenForCluster(ctx, aws.StringValue(cluster.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -47,24 +38,4 @@ func (a *awsClusterConfigBuilder) ConfigForCluster(cluster *eks.Cluster) (client
 	)
 
 	return clientcmd.NewDefaultClientConfig(cfg, &clientcmd.ConfigOverrides{}), nil
-}
-
-func buildSession() {
-	name := "wonderful-outfit-1583362361"
-	region := "us-east-2"
-	sess := session.Must(session.NewSession(&aws.Config{
-
-		Region: aws.String(region),
-	}))
-	eksSvc := eks.New(sess)
-
-	input := &eks.DescribeClusterInput{
-		Name: aws.String(name),
-	}
-
-	eksSvc.ListClusters()
-	result, err := eksSvc.DescribeCluster(input)
-	if err != nil {
-		log.Fatalf("Error calling DescribeCluster: %v", err)
-	}
 }
