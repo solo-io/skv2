@@ -3,7 +3,7 @@ module github.com/solo-io/skv2
 go 1.13
 
 require (
-	cloud.google.com/go v0.50.0 // indirect
+	cloud.google.com/go v0.50.0
 	github.com/Azure/go-autorest/autorest v0.9.4 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.0.0
@@ -43,8 +43,11 @@ require (
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/cast v1.3.1 // indirect
 	go.uber.org/zap v1.13.0
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
 	golang.org/x/tools v0.0.0-20200422205258-72e4a01eba43
+	google.golang.org/api v0.14.0
+	google.golang.org/genproto v0.0.0-20191216164720-4f79533eabd1
 	k8s.io/api v0.17.4
 	k8s.io/apiextensions-apiserver v0.17.4
 	k8s.io/apimachinery v0.17.4

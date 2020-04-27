@@ -1,13 +1,21 @@
 package cloud
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/eks"
+	"golang.org/x/oauth2"
+	containerpb "google.golang.org/genproto/googleapis/container/v1"
+	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
 
 type AwsClient interface {
-
-	DescribeCluster(name string) (*eks.Cluster, error)
-	ListClusters(input *eks.ListClustersInput) (*eks.ListClustersOutput, error)
-
+	DescribeCluster(ctx context.Context, name string) (*eks.Cluster, error)
+	ListClusters(ctx context.Context, input *eks.ListClustersInput) (*eks.ListClustersOutput, error)
+	GetTokenForCluster(ctx context.Context, name string) (token.Token, error)
 }
 
+type GkeClient interface {
+	Token(ctx context.Context) (*oauth2.Token, error)
+	ListClusters(ctx context.Context) ([]*containerpb.Cluster, error)
+}
