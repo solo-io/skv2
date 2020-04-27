@@ -84,8 +84,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		)
 
 		mustNewKubeConfigSecret := func() *corev1.Secret {
-			cfg, err := kubeutils.GetKubeConfigWithContext("", os.Getenv("KUBECONFIG"), remoteContext)
-			Expect(err).NotTo(HaveOccurred())
+			cfg := test.MustClientConfigWithContext(remoteContext)
 			kcSecret, err = kubeconfig.ToSecret(ns, cluster2, *cfg)
 			Expect(err).NotTo(HaveOccurred())
 			return kcSecret

@@ -26,13 +26,13 @@ require (
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/solo-io/anyvendor v0.0.1
-	github.com/solo-io/go-utils v0.15.3-0.20200427202827-6f16902f4de4
+	github.com/solo-io/go-utils v0.15.2
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/solo-kit v0.12.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
-	golang.org/x/tools v0.0.0-20200424195722-358506031216
+	golang.org/x/tools v0.0.0-20200427201523-e56429333abe
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
@@ -44,9 +44,6 @@ require (
 
 // Pinned to kubernetes-1.14.1
 replace k8s.io/kubernetes => k8s.io/kubernetes v1.14.1
-
-// TODO DO NOT COMMIT
-replace github.com/solo-io/go-utils => github.com/solo-io/go-utils v0.15.3-0.20200427202827-6f16902f4de4
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible

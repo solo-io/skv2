@@ -2,11 +2,14 @@ package test
 
 import (
 	"context"
+	"os"
 
 	"github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -53,4 +56,13 @@ func MustManagerNotStarted(ns string) manager.Manager {
 	})
 	Expect(err).NotTo(HaveOccurred())
 	return mgr
+}
+
+func MustClientConfigWithContext(context string) *api.Config {
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	loadingRules.ExplicitPath = os.Getenv("KUBECONFIG")
+	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: context}
+	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ConfigAccess().GetStartingConfig()
+	Expect(err).NotTo(HaveOccurred())
+	return cfg
 }
