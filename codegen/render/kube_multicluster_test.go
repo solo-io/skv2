@@ -32,7 +32,7 @@ import (
 
 func WithRemoteClusterContextDescribe(text string, body func()) bool {
 	if os.Getenv("REMOTE_CLUSTER_CONTEXT") == "" {
-		return PDescribe("This test depends on a second cluster with context REMOTE_CLUSTER_CONTEXT. "+text, body)
+		return PDescribe("[This test depends on a second cluster with context REMOTE_CLUSTER_CONTEXT] "+text, body)
 	}
 	return Describe(text, body)
 }
