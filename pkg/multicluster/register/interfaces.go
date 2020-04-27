@@ -6,6 +6,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+//go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
+
 type ClusterRegistrant interface {
 	RegisterCluster(
 		ctx context.Context,

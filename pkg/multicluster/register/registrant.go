@@ -41,7 +41,7 @@ func (c *clusterRegistrant) RegisterCluster(
 		return err
 	}
 
-	return c.RegisterClusterFromConfig(ctx, clientCfg, clusterName, remoteCfg)
+	return c.RegisterClusterFromConfig(ctx, clientCfg, clusterName, namespace)
 }
 
 func (c *clusterRegistrant) RegisterClusterFromConfig(
