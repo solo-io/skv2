@@ -15,6 +15,7 @@ const (
 	GeneratorType_Client    GeneratorType = "client"
 	GeneratorType_Lister    GeneratorType = "lister"
 	GeneratorType_Informer  GeneratorType = "informer"
+	GeneratorType_All       GeneratorType = "all"
 )
 
 type GeneratorTypes []GeneratorType
@@ -25,6 +26,16 @@ func (g GeneratorTypes) Strings() []string {
 		strs = append(strs, string(generatorType))
 	}
 	return strs
+}
+
+// returns true if the 'deepcopy' or 'all' generator is present
+func (g GeneratorTypes) HasDeepcopy() bool {
+	for _, generatorType := range g {
+		if generatorType == GeneratorType_Deepcopy || generatorType == GeneratorType_All {
+			return true
+		}
+	}
+	return false
 }
 
 type Group struct {
@@ -56,8 +67,10 @@ type Group struct {
 	// Should we generate kubernetes Go clients?
 	RenderClients bool
 
+	// Deprecated: use generated deepcopy methods instead
 	// Should we run kubernetes code generators? (see https://github.com/kubernetes/code-generator/blob/master/generate-groups.sh)
-	// Note: if RenderTypes is true, this always contains the 'deepcopy' generator
+	// Note: if this field is nil and RenderTypes is true,
+	// skv2 will run the 'deepcopy' generator by default.
 	Generators GeneratorTypes
 
 	// Should we generate kubernetes Go controllers?
