@@ -3,6 +3,7 @@ package render_test
 import (
 	"context"
 	"os"
+	"sync"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -351,3 +352,53 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		})
 	})
 })
+
+type concurrentPaintMap struct {
+	m     map[string]*Paint
+	mutex sync.Mutex
+}
+
+func newConcurrentPaintMap() *concurrentPaintMap {
+	return &concurrentPaintMap{
+		m:     make(map[string]*Paint),
+		mutex: sync.Mutex{},
+	}
+}
+
+func (c *concurrentPaintMap) add(cluster string, paint *Paint) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.m[cluster+paint.Name] = paint
+}
+
+func (c *concurrentPaintMap) get(cluster, name string) *Paint {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	paint := c.m[cluster+name]
+	return paint
+}
+
+type concurrentRequestMap struct {
+	m     map[string]reconcile.Request
+	mutex sync.Mutex
+}
+
+func newConcurrentRequestMap() *concurrentRequestMap {
+	return &concurrentRequestMap{
+		m:     make(map[string]reconcile.Request),
+		mutex: sync.Mutex{},
+	}
+}
+
+func (c *concurrentRequestMap) add(cluster string, req reconcile.Request) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.m[cluster+req.Name] = req
+}
+
+func (c *concurrentRequestMap) get(cluster, name string) reconcile.Request {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	req := c.m[cluster+name]
+	return req
+}
