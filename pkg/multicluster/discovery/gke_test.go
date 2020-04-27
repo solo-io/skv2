@@ -1,4 +1,4 @@
-package register_test
+package discovery_test
 
 import (
 	. "github.com/onsi/ginkgo"
