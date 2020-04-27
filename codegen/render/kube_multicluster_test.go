@@ -30,13 +30,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-var _ = Describe("Multicluster", func() {
-
+func WithRemoteClusterContextDescribe(text string, body func()) bool {
 	if os.Getenv("REMOTE_CLUSTER_CONTEXT") == "" {
-		Fail("This test depends on a second cluster with context REMOTE_CLUSTER_CONTEXT.")
-		return
+		return PDescribe("This test depends on a second cluster with context REMOTE_CLUSTER_CONTEXT. "+text, body)
 	}
+	return Describe(text, body)
+}
 
+var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 	var (
 		ns            string
 		clientSet     Clientset
