@@ -45,6 +45,9 @@ require (
 // Pinned to kubernetes-1.14.1
 replace k8s.io/kubernetes => k8s.io/kubernetes v1.14.1
 
+// TODO DO NOT COMMIT
+replace github.com/solo-io/go-utils => /Users/joe/code2/go-utils
+
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2

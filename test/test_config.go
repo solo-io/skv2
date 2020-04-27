@@ -11,14 +11,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-func MustConfig() *rest.Config {
-	cfg, err := config.GetConfig()
+func MustConfig(context string) *rest.Config {
+	cfg, err := config.GetConfigWithContext(context)
 	Expect(err).NotTo(HaveOccurred())
 	return cfg
 }
 
 func MustManager(ns string) (manager.Manager, func()) {
-	cfg := MustConfig()
+	cfg := MustConfig("")
 	return ManagerWithOpts(cfg, manager.Options{
 		Namespace: ns,
 		// Disable metrics and health probe to allow tests to run in parallel.
@@ -45,7 +45,7 @@ func ManagerWithOpts(cfg *rest.Config, opts manager.Options) (manager.Manager, f
 }
 
 func MustManagerNotStarted(ns string) manager.Manager {
-	mgr, err := manager.New(MustConfig(), manager.Options{
+	mgr, err := manager.New(MustConfig(""), manager.Options{
 		Namespace: ns,
 		// Disable metrics and health probe to allow tests to run in parallel.
 		MetricsBindAddress:     "0",
