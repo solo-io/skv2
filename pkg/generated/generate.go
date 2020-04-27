@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"path/filepath"
 
@@ -22,6 +23,14 @@ var (
 
 func main() {
 	log.Println("starting kube client generation")
+
+	// load custom client providers template
+	customClientProvidersBytes, err := ioutil.ReadFile("templates/custom_client_providers.gotmpl")
+	customClientProviders := string(customClientProvidersBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	skv2Cmd := codegen.Command{
 		Groups: []model.Group{
 			{
@@ -59,6 +68,9 @@ func main() {
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/core/v1",
 				ApiRoot:               kubeGeneratedPackage,
+				CustomTemplates: map[string]string{
+					"client_providers.go": customClientProviders,
+				},
 			},
 			{
 				GroupVersion: schema.GroupVersion{

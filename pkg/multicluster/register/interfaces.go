@@ -8,14 +8,21 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
+type ClusterInfo struct {
+	ClusterName string
+	Namespace   string
+	LocalClusterDomainOverride string
+}
+
 type ClusterRegistrant interface {
 	RegisterCluster(
 		ctx context.Context,
-		remoteCfg, remoteCtx, clusterName, namespace string,
+		info ClusterInfo,
+		remoteCfg, remoteCtx string,
 	) error
 	RegisterClusterFromConfig(
 		ctx context.Context,
 		config clientcmd.ClientConfig,
-		clusterName, namespace string,
+		info ClusterInfo,
 	) error
 }

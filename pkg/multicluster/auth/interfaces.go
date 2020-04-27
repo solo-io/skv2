@@ -7,6 +7,7 @@ import (
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_auth.go
@@ -45,6 +46,8 @@ type ClusterAuthorization interface {
 		name, namespace string,
 	) (bearerToken string, err error)
 }
+
+type ClusterAuthorizationFactory func(cfg clientcmd.ClientConfig) (ClusterAuthorization, error)
 
 // Create a service account on a cluster that `targetClusterCfg` can reach
 // Set up that service account with the indicated cluster roles
