@@ -41,7 +41,7 @@ func (c *clusterRegistrant) RegisterCluster(
 		return err
 	}
 
-	return c.RegisterClusterFromConfig(ctx, clientCfg, clusterName, remoteCfg)
+	return c.RegisterClusterFromConfig(ctx, clientCfg, clusterName, namespace)
 }
 
 func (c *clusterRegistrant) RegisterClusterFromConfig(
@@ -50,6 +50,9 @@ func (c *clusterRegistrant) RegisterClusterFromConfig(
 	clusterName, namespace string,
 ) error {
 	cfg, err := clientCfg.ClientConfig()
+	if err != nil {
+		return err
+	}
 
 	token, err := c.clusterAuthClient.BuildRemoteBearerToken(ctx, cfg, clusterName, namespace)
 	if err != nil {
