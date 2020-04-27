@@ -13,14 +13,7 @@ import (
 
 // given a path to a kube config file, convert it into either creds for hitting the API server of the cluster it points to,
 // or return the contexts/clusters it is aware of
-//go:generate mockgen -destination ./mocks/mock_kube_loader.go -source ./loader.go
 
-type KubeLoader interface {
-	GetRestConfigForContext(path string, context string) (*rest.Config, error)
-	GetRawConfigForContext(path, context string) (clientcmdapi.Config, error)
-	GetClientConfigForContext(path, context string) (clientcmd.ClientConfig, error)
-	GetRestConfigFromBytes(config []byte) (*rest.Config, error)
-}
 
 // only the pieces from a kube config that we need to operate on
 // mainly just used to simplify from the complexity of the actual object
