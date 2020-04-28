@@ -8,15 +8,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/solo-io/solo-kit/pkg/code-generator/model"
-
+	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/skv2/codegen/util"
-	"github.com/solo-io/solo-kit/pkg/code-generator/collector"
 )
 
 // make sure the pkg matches the go_package option in the proto
 // TODO: validate this
-func CompileProtos(goModule, apiRoot, protoDir string) ([]*model.DescriptorWithPath, error) {
+func CompileProtos(goModule, apiRoot, protoDir string) ([]*collector.DescriptorWithPath, error) {
 	log.Printf("Compiling protos in %v", protoDir)
 
 	// need to be in module root so protoc runs on the expected apiRoot

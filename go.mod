@@ -30,6 +30,7 @@ require (
 	github.com/solo-io/solo-kit v0.12.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
 	golang.org/x/tools v0.0.0-20200426102838-f3a5411a4c3b
 	k8s.io/api v0.17.2

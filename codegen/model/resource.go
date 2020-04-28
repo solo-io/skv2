@@ -2,7 +2,7 @@ package model
 
 import (
 	"github.com/gogo/protobuf/proto"
-	"github.com/solo-io/solo-kit/pkg/code-generator/model"
+	"github.com/solo-io/skv2/codegen/collector"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -83,7 +83,7 @@ type Group struct {
 	CustomTypesImportPath string
 
 	// proto descriptors will be available to the templates if the group was compiled with them.
-	Descriptors []*model.DescriptorWithPath
+	Descriptors []*collector.DescriptorWithPath
 
 	CustomTemplates map[string]string
 }

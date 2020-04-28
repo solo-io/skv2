@@ -8,10 +8,9 @@ import (
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
-	skmodel "github.com/solo-io/solo-kit/pkg/code-generator/model"
-
 	"github.com/solo-io/anyvendor/anyvendor"
 	"github.com/solo-io/anyvendor/pkg/manager"
+	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 
 	"github.com/solo-io/skv2/builder"
@@ -219,7 +218,7 @@ func (c Command) compileProtosAndUpdateGroup(grp *render.Group) error {
 	return nil
 }
 
-func addMessagesToResource(descriptors []*skmodel.DescriptorWithPath, resource *model.Resource) {
+func addMessagesToResource(descriptors []*collector.DescriptorWithPath, resource *model.Resource) {
 	var foundSpec bool
 	for _, fileDescriptor := range descriptors {
 

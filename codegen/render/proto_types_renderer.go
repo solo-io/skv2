@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/solo-io/solo-kit/pkg/code-generator/model"
+	"github.com/solo-io/skv2/codegen/collector"
 )
 
 // renders kubernetes from templates
@@ -53,7 +53,7 @@ const (
 // helper type for rendering proto_deepcopy.go files
 type descriptorsWithGopath struct {
 	// list of descriptors pulled from the group
-	Descriptors []*model.DescriptorWithPath
+	Descriptors []*collector.DescriptorWithPath
 	// list of resources pulled from the group
 	Resources []Resource
 	// package name used to render the package name in the go template
@@ -69,14 +69,14 @@ type descriptorsWithGopath struct {
 	Get the relevant descriptors for a group of descriptors with a go package to match against.
 	A unique object is initialized for each external go package to the group package
 */
-func (grp descriptorsWithGopath) getUniqueDescriptorsWithPath() []*model.DescriptorWithPath {
-	result := make(map[string]*model.DescriptorWithPath)
+func (grp descriptorsWithGopath) getUniqueDescriptorsWithPath() []*collector.DescriptorWithPath {
+	result := make(map[string]*collector.DescriptorWithPath)
 	for _, desc := range grp.Descriptors {
 		if desc.GetOptions().GetGoPackage() == grp.goPackageToMatch {
 			result[desc.ProtoFilePath] = desc
 		}
 	}
-	var array []*model.DescriptorWithPath
+	var array []*collector.DescriptorWithPath
 	for _, v := range result {
 		array = append(array, v)
 	}
