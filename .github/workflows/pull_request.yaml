@@ -49,6 +49,11 @@ jobs:
         with:
           version: '3.6.1'
       - uses: engineerd/setup-kind@v0.3.0
+        with:
+          skipClusterCreation: "true"
+      - name: Setup Kind
+        run: |
+          ./ci/setup-kind.sh skv2-test-remote
       - uses: azure/setup-kubectl@v1
         with:
           version: 'v1.18.0'
@@ -63,4 +68,4 @@ jobs:
           make install-deps
       - name: Run tests
         run: |
-          go test ./...
+          REMOTE_CLUSTER_CONTEXT=kind-skv2-test-remote go test ./...
