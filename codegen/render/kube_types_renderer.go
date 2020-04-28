@@ -25,16 +25,28 @@ type KubeCodeRenderer struct {
 	ApiRoot string
 }
 
-var TypesTemplates = inputTemplates{
-	"code/types/types.gotmpl": {
-		Path: "types.go",
-	},
-	"code/types/register.gotmpl": {
-		Path: "register.go",
-	},
-	"code/types/doc.gotmpl": {
-		Path: "doc.go",
-	},
+var TypesTemplates = func(skipDeepCopy bool) inputTemplates {
+	tmpl := inputTemplates{
+		"code/types/types.gotmpl": {
+			Path: "types.go",
+		},
+		"code/types/register.gotmpl": {
+			Path: "register.go",
+		},
+		"code/types/doc.gotmpl": {
+			Path: "doc.go",
+		},
+		"code/types/zz_generated.deepcopy.gotmpl": {
+			Path: "zz_generated.deepcopy.go",
+		},
+	}
+
+	// remove deepcopy template if using deprecated Deepcopy generator
+	if skipDeepCopy {
+		delete(tmpl, "code/types/zz_generated.deepcopy.gotmpl")
+	}
+
+	return tmpl
 }
 
 var ClientsTemplates = inputTemplates{
@@ -58,7 +70,7 @@ var ControllerTemplates = inputTemplates{
 func RenderApiTypes(grp Group) ([]OutFile, error) {
 	defaultKubeCodeRenderer := KubeCodeRenderer{
 		templateRenderer:    DefaultTemplateRenderer,
-		TypesTemplates:      TypesTemplates,
+		TypesTemplates:      TypesTemplates(grp.Generators.HasDeepcopy()),
 		ClientsTemplates:    ClientsTemplates,
 		ControllerTemplates: ControllerTemplates,
 		GoModule:            grp.Module,

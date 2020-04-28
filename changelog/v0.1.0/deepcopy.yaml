@@ -1,0 +1,8 @@
+changelog:
+- type: BREAKING_CHANGE
+  description: |2
+
+    Implement custom generation of Deepcopy methods for Kubernetes types. Current limitations in the generation of standard Deepcopy code in with kube-codegen prevent compatibility with types containing Protobuf Oneofs. This change implements a naive solution, generating proto.Clone-based deepcopy methods.
+
+    The use of the deepcopy codegen package is currently deprecated and disabled by default. set your `codegen.Command`'s `Generators` to []GeneratorTypes{GeneratorType_Deepcopy} to preserve the original behavior.
+  issueLink: https://github.com/solo-io/skv2/issues/18
