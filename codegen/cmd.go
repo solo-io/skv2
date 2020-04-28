@@ -1,12 +1,17 @@
 package codegen
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"cuelang.org/go/cue"
+	"cuelang.org/go/encoding/openapi"
+	"cuelang.org/go/encoding/protobuf"
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/anyvendor/anyvendor"
 	"github.com/solo-io/anyvendor/pkg/manager"
@@ -222,6 +227,48 @@ func addMessagesToResource(descriptors []*collector.DescriptorWithPath, resource
 	for _, fileDescriptor := range descriptors {
 
 		if fileDescriptor.GetPackage() == resource.Group.Group {
+
+			coll := collector.NewCollector([]string{resource.Group.ProtoDir}, nil)
+			imports, err := coll.CollectImportsForFile(resource.Group.ProtoDir, fileDescriptor.ProtoFilePath)
+			if err != nil {
+				log.Fatal(err)
+			}
+			cfg := &protobuf.Config{
+				Root:   resource.Group.ProtoDir,
+				Module: resource.Group.Group,
+				Paths:  imports,
+			}
+			ext := protobuf.NewExtractor(cfg)
+			if err := ext.AddFile(fileDescriptor.ProtoFilePath, nil); err != nil {
+				log.Fatal(err)
+			}
+			instances, err := ext.Instances()
+			if err != nil {
+				log.Fatal(err)
+			}
+			generator := &openapi.Generator{}
+			built := cue.Build(instances)
+			for _, builtInstance := range built {
+				if builtInstance.Err != nil {
+					log.Fatal(err)
+				}
+				if err := builtInstance.Value().Validate(); err != nil {
+					log.Fatal(err)
+				}
+				oapi, err := generator.Schemas(builtInstance)
+				if err != nil {
+					log.Fatal(err)
+				}
+				byt, err := json.Marshal(oapi)
+				if err != nil {
+					log.Fatal(err)
+				}
+				buf := &bytes.Buffer{}
+				if err := json.Indent(buf, byt, "", " "); err != nil {
+					log.Fatal(err)
+				}
+				fmt.Println(buf.String())
+			}
 
 			if specMessage := fileDescriptor.GetMessage(resource.Spec.Type.Name); specMessage != nil {
 				resource.Spec.Type.Message = specMessage

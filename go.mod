@@ -3,6 +3,7 @@ module github.com/solo-io/skv2
 go 1.13
 
 require (
+	cuelang.org/go v0.1.2
 	github.com/Azure/go-autorest/autorest v0.9.3 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.8.1 // indirect
 	github.com/BurntSushi/toml v0.3.1

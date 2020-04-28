@@ -41,10 +41,7 @@ var _ = Describe("Cmd", func() {
 					ApiRoot:          "codegen/test/api",
 				},
 			},
-			AnyVendorConfig: &skv2_anyvendor.Imports{
-				Local: []string{"codegen/test/*.proto"},
-			},
-
+			AnyVendorConfig: skv2_anyvendor.CreateDefaultMatchOptions([]string{"codegen/test/*.proto"}),
 			Chart: &Chart{
 				Operators: []Operator{
 					{

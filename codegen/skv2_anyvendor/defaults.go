@@ -23,7 +23,7 @@ var (
 	// matches gogo.proto, used for gogoproto code gen.
 	GogoProtoMatcher = &anyvendor.GoModImport{
 		Package:  "github.com/gogo/protobuf",
-		Patterns: []string{"gogoproto/*.proto"},
+		Patterns: []string{"gogoproto/*.proto", "protobuf/**/*.proto"},
 	}
 
 	// default match options which should be used when creating a solo-kit project
