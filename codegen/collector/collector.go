@@ -28,7 +28,7 @@ func NewCollector(customImports, commonImports, customGogoArgs, customPlugins []
 		descriptorOutDir: descriptorOutDir,
 		customImports:    customImports,
 		commonImports:    commonImports,
-		customGogoArgs:   customGogoArgs,
+		customArgs:       customGogoArgs,
 		wantCompile:      wantCompile,
 		customPlugins:    customPlugins,
 	}
@@ -38,9 +38,13 @@ type collector struct {
 	descriptorOutDir string
 	customImports    []string
 	commonImports    []string
-	customGogoArgs   []string
+	customArgs       []string
 	wantCompile      func(string) bool
 	customPlugins    []string
+}
+
+func (c *collector) CollectImportsForFile(root string, protoFile string) ([]string, error) {
+	return c.importsForProtoFile(root, protoFile, c.customImports)
 }
 
 func (c *collector) CollectDescriptorsFromRoot(root string, skipDirs []string) ([]*DescriptorWithPath, error) {
@@ -71,7 +75,11 @@ func (c *collector) CollectDescriptorsFromRoot(root string, skipDirs []string) (
 
 			// parallelize parsing the descriptors as each one requires file i/o and is slow
 			g.Go(func() error {
-				return c.addDescriptorsForFile(addDescriptor, absoluteDir, protoFile)
+				imports, err := c.importsForProtoFile(absoluteDir, protoFile, c.customImports)
+				if err != nil {
+					return err
+				}
+				return c.addDescriptorsForFile(addDescriptor, imports, protoFile)
 			})
 			return nil
 		})
@@ -92,14 +100,8 @@ func (c *collector) CollectDescriptorsFromRoot(root string, skipDirs []string) (
 	// with different import paths
 	return FilterDuplicateDescriptors(descriptors), nil
 }
-func (c *collector) addDescriptorsForFile(addDescriptor func(f DescriptorWithPath), root, protoFile string) error {
+func (c *collector) addDescriptorsForFile(addDescriptor func(f DescriptorWithPath), imports []string, protoFile string) error {
 	log.Printf("processing proto file input %v", protoFile)
-	imports, err := c.importsForProtoFile(root, protoFile, c.customImports)
-	if err != nil {
-		return eris.Wrapf(err, "reading imports for proto file")
-	}
-	imports = stringutils.Unique(imports)
-
 	// don't generate protos for non-project files
 	compile := c.wantCompile(protoFile)
 
@@ -186,8 +188,7 @@ func (c *collector) importsForProtoFile(absoluteRoot, protoFile string, customIm
 		importsForProto = append(importsForProto, strings.TrimSuffix(importPath, "/"))
 		importsForProto = append(importsForProto, dependencyImports...)
 	}
-
-	return importsForProto, nil
+	return stringutils.Unique(importsForProto), nil
 }
 
 func (c *collector) findImportRelativeToRoot(absoluteRoot, importedProtoFile string, customImports, existingImports []string) (string, error) {
@@ -255,7 +256,6 @@ var defaultGogoArgs = []string{
 	"Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types",
 	"Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types",
 	"Mgoogle/rpc/status.proto=github.com/gogo/googleapis/google/rpc",
-	"Menvoy/api/v2/discovery.proto=github.com/envoyproxy/go-control-plane/envoy/api/v2",
 	"gogoproto/gogo.proto=github.com/gogo/protobuf/gogoproto",
 }
 
@@ -265,7 +265,7 @@ func (c *collector) writeDescriptors(protoFile, toFile string, imports []string,
 		imports[i] = "-I" + imports[i]
 	}
 	cmd.Args = append(cmd.Args, imports...)
-	gogoArgs := append(defaultGogoArgs, c.customGogoArgs...)
+	gogoArgs := append(defaultGogoArgs, c.customArgs...)
 
 	if compileProtos {
 		cmd.Args = append(cmd.Args,

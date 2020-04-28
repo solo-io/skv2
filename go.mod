@@ -5,7 +5,6 @@ go 1.13
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.0.0
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v0.1.0
 	github.com/gobuffalo/envy v1.8.1 // indirect
@@ -27,7 +26,7 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/go-utils v0.15.2
 	github.com/solo-io/protoc-gen-ext v0.0.7
-	github.com/solo-io/solo-kit v0.12.2
+	github.com/solo-io/solo-kit v0.13.5
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e

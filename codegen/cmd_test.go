@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
+	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	. "github.com/solo-io/skv2/codegen"
@@ -41,7 +41,7 @@ var _ = Describe("Cmd", func() {
 					ApiRoot:          "codegen/test/api",
 				},
 			},
-			AnyVendorConfig: &sk_anyvendor.Imports{
+			AnyVendorConfig: &skv2_anyvendor.Imports{
 				Local: []string{"codegen/test/*.proto"},
 			},
 
