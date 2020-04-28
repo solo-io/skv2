@@ -10,7 +10,7 @@ type DescriptorWithPath struct {
 	ProtoFilePath string
 }
 
-func FilterDuplicateDescriptors(descriptors []*DescriptorWithPath) []*DescriptorWithPath {
+func filterDuplicateDescriptors(descriptors []*DescriptorWithPath) []*DescriptorWithPath {
 	var uniqueDescriptors []*DescriptorWithPath
 	for _, desc := range descriptors {
 		unique, matchingDesc := isUnique(desc, uniqueDescriptors)

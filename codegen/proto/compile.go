@@ -32,8 +32,13 @@ func CompileProtos(goModule, apiRoot, protoDir string) ([]*collector.DescriptorW
 	}
 	defer os.Remove(protoOutDir)
 
-	descriptors, err := collector.NewCollector(
+	coll := collector.NewCollector(
 		nil,
+		[]string{protoDir}, // import the inputs dir //
+	)
+
+	descriptors, err := collector.NewProtoCompiler(
+		coll,
 		[]string{protoDir}, // import the inputs dir
 		nil,
 		[]string{
@@ -42,7 +47,7 @@ func CompileProtos(goModule, apiRoot, protoDir string) ([]*collector.DescriptorW
 		protoOutDir,
 		func(file string) bool {
 			return true
-		}).CollectDescriptorsFromRoot(protoDir, nil)
+		}).CompileDescriptorsFromRoot(protoDir, nil)
 	if err != nil {
 		return nil, err
 	}
