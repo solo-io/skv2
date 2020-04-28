@@ -62,38 +62,6 @@ func makeTemplateFuncs() template.FuncMap {
 			}
 			return excludingGroupImport
 		},
-		/*
-			Used by the proto_deepcopy.gotml file to decide which objects need a proto.clone deepcopy method.
-
-			In order to support external go packages generated from protos, this template is run for
-			every unique external go package, and then filters out only the protos which are relevant to
-			that specific go package before generating.
-		*/
-		"needs_deepcopy": func(grp descriptorsWithGopath) []string {
-			uniqueFile := grp.getUniqueDescriptorsWithPath()
-			var result []string
-
-			for _, file := range uniqueFile {
-				for _, desc := range file.GetMessageType() {
-					switch {
-					// In the case when the groups root go package equals the go package of the proto file
-					// generate a local proto_deepopy file
-					case grp.rootGoPackage == file.GetOptions().GetGoPackage():
-						// for each message, in each file, find the fields which need deep copy functions
-						if shouldGenerate := shouldDeepCopyInternalMessage(file.GetPackage(), desc); shouldGenerate {
-							result = append(result, desc.GetName())
-						}
-					// Otherwise generate a proto_deepcopy file in the folder containing the rest of the code of the types
-					default:
-						// for each message, in each file, find the fields which need deep copy functions
-						if shouldGenerate := shouldDeepCopyExternalMessage(grp.Resources, desc); shouldGenerate {
-							result = append(result, desc.GetName())
-						}
-					}
-				}
-			}
-			return result
-		},
 	}
 
 	for k, v := range extra {
