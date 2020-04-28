@@ -3,8 +3,10 @@ module github.com/solo-io/skv2
 go 1.13
 
 require (
+	cloud.google.com/go v0.40.0
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.0.0
+	github.com/aws/aws-sdk-go v1.30.15
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v0.1.0
@@ -20,8 +22,7 @@ require (
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pborman/uuid v1.2.0
-	github.com/pkg/errors v0.8.1
-	github.com/prometheus/procfs v0.0.8 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/rogpeppe/go-internal v1.5.2
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.4.2
@@ -31,13 +32,17 @@ require (
 	github.com/solo-io/solo-kit v0.12.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
 	golang.org/x/tools v0.0.0-20200427205912-352a5409fae0
+	google.golang.org/api v0.6.0
+	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v8.0.0+incompatible
 	k8s.io/code-generator v0.17.2
+	sigs.k8s.io/aws-iam-authenticator v0.5.0
 	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.1.0
 )
