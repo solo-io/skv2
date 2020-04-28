@@ -83,8 +83,7 @@ func (c *clusterRegistrant) RegisterClusterFromConfig(
 	remoteCluster := rawRemoteCfg.Clusters[remoteContext.Cluster]
 
 	// hacky step for running locally in KIND
-	if err = c.hackClusterConfigForLocalTestingInKIND(remoteCluster, remoteContextName, info.LocalClusterDomainOverride);
-	err != nil {
+	if err = c.hackClusterConfigForLocalTestingInKIND(remoteCluster, remoteContextName, info.LocalClusterDomainOverride); err != nil {
 		return err
 	}
 

@@ -9,8 +9,8 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
 type ClusterInfo struct {
-	ClusterName string
-	Namespace   string
+	ClusterName                string
+	Namespace                  string
 	LocalClusterDomainOverride string
 }
 
