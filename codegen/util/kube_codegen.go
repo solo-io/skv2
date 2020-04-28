@@ -1,6 +1,7 @@
 package util
 
 import (
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,6 +17,7 @@ func KubeCodegen(group, version, apiDir string, generators []string) error {
 		// nothing to do
 		return nil
 	}
+	log.Printf("Running Kubernetes Codegen for %v", group)
 
 	// path on disk
 	modulePath := GetModuleRoot()
