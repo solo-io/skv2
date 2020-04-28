@@ -39,7 +39,8 @@ run-tests:
 		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG) \
 		-failOnPending \
 		-randomizeAllSpecs \
-		-randomizeSuites
+		-randomizeSuites \
+		-keepGoing
 	goimports -w .
 
 #----------------------------------------------------------------------------------
