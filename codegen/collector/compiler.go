@@ -33,7 +33,7 @@ type ProtoCompiler interface {
 }
 
 type protoCompiler struct {
-	collector Collector
+	collector        Collector
 	descriptorOutDir string
 	customImports    []string
 	customArgs       []string
@@ -173,7 +173,6 @@ func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []str
 	}
 	return nil
 }
-
 
 func (p *protoCompiler) readDescriptors(fromFile string) (*descriptor.FileDescriptorSet, error) {
 	var desc descriptor.FileDescriptorSet

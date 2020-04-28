@@ -17,16 +17,16 @@ type Collector interface {
 	CollectImportsForFile(root, protoFile string) ([]string, error)
 }
 
-func NewCollector(customImports, commonImports []string,) *collector {
+func NewCollector(customImports, commonImports []string) *collector {
 	return &collector{
-		customImports:    customImports,
-		commonImports:    commonImports,
+		customImports: customImports,
+		commonImports: commonImports,
 	}
 }
 
 type collector struct {
-	customImports    []string
-	commonImports    []string
+	customImports []string
+	commonImports []string
 }
 
 func (c *collector) CollectImportsForFile(root, protoFile string) ([]string, error) {

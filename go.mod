@@ -3,6 +3,8 @@ module github.com/solo-io/skv2
 go 1.13
 
 require (
+	github.com/Azure/go-autorest/autorest v0.9.3 // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.8.1 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.0.0
 	github.com/gertd/go-pluralize v0.1.1
@@ -15,6 +17,8 @@ require (
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/gophercloud/gophercloud v0.2.0 // indirect
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
+	github.com/mattn/go-colorable v0.1.4 // indirect
+	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
@@ -26,12 +30,12 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/go-utils v0.15.2
 	github.com/solo-io/protoc-gen-ext v0.0.7
-	github.com/solo-io/solo-kit v0.13.5
+	go.uber.org/multierr v1.4.0 // indirect
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
-	golang.org/x/tools v0.0.0-20200426102838-f3a5411a4c3b
+	golang.org/x/tools v0.0.0-20200428140416-006b16f6cf7f
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2

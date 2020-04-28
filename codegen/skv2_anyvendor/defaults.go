@@ -15,10 +15,10 @@ var (
 	}
 
 	// matches all solo-kit protos, useful for any projects using solo-kit
-	SoloKitProtoMatcher = &anyvendor.GoModImport{
-		Package:  "github.com/solo-io/solo-kit",
-		Patterns: []string{"api/**/*.proto"},
-	}
+	// SoloKitProtoMatcher = &anyvendor.GoModImport{
+	// 	Package:  "github.com/solo-io/solo-kit",
+	// 	Patterns: []string{"api/**/*.proto"},
+	// }
 
 	// matches gogo.proto, used for gogoproto code gen.
 	GogoProtoMatcher = &anyvendor.GoModImport{
@@ -28,9 +28,9 @@ var (
 
 	// default match options which should be used when creating a solo-kit project
 	DefaultExternalMatchOptions = map[string][]string{
-		ExtProtoMatcher.Package:     ExtProtoMatcher.Patterns,
-		SoloKitProtoMatcher.Package: SoloKitProtoMatcher.Patterns,
-		GogoProtoMatcher.Package:    GogoProtoMatcher.Patterns,
+		ExtProtoMatcher.Package: ExtProtoMatcher.Patterns,
+		// SoloKitProtoMatcher.Package: SoloKitProtoMatcher.Patterns,
+		GogoProtoMatcher.Package: GogoProtoMatcher.Patterns,
 	}
 )
 

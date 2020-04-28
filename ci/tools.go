@@ -19,6 +19,7 @@ package tools
 import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	_ "github.com/solo-io/protoc-gen-ext"
-	_ "github.com/solo-io/solo-kit"
+
+	// _ "github.com/solo-io/solo-kit"
 	_ "k8s.io/code-generator"
 )
