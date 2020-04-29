@@ -85,7 +85,12 @@ type Group struct {
 	// proto descriptors will be available to the templates if the group was compiled with them.
 	Descriptors []*model.DescriptorWithPath
 
+	// custom templates to run generation on.
+	// maps output filename to template text
 	CustomTemplates map[string]string
+
+	// custom data that can be provided for use with custom templates
+	CustomExtensions interface{}
 }
 
 // ensures the resources point to this group
