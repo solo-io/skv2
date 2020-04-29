@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	register "github.com/solo-io/skv2/pkg/multicluster/register"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 )
 
@@ -35,30 +36,30 @@ func (m *MockClusterRegistrant) EXPECT() *MockClusterRegistrantMockRecorder {
 	return m.recorder
 }
 
-// RegisterCluster mocks base method.
-func (m *MockClusterRegistrant) RegisterCluster(ctx context.Context, remoteCfg, remoteCtx, clusterName, namespace string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterCluster", ctx, remoteCfg, remoteCtx, clusterName, namespace)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RegisterCluster indicates an expected call of RegisterCluster.
-func (mr *MockClusterRegistrantMockRecorder) RegisterCluster(ctx, remoteCfg, remoteCtx, clusterName, namespace interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterCluster", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterCluster), ctx, remoteCfg, remoteCtx, clusterName, namespace)
-}
-
 // RegisterClusterFromConfig mocks base method.
-func (m *MockClusterRegistrant) RegisterClusterFromConfig(ctx context.Context, config clientcmd.ClientConfig, clusterName, namespace string) error {
+func (m *MockClusterRegistrant) RegisterClusterFromConfig(ctx context.Context, remoteCfg clientcmd.ClientConfig, info register.ClusterInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterClusterFromConfig", ctx, config, clusterName, namespace)
+	ret := m.ctrl.Call(m, "RegisterClusterFromConfig", ctx, remoteCfg, info)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterClusterFromConfig indicates an expected call of RegisterClusterFromConfig.
-func (mr *MockClusterRegistrantMockRecorder) RegisterClusterFromConfig(ctx, config, clusterName, namespace interface{}) *gomock.Call {
+func (mr *MockClusterRegistrantMockRecorder) RegisterClusterFromConfig(ctx, remoteCfg, info interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterClusterFromConfig", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterClusterFromConfig), ctx, config, clusterName, namespace)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterClusterFromConfig", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterClusterFromConfig), ctx, remoteCfg, info)
+}
+
+// RegisterCluster mocks base method.
+func (m *MockClusterRegistrant) RegisterCluster(ctx context.Context, info register.ClusterInfo, remoteCfgPath, remoteCtx string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterCluster", ctx, info, remoteCfgPath, remoteCtx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RegisterCluster indicates an expected call of RegisterCluster.
+func (mr *MockClusterRegistrantMockRecorder) RegisterCluster(ctx, info, remoteCfgPath, remoteCtx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterCluster", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterCluster), ctx, info, remoteCfgPath, remoteCtx)
 }

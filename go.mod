@@ -45,7 +45,8 @@ require (
 	go.uber.org/zap v1.13.0
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
-	golang.org/x/tools v0.0.0-20200427153019-a90b7300be7c
+	golang.org/x/tools v0.0.0-20200427205912-352a5409fae0
+	gonum.org/v1/netlib v0.0.0-20191031114514-eccb95939662 // indirect
 	google.golang.org/api v0.14.0
 	google.golang.org/genproto v0.0.0-20191216164720-4f79533eabd1
 	k8s.io/api v0.17.4
