@@ -10,9 +10,9 @@ import (
 
 type ClusterInfo struct {
 	// Name by which the cluster will be identified
-	ClusterName                string
+	ClusterName string
 	// Namespace to write namespaced resources to in the "master" and "remote" clusters
-	Namespace                  string
+	Namespace string
 	/*
 		This option should be used mostly for testing.
 		When passed in, it will overwrite the Api Server endpoint in the the kubeconfig before it is written.
