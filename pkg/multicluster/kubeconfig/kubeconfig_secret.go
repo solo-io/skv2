@@ -16,6 +16,8 @@ const (
 	Key = "kubeconfig"
 )
 
+// TODO settle on how to canonicalize cluster names: https://github.com/solo-io/skv2/issues/15
+
 // ToSecret converts a kubernetes api.Config to a secret with the provided name and namespace.
 func ToSecret(namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
 	rawKubeConfig, err := clientcmd.Write(kc)

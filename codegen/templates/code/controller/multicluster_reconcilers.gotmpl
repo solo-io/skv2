@@ -1,0 +1,90 @@
+// Definitions for the multicluster Kubernetes Controllers
+package controller
+
+import (
+	"context"
+
+	{{ group_import_name $ }} "{{ group_import_path $ }}"
+
+	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/multicluster"
+	mc_reconcile "github.com/solo-io/skv2/pkg/multicluster/reconcile"
+	"github.com/solo-io/skv2/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+)
+
+{{- range $resource := $.Resources }}
+
+// Reconcile Upsert events for the {{ $resource.Kind }} Resource across clusters.
+// implemented by the user
+type Multicluster{{ $resource.Kind }}Reconciler interface {
+	Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the {{ $resource.Kind }} Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type Multicluster{{ $resource.Kind }}DeletionReconciler interface {
+	Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request)
+}
+
+type Multicluster{{ $resource.Kind }}ReconcilerFuncs struct {
+	OnReconcile{{ $resource.Kind }}         func(clusterName string, obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error)
+	OnReconcile{{ $resource.Kind }}Deletion func(clusterName string, req reconcile.Request)
+}
+
+func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+	if f.OnReconcile{{ $resource.Kind }} == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcile{{ $resource.Kind }}(clusterName, obj)
+}
+
+func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request) {
+	if f.OnReconcile{{ $resource.Kind }}Deletion == nil {
+		return
+	}
+	f.OnReconcile{{ $resource.Kind }}Deletion(clusterName, req)
+}
+
+type Multicluster{{ $resource.Kind }}ReconcileLoop interface {
+	// AddMulticluster{{ $resource.Kind }}Reconciler adds a Multicluster{{ $resource.Kind }}Reconciler to the Multicluster{{ $resource.Kind }}ReconcileLoop.
+	AddMulticluster{{ $resource.Kind }}Reconciler(ctx context.Context, rec Multicluster{{ $resource.Kind }}Reconciler, predicates ...predicate.Predicate)
+}
+
+type multicluster{{ $resource.Kind }}ReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multicluster{{ $resource.Kind }}ReconcileLoop) AddMulticluster{{ $resource.Kind }}Reconciler(ctx context.Context, rec Multicluster{{ $resource.Kind }}Reconciler, predicates ...predicate.Predicate) {
+	genericReconciler := generic{{ $resource.Kind }}MulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticluster{{ $resource.Kind }}ReconcileLoop(name string, cw multicluster.ClusterWatcher) Multicluster{{ $resource.Kind }}ReconcileLoop {
+	return &multicluster{{ $resource.Kind }}ReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &{{ group_import_name $ }}.{{ $resource.Kind }}{})}
+}
+
+type generic{{ $resource.Kind }}MulticlusterReconciler struct {
+	reconciler Multicluster{{ $resource.Kind }}Reconciler
+}
+
+func (g generic{{ $resource.Kind }}MulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+	if deletionReconciler, ok := g.reconciler.(Multicluster{{ $resource.Kind }}DeletionReconciler); ok {
+		deletionReconciler.Reconcile{{ $resource.Kind }}Deletion(cluster, req)
+	}
+}
+
+func (g generic{{ $resource.Kind }}MulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*{{ group_import_name $ }}.{{ $resource.Kind }})
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: {{ $resource.Kind }} handler received event for %T", object)
+	}
+	return g.reconciler.Reconcile{{ $resource.Kind }}(cluster, obj)
+}
+
+
+{{- end }}

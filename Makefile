@@ -16,7 +16,7 @@ install-deps: mod-download
 	go get -v github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 	go get -v github.com/solo-io/protoc-gen-ext
 	go get -v github.com/golang/mock/mockgen
-	go get -v golang.org/x/tools/cmd/goimports
+	go get -v golang.org/x/tools/cmd/goimports@v0.0.0-20200427205912-352a5409fae0
 	go mod tidy
 
 # Generated Code - Required to update Codgen Templates
@@ -36,9 +36,12 @@ run-tests:
 	ginkgo -r -failFast -trace -progress \
 		-progress \
 		-compilers=4 \
-		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG)
+		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG) \
+		-failOnPending \
+		-randomizeAllSpecs \
+		-randomizeSuites \
+		-keepGoing
 	goimports -w .
-
 
 #----------------------------------------------------------------------------------
 # Clean

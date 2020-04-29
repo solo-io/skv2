@@ -16,6 +16,7 @@ import (
 )
 
 // Handle events for the Paint Resource
+// DEPRECATED: Prefer reconciler pattern.
 type PaintEventHandler interface {
 	CreatePaint(obj *things_test_io_v1.Paint) error
 	UpdatePaint(old, new *things_test_io_v1.Paint) error
@@ -122,6 +123,7 @@ func (h genericPaintHandler) Generic(object runtime.Object) error {
 }
 
 // Handle events for the ClusterResource Resource
+// DEPRECATED: Prefer reconciler pattern.
 type ClusterResourceEventHandler interface {
 	CreateClusterResource(obj *things_test_io_v1.ClusterResource) error
 	UpdateClusterResource(old, new *things_test_io_v1.ClusterResource) error
