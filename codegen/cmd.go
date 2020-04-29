@@ -228,8 +228,12 @@ func addMessagesToResource(descriptors []*collector.DescriptorWithPath, resource
 
 		if fileDescriptor.GetPackage() == resource.Group.Group {
 
-			coll := collector.NewCollector([]string{resource.Group.ProtoDir}, nil)
-			imports, err := coll.CollectImportsForFile(resource.Group.ProtoDir, fileDescriptor.ProtoFilePath)
+			protoDir := resource.Group.ProtoDir
+			if protoDir == "" {
+				protoDir = anyvendor.DefaultDepDir
+			}
+			coll := collector.NewCollector([]string{protoDir}, nil)
+			imports, err := coll.CollectImportsForFile(protoDir, fileDescriptor.ProtoFilePath)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -246,7 +250,9 @@ func addMessagesToResource(descriptors []*collector.DescriptorWithPath, resource
 			if err != nil {
 				log.Fatal(err)
 			}
-			generator := &openapi.Generator{}
+			generator := &openapi.Generator{
+				ExpandReferences: true,
+			}
 			built := cue.Build(instances)
 			for _, builtInstance := range built {
 				if builtInstance.Err != nil {
