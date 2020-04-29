@@ -36,9 +36,12 @@ run-tests:
 	ginkgo -r -failFast -trace -progress \
 		-progress \
 		-compilers=4 \
-		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG)
+		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG) \
+		-failOnPending \
+		-randomizeAllSpecs \
+		-randomizeSuites \
+		-keepGoing
 	goimports -w .
-
 
 #----------------------------------------------------------------------------------
 # Clean

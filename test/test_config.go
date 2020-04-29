@@ -2,24 +2,32 @@ package test
 
 import (
 	"context"
+	"os"
 
 	"github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-func MustConfig() *rest.Config {
-	cfg, err := config.GetConfig()
+func MustConfig(context string) *rest.Config {
+	cfg, err := config.GetConfigWithContext(context)
 	Expect(err).NotTo(HaveOccurred())
 	return cfg
 }
 
 func MustManager(ns string) (manager.Manager, func()) {
-	cfg := MustConfig()
-	return ManagerWithOpts(cfg, manager.Options{Namespace: ns})
+	cfg := MustConfig("")
+	return ManagerWithOpts(cfg, manager.Options{
+		Namespace: ns,
+		// Disable metrics and health probe to allow tests to run in parallel.
+		MetricsBindAddress:     "0",
+		HealthProbeBindAddress: "0",
+	})
 }
 
 func ManagerWithOpts(cfg *rest.Config, opts manager.Options) (manager.Manager, func()) {
@@ -37,4 +45,24 @@ func ManagerWithOpts(cfg *rest.Config, opts manager.Options) (manager.Manager, f
 	mgr.GetCache().WaitForCacheSync(ctx.Done())
 
 	return mgr, cancel
+}
+
+func MustManagerNotStarted(ns string) manager.Manager {
+	mgr, err := manager.New(MustConfig(""), manager.Options{
+		Namespace: ns,
+		// Disable metrics and health probe to allow tests to run in parallel.
+		MetricsBindAddress:     "0",
+		HealthProbeBindAddress: "0",
+	})
+	Expect(err).NotTo(HaveOccurred())
+	return mgr
+}
+
+func MustClientConfigWithContext(context string) *api.Config {
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	loadingRules.ExplicitPath = os.Getenv("KUBECONFIG")
+	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: context}
+	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ConfigAccess().GetStartingConfig()
+	Expect(err).NotTo(HaveOccurred())
+	return cfg
 }

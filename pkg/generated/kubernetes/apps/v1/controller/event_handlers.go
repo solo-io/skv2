@@ -16,6 +16,7 @@ import (
 )
 
 // Handle events for the Deployment Resource
+// DEPRECATED: Prefer reconciler pattern.
 type DeploymentEventHandler interface {
 	CreateDeployment(obj *apps_v1.Deployment) error
 	UpdateDeployment(old, new *apps_v1.Deployment) error
@@ -122,6 +123,7 @@ func (h genericDeploymentHandler) Generic(object runtime.Object) error {
 }
 
 // Handle events for the ReplicaSet Resource
+// DEPRECATED: Prefer reconciler pattern.
 type ReplicaSetEventHandler interface {
 	CreateReplicaSet(obj *apps_v1.ReplicaSet) error
 	UpdateReplicaSet(old, new *apps_v1.ReplicaSet) error

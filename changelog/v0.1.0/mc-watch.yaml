@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/16
+    description: Add a ClusterWatcher with hooks for multicluster reconcilers.
