@@ -1,6 +1,8 @@
 package model
 
 import (
+	"text/template"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/code-generator/model"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -85,12 +87,21 @@ type Group struct {
 	// proto descriptors will be available to the templates if the group was compiled with them.
 	Descriptors []*model.DescriptorWithPath
 
-	// custom templates to run generation on.
+	// data for providing custom templates to generate custom code for groups
+	CustomTemplates CustomTemplates
+}
+
+type CustomTemplates struct {
+	// the custom templates to run generation on.
 	// maps output filename to template text
-	CustomTemplates map[string]string
+	Templates map[string]string
 
 	// custom data that can be provided for use with custom templates
-	CustomExtensions interface{}
+	Data interface{}
+
+	// custom template funcs which will be inserted into the
+	// default template funcmap at rendering time
+	Funcs template.FuncMap
 }
 
 // ensures the resources point to this group
