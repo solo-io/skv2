@@ -12,7 +12,7 @@ type Chart struct {
 	FilterTemplate func(outPath string) bool
 
 	// outPath: content template map
-	CustomTemplates map[string]string
+	CustomTemplates CustomTemplates
 
 	Values interface{}
 

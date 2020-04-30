@@ -97,7 +97,7 @@ func (r KubeCodeRenderer) RenderKubeCode(grp Group) ([]OutFile, error) {
 		return nil, err
 	}
 
-	customFiles, err := r.renderCustomTemplates(grp.CustomTemplates, grp)
+	customFiles, err := r.renderCustomTemplates(grp.CustomTemplates.Templates, grp.CustomTemplates.Funcs, grp)
 	if err != nil {
 		return nil, err
 	}
