@@ -51,7 +51,7 @@ func (r ChartRenderer) Render(chart model.Chart) ([]OutFile, error) {
 		return nil, err
 	}
 
-	customFiles, err := r.renderCustomTemplates(chart.CustomTemplates.Templates, chart.CustomTemplates.Funcs,  chart)
+	customFiles, err := r.renderCustomTemplates(chart.CustomTemplates.Templates, chart.CustomTemplates.Funcs, chart)
 	if err != nil {
 		return nil, err
 	}
