@@ -135,6 +135,9 @@ func uniqueGoImportPathsForGroup(grp Group) []string {
 			continue
 		}
 		resultMap[res.Spec.Type.GoPackage] = struct{}{}
+		if res.Status != nil {
+			resultMap[res.Status.Type.GoPackage] = struct{}{}
+		}
 	}
 	var result []string
 	for k, _ := range resultMap {
