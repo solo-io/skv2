@@ -1,6 +1,6 @@
 package multicluster
 
-const (
+var (
 	// MasterCluster is the clusterName for the cluster ClusterWatcher watches.
 	MasterCluster = ""
 )
