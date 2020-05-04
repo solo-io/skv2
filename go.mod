@@ -28,7 +28,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/go-utils v0.15.2
-	github.com/solo-io/protoc-gen-ext v0.0.7
+	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/solo-kit v0.12.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect

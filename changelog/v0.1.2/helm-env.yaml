@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/skv2/issues/30
+    description: Allow setting env var name/value in generated helm charts.
