@@ -101,12 +101,12 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		})
 		AfterEach(func() {
 			cancel()
-			for _, kubeContext := range []string{"", remoteContext} {
-				cfg, err := kubeutils.GetConfigWithContext("", os.Getenv("KUBECONFIG"), kubeContext)
-				Expect(err).NotTo(HaveOccurred())
-				kube := kubernetes.NewForConfigOrDie(cfg)
-				kube.CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
-			}
+			cfg, err := kubeutils.GetConfigWithContext("", os.Getenv("KUBECONFIG"), "")
+			Expect(err).NotTo(HaveOccurred())
+			kube := kubernetes.NewForConfigOrDie(cfg)
+			// clean up the kubeconfig secret
+			err = kube.CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		Describe("clientset", func() {
