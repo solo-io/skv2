@@ -37,8 +37,8 @@ func NewClusterWatcher(ctx context.Context, options manager.Options) *clusterWat
 	}
 }
 
+// This function is blocking if the manager has not been started, therefore it should be run in a go routine
 func (c *clusterWatcher) Run(master manager.Manager) error {
-	c.startManager(multicluster.MasterCluster, master)
 	loop := controller.NewSecretReconcileLoop("cluster watcher", master)
 	return loop.RunSecretReconciler(c.ctx, c, kubeconfig.Predicate)
 }
