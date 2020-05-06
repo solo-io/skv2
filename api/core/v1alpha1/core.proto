@@ -26,17 +26,17 @@ message ObjectRef {
 // The State of a reconciled object
 enum State {
     // Waiting to be processed.
-    Pending = 0;
+    PENDING = 0;
 
     // Currently processing.
-    Processing = 1;
+    PROCESSING = 1;
 
     // Invalid parameters supplied, will not continue.
-    Invalid = 2;
+    INVALID = 2;
 
     // Failed during processing.
-    Failed = 3;
+    FAILED = 3;
 
     // Finished processing successfully.
-    Succeeded = 4;
+    ACCEPTED = 4;
 }
