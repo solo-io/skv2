@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package core.skv2.solo.io;
+
+option go_package = "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1alpha1/types";
+
+import "google/protobuf/wrappers.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
+
+// Resource reference for an object
+message ObjectRef {
+
+    google.protobuf.StringValue api_group = 1;
+
+    google.protobuf.StringValue kind = 2;
+
+    string name = 3;
+
+    string namespace = 4;
+}
+
+// The State of a reconciled object
+enum State {
+    // Waiting to be processed.
+    Pending = 0;
+
+    // Currently processing.
+    Processing = 1;
+
+    // Invalid parameters supplied, will not continue.
+    Invalid = 2;
+
+    // Failed during processing.
+    Failed = 3;
+
+    // Finished processing successfully.
+    Succeeded = 4;
+}
