@@ -127,12 +127,16 @@ var _ = Describe("Generated Code", func() {
 	Context("kube reconciler", func() {
 		var (
 			mgr    manager.Manager
-			cancel = func() {}
+			ctx    context.Context
+			cancel context.CancelFunc
 		)
 		BeforeEach(func() {
-			mgr, cancel = test.MustManager(ns)
+			ctx, cancel = context.WithCancel(context.Background())
+			mgr = test.MustManager(ctx, ns)
 		})
-		AfterEach(cancel)
+		AfterEach(func() {
+			cancel()
+		})
 
 		It("uses the generated controller to reconcile", func() {
 

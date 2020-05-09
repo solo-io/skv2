@@ -43,6 +43,7 @@ require (
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v8.0.0+incompatible
 	k8s.io/code-generator v0.17.2
+	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66 // indirect
 	sigs.k8s.io/aws-iam-authenticator v0.5.0
 	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.1.0
