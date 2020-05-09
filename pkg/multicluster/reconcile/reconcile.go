@@ -39,7 +39,7 @@ func NewLoop(name string, cw multicluster.ClusterWatcher, resource ezkube.Object
 
 // AddCluster creates a reconcile loop for the cluster.
 func (r *clusterLoopRunner) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
-	loopForCluster := reconcile.NewLoop(r.name+"-"+cluster, mgr, r.resource)
+	loopForCluster := reconcile.NewLoop(r.name+"-"+cluster, mgr, r.resource, reconcile.Options{})
 
 	// Add the cluster loop to the set of active loops and start reconcilers.
 	r.clusterLoops.add(cluster, loopForCluster)

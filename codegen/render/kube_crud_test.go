@@ -143,7 +143,7 @@ var _ = Describe("Generated Code", func() {
 
 			paint.GetObjectKind().GroupVersionKind()
 
-			loop := controller.NewPaintReconcileLoop("blick", mgr)
+			loop := controller.NewPaintReconcileLoop("blick", mgr, reconcile.Options{})
 
 			var reconciled *Paint
 			var deleted reconcile.Request
