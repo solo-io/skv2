@@ -73,9 +73,9 @@ type {{ $kindLowerCamel }}ReconcileLoop struct {
     loop reconcile.Loop
 }
 
-func New{{ $resource.Kind }}ReconcileLoop(name string, mgr manager.Manager) {{ $resource.Kind }}ReconcileLoop {
+func New{{ $resource.Kind }}ReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) {{ $resource.Kind }}ReconcileLoop {
     return &{{ $kindLowerCamel }}ReconcileLoop{
-        loop: reconcile.NewLoop(name, mgr, &{{ group_import_name $ }}.{{ $resource.Kind }}{}),
+        loop: reconcile.NewLoop(name, mgr, &{{ group_import_name $ }}.{{ $resource.Kind }}{}, options),
     }
 }
 
