@@ -54,10 +54,16 @@ type runner struct {
 	name     string
 	mgr      manager.Manager
 	resource ezkube.Object
+	options  Options
 }
 
-func NewLoop(name string, mgr manager.Manager, resource ezkube.Object) *runner {
-	return &runner{name: name, mgr: mgr, resource: resource}
+type Options struct {
+	// If true will wait for cache sync before returning from RunReconcile
+	WaitForCacheSync bool
+}
+
+func NewLoop(name string, mgr manager.Manager, resource ezkube.Object, options Options) *runner {
+	return &runner{name: name, mgr: mgr, resource: resource, options: options}
 }
 
 type runnerReconciler struct {
@@ -68,19 +74,19 @@ type runnerReconciler struct {
 	reconciler Reconciler
 }
 
-func (ec *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) error {
-	gvk, err := apiutil.GVKForObject(ec.resource, ec.mgr.GetScheme())
+func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predicates ...predicate.Predicate) error {
+	gvk, err := apiutil.GVKForObject(r.resource, r.mgr.GetScheme())
 	if err != nil {
 		return err
 	}
 	rec := &runnerReconciler{
-		logger:     log.Log.WithName("event-controller").WithValues("kind", gvk).WithName(ec.name),
-		mgr:        ec.mgr,
-		resource:   ec.resource,
+		logger:     log.Log.WithName("event-controller").WithValues("kind", gvk).WithName(r.name),
+		mgr:        r.mgr,
+		resource:   r.resource,
 		reconciler: reconciler,
 	}
 
-	ctl, err := controller.New(ec.name, ec.mgr, controller.Options{
+	ctl, err := controller.New(r.name, r.mgr, controller.Options{
 		Reconciler: rec,
 	})
 	if err != nil {
@@ -88,13 +94,16 @@ func (ec *runner) RunReconciler(ctx context.Context, reconciler Reconciler, pred
 	}
 
 	// send us watch events
-	if err := ctl.Watch(&source.Kind{Type: ec.resource}, &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	if err := ctl.Watch(&source.Kind{Type: r.resource}, &handler.EnqueueRequestForObject{}, predicates...); err != nil {
 		return err
 	}
 
-	rec.logger.V(1).Info("waiting for cache sync...")
-	if synced := ec.mgr.GetCache().WaitForCacheSync(ctx.Done()); !synced {
-		return errors.Errorf("waiting for cache sync failed")
+	// Only wait for cache sync if specified in options
+	if r.options.WaitForCacheSync {
+		rec.logger.V(1).Info("waiting for cache sync...")
+		if synced := r.mgr.GetCache().WaitForCacheSync(ctx.Done()); !synced {
+			return errors.Errorf("waiting for cache sync failed")
+		}
 	}
 
 	return nil
