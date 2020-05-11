@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Fix multicluster test util so we get a config with the given current context.
