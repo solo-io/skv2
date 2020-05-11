@@ -1,6 +1,0 @@
-changelog:
-  - type: FIX
-    issueLink: https://github.com/solo-io/skv2/issues/33
-    description: MultiCluster watcher should not start manager.
-
-
