@@ -70,9 +70,9 @@ type paintReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewPaintReconcileLoop(name string, mgr manager.Manager) PaintReconcileLoop {
+func NewPaintReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) PaintReconcileLoop {
 	return &paintReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &things_test_io_v1.Paint{}),
+		loop: reconcile.NewLoop(name, mgr, &things_test_io_v1.Paint{}, options),
 	}
 }
 
@@ -185,9 +185,9 @@ type clusterResourceReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewClusterResourceReconcileLoop(name string, mgr manager.Manager) ClusterResourceReconcileLoop {
+func NewClusterResourceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ClusterResourceReconcileLoop {
 	return &clusterResourceReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &things_test_io_v1.ClusterResource{}),
+		loop: reconcile.NewLoop(name, mgr, &things_test_io_v1.ClusterResource{}, options),
 	}
 }
 

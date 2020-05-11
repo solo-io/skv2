@@ -1,0 +1,7 @@
+changelog:
+- type: BREAKING_CHANGE
+  description: |
+    Implement options struct for reconcile Loop, and by extension generated reconcilers. The only option currently is
+    whether or now to `WaitForCacheSync`. The default will be false. This means that the `RunReconciler` function no
+    longer needs to be called in a go routine.
+  issueLink: https://github.com/solo-io/skv2/issues/35

@@ -70,9 +70,9 @@ type kubernetesClusterReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewKubernetesClusterReconcileLoop(name string, mgr manager.Manager) KubernetesClusterReconcileLoop {
+func NewKubernetesClusterReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) KubernetesClusterReconcileLoop {
 	return &kubernetesClusterReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &multicluster_solo_io_v1alpha1.KubernetesCluster{}),
+		loop: reconcile.NewLoop(name, mgr, &multicluster_solo_io_v1alpha1.KubernetesCluster{}, options),
 	}
 }
 
