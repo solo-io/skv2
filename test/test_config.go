@@ -20,9 +20,9 @@ func MustConfig(context string) *rest.Config {
 	return cfg
 }
 
-func MustManager(ns string) (manager.Manager, func()) {
+func MustManager(ctx context.Context, ns string) manager.Manager {
 	cfg := MustConfig("")
-	return ManagerWithOpts(cfg, manager.Options{
+	return ManagerWithOpts(ctx, cfg, manager.Options{
 		Namespace: ns,
 		// Disable metrics and health probe to allow tests to run in parallel.
 		MetricsBindAddress:     "0",
@@ -30,8 +30,7 @@ func MustManager(ns string) (manager.Manager, func()) {
 	})
 }
 
-func ManagerWithOpts(cfg *rest.Config, opts manager.Options) (manager.Manager, func()) {
-	ctx, cancel := context.WithCancel(context.TODO())
+func ManagerWithOpts(ctx context.Context, cfg *rest.Config, opts manager.Options) manager.Manager {
 
 	mgr, err := manager.New(cfg, opts)
 	Expect(err).NotTo(HaveOccurred())
@@ -44,7 +43,7 @@ func ManagerWithOpts(cfg *rest.Config, opts manager.Options) (manager.Manager, f
 
 	mgr.GetCache().WaitForCacheSync(ctx.Done())
 
-	return mgr, cancel
+	return mgr
 }
 
 func MustManagerNotStarted(ns string) manager.Manager {
@@ -61,8 +60,11 @@ func MustManagerNotStarted(ns string) manager.Manager {
 func MustClientConfigWithContext(context string) *api.Config {
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	loadingRules.ExplicitPath = os.Getenv("KUBECONFIG")
-	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: context}
-	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ConfigAccess().GetStartingConfig()
+	// NOTE: ConfigOverrides are NOT propagated to `GetStartingConfig()`, so we set CurrentContext on the resulting config
+	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, nil).ConfigAccess().GetStartingConfig()
 	Expect(err).NotTo(HaveOccurred())
+	if context != "" {
+		cfg.CurrentContext = context
+	}
 	return cfg
 }

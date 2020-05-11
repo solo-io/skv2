@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: Check for the Go Package of the status field when calculating imports_for_group
+  issueLink: https://github.com/solo-io/skv2/issues/29

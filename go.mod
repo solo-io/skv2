@@ -3,62 +3,50 @@ module github.com/solo-io/skv2
 go 1.13
 
 require (
-	cloud.google.com/go v0.50.0
-	github.com/Azure/go-autorest/autorest v0.9.4 // indirect
+	cloud.google.com/go v0.40.0
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.0.0
-	github.com/avast/retry-go v2.4.3+incompatible
 	github.com/aws/aws-sdk-go v1.30.15
-	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v0.1.0
-	github.com/go-openapi/spec v0.19.5 // indirect
-	github.com/go-openapi/swag v0.19.6 // indirect
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.4.0 // indirect
-	github.com/gophercloud/gophercloud v0.6.0 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/huandu/xstrings v1.2.1 // indirect
+	github.com/gophercloud/gophercloud v0.2.0 // indirect
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
-	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/procfs v0.0.8 // indirect
 	github.com/rogpeppe/go-internal v1.5.2
-	github.com/rotisserie/eris v0.2.0
+	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/go-utils v0.15.2
-	github.com/solo-io/protoc-gen-ext v0.0.7
-	github.com/solo-io/solo-kit v0.13.3
-	github.com/spf13/cast v1.3.1 // indirect
+	github.com/solo-io/protoc-gen-ext v0.0.9
+	github.com/solo-io/solo-kit v0.12.2
 	go.uber.org/zap v1.13.0
+	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
+	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
 	golang.org/x/tools v0.0.0-20200427205912-352a5409fae0
 	gonum.org/v1/netlib v0.0.0-20191031114514-eccb95939662 // indirect
-	google.golang.org/api v0.14.0
-	google.golang.org/genproto v0.0.0-20191216164720-4f79533eabd1
-	k8s.io/api v0.17.4
-	k8s.io/apiextensions-apiserver v0.17.4
-	k8s.io/apimachinery v0.17.4
-	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/code-generator v0.17.4
-	k8s.io/gengo v0.0.0-20200114144118-36b2048a9120 // indirect
-	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
+	google.golang.org/api v0.6.0
+	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
+	k8s.io/api v0.17.2
+	k8s.io/apiextensions-apiserver v0.17.2
+	k8s.io/apimachinery v0.17.2
+	k8s.io/client-go v8.0.0+incompatible
+	k8s.io/code-generator v0.17.2
+	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66 // indirect
 	sigs.k8s.io/aws-iam-authenticator v0.5.0
 	sigs.k8s.io/controller-runtime v0.5.1
-	sigs.k8s.io/yaml v1.2.0
+	sigs.k8s.io/yaml v1.1.0
 )
 
 // Pinned to kubernetes-1.14.1

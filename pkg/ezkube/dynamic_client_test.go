@@ -17,11 +17,13 @@ import (
 var _ = Describe("SimpleClient", func() {
 	var (
 		mgr    manager.Manager
+		ctx    context.Context
 		cancel context.CancelFunc
 		ns     = "default"
 	)
 	BeforeEach(func() {
-		mgr, cancel = test.MustManager(ns)
+		ctx, cancel = context.WithCancel(context.Background())
+		mgr = test.MustManager(ctx, ns)
 	})
 	AfterEach(func() {
 		cancel()

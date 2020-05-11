@@ -13,6 +13,7 @@ import (
 	mc_client "github.com/solo-io/skv2/pkg/multicluster/client"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/go-utils/kubeutils"
@@ -40,11 +41,13 @@ func WithRemoteClusterContextDescribe(text string, body func()) bool {
 
 var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 	var (
-		ns            string
-		clientSet     Clientset
-		logLevel      = zap.NewAtomicLevel()
-		ctx           = context.TODO()
-		remoteContext = os.Getenv("REMOTE_CLUSTER_CONTEXT")
+		ns              string
+		masterClientSet Clientset
+		remoteClientSet Clientset
+		logLevel        = zap.NewAtomicLevel()
+		ctx             = context.TODO()
+		remoteContext   = os.Getenv("REMOTE_CLUSTER_CONTEXT")
+		err             error
 	)
 
 	BeforeEach(func() {
@@ -60,9 +63,11 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			kube := kubernetes.NewForConfigOrDie(cfg)
 			err = kubeutils.CreateNamespacesInParallel(kube, ns)
 			Expect(err).NotTo(HaveOccurred())
-			clientSet, err = NewClientsetFromConfig(test.MustConfig(""))
-			Expect(err).NotTo(HaveOccurred())
 		}
+		masterClientSet, err = NewClientsetFromConfig(test.MustConfig(""))
+		Expect(err).NotTo(HaveOccurred())
+		remoteClientSet, err = NewClientsetFromConfig(test.MustConfig(remoteContext))
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	AfterEach(func() {
@@ -76,32 +81,42 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 
 	Context("multicluster", func() {
 		var (
-			cancel        = func() {}
-			masterManager manager.Manager
-			kcSecret      *corev1.Secret
-			cluster2      = "cluster-two"
-			err           error
+			cancel         = func() {}
+			masterManager  manager.Manager
+			remoteKcSecret *corev1.Secret
+			kcSecret       *corev1.Secret
+			cluster2       = "cluster-two"
+			cluster1       = "cluster-one"
+			err            error
 		)
 
-		mustNewKubeConfigSecret := func() *corev1.Secret {
-			cfg := test.MustClientConfigWithContext(remoteContext)
-			kcSecret, err = kubeconfig.ToSecret(ns, cluster2, *cfg)
+		mustNewKubeConfigSecret := func(context, clusterName string) *corev1.Secret {
+			cfg := test.MustClientConfigWithContext(context)
+			secret, err := kubeconfig.ToSecret(ns, clusterName, *cfg)
 			Expect(err).NotTo(HaveOccurred())
-			return kcSecret
+			return secret
 		}
 
 		BeforeEach(func() {
 			ctx, cancel = context.WithCancel(context.Background())
-			masterManager = test.MustManagerNotStarted(ns)
-			kcSecret, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(mustNewKubeConfigSecret())
+			masterManager = test.MustManager(ctx, ns)
+			remoteKcSecret, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(mustNewKubeConfigSecret(remoteContext, cluster2))
+			Expect(err).NotTo(HaveOccurred())
+			kcSecret, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(mustNewKubeConfigSecret("", cluster1))
+			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
 			cancel()
-			for _, kubeContext := range []string{"", remoteContext} {
-				cfg, err := kubeutils.GetConfigWithContext("", os.Getenv("KUBECONFIG"), kubeContext)
+			cfg, err := kubeutils.GetConfigWithContext("", os.Getenv("KUBECONFIG"), "")
+			Expect(err).NotTo(HaveOccurred())
+			kube := kubernetes.NewForConfigOrDie(cfg)
+			// clean up the remote kubeconfig secret
+			err = kube.CoreV1().Secrets(ns).Delete(remoteKcSecret.Name, &v1.DeleteOptions{})
+			Expect(err).NotTo(HaveOccurred())
+			// clean up the kubeconfig secret
+			err = kube.CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
+			if !errors.IsNotFound(err) {
 				Expect(err).NotTo(HaveOccurred())
-				kube := kubernetes.NewForConfigOrDie(cfg)
-				kube.CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
 			}
 		})
 
@@ -114,8 +129,11 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				clientset := NewMulticlusterClientset(mcClientset)
 
 				masterPaint := newPaint(ns, "paint-mc-clientset-master")
-				masterClusterClientset, err := clientset.Cluster(multicluster.MasterCluster)
-				Expect(err).NotTo(HaveOccurred())
+				var masterClusterClientset Clientset
+				Eventually(func() error {
+					masterClusterClientset, err = clientset.Cluster(cluster1)
+					return err
+				}, "5s").Should(Not(HaveOccurred()))
 				mustCrud(context.TODO(), masterClusterClientset, masterPaint)
 
 				cluster2Paint := newPaint(ns, "paint-mc-clientset-cluster2")
@@ -134,18 +152,16 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 
 		Describe("kube reconciler", func() {
 			var (
-				cw    multicluster.ClusterWatcher
-				paint *Paint
+				cw multicluster.ClusterWatcher
 			)
 
-			mustReconcile := func(paint *Paint, paints *concurrentPaintMap, reqs *concurrentRequestMap) {
-				Eventually(func() *Paint {
-					return paints.get(multicluster.MasterCluster, paint.Name)
-				}, time.Second).ShouldNot(BeNil())
+			mustReconcile := func(clientSet Clientset, cluster string, paint *Paint, paints *concurrentPaintMap, reqs *concurrentRequestMap) {
+				err = clientSet.Paints().CreatePaint(ctx, paint)
+				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(func() *Paint {
-					return paints.get(cluster2, paint.Name)
-				}, time.Second).ShouldNot(BeNil())
+					return paints.get(cluster, paint.Name)
+				}, time.Second*20).ShouldNot(BeNil())
 
 				// update
 				paint.Spec.Color = &PaintColor{Value: 0.7}
@@ -154,11 +170,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(func() PaintSpec {
-					return paints.get(multicluster.MasterCluster, paint.Name).Spec
-				}, time.Second).Should(Equal(paint.Spec))
-
-				Eventually(func() PaintSpec {
-					return paints.get(cluster2, paint.Name).Spec
+					return paints.get(cluster, paint.Name).Spec
 				}, time.Second).Should(Equal(paint.Spec))
 
 				// delete
@@ -169,14 +181,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(func() reconcile.Request {
-					return reqs.get(multicluster.MasterCluster, paint.Name)
-				}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
-					Name:      paint.Name,
-					Namespace: paint.Namespace,
-				}}))
-
-				Eventually(func() reconcile.Request {
-					return reqs.get(cluster2, paint.Name)
+					return reqs.get(cluster, paint.Name)
 				}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
 					Name:      paint.Name,
 					Namespace: paint.Namespace,
@@ -185,13 +190,6 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 
 			BeforeEach(func() {
 				cw = watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns})
-
-				Expect(err).NotTo(HaveOccurred())
-
-				paint = newPaint(ns, "paint-mc-reonciler")
-
-				err = clientSet.Paints().CreatePaint(ctx, paint)
-				Expect(err).NotTo(HaveOccurred())
 			})
 
 			It("works when a loop is registered before the watcher is started", func() {
@@ -213,7 +211,8 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				err := cw.Run(masterManager)
 				Expect(err).NotTo(HaveOccurred())
 
-				mustReconcile(paint, paintMap, paintDeletes)
+				mustReconcile(masterClientSet, cluster1, newPaint(ns, "paint-mc-pre-start"), paintMap, paintDeletes)
+				mustReconcile(remoteClientSet, cluster2, newPaint(ns, "paint-mc-pre-start"), paintMap, paintDeletes)
 			})
 
 			It("works when a kubeconfig secret is deleted and recreated", func() {
@@ -235,70 +234,48 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				err := cw.Run(masterManager)
 				Expect(err).NotTo(HaveOccurred())
 
-				mustReconcile(paint, paintMap, paintDeletes)
-
+				mustReconcile(masterClientSet, cluster1, newPaint(ns, "paint-mc-delete-recreate"), paintMap, paintDeletes)
+				mustReconcile(remoteClientSet, cluster2, newPaint(ns, "paint-mc-delete-recreate"), paintMap, paintDeletes)
 				/**
 				When a KubeConfig secret is deleted, paint is no longer reconciled for that cluster
 				*/
 
-				err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
+				err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(remoteKcSecret.Name, &v1.DeleteOptions{})
 				Expect(err).NotTo(HaveOccurred())
 
 				// Sleep to be sure that the secret deletion propagates.
-				time.Sleep(100 * time.Millisecond)
+				// need to allow
+				time.Sleep(time.Second)
 
+				// Expect a new paint to reconcile as usual on the master cluster
+				mustReconcile(masterClientSet, cluster1, newPaint(ns, "paint-mc-delete-recreate"), paintMap, paintDeletes)
+
+				// Expect a new paint to NOT reconcile on the remote cluster, as we've deleted the kubeconfig
 				paint2 := newPaint(ns, "paint-mc-reconciler-2")
-				err = clientSet.Paints().CreatePaint(ctx, paint2)
+				err = remoteClientSet.Paints().CreatePaint(ctx, paint2)
 				Expect(err).NotTo(HaveOccurred())
-
-				Eventually(func() *Paint {
-					return paintMap.get(multicluster.MasterCluster, paint2.Name)
-				}, time.Second).ShouldNot(BeNil())
 
 				// Sleep the amount of time we typically allow for a reconcile to happen.
-				time.Sleep(1 * time.Second)
-				Expect(paintMap.get(cluster2, paint2.Name)).To(BeNil())
-
-				// update
-				paint2.Spec.Color = &PaintColor{Value: 0.7}
-
-				err = clientSet.Paints().UpdatePaint(ctx, paint2)
-				Expect(err).NotTo(HaveOccurred())
-
-				Eventually(func() PaintSpec {
-					return paintMap.get(multicluster.MasterCluster, paint2.Name).Spec
-				}, time.Second).Should(Equal(paint2.Spec))
-
+				Eventually(paintMap.get(cluster2, paint2.Name)).Should(BeNil())
 				// delete
-				err = clientSet.Paints().DeletePaint(ctx, client.ObjectKey{
+				err = remoteClientSet.Paints().DeletePaint(ctx, client.ObjectKey{
 					Name:      paint2.Name,
 					Namespace: paint2.Namespace,
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(func() reconcile.Request {
-					return paintDeletes.get(multicluster.MasterCluster, paint2.Name)
-				}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
-					Name:      paint2.Name,
-					Namespace: paint2.Namespace,
-				}}))
-
 				// Sleep the amount of time we typically allow for a reconcile to happen.
-				time.Sleep(1 * time.Second)
-				Expect(paintDeletes.get(cluster2, paint2.Name)).To(Equal(reconcile.Request{}))
+				Eventually(paintDeletes.get(cluster2, paint2.Name), "5s").Should(Equal(reconcile.Request{}))
 
 				/**
 				When a KubeConfig secret is restored, paint is again reconciled for that cluster
 				*/
 
-				_, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(mustNewKubeConfigSecret())
+				_, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(mustNewKubeConfigSecret(remoteContext, cluster2))
 				Expect(err).NotTo(HaveOccurred())
 
-				paint3 := newPaint(ns, "paint-mc-reconciler-3")
-				err = clientSet.Paints().CreatePaint(ctx, paint3)
-				Expect(err).NotTo(HaveOccurred())
-
-				mustReconcile(paint3, paintMap, paintDeletes)
+				mustReconcile(masterClientSet, cluster1, newPaint(ns, "paint-mc-reconciler-3"), paintMap, paintDeletes)
+				mustReconcile(remoteClientSet, cluster2, newPaint(ns, "paint-mc-reconciler-3"), paintMap, paintDeletes)
 			})
 
 			It("works when a loop is registered after the watcher is started", func() {
@@ -320,33 +297,8 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 					},
 				})
 
-				Eventually(func() *Paint {
-					return paintMap.get(multicluster.MasterCluster, paint.Name)
-				}, time.Second).ShouldNot(BeNil())
-
-				Eventually(func() *Paint {
-					return paintMap.get(cluster2, paint.Name)
-				}, time.Second).ShouldNot(BeNil())
-
-				err = clientSet.Paints().DeletePaint(ctx, client.ObjectKey{
-					Name:      paint.Name,
-					Namespace: paint.Namespace,
-				})
-				Expect(err).NotTo(HaveOccurred())
-
-				Eventually(func() reconcile.Request {
-					return deleteMap.get(multicluster.MasterCluster, paint.Name)
-				}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
-					Name:      paint.Name,
-					Namespace: paint.Namespace,
-				}}))
-
-				Eventually(func() reconcile.Request {
-					return deleteMap.get(cluster2, paint.Name)
-				}, time.Second).Should(Equal(reconcile.Request{NamespacedName: types.NamespacedName{
-					Name:      paint.Name,
-					Namespace: paint.Namespace,
-				}}))
+				mustReconcile(masterClientSet, cluster1, newPaint(ns, "late-registration"), paintMap, deleteMap)
+				mustReconcile(remoteClientSet, cluster2, newPaint(ns, "late-registration"), paintMap, deleteMap)
 			})
 		})
 	})
