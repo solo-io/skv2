@@ -1,0 +1,4 @@
+changelog:
+- type: BREAKING_CHANGE
+  description: Remove Helm 2 crd-install hook
+  issueLink: https://github.com/solo-io/skv2/issues/38
