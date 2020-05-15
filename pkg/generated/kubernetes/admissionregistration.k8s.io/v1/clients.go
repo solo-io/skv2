@@ -5,7 +5,9 @@ package v1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -77,6 +79,10 @@ type ValidatingWebhookConfigurationReader interface {
 	ListValidatingWebhookConfiguration(ctx context.Context, opts ...client.ListOption) (*ValidatingWebhookConfigurationList, error)
 }
 
+// ValidatingWebhookConfigurationTransitionFunction instructs the ValidatingWebhookConfigurationWriter how to transition between an existing
+// ValidatingWebhookConfiguration object and a desired on an Upsert
+type ValidatingWebhookConfigurationTransitionFunction func(existing, desired *ValidatingWebhookConfiguration) error
+
 // Writer knows how to create, delete, and update ValidatingWebhookConfigurations.
 type ValidatingWebhookConfigurationWriter interface {
 	// Create saves the ValidatingWebhookConfiguration object.
@@ -93,6 +99,9 @@ type ValidatingWebhookConfigurationWriter interface {
 
 	// DeleteAllOf deletes all ValidatingWebhookConfiguration objects matching the given options.
 	DeleteAllOfValidatingWebhookConfiguration(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ValidatingWebhookConfiguration object.
+	UpsertValidatingWebhookConfiguration(ctx context.Context, obj *ValidatingWebhookConfiguration, transitionFuncs ...ValidatingWebhookConfigurationTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a ValidatingWebhookConfiguration object.
@@ -158,6 +167,19 @@ func (c *validatingWebhookConfigurationClient) PatchValidatingWebhookConfigurati
 func (c *validatingWebhookConfigurationClient) DeleteAllOfValidatingWebhookConfiguration(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &ValidatingWebhookConfiguration{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *validatingWebhookConfigurationClient) UpsertValidatingWebhookConfiguration(ctx context.Context, obj *ValidatingWebhookConfiguration, transitionFuncs ...ValidatingWebhookConfigurationTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ValidatingWebhookConfiguration), desired.(*ValidatingWebhookConfiguration)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *validatingWebhookConfigurationClient) UpdateValidatingWebhookConfigurationStatus(ctx context.Context, obj *ValidatingWebhookConfiguration, opts ...client.UpdateOption) error {

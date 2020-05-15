@@ -5,7 +5,9 @@ package v1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -82,6 +84,10 @@ type PaintReader interface {
 	ListPaint(ctx context.Context, opts ...client.ListOption) (*PaintList, error)
 }
 
+// PaintTransitionFunction instructs the PaintWriter how to transition between an existing
+// Paint object and a desired on an Upsert
+type PaintTransitionFunction func(existing, desired *Paint) error
+
 // Writer knows how to create, delete, and update Paints.
 type PaintWriter interface {
 	// Create saves the Paint object.
@@ -98,6 +104,9 @@ type PaintWriter interface {
 
 	// DeleteAllOf deletes all Paint objects matching the given options.
 	DeleteAllOfPaint(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Paint object.
+	UpsertPaint(ctx context.Context, obj *Paint, transitionFuncs ...PaintTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Paint object.
@@ -165,6 +174,19 @@ func (c *paintClient) DeleteAllOfPaint(ctx context.Context, opts ...client.Delet
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *paintClient) UpsertPaint(ctx context.Context, obj *Paint, transitionFuncs ...PaintTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Paint), desired.(*Paint)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *paintClient) UpdatePaintStatus(ctx context.Context, obj *Paint, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -182,6 +204,10 @@ type ClusterResourceReader interface {
 	ListClusterResource(ctx context.Context, opts ...client.ListOption) (*ClusterResourceList, error)
 }
 
+// ClusterResourceTransitionFunction instructs the ClusterResourceWriter how to transition between an existing
+// ClusterResource object and a desired on an Upsert
+type ClusterResourceTransitionFunction func(existing, desired *ClusterResource) error
+
 // Writer knows how to create, delete, and update ClusterResources.
 type ClusterResourceWriter interface {
 	// Create saves the ClusterResource object.
@@ -198,6 +224,9 @@ type ClusterResourceWriter interface {
 
 	// DeleteAllOf deletes all ClusterResource objects matching the given options.
 	DeleteAllOfClusterResource(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ClusterResource object.
+	UpsertClusterResource(ctx context.Context, obj *ClusterResource, transitionFuncs ...ClusterResourceTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a ClusterResource object.
@@ -265,6 +294,19 @@ func (c *clusterResourceClient) PatchClusterResource(ctx context.Context, obj *C
 func (c *clusterResourceClient) DeleteAllOfClusterResource(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &ClusterResource{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *clusterResourceClient) UpsertClusterResource(ctx context.Context, obj *ClusterResource, transitionFuncs ...ClusterResourceTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ClusterResource), desired.(*ClusterResource)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *clusterResourceClient) UpdateClusterResourceStatus(ctx context.Context, obj *ClusterResource, opts ...client.UpdateOption) error {

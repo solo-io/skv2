@@ -5,7 +5,9 @@ package v1beta1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -77,6 +79,10 @@ type CertificateSigningRequestReader interface {
 	ListCertificateSigningRequest(ctx context.Context, opts ...client.ListOption) (*CertificateSigningRequestList, error)
 }
 
+// CertificateSigningRequestTransitionFunction instructs the CertificateSigningRequestWriter how to transition between an existing
+// CertificateSigningRequest object and a desired on an Upsert
+type CertificateSigningRequestTransitionFunction func(existing, desired *CertificateSigningRequest) error
+
 // Writer knows how to create, delete, and update CertificateSigningRequests.
 type CertificateSigningRequestWriter interface {
 	// Create saves the CertificateSigningRequest object.
@@ -93,6 +99,9 @@ type CertificateSigningRequestWriter interface {
 
 	// DeleteAllOf deletes all CertificateSigningRequest objects matching the given options.
 	DeleteAllOfCertificateSigningRequest(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the CertificateSigningRequest object.
+	UpsertCertificateSigningRequest(ctx context.Context, obj *CertificateSigningRequest, transitionFuncs ...CertificateSigningRequestTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a CertificateSigningRequest object.
@@ -158,6 +167,19 @@ func (c *certificateSigningRequestClient) PatchCertificateSigningRequest(ctx con
 func (c *certificateSigningRequestClient) DeleteAllOfCertificateSigningRequest(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &CertificateSigningRequest{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *certificateSigningRequestClient) UpsertCertificateSigningRequest(ctx context.Context, obj *CertificateSigningRequest, transitionFuncs ...CertificateSigningRequestTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*CertificateSigningRequest), desired.(*CertificateSigningRequest)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *certificateSigningRequestClient) UpdateCertificateSigningRequestStatus(ctx context.Context, obj *CertificateSigningRequest, opts ...client.UpdateOption) error {
