@@ -33,7 +33,6 @@ type Operator struct {
 	// mount these volumes to the operator container
 	VolumeMounts []v1.VolumeMount
 	// set these environment variables on the operator container
-	// Only simple env vars are supported today, i.e. the Name and Value fields
 	Env []v1.EnvVar
 	// add a manifest for each configmap
 	ConfigMaps []v1.ConfigMap
