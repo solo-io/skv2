@@ -2,6 +2,7 @@ package controllerutils_test
 
 import (
 	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -46,7 +47,6 @@ var _ = Describe("Upsert", func() {
 	})
 	It("updates + calls tx funcs when resource is found", func() {
 		var called bool
-
 
 		client.EXPECT().Get(ctx, resource.ToClientKey(desired), desired).Return(nil)
 		client.EXPECT().Update(ctx, desired).Return(nil)
