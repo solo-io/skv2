@@ -1,0 +1,6 @@
+changelog:
+- type: NON_USER_FACING
+  description: Allow different types of Env vars in Chart deployment gen.
+- type: NEW_FEATURE
+  description: Generate Upsert method on clients.
+  issueLink: https://github.com/solo-io/skv2/issues/41
