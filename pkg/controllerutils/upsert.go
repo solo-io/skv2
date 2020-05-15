@@ -12,8 +12,6 @@ import (
 )
 
 // TransitionFunc performs a comparison of the the existing object with the desired object before a desired object is Upserted to kube storage.
-//
-//
 type TransitionFunc func(existing, desired runtime.Object) error
 
 // Easily Upsert a desired object to the cluster.
