@@ -5,7 +5,9 @@ package v1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -98,6 +100,10 @@ type RoleReader interface {
 	ListRole(ctx context.Context, opts ...client.ListOption) (*RoleList, error)
 }
 
+// RoleTransitionFunction instructs the RoleWriter how to transition between an existing
+// Role object and a desired on an Upsert
+type RoleTransitionFunction func(existing, desired *Role) error
+
 // Writer knows how to create, delete, and update Roles.
 type RoleWriter interface {
 	// Create saves the Role object.
@@ -114,6 +120,9 @@ type RoleWriter interface {
 
 	// DeleteAllOf deletes all Role objects matching the given options.
 	DeleteAllOfRole(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Role object.
+	UpsertRole(ctx context.Context, obj *Role, transitionFuncs ...RoleTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Role object.
@@ -181,6 +190,19 @@ func (c *roleClient) DeleteAllOfRole(ctx context.Context, opts ...client.DeleteA
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *roleClient) UpsertRole(ctx context.Context, obj *Role, transitionFuncs ...RoleTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Role), desired.(*Role)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *roleClient) UpdateRoleStatus(ctx context.Context, obj *Role, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -198,6 +220,10 @@ type RoleBindingReader interface {
 	ListRoleBinding(ctx context.Context, opts ...client.ListOption) (*RoleBindingList, error)
 }
 
+// RoleBindingTransitionFunction instructs the RoleBindingWriter how to transition between an existing
+// RoleBinding object and a desired on an Upsert
+type RoleBindingTransitionFunction func(existing, desired *RoleBinding) error
+
 // Writer knows how to create, delete, and update RoleBindings.
 type RoleBindingWriter interface {
 	// Create saves the RoleBinding object.
@@ -214,6 +240,9 @@ type RoleBindingWriter interface {
 
 	// DeleteAllOf deletes all RoleBinding objects matching the given options.
 	DeleteAllOfRoleBinding(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the RoleBinding object.
+	UpsertRoleBinding(ctx context.Context, obj *RoleBinding, transitionFuncs ...RoleBindingTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a RoleBinding object.
@@ -281,6 +310,19 @@ func (c *roleBindingClient) DeleteAllOfRoleBinding(ctx context.Context, opts ...
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *roleBindingClient) UpsertRoleBinding(ctx context.Context, obj *RoleBinding, transitionFuncs ...RoleBindingTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*RoleBinding), desired.(*RoleBinding)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *roleBindingClient) UpdateRoleBindingStatus(ctx context.Context, obj *RoleBinding, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -298,6 +340,10 @@ type ClusterRoleReader interface {
 	ListClusterRole(ctx context.Context, opts ...client.ListOption) (*ClusterRoleList, error)
 }
 
+// ClusterRoleTransitionFunction instructs the ClusterRoleWriter how to transition between an existing
+// ClusterRole object and a desired on an Upsert
+type ClusterRoleTransitionFunction func(existing, desired *ClusterRole) error
+
 // Writer knows how to create, delete, and update ClusterRoles.
 type ClusterRoleWriter interface {
 	// Create saves the ClusterRole object.
@@ -314,6 +360,9 @@ type ClusterRoleWriter interface {
 
 	// DeleteAllOf deletes all ClusterRole objects matching the given options.
 	DeleteAllOfClusterRole(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ClusterRole object.
+	UpsertClusterRole(ctx context.Context, obj *ClusterRole, transitionFuncs ...ClusterRoleTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a ClusterRole object.
@@ -383,6 +432,19 @@ func (c *clusterRoleClient) DeleteAllOfClusterRole(ctx context.Context, opts ...
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *clusterRoleClient) UpsertClusterRole(ctx context.Context, obj *ClusterRole, transitionFuncs ...ClusterRoleTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ClusterRole), desired.(*ClusterRole)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *clusterRoleClient) UpdateClusterRoleStatus(ctx context.Context, obj *ClusterRole, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -400,6 +462,10 @@ type ClusterRoleBindingReader interface {
 	ListClusterRoleBinding(ctx context.Context, opts ...client.ListOption) (*ClusterRoleBindingList, error)
 }
 
+// ClusterRoleBindingTransitionFunction instructs the ClusterRoleBindingWriter how to transition between an existing
+// ClusterRoleBinding object and a desired on an Upsert
+type ClusterRoleBindingTransitionFunction func(existing, desired *ClusterRoleBinding) error
+
 // Writer knows how to create, delete, and update ClusterRoleBindings.
 type ClusterRoleBindingWriter interface {
 	// Create saves the ClusterRoleBinding object.
@@ -416,6 +482,9 @@ type ClusterRoleBindingWriter interface {
 
 	// DeleteAllOf deletes all ClusterRoleBinding objects matching the given options.
 	DeleteAllOfClusterRoleBinding(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ClusterRoleBinding object.
+	UpsertClusterRoleBinding(ctx context.Context, obj *ClusterRoleBinding, transitionFuncs ...ClusterRoleBindingTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a ClusterRoleBinding object.
@@ -483,6 +552,19 @@ func (c *clusterRoleBindingClient) PatchClusterRoleBinding(ctx context.Context, 
 func (c *clusterRoleBindingClient) DeleteAllOfClusterRoleBinding(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &ClusterRoleBinding{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *clusterRoleBindingClient) UpsertClusterRoleBinding(ctx context.Context, obj *ClusterRoleBinding, transitionFuncs ...ClusterRoleBindingTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ClusterRoleBinding), desired.(*ClusterRoleBinding)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *clusterRoleBindingClient) UpdateClusterRoleBindingStatus(ctx context.Context, obj *ClusterRoleBinding, opts ...client.UpdateOption) error {

@@ -3,7 +3,9 @@ package {{.Version}}
 import (
     "context"
 
+    "github.com/solo-io/skv2/pkg/controllerutils"
     "github.com/solo-io/skv2/pkg/multicluster"
+    "k8s.io/apimachinery/pkg/runtime"
     "k8s.io/client-go/kubernetes/scheme"
     "k8s.io/client-go/rest"
     "sigs.k8s.io/controller-runtime/pkg/client"
@@ -91,6 +93,10 @@ type {{ $resource.Kind }}Reader interface {
     List{{ $resource.Kind }}(ctx context.Context, opts ...client.ListOption) (*{{ $resource.Kind }}List, error)
 }
 
+// {{ $resource.Kind }}TransitionFunction instructs the {{ $resource.Kind }}Writer how to transition between an existing
+// {{ $resource.Kind }} object and a desired on an Upsert
+type {{ $resource.Kind }}TransitionFunction func(existing, desired *{{ $resource.Kind }}) error
+
 // Writer knows how to create, delete, and update {{ $resource.Kind }}s.
 type {{ $resource.Kind }}Writer interface {
     // Create saves the {{ $resource.Kind }} object.
@@ -111,6 +117,9 @@ type {{ $resource.Kind }}Writer interface {
 
     // DeleteAllOf deletes all {{ $resource.Kind }} objects matching the given options.
     DeleteAllOf{{ $resource.Kind }}(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+    // Create or Update the {{ $resource.Kind }} object.
+    Upsert{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, transitionFuncs ...{{ $resource.Kind }}TransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a {{ $resource.Kind }} object.
@@ -197,6 +206,19 @@ func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}(ctx context.Cont
 func (c *{{ $kindLowerCamel }}Client) DeleteAllOf{{ $resource.Kind }}(ctx context.Context, opts ...client.DeleteAllOfOption) error {
     obj := &{{ $resource.Kind }}{}
     return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *{{ $kindLowerCamel }}Client) Upsert{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, transitionFuncs ...{{ $resource.Kind }}TransitionFunction) error {
+    genericTxFunc := func(existing, desired runtime.Object) error {
+        for _, txFunc := range transitionFuncs {
+            if err := txFunc(existing.(*{{ $resource.Kind }}), desired.(*{{ $resource.Kind }})); err != nil {
+                return err
+            }
+        }
+        return nil
+    }
+    _, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+    return err
 }
 
 func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error {

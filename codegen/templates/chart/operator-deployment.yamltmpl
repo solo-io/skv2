@@ -50,10 +50,7 @@ spec:
 [[- end ]]
 {{- if $[[ $operatorVar ]].env }}
         env:
-          {{- range $envVar := $[[ $operatorVar ]].env }}
-          - name: {{ $envVar.name }}
-            value: {{ $envVar.value }}
-          {{- end }}
+{{ toYaml $[[ $operatorVar ]].env | indent 10 }}
 {{- end }}
 [[- if $operator.VolumeMounts ]]
         volumeMounts:
