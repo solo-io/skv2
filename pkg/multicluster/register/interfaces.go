@@ -3,16 +3,20 @@ package register
 import (
 	"context"
 
+	k8s_rbac_types "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
 type ClusterInfo struct {
+
 	// Name by which the cluster will be identified
 	ClusterName string
+
 	// Namespace to write namespaced resources to in the "master" and "remote" clusters
 	Namespace string
+
 	/*
 		This option should be used mostly for testing.
 		When passed in, it will overwrite the Api Server endpoint in the the kubeconfig before it is written.
@@ -20,6 +24,12 @@ type ClusterInfo struct {
 		to be re-written to `host.docker.internal` so that the local instance knows to hit localhost.
 	*/
 	LocalClusterDomainOverride string
+
+	// A list of cluster roles to bind the New kubeconfig token to, if empty will be default to `cluster-admin`
+	ClusterRoles []*k8s_rbac_types.ClusterRole
+
+	// If true attempt to upsert the specified ClusterRoles
+	UpsertRoles bool
 }
 
 /*

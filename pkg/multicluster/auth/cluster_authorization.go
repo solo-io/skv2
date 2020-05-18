@@ -2,11 +2,13 @@ package auth
 
 import (
 	"context"
+	"fmt"
 
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
+	core_v1 "k8s.io/api/core/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
-	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -14,13 +16,14 @@ import (
 var (
 	// visible for testing
 	ServiceAccountRoles = []*k8s_rbac_types.ClusterRole{{
-		ObjectMeta: k8s_meta_types.ObjectMeta{Name: "cluster-admin"},
+		ObjectMeta: k8s_meta.ObjectMeta{Name: "cluster-admin"},
 	}}
 )
 
 type clusterAuthorization struct {
-	configCreator          RemoteAuthorityConfigCreator
-	remoteAuthorityManager RemoteAuthorityManager
+	configCreator            RemoteAuthorityConfigCreator
+	serviceAccountClient     k8s_core_v1.ServiceAccountClient
+	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient
 }
 
 func NewClusterAuthorizationFactory() ClusterAuthorizationFactory {
@@ -38,25 +41,46 @@ func NewClusterAuthorizationFactory() ClusterAuthorizationFactory {
 			return nil, err
 		}
 		cfgCreator := NewRemoteAuthorityConfigCreator(v1Clientset.Secrets(), v1Clientset.ServiceAccounts())
-		rbacBinder := NewRbacBinder(rbacClientset)
-		authorityManager := NewRemoteAuthorityManager(v1Clientset.ServiceAccounts(), rbacBinder)
-		return NewClusterAuthorization(cfgCreator, authorityManager), nil
+		return NewClusterAuthorization(cfgCreator, rbacClientset, v1Clientset), nil
 	}
 }
 
 func NewClusterAuthorization(
 	configCreator RemoteAuthorityConfigCreator,
-	remoteAuthorityManager RemoteAuthorityManager) ClusterAuthorization {
-	return &clusterAuthorization{configCreator, remoteAuthorityManager}
+	rbacClientset rbac_v1.Clientset,
+	coreClientset k8s_core_v1.Clientset,
+) ClusterAuthorization {
+	return &clusterAuthorization{
+		configCreator:            configCreator,
+		clusterRoleBindingClient: rbacClientset.ClusterRoleBindings(),
+		serviceAccountClient:     coreClientset.ServiceAccounts(),
+	}
 }
 
 func (c *clusterAuthorization) BuildRemoteBearerToken(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
 	name, namespace string,
+	clusterRoles ...*k8s_rbac_types.ClusterRole,
 ) (bearerToken string, err error) {
-	_, err = c.remoteAuthorityManager.ApplyRemoteServiceAccount(ctx, name, namespace, ServiceAccountRoles)
-	if err != nil {
+
+	saToCreate := &core_v1.ServiceAccount{
+		ObjectMeta: k8s_meta.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+
+	if err = c.serviceAccountClient.UpsertServiceAccount(ctx, saToCreate); err != nil {
+		return "", err
+	}
+
+	roles := ServiceAccountRoles
+	if len(clusterRoles) != 0 {
+		roles = clusterRoles
+	}
+
+	if err = c.bindClusterRolesToServiceAccount(ctx, saToCreate, roles); err != nil {
 		return "", err
 	}
 
@@ -67,4 +91,35 @@ func (c *clusterAuthorization) BuildRemoteBearerToken(
 
 	// we only want the bearer token for that service account
 	return saConfig.BearerToken, nil
+}
+
+func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
+	ctx context.Context,
+	targetServiceAccount *core_v1.ServiceAccount,
+	roles []*k8s_rbac_types.ClusterRole,
+) error {
+
+	for _, role := range roles {
+		crbToCreate := &k8s_rbac_types.ClusterRoleBinding{
+			ObjectMeta: k8s_meta.ObjectMeta{
+				Name: fmt.Sprintf("%s-%s-clusterrole-binding", targetServiceAccount.GetName(), role.GetName()),
+			},
+			Subjects: []k8s_rbac_types.Subject{{
+				Kind:      "ServiceAccount",
+				Name:      targetServiceAccount.GetName(),
+				Namespace: targetServiceAccount.GetNamespace(),
+			}},
+			RoleRef: k8s_rbac_types.RoleRef{
+				APIGroup: "rbac.authorization.k8s.io",
+				Kind:     "ClusterRole",
+				Name:     role.GetName(),
+			},
+		}
+
+		if err := c.clusterRoleBindingClient.UpsertClusterRoleBinding(ctx, crbToCreate); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
