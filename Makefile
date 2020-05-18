@@ -21,7 +21,7 @@ install-deps: mod-download
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
-generated-code: install-deps
+generated-code: clean install-deps
 	go generate ./...
 	goimports -w .
 
@@ -51,3 +51,4 @@ run-tests:
 .PHONY: clean
 clean:
 	rm -rf codegen/*-packr.go
+	rm -rf pkg/api

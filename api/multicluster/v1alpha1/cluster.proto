@@ -8,7 +8,7 @@ option (extproto.hash_all) = true;
 
 option go_package = "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1";
 
-import "skv2/api/core/v1alpha1/core.proto";
+import "skv2/api/core/v1/core.proto";
 
 /*
     Representation of a Kubernetes cluster that has been registered.

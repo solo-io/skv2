@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package core.skv2.solo.io;
 
-option go_package = "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
