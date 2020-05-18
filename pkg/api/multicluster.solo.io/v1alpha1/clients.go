@@ -5,7 +5,9 @@ package v1alpha1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -75,6 +77,10 @@ type KubernetesClusterReader interface {
 	ListKubernetesCluster(ctx context.Context, opts ...client.ListOption) (*KubernetesClusterList, error)
 }
 
+// KubernetesClusterTransitionFunction instructs the KubernetesClusterWriter how to transition between an existing
+// KubernetesCluster object and a desired on an Upsert
+type KubernetesClusterTransitionFunction func(existing, desired *KubernetesCluster) error
+
 // Writer knows how to create, delete, and update KubernetesClusters.
 type KubernetesClusterWriter interface {
 	// Create saves the KubernetesCluster object.
@@ -91,6 +97,9 @@ type KubernetesClusterWriter interface {
 
 	// DeleteAllOf deletes all KubernetesCluster objects matching the given options.
 	DeleteAllOfKubernetesCluster(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the KubernetesCluster object.
+	UpsertKubernetesCluster(ctx context.Context, obj *KubernetesCluster, transitionFuncs ...KubernetesClusterTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a KubernetesCluster object.
@@ -156,6 +165,19 @@ func (c *kubernetesClusterClient) PatchKubernetesCluster(ctx context.Context, ob
 func (c *kubernetesClusterClient) DeleteAllOfKubernetesCluster(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &KubernetesCluster{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *kubernetesClusterClient) UpsertKubernetesCluster(ctx context.Context, obj *KubernetesCluster, transitionFuncs ...KubernetesClusterTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*KubernetesCluster), desired.(*KubernetesCluster)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *kubernetesClusterClient) UpdateKubernetesClusterStatus(ctx context.Context, obj *KubernetesCluster, opts ...client.UpdateOption) error {

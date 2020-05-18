@@ -6,24 +6,34 @@ option (gogoproto.equal_all) = true;
 import "extproto/ext.proto";
 option (extproto.hash_all) = true;
 
-option go_package = "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/types";
+option go_package = "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1";
 
-
+import "skv2/api/core/v1alpha1/core.proto";
 
 /*
     Representation of a Kubernetes cluster that has been registered.
 */
 message KubernetesClusterSpec {
     // name of the secret which contains the kubeconfig with information to connect to the remote cluster.
-    string secret = 1;
+    core.skv2.solo.io.ObjectRef secret = 1;
+}
+
+message KubernetesClusterStatus {
+    // List of statuses about the kubernetes cluster.
+    // This list allows for multiple applications/pods to record their connection status.
+    repeated core.skv2.solo.io.Status status = 1;
+
     // version of kubernetes
     string version = 2;
+
     // cloud provider, empty if unknown
     string cloud = 3;
 
+    // Discovered information can be found here: https://kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/
+    // Geographic location in which a kubernetes cluster resides
     string region = 4;
 
+    // The specific zone within a region in which a the cluster resides
     string zone = 5;
-}
 
-message KubernetesClusterStatus {}
+}

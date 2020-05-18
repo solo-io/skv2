@@ -31,14 +31,12 @@ func main() {
 						Kind: "KubernetesCluster",
 						Spec: model.Field{
 							Type: model.Type{
-								Name:      "KubernetesClusterSpec",
-								GoPackage: "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/types",
+								Name: "KubernetesClusterSpec",
 							},
 						},
 						Status: &model.Field{
 							Type: model.Type{
-								Name:      "KubernetesClusterStatus",
-								GoPackage: "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/types",
+								Name: "KubernetesClusterStatus",
 							},
 						},
 					},

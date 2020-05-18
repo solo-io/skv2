@@ -2,7 +2,7 @@
 
 // This file contains generated Deepcopy methods for proto-based Spec and Status fields
 
-package types
+package v1alpha1
 
 import (
 	proto "github.com/gogo/protobuf/proto"
