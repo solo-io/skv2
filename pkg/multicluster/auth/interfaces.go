@@ -28,13 +28,20 @@ type RemoteAuthorityConfigCreator interface {
 // Given a way to authorize to a cluster, produce a bearer token that can authorize to that same cluster
 // using a newly-created service account token in that cluster.
 // Creates a service account in the target cluster with the name/namespace of `serviceAccountRef`
-// If any clusterRoles are passed in it will attempt bind to them, otherwise it will default to cluster-admin
 type ClusterAuthorization interface {
-	BuildRemoteBearerToken(
+	// If any clusterRoles are passed in it will attempt bind to them, otherwise it will default to cluster-admin
+	BuildClusterScopedRemoteBearerToken(
 		ctx context.Context,
 		targetClusterCfg *rest.Config,
 		name, namespace string,
 		clusterRoles ...*k8s_rbac_types.ClusterRole,
+	) (bearerToken string, err error)
+	// At least one Role is required to bind to, an empty list will be considered invalid
+	BuildRemoteBearerToken(
+		ctx context.Context,
+		targetClusterCfg *rest.Config,
+		name, namespace string,
+		roles []*k8s_rbac_types.Role,
 	) (bearerToken string, err error)
 }
 
