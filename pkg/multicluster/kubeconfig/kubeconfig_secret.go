@@ -69,7 +69,6 @@ func readCertAuthFileIfNecessary(cfg api.Config) error {
 	return nil
 }
 
-
 // Config contains various KubeConfig formats for convenience.
 type Config struct {
 	ClientConfig clientcmd.ClientConfig

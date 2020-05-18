@@ -6,37 +6,38 @@ package mock_k8s_rbac_clients
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
 	v10 "k8s.io/api/rbac/v1"
-	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockClientset is a mock of Clientset interface
+// MockClientset is a mock of Clientset interface.
 type MockClientset struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientsetMockRecorder
 }
 
-// MockClientsetMockRecorder is the mock recorder for MockClientset
+// MockClientsetMockRecorder is the mock recorder for MockClientset.
 type MockClientsetMockRecorder struct {
 	mock *MockClientset
 }
 
-// NewMockClientset creates a new mock instance
+// NewMockClientset creates a new mock instance.
 func NewMockClientset(ctrl *gomock.Controller) *MockClientset {
 	mock := &MockClientset{ctrl: ctrl}
 	mock.recorder = &MockClientsetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
-// ClusterRoleBindings mocks base method
+// ClusterRoleBindings mocks base method.
 func (m *MockClientset) ClusterRoleBindings() v1.ClusterRoleBindingClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClusterRoleBindings")
@@ -44,13 +45,13 @@ func (m *MockClientset) ClusterRoleBindings() v1.ClusterRoleBindingClient {
 	return ret0
 }
 
-// ClusterRoleBindings indicates an expected call of ClusterRoleBindings
+// ClusterRoleBindings indicates an expected call of ClusterRoleBindings.
 func (mr *MockClientsetMockRecorder) ClusterRoleBindings() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRoleBindings", reflect.TypeOf((*MockClientset)(nil).ClusterRoleBindings))
 }
 
-// ClusterRoles mocks base method
+// ClusterRoles mocks base method.
 func (m *MockClientset) ClusterRoles() v1.ClusterRoleClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClusterRoles")
@@ -58,13 +59,13 @@ func (m *MockClientset) ClusterRoles() v1.ClusterRoleClient {
 	return ret0
 }
 
-// ClusterRoles indicates an expected call of ClusterRoles
+// ClusterRoles indicates an expected call of ClusterRoles.
 func (mr *MockClientsetMockRecorder) ClusterRoles() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRoles", reflect.TypeOf((*MockClientset)(nil).ClusterRoles))
 }
 
-// RoleBindings mocks base method
+// RoleBindings mocks base method.
 func (m *MockClientset) RoleBindings() v1.RoleBindingClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RoleBindings")
@@ -72,13 +73,13 @@ func (m *MockClientset) RoleBindings() v1.RoleBindingClient {
 	return ret0
 }
 
-// RoleBindings indicates an expected call of RoleBindings
+// RoleBindings indicates an expected call of RoleBindings.
 func (mr *MockClientsetMockRecorder) RoleBindings() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RoleBindings", reflect.TypeOf((*MockClientset)(nil).RoleBindings))
 }
 
-// Roles mocks base method
+// Roles mocks base method.
 func (m *MockClientset) Roles() v1.RoleClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Roles")
@@ -86,36 +87,36 @@ func (m *MockClientset) Roles() v1.RoleClient {
 	return ret0
 }
 
-// Roles indicates an expected call of Roles
+// Roles indicates an expected call of Roles.
 func (mr *MockClientsetMockRecorder) Roles() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Roles", reflect.TypeOf((*MockClientset)(nil).Roles))
 }
 
-// MockClusterRoleBindingClient is a mock of ClusterRoleBindingClient interface
+// MockClusterRoleBindingClient is a mock of ClusterRoleBindingClient interface.
 type MockClusterRoleBindingClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleBindingClientMockRecorder
 }
 
-// MockClusterRoleBindingClientMockRecorder is the mock recorder for MockClusterRoleBindingClient
+// MockClusterRoleBindingClientMockRecorder is the mock recorder for MockClusterRoleBindingClient.
 type MockClusterRoleBindingClientMockRecorder struct {
 	mock *MockClusterRoleBindingClient
 }
 
-// NewMockClusterRoleBindingClient creates a new mock instance
+// NewMockClusterRoleBindingClient creates a new mock instance.
 func NewMockClusterRoleBindingClient(ctrl *gomock.Controller) *MockClusterRoleBindingClient {
 	mock := &MockClusterRoleBindingClient{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleBindingClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockClusterRoleBindingClient) EXPECT() *MockClusterRoleBindingClientMockRecorder {
 	return m.recorder
 }
 
-// CreateClusterRoleBinding mocks base method
+// CreateClusterRoleBinding mocks base method.
 func (m *MockClusterRoleBindingClient) CreateClusterRoleBinding(arg0 context.Context, arg1 *v10.ClusterRoleBinding, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -127,14 +128,14 @@ func (m *MockClusterRoleBindingClient) CreateClusterRoleBinding(arg0 context.Con
 	return ret0
 }
 
-// CreateClusterRoleBinding indicates an expected call of CreateClusterRoleBinding
+// CreateClusterRoleBinding indicates an expected call of CreateClusterRoleBinding.
 func (mr *MockClusterRoleBindingClientMockRecorder) CreateClusterRoleBinding(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).CreateClusterRoleBinding), varargs...)
 }
 
-// DeleteAllOfClusterRoleBinding mocks base method
+// DeleteAllOfClusterRoleBinding mocks base method.
 func (m *MockClusterRoleBindingClient) DeleteAllOfClusterRoleBinding(arg0 context.Context, arg1 ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -146,14 +147,14 @@ func (m *MockClusterRoleBindingClient) DeleteAllOfClusterRoleBinding(arg0 contex
 	return ret0
 }
 
-// DeleteAllOfClusterRoleBinding indicates an expected call of DeleteAllOfClusterRoleBinding
+// DeleteAllOfClusterRoleBinding indicates an expected call of DeleteAllOfClusterRoleBinding.
 func (mr *MockClusterRoleBindingClientMockRecorder) DeleteAllOfClusterRoleBinding(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).DeleteAllOfClusterRoleBinding), varargs...)
 }
 
-// DeleteClusterRoleBinding mocks base method
+// DeleteClusterRoleBinding mocks base method.
 func (m *MockClusterRoleBindingClient) DeleteClusterRoleBinding(arg0 context.Context, arg1 string, arg2 ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -165,14 +166,14 @@ func (m *MockClusterRoleBindingClient) DeleteClusterRoleBinding(arg0 context.Con
 	return ret0
 }
 
-// DeleteClusterRoleBinding indicates an expected call of DeleteClusterRoleBinding
+// DeleteClusterRoleBinding indicates an expected call of DeleteClusterRoleBinding.
 func (mr *MockClusterRoleBindingClientMockRecorder) DeleteClusterRoleBinding(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).DeleteClusterRoleBinding), varargs...)
 }
 
-// GetClusterRoleBinding mocks base method
+// GetClusterRoleBinding mocks base method.
 func (m *MockClusterRoleBindingClient) GetClusterRoleBinding(arg0 context.Context, arg1 string) (*v10.ClusterRoleBinding, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleBinding", arg0, arg1)
@@ -181,13 +182,13 @@ func (m *MockClusterRoleBindingClient) GetClusterRoleBinding(arg0 context.Contex
 	return ret0, ret1
 }
 
-// GetClusterRoleBinding indicates an expected call of GetClusterRoleBinding
+// GetClusterRoleBinding indicates an expected call of GetClusterRoleBinding.
 func (mr *MockClusterRoleBindingClientMockRecorder) GetClusterRoleBinding(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).GetClusterRoleBinding), arg0, arg1)
 }
 
-// ListClusterRoleBinding mocks base method
+// ListClusterRoleBinding mocks base method.
 func (m *MockClusterRoleBindingClient) ListClusterRoleBinding(arg0 context.Context, arg1 ...client.ListOption) (*v10.ClusterRoleBindingList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -200,14 +201,14 @@ func (m *MockClusterRoleBindingClient) ListClusterRoleBinding(arg0 context.Conte
 	return ret0, ret1
 }
 
-// ListClusterRoleBinding indicates an expected call of ListClusterRoleBinding
+// ListClusterRoleBinding indicates an expected call of ListClusterRoleBinding.
 func (mr *MockClusterRoleBindingClientMockRecorder) ListClusterRoleBinding(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).ListClusterRoleBinding), varargs...)
 }
 
-// PatchClusterRoleBinding mocks base method
+// PatchClusterRoleBinding mocks base method.
 func (m *MockClusterRoleBindingClient) PatchClusterRoleBinding(arg0 context.Context, arg1 *v10.ClusterRoleBinding, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
@@ -219,14 +220,14 @@ func (m *MockClusterRoleBindingClient) PatchClusterRoleBinding(arg0 context.Cont
 	return ret0
 }
 
-// PatchClusterRoleBinding indicates an expected call of PatchClusterRoleBinding
+// PatchClusterRoleBinding indicates an expected call of PatchClusterRoleBinding.
 func (mr *MockClusterRoleBindingClientMockRecorder) PatchClusterRoleBinding(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).PatchClusterRoleBinding), varargs...)
 }
 
-// PatchClusterRoleBindingStatus mocks base method
+// PatchClusterRoleBindingStatus mocks base method.
 func (m *MockClusterRoleBindingClient) PatchClusterRoleBindingStatus(arg0 context.Context, arg1 *v10.ClusterRoleBinding, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
@@ -238,14 +239,14 @@ func (m *MockClusterRoleBindingClient) PatchClusterRoleBindingStatus(arg0 contex
 	return ret0
 }
 
-// PatchClusterRoleBindingStatus indicates an expected call of PatchClusterRoleBindingStatus
+// PatchClusterRoleBindingStatus indicates an expected call of PatchClusterRoleBindingStatus.
 func (mr *MockClusterRoleBindingClientMockRecorder) PatchClusterRoleBindingStatus(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleBindingStatus", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).PatchClusterRoleBindingStatus), varargs...)
 }
 
-// UpdateClusterRoleBinding mocks base method
+// UpdateClusterRoleBinding mocks base method.
 func (m *MockClusterRoleBindingClient) UpdateClusterRoleBinding(arg0 context.Context, arg1 *v10.ClusterRoleBinding, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -257,14 +258,14 @@ func (m *MockClusterRoleBindingClient) UpdateClusterRoleBinding(arg0 context.Con
 	return ret0
 }
 
-// UpdateClusterRoleBinding indicates an expected call of UpdateClusterRoleBinding
+// UpdateClusterRoleBinding indicates an expected call of UpdateClusterRoleBinding.
 func (mr *MockClusterRoleBindingClientMockRecorder) UpdateClusterRoleBinding(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).UpdateClusterRoleBinding), varargs...)
 }
 
-// UpdateClusterRoleBindingStatus mocks base method
+// UpdateClusterRoleBindingStatus mocks base method.
 func (m *MockClusterRoleBindingClient) UpdateClusterRoleBindingStatus(arg0 context.Context, arg1 *v10.ClusterRoleBinding, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -276,14 +277,14 @@ func (m *MockClusterRoleBindingClient) UpdateClusterRoleBindingStatus(arg0 conte
 	return ret0
 }
 
-// UpdateClusterRoleBindingStatus indicates an expected call of UpdateClusterRoleBindingStatus
+// UpdateClusterRoleBindingStatus indicates an expected call of UpdateClusterRoleBindingStatus.
 func (mr *MockClusterRoleBindingClientMockRecorder) UpdateClusterRoleBindingStatus(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClusterRoleBindingStatus", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).UpdateClusterRoleBindingStatus), varargs...)
 }
 
-// UpsertClusterRoleBinding mocks base method
+// UpsertClusterRoleBinding mocks base method.
 func (m *MockClusterRoleBindingClient) UpsertClusterRoleBinding(arg0 context.Context, arg1 *v10.ClusterRoleBinding, arg2 ...v1.ClusterRoleBindingTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -295,7 +296,7 @@ func (m *MockClusterRoleBindingClient) UpsertClusterRoleBinding(arg0 context.Con
 	return ret0
 }
 
-// UpsertClusterRoleBinding indicates an expected call of UpsertClusterRoleBinding
+// UpsertClusterRoleBinding indicates an expected call of UpsertClusterRoleBinding.
 func (mr *MockClusterRoleBindingClientMockRecorder) UpsertClusterRoleBinding(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

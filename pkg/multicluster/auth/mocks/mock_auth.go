@@ -9,47 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "k8s.io/api/core/v1"
-	v10 "k8s.io/api/rbac/v1"
+	v1 "k8s.io/api/rbac/v1"
 	rest "k8s.io/client-go/rest"
 )
-
-// MockRbacBinder is a mock of RbacBinder interface.
-type MockRbacBinder struct {
-	ctrl     *gomock.Controller
-	recorder *MockRbacBinderMockRecorder
-}
-
-// MockRbacBinderMockRecorder is the mock recorder for MockRbacBinder.
-type MockRbacBinderMockRecorder struct {
-	mock *MockRbacBinder
-}
-
-// NewMockRbacBinder creates a new mock instance.
-func NewMockRbacBinder(ctrl *gomock.Controller) *MockRbacBinder {
-	mock := &MockRbacBinder{ctrl: ctrl}
-	mock.recorder = &MockRbacBinderMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRbacBinder) EXPECT() *MockRbacBinderMockRecorder {
-	return m.recorder
-}
-
-// BindClusterRolesToServiceAccount mocks base method.
-func (m *MockRbacBinder) BindClusterRolesToServiceAccount(ctx context.Context, targetServiceAccount *v1.ServiceAccount, roles []*v10.ClusterRole) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BindClusterRolesToServiceAccount", ctx, targetServiceAccount, roles)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// BindClusterRolesToServiceAccount indicates an expected call of BindClusterRolesToServiceAccount.
-func (mr *MockRbacBinderMockRecorder) BindClusterRolesToServiceAccount(ctx, targetServiceAccount, roles interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindClusterRolesToServiceAccount", reflect.TypeOf((*MockRbacBinder)(nil).BindClusterRolesToServiceAccount), ctx, targetServiceAccount, roles)
-}
 
 // MockRemoteAuthorityConfigCreator is a mock of RemoteAuthorityConfigCreator interface.
 type MockRemoteAuthorityConfigCreator struct {
@@ -113,54 +75,21 @@ func (m *MockClusterAuthorization) EXPECT() *MockClusterAuthorizationMockRecorde
 }
 
 // BuildRemoteBearerToken mocks base method.
-func (m *MockClusterAuthorization) BuildRemoteBearerToken(ctx context.Context, targetClusterCfg *rest.Config, name, namespace string) (string, error) {
+func (m *MockClusterAuthorization) BuildRemoteBearerToken(ctx context.Context, targetClusterCfg *rest.Config, name, namespace string, clusterRoles ...*v1.ClusterRole) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildRemoteBearerToken", ctx, targetClusterCfg, name, namespace)
+	varargs := []interface{}{ctx, targetClusterCfg, name, namespace}
+	for _, a := range clusterRoles {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "BuildRemoteBearerToken", varargs...)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BuildRemoteBearerToken indicates an expected call of BuildRemoteBearerToken.
-func (mr *MockClusterAuthorizationMockRecorder) BuildRemoteBearerToken(ctx, targetClusterCfg, name, namespace interface{}) *gomock.Call {
+func (mr *MockClusterAuthorizationMockRecorder) BuildRemoteBearerToken(ctx, targetClusterCfg, name, namespace interface{}, clusterRoles ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildRemoteBearerToken", reflect.TypeOf((*MockClusterAuthorization)(nil).BuildRemoteBearerToken), ctx, targetClusterCfg, name, namespace)
-}
-
-// MockRemoteAuthorityManager is a mock of RemoteAuthorityManager interface.
-type MockRemoteAuthorityManager struct {
-	ctrl     *gomock.Controller
-	recorder *MockRemoteAuthorityManagerMockRecorder
-}
-
-// MockRemoteAuthorityManagerMockRecorder is the mock recorder for MockRemoteAuthorityManager.
-type MockRemoteAuthorityManagerMockRecorder struct {
-	mock *MockRemoteAuthorityManager
-}
-
-// NewMockRemoteAuthorityManager creates a new mock instance.
-func NewMockRemoteAuthorityManager(ctrl *gomock.Controller) *MockRemoteAuthorityManager {
-	mock := &MockRemoteAuthorityManager{ctrl: ctrl}
-	mock.recorder = &MockRemoteAuthorityManagerMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRemoteAuthorityManager) EXPECT() *MockRemoteAuthorityManagerMockRecorder {
-	return m.recorder
-}
-
-// ApplyRemoteServiceAccount mocks base method.
-func (m *MockRemoteAuthorityManager) ApplyRemoteServiceAccount(ctx context.Context, name, namespace string, roles []*v10.ClusterRole) (*v1.ServiceAccount, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyRemoteServiceAccount", ctx, name, namespace, roles)
-	ret0, _ := ret[0].(*v1.ServiceAccount)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ApplyRemoteServiceAccount indicates an expected call of ApplyRemoteServiceAccount.
-func (mr *MockRemoteAuthorityManagerMockRecorder) ApplyRemoteServiceAccount(ctx, name, namespace, roles interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyRemoteServiceAccount", reflect.TypeOf((*MockRemoteAuthorityManager)(nil).ApplyRemoteServiceAccount), ctx, name, namespace, roles)
+	varargs := append([]interface{}{ctx, targetClusterCfg, name, namespace}, clusterRoles...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildRemoteBearerToken", reflect.TypeOf((*MockClusterAuthorization)(nil).BuildRemoteBearerToken), varargs...)
 }

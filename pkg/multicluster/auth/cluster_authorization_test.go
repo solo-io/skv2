@@ -122,7 +122,6 @@ var _ = Describe("Cluster authorization", func() {
 			saNamespace,
 		)
 
-
 		Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
 		Expect(err).To(Equal(testErr), "Should have reported the expected error")
 	})
