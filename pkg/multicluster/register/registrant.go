@@ -68,7 +68,7 @@ func (c *clusterRegistrant) RegisterClusterFromConfig(
 		return err
 	}
 
-	token, err := authClient.BuildRemoteBearerToken(ctx, cfg, info.ClusterName, info.Namespace)
+	token, err := authClient.BuildClusterScopedRemoteBearerToken(ctx, cfg, info.ClusterName, info.Namespace)
 	if err != nil {
 		return err
 	}

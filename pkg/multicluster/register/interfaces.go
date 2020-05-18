@@ -25,6 +25,16 @@ type ClusterInfo struct {
 	*/
 	LocalClusterDomainOverride string
 
+	/*
+		The precedence for Cluster/Role binding works as follows:
+			1. Roles will be used if len > 0
+			2. Else will use ClusterRoles
+			3. If len(ClusterRoles) == 0, default to `cluster-admin`
+	*/
+
+	// A list of roles to bind the New kubeconfig token to, if present will use these over the cluster roles
+	Roles []*k8s_rbac_types.Role
+
 	// A list of cluster roles to bind the New kubeconfig token to, if empty will be default to `cluster-admin`
 	ClusterRoles []*k8s_rbac_types.ClusterRole
 
