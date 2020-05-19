@@ -17,13 +17,13 @@ install-deps: mod-download
 	go get -v github.com/solo-io/protoc-gen-ext
 	go get -v github.com/golang/mock/mockgen
 	go get -v golang.org/x/tools/cmd/goimports@v0.0.0-20200427205912-352a5409fae0
-	go mod tidy
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
-generated-code: install-deps
+generated-code: clean install-deps
 	go generate ./...
 	goimports -w .
+	go mod tidy
 
 #----------------------------------------------------------------------------------
 # Test
@@ -51,3 +51,5 @@ run-tests:
 .PHONY: clean
 clean:
 	rm -rf codegen/*-packr.go
+	rm -rf pkg/api
+	rm -rf vendor_any

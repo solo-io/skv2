@@ -1,0 +1,27 @@
+syntax = "proto3";
+package multicluster.solo.io;
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
+
+option go_package = "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1";
+
+import "skv2/api/core/v1/core.proto";
+
+/*
+    Representation of a Kubernetes cluster that has been registered.
+*/
+message KubernetesClusterSpec {
+    // name of the secret which contains the kubeconfig with information to connect to the remote cluster.
+    string secret_name = 1;
+    // key within the secret in which to find the kubeconfig data, defaults to `kubeconfig`
+    string secret_key = 2;
+}
+
+message KubernetesClusterStatus {
+    // List of statuses about the kubernetes cluster.
+    // This list allows for multiple applications/pods to record their connection status.
+    repeated core.skv2.solo.io.Status status = 1;
+}

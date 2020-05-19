@@ -16,8 +16,6 @@ if [ ! -f .gitignore ]; then
   echo "_output" > .gitignore
 fi
 
-make install-deps
-
 set +e
 
 REGENERATE_CLIENTS=1 make generated-code -B > /dev/null
