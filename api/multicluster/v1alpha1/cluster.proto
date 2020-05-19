@@ -24,18 +24,4 @@ message KubernetesClusterStatus {
     // List of statuses about the kubernetes cluster.
     // This list allows for multiple applications/pods to record their connection status.
     repeated core.skv2.solo.io.Status status = 1;
-
-    // version of kubernetes
-    string version = 2;
-
-    // cloud provider, empty if unknown
-    string cloud = 3;
-
-    // Discovered information can be found here: https://kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/
-    // Geographic location in which a kubernetes cluster resides
-    string region = 4;
-
-    // The specific zone within a region in which a the cluster resides
-    string zone = 5;
-
 }

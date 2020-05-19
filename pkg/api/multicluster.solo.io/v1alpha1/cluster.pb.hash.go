@@ -80,21 +80,5 @@ func (m *KubernetesClusterStatus) Hash(hasher hash.Hash64) (uint64, error) {
 
 	}
 
-	if _, err = hasher.Write([]byte(m.GetVersion())); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetCloud())); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetRegion())); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetZone())); err != nil {
-		return 0, err
-	}
-
 	return hasher.Sum64(), nil
 }
