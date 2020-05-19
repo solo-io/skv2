@@ -52,3 +52,4 @@ run-tests:
 clean:
 	rm -rf codegen/*-packr.go
 	rm -rf pkg/api
+	rm -rf vendor_any
