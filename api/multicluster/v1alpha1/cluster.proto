@@ -15,7 +15,9 @@ import "skv2/api/core/v1/core.proto";
 */
 message KubernetesClusterSpec {
     // name of the secret which contains the kubeconfig with information to connect to the remote cluster.
-    core.skv2.solo.io.ObjectRef secret = 1;
+    string secret_name = 1;
+    // key within the secret in which to find the kubeconfig data, defaults to `kubeconfig`
+    string secret_key = 2;
 }
 
 message KubernetesClusterStatus {
