@@ -46,6 +46,7 @@ users:
 	})
 
 	Describe("ToSecret", func() {
+
 		It("should convert a single KubeConfig to a single secret", func() {
 			expectedSecret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -61,9 +62,27 @@ users:
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).To(Equal(expectedSecret))
 		})
+
+		It("should convert a single KubeConfig to a single secret with a specified key", func() {
+			secretKey := "test-key"
+			expectedSecret := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      clusterName,
+					Namespace: namespace,
+				},
+				Data: map[string][]byte{
+					secretKey: []byte(kubeConfigRaw),
+				},
+				Type: SecretType,
+			}
+			secret, err := ToSecretWithKey(namespace, clusterName, secretKey, *config)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(secret).To(Equal(expectedSecret))
+		})
 	})
 
 	Describe("SecretToConfig", func() {
+
 		It("works", func() {
 			secret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -81,5 +100,25 @@ users:
 			Expect(actualCluster).To(Equal(clusterName))
 			Expect(actualConfig).NotTo(BeNil())
 		})
+
+		It("works with a specified key", func() {
+			secretKey := "test-key"
+			secret := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      clusterName,
+					Namespace: namespace,
+				},
+				Data: map[string][]byte{
+					secretKey: []byte(kubeConfigRaw),
+				},
+				Type: SecretType,
+			}
+
+			actualCluster, actualConfig, err := SecretToConfigWithKey(secret, secretKey)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(actualCluster).To(Equal(clusterName))
+			Expect(actualConfig).NotTo(BeNil())
+		})
+
 	})
 })

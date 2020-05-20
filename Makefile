@@ -52,4 +52,5 @@ run-tests:
 clean:
 	rm -rf codegen/*-packr.go
 	rm -rf pkg/api
+	rm -rf pkg/generated/kubernetes
 	rm -rf vendor_any

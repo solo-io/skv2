@@ -6,7 +6,6 @@ import (
 	"github.com/rotisserie/eris"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
@@ -29,6 +28,13 @@ var (
 
 // ToSecret converts a kubernetes api.Config to a secret with the provided name and namespace.
 func ToSecret(namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
+	return ToSecretWithKey(namespace, cluster, Key, kc)
+}
+
+func ToSecretWithKey(namespace, cluster, secretKey string, kc api.Config) (*kubev1.Secret, error) {
+	if secretKey == "" {
+		secretKey = Key
+	}
 
 	err := readCertAuthFileIfNecessary(kc)
 	if err != nil {
@@ -46,7 +52,7 @@ func ToSecret(namespace string, cluster string, kc api.Config) (*kubev1.Secret, 
 			Namespace: namespace,
 		},
 		Type: SecretType,
-		Data: map[string][]byte{Key: rawKubeConfig},
+		Data: map[string][]byte{secretKey: rawKubeConfig},
 	}, nil
 }
 
@@ -69,18 +75,21 @@ func readCertAuthFileIfNecessary(cfg api.Config) error {
 	return nil
 }
 
-// Config contains various KubeConfig formats for convenience.
-type Config struct {
-	ClientConfig clientcmd.ClientConfig
-	ApiConfig    *api.Config
-	RestConfig   *rest.Config
+// SecretToConfig extracts the cluster name and *Config from a KubeConfig secret.
+// If the provided secret is not a KubeConfig secret, an error is returned.
+func SecretToConfig(secret *kubev1.Secret) (clusterName string, config clientcmd.ClientConfig, err error) {
+	return SecretToConfigWithKey(secret, Key)
 }
 
 // SecretToConfig extracts the cluster name and *Config from a KubeConfig secret.
 // If the provided secret is not a KubeConfig secret, an error is returned.
-func SecretToConfig(secret *kubev1.Secret) (clusterName string, config clientcmd.ClientConfig, err error) {
+func SecretToConfigWithKey(secret *kubev1.Secret, secretKey string) (clusterName string, config clientcmd.ClientConfig, err error) {
+	if secretKey == "" {
+		secretKey = Key
+	}
+
 	clusterName = secret.Name
-	kubeConfigBytes, ok := secret.Data[Key]
+	kubeConfigBytes, ok := secret.Data[secretKey]
 	if !ok {
 		return clusterName, nil, SecretHasNoKubeConfig(secret.ObjectMeta)
 	}

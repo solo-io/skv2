@@ -34,7 +34,7 @@ var _ = Describe("Registrant", func() {
 
 		clusterAuthClient        *mock_auth.MockClusterAuthorization
 		clusterAuthClientFactory auth.ClusterAuthorizationFactory
-		clientset                *mock_k8s_core_clients.MockClientset
+		coreClientset            *mock_k8s_core_clients.MockClientset
 		secretClient             *mock_k8s_core_clients.MockSecretClient
 		nsClient                 *mock_k8s_core_clients.MockNamespaceClient
 		nsClientFactory          k8s_core_v1.NamespaceClientFromConfigFactory
@@ -48,8 +48,10 @@ var _ = Describe("Registrant", func() {
 	BeforeEach(func() {
 		ctrl, ctx = gomock.WithContext(context.TODO(), GinkgoT())
 
-		clientset = mock_k8s_core_clients.NewMockClientset(ctrl)
+		coreClientset = mock_k8s_core_clients.NewMockClientset(ctrl)
 		secretClient = mock_k8s_core_clients.NewMockSecretClient(ctrl)
+		coreClientset.EXPECT().Secrets().Return(secretClient)
+
 		nsClient = mock_k8s_core_clients.NewMockNamespaceClient(ctrl)
 		nsClientFactory = func(_ *rest.Config) (k8s_core_v1.NamespaceClient, error) {
 			return nsClient, nil
@@ -60,8 +62,6 @@ var _ = Describe("Registrant", func() {
 		}
 		loader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		clientConfig = mock_clientcmd.NewMockClientConfig(ctrl)
-
-		clientset.EXPECT().Secrets().Return(secretClient)
 	})
 
 	AfterEach(func() {
@@ -69,22 +69,27 @@ var _ = Describe("Registrant", func() {
 	})
 
 	It("will fail if client config cannot be fetched", func() {
-		clusterRegistrant := register.NewClusterRegistrant(loader, clusterAuthClientFactory, clientset, nsClientFactory)
+		clusterRegistrant := register.NewClusterRegistrant(
+			loader, clusterAuthClientFactory, coreClientset, nsClientFactory,
+		)
 
 		loader.EXPECT().
 			GetClientConfigForContext(remoteCfg, remoteCtx).
 			Return(nil, testErr)
 
-		err := clusterRegistrant.RegisterCluster(ctx, register.ClusterInfo{
+		err := clusterRegistrant.RegisterCluster(ctx, remoteCfg, remoteCtx, register.Options{
 			ClusterName: clusterName,
 			Namespace:   namespace,
-		}, remoteCfg, remoteCtx)
+		})
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})
 
 	It("will fail if remote bearer token cannot be built", func() {
-		clusterRegistrant := register.NewClusterRegistrant(loader, clusterAuthClientFactory, clientset, nsClientFactory)
+
+		clusterRegistrant := register.NewClusterRegistrant(
+			loader, clusterAuthClientFactory, coreClientset, nsClientFactory,
+		)
 
 		cfg := &rest.Config{
 			Host: "mock-host",
@@ -98,19 +103,22 @@ var _ = Describe("Registrant", func() {
 			Return(cfg, nil)
 
 		clusterAuthClient.EXPECT().
-			BuildRemoteBearerToken(ctx, cfg, clusterName, namespace).
+			BuildClusterScopedRemoteBearerToken(ctx, cfg, clusterName, namespace).
 			Return("", testErr)
 
-		err := clusterRegistrant.RegisterCluster(ctx, register.ClusterInfo{
+		err := clusterRegistrant.RegisterCluster(ctx, remoteCfg, remoteCtx, register.Options{
 			ClusterName: clusterName,
 			Namespace:   namespace,
-		}, remoteCfg, remoteCtx)
+		})
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})
 
 	It("will create secret if not found", func() {
-		clusterRegistrant := register.NewClusterRegistrant(loader, clusterAuthClientFactory, clientset, nsClientFactory)
+
+		clusterRegistrant := register.NewClusterRegistrant(
+			loader, clusterAuthClientFactory, coreClientset, nsClientFactory,
+		)
 
 		restCfg := &rest.Config{
 			Host: "mock-host",
@@ -139,7 +147,7 @@ var _ = Describe("Registrant", func() {
 			Return(restCfg, nil)
 
 		clusterAuthClient.EXPECT().
-			BuildRemoteBearerToken(ctx, restCfg, clusterName, namespace).
+			BuildClusterScopedRemoteBearerToken(ctx, restCfg, clusterName, namespace).
 			Return(token, nil)
 
 		clientConfig.EXPECT().
@@ -186,17 +194,22 @@ var _ = Describe("Registrant", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		secretClient.EXPECT().CreateSecret(ctx, secret).Return(nil)
+		secretClient.EXPECT().
+			CreateSecret(ctx, secret).
+			Return(nil)
 
-		err = clusterRegistrant.RegisterCluster(ctx, register.ClusterInfo{
+		err = clusterRegistrant.RegisterCluster(ctx, remoteCfg, remoteCtx, register.Options{
 			ClusterName: clusterName,
 			Namespace:   namespace,
-		}, remoteCfg, remoteCtx)
+		})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("will overwrite the client config if a LocalClusterDomainOverride is passed in", func() {
-		clusterRegistrant := register.NewClusterRegistrant(loader, clusterAuthClientFactory, clientset, nsClientFactory)
+
+		clusterRegistrant := register.NewClusterRegistrant(
+			loader, clusterAuthClientFactory, coreClientset, nsClientFactory,
+		)
 		clusterDomainOverride := "test-override"
 		remoteCtx = "kind-test"
 		restCfg := &rest.Config{
@@ -226,7 +239,7 @@ var _ = Describe("Registrant", func() {
 			Return(restCfg, nil)
 
 		clusterAuthClient.EXPECT().
-			BuildRemoteBearerToken(ctx, restCfg, clusterName, namespace).
+			BuildClusterScopedRemoteBearerToken(ctx, restCfg, clusterName, namespace).
 			Return(token, nil)
 
 		clientConfig.EXPECT().
@@ -279,13 +292,15 @@ var _ = Describe("Registrant", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		secretClient.EXPECT().CreateSecret(ctx, secret).Return(nil)
+		secretClient.EXPECT().
+			CreateSecret(ctx, secret).
+			Return(nil)
 
-		err = clusterRegistrant.RegisterCluster(ctx, register.ClusterInfo{
+		err = clusterRegistrant.RegisterCluster(ctx, remoteCfg, remoteCtx, register.Options{
 			ClusterName:                clusterName,
 			Namespace:                  namespace,
 			LocalClusterDomainOverride: clusterDomainOverride,
-		}, remoteCfg, remoteCtx)
+		})
 		Expect(err).NotTo(HaveOccurred())
 	})
 

@@ -9,7 +9,7 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
-type ClusterInfo struct {
+type Options struct {
 
 	// Name by which the cluster will be identified
 	ClusterName string
@@ -38,7 +38,7 @@ type ClusterInfo struct {
 	// A list of cluster roles to bind the New kubeconfig token to, if empty will be default to `cluster-admin`
 	ClusterRoles []*k8s_rbac_types.ClusterRole
 
-	// If true attempt to upsert the specified ClusterRoles
+	// If true attempt to upsert the specified ClusterRoles/Roles
 	UpsertRoles bool
 }
 
@@ -57,7 +57,7 @@ type ClusterRegistrant interface {
 	RegisterClusterFromConfig(
 		ctx context.Context,
 		remoteCfg clientcmd.ClientConfig,
-		info ClusterInfo,
+		info Options,
 	) error
 	/*
 		The standard cluster register function.
@@ -67,7 +67,7 @@ type ClusterRegistrant interface {
 	*/
 	RegisterCluster(
 		ctx context.Context,
-		info ClusterInfo,
 		remoteCfgPath, remoteCtx string,
+		info Options,
 	) error
 }

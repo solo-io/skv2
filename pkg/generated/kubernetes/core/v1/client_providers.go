@@ -7,11 +7,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Provider for SecretClient from Clientset
-func SecretClientFromClientsetProvider(clients Clientset) SecretClient {
-	return clients.Secrets()
-}
-
 // Provider for SecretClient from Client
 func SecretClientProvider(client client.Client) SecretClient {
 	return NewSecretClient(client)
@@ -33,11 +28,6 @@ func SecretClientFromConfigFactoryProvider() SecretClientFromConfigFactory {
 		}
 		return clients.Secrets(), nil
 	}
-}
-
-// Provider for ServiceAccountClient from Clientset
-func ServiceAccountClientFromClientsetProvider(clients Clientset) ServiceAccountClient {
-	return clients.ServiceAccounts()
 }
 
 // Provider for ServiceAccountClient from Client
@@ -63,11 +53,6 @@ func ServiceAccountClientFromConfigFactoryProvider() ServiceAccountClientFromCon
 	}
 }
 
-// Provider for ConfigMapClient from Clientset
-func ConfigMapClientFromClientsetProvider(clients Clientset) ConfigMapClient {
-	return clients.ConfigMaps()
-}
-
 // Provider for ConfigMapClient from Client
 func ConfigMapClientProvider(client client.Client) ConfigMapClient {
 	return NewConfigMapClient(client)
@@ -89,11 +74,6 @@ func ConfigMapClientFromConfigFactoryProvider() ConfigMapClientFromConfigFactory
 		}
 		return clients.ConfigMaps(), nil
 	}
-}
-
-// Provider for ServiceClient from Clientset
-func ServiceClientFromClientsetProvider(clients Clientset) ServiceClient {
-	return clients.Services()
 }
 
 // Provider for ServiceClient from Client
@@ -119,11 +99,6 @@ func ServiceClientFromConfigFactoryProvider() ServiceClientFromConfigFactory {
 	}
 }
 
-// Provider for PodClient from Clientset
-func PodClientFromClientsetProvider(clients Clientset) PodClient {
-	return clients.Pods()
-}
-
 // Provider for PodClient from Client
 func PodClientProvider(client client.Client) PodClient {
 	return NewPodClient(client)
@@ -147,11 +122,6 @@ func PodClientFromConfigFactoryProvider() PodClientFromConfigFactory {
 	}
 }
 
-// Provider for NamespaceClient from Clientset
-func NamespaceClientFromClientsetProvider(clients Clientset) NamespaceClient {
-	return clients.Namespaces()
-}
-
 // Provider for NamespaceClient from Client
 func NamespaceClientProvider(client client.Client) NamespaceClient {
 	return NewNamespaceClient(client)
@@ -173,11 +143,6 @@ func NamespaceClientFromConfigFactoryProvider() NamespaceClientFromConfigFactory
 		}
 		return clients.Namespaces(), nil
 	}
-}
-
-// Provider for NodeClient from Clientset
-func NodeClientFromClientsetProvider(clients Clientset) NodeClient {
-	return clients.Nodes()
 }
 
 // Provider for NodeClient from Client
