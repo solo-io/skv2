@@ -27,6 +27,7 @@ var _ = Describe("Cluster authorization", func() {
 		saClient      *mock_k8s_core_clients.MockServiceAccountClient
 		rbacClientset *mock_k8s_rbac_clients.MockClientset
 		crbClient     *mock_k8s_rbac_clients.MockClusterRoleBindingClient
+		rbClient      *mock_k8s_rbac_clients.MockRoleBindingClient
 
 		saName      = "test-service-account"
 		saNamespace = "test-ns"
@@ -53,9 +54,11 @@ var _ = Describe("Cluster authorization", func() {
 		coreClientset = mock_k8s_core_clients.NewMockClientset(ctrl)
 		coreClientset.EXPECT().ServiceAccounts().Return(saClient)
 
+		rbClient = mock_k8s_rbac_clients.NewMockRoleBindingClient(ctrl)
 		crbClient = mock_k8s_rbac_clients.NewMockClusterRoleBindingClient(ctrl)
 		rbacClientset = mock_k8s_rbac_clients.NewMockClientset(ctrl)
 		rbacClientset.EXPECT().ClusterRoleBindings().Return(crbClient)
+		rbacClientset.EXPECT().RoleBindings().Return(rbClient)
 	})
 
 	AfterEach(func() {
@@ -74,7 +77,7 @@ var _ = Describe("Cluster authorization", func() {
 				},
 			}).Return(testErr)
 
-		outputBearerToken, err := clusterAuthClient.BuildRemoteBearerToken(ctx, testKubeConfig, saName, saNamespace)
+		outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(ctx, testKubeConfig, saName, saNamespace)
 
 		Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
 		Expect(err).To(Equal(testErr), "Should have reported the expected error")
@@ -115,7 +118,7 @@ var _ = Describe("Cluster authorization", func() {
 			}).
 			Return(testErr)
 
-		outputBearerToken, err := clusterAuthClient.BuildRemoteBearerToken(
+		outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(
 			ctx,
 			testKubeConfig,
 			saName,
@@ -166,7 +169,7 @@ var _ = Describe("Cluster authorization", func() {
 			ConfigFromRemoteServiceAccount(ctx, testKubeConfig, saName, saNamespace).
 			Return(serviceAccountKubeConfig, nil)
 
-		outputBearerToken, err := clusterAuthClient.BuildRemoteBearerToken(
+		outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(
 			ctx,
 			testKubeConfig,
 			saName,
