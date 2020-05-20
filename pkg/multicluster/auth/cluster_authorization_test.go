@@ -83,100 +83,217 @@ var _ = Describe("Cluster authorization", func() {
 		Expect(err).To(Equal(testErr), "Should have reported the expected error")
 	})
 
-	It("will fail if ClusterRoleBinding fails to upsert", func() {
-		mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
+	Context("ClusterRoleBindings", func() {
 
-		clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+		It("will fail if ClusterRoleBinding fails to upsert", func() {
+			mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
 
-		sa := &corev1.ServiceAccount{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      saName,
-				Namespace: saNamespace,
-			},
-		}
-		saClient.EXPECT().
-			UpsertServiceAccount(ctx, sa).
-			Return(nil)
+			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
 
-		crbClient.EXPECT().
-			UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
+			sa := &corev1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountRoles[0].GetName()),
+					Name:      saName,
+					Namespace: saNamespace,
 				},
-				Subjects: []rbacv1.Subject{
-					{
-						Kind:      "ServiceAccount",
-						Name:      sa.GetName(),
-						Namespace: sa.GetNamespace(),
+			}
+			saClient.EXPECT().
+				UpsertServiceAccount(ctx, sa).
+				Return(nil)
+
+			crbClient.EXPECT().
+				UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountRoles[0].GetName()),
 					},
-				},
-				RoleRef: rbacv1.RoleRef{
-					APIGroup: "rbac.authorization.k8s.io",
-					Kind:     "ClusterRole",
-					Name:     auth.ServiceAccountRoles[0].GetName(),
-				},
-			}).
-			Return(testErr)
+					Subjects: []rbacv1.Subject{
+						{
+							Kind:      "ServiceAccount",
+							Name:      sa.GetName(),
+							Namespace: sa.GetNamespace(),
+						},
+					},
+					RoleRef: rbacv1.RoleRef{
+						APIGroup: "rbac.authorization.k8s.io",
+						Kind:     "ClusterRole",
+						Name:     auth.ServiceAccountRoles[0].GetName(),
+					},
+				}).
+				Return(testErr)
 
-		outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(
-			ctx,
-			testKubeConfig,
-			saName,
-			saNamespace,
-		)
+			outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(
+				ctx,
+				testKubeConfig,
+				saName,
+				saNamespace,
+			)
 
-		Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
-		Expect(err).To(Equal(testErr), "Should have reported the expected error")
+			Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
+			Expect(err).To(Equal(testErr), "Should have reported the expected error")
+		})
+
+		It("works when its clients work", func() {
+			mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
+
+			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+
+			sa := &corev1.ServiceAccount{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      saName,
+					Namespace: saNamespace,
+				},
+			}
+			saClient.EXPECT().
+				UpsertServiceAccount(ctx, sa).
+				Return(nil)
+
+			crbClient.EXPECT().
+				UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountRoles[0].GetName()),
+					},
+					Subjects: []rbacv1.Subject{
+						{
+							Kind:      "ServiceAccount",
+							Name:      sa.GetName(),
+							Namespace: sa.GetNamespace(),
+						},
+					},
+					RoleRef: rbacv1.RoleRef{
+						APIGroup: "rbac.authorization.k8s.io",
+						Kind:     "ClusterRole",
+						Name:     auth.ServiceAccountRoles[0].GetName(),
+					},
+				}).
+				Return(nil)
+
+			mockConfigCreator.
+				EXPECT().
+				ConfigFromRemoteServiceAccount(ctx, testKubeConfig, saName, saNamespace).
+				Return(serviceAccountKubeConfig, nil)
+
+			outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(
+				ctx,
+				testKubeConfig,
+				saName,
+				saNamespace,
+			)
+
+			Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")
+			Expect(outputBearerToken).To(Equal(serviceAccountBearerToken), "Should have returned the expected kube config")
+		})
+
 	})
 
-	It("works when its clients work", func() {
-		mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
+	Context("RoleBinding", func() {
 
-		clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+		It("will fail if RoleBinding fails to upsert", func() {
+			mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
 
-		sa := &corev1.ServiceAccount{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      saName,
-				Namespace: saNamespace,
-			},
-		}
-		saClient.EXPECT().
-			UpsertServiceAccount(ctx, sa).
-			Return(nil)
+			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
 
-		crbClient.EXPECT().
-			UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
+			sa := &corev1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountRoles[0].GetName()),
+					Name:      saName,
+					Namespace: saNamespace,
 				},
-				Subjects: []rbacv1.Subject{
-					{
-						Kind:      "ServiceAccount",
-						Name:      sa.GetName(),
-						Namespace: sa.GetNamespace(),
+			}
+			saClient.EXPECT().
+				UpsertServiceAccount(ctx, sa).
+				Return(nil)
+
+			role := &rbacv1.Role{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-role-name",
+				},
+			}
+
+			rbClient.EXPECT().
+				UpsertRoleBinding(ctx, &rbacv1.RoleBinding{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: fmt.Sprintf("%s-%s-role-binding", sa.GetName(), role.GetName()),
 					},
+					Subjects: []rbacv1.Subject{
+						{
+							Kind:      "ServiceAccount",
+							Name:      sa.GetName(),
+							Namespace: sa.GetNamespace(),
+						},
+					},
+					RoleRef: rbacv1.RoleRef{
+						APIGroup: "rbac.authorization.k8s.io",
+						Kind:     "Role",
+						Name:     role.GetName(),
+					},
+				}).Return(testErr)
+
+			outputBearerToken, err := clusterAuthClient.BuildRemoteBearerToken(
+				ctx,
+				testKubeConfig,
+				saName,
+				saNamespace,
+				[]*rbacv1.Role{role},
+			)
+
+			Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
+			Expect(err).To(Equal(testErr), "Should have reported the expected error")
+		})
+
+		It("works when its clients work", func() {
+			mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
+
+			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+
+			sa := &corev1.ServiceAccount{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      saName,
+					Namespace: saNamespace,
 				},
-				RoleRef: rbacv1.RoleRef{
-					APIGroup: "rbac.authorization.k8s.io",
-					Kind:     "ClusterRole",
-					Name:     auth.ServiceAccountRoles[0].GetName(),
+			}
+			saClient.EXPECT().
+				UpsertServiceAccount(ctx, sa).
+				Return(nil)
+
+			role := &rbacv1.Role{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-role-name",
 				},
-			}).
-			Return(nil)
+			}
 
-		mockConfigCreator.
-			EXPECT().
-			ConfigFromRemoteServiceAccount(ctx, testKubeConfig, saName, saNamespace).
-			Return(serviceAccountKubeConfig, nil)
+			rbClient.EXPECT().
+				UpsertRoleBinding(ctx, &rbacv1.RoleBinding{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: fmt.Sprintf("%s-%s-role-binding", sa.GetName(), role.GetName()),
+					},
+					Subjects: []rbacv1.Subject{
+						{
+							Kind:      "ServiceAccount",
+							Name:      sa.GetName(),
+							Namespace: sa.GetNamespace(),
+						},
+					},
+					RoleRef: rbacv1.RoleRef{
+						APIGroup: "rbac.authorization.k8s.io",
+						Kind:     "Role",
+						Name:     role.GetName(),
+					},
+				}).Return(nil)
 
-		outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(
-			ctx,
-			testKubeConfig,
-			saName,
-			saNamespace,
-		)
+			mockConfigCreator.
+				EXPECT().
+				ConfigFromRemoteServiceAccount(ctx, testKubeConfig, saName, saNamespace).
+				Return(serviceAccountKubeConfig, nil)
 
-		Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")
-		Expect(outputBearerToken).To(Equal(serviceAccountBearerToken), "Should have returned the expected kube config")
+			outputBearerToken, err := clusterAuthClient.BuildRemoteBearerToken(
+				ctx,
+				testKubeConfig,
+				saName,
+				saNamespace,
+				[]*rbacv1.Role{role},
+			)
+
+			Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")
+			Expect(outputBearerToken).To(Equal(serviceAccountBearerToken), "Should have returned the expected kube config")
+		})
+
 	})
 })
