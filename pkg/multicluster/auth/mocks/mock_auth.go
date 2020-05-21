@@ -75,23 +75,18 @@ func (m *MockClusterAuthorization) EXPECT() *MockClusterAuthorizationMockRecorde
 }
 
 // BuildClusterScopedRemoteBearerToken mocks base method.
-func (m *MockClusterAuthorization) BuildClusterScopedRemoteBearerToken(ctx context.Context, targetClusterCfg *rest.Config, name, namespace string, clusterRoles ...*v1.ClusterRole) (string, error) {
+func (m *MockClusterAuthorization) BuildClusterScopedRemoteBearerToken(ctx context.Context, targetClusterCfg *rest.Config, name, namespace string, clusterRoles []*v1.ClusterRole) (string, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, targetClusterCfg, name, namespace}
-	for _, a := range clusterRoles {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "BuildClusterScopedRemoteBearerToken", varargs...)
+	ret := m.ctrl.Call(m, "BuildClusterScopedRemoteBearerToken", ctx, targetClusterCfg, name, namespace, clusterRoles)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BuildClusterScopedRemoteBearerToken indicates an expected call of BuildClusterScopedRemoteBearerToken.
-func (mr *MockClusterAuthorizationMockRecorder) BuildClusterScopedRemoteBearerToken(ctx, targetClusterCfg, name, namespace interface{}, clusterRoles ...interface{}) *gomock.Call {
+func (mr *MockClusterAuthorizationMockRecorder) BuildClusterScopedRemoteBearerToken(ctx, targetClusterCfg, name, namespace, clusterRoles interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, targetClusterCfg, name, namespace}, clusterRoles...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildClusterScopedRemoteBearerToken", reflect.TypeOf((*MockClusterAuthorization)(nil).BuildClusterScopedRemoteBearerToken), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildClusterScopedRemoteBearerToken", reflect.TypeOf((*MockClusterAuthorization)(nil).BuildClusterScopedRemoteBearerToken), ctx, targetClusterCfg, name, namespace, clusterRoles)
 }
 
 // BuildRemoteBearerToken mocks base method.

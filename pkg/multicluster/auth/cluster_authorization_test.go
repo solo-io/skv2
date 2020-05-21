@@ -23,9 +23,9 @@ var _ = Describe("Cluster authorization", func() {
 		ctrl *gomock.Controller
 		ctx  context.Context
 
-		saClient      *mock_k8s_core_clients.MockServiceAccountClient
-		crbClient     *mock_k8s_rbac_clients.MockClusterRoleBindingClient
-		rbClient      *mock_k8s_rbac_clients.MockRoleBindingClient
+		saClient  *mock_k8s_core_clients.MockServiceAccountClient
+		crbClient *mock_k8s_rbac_clients.MockClusterRoleBindingClient
+		rbClient  *mock_k8s_rbac_clients.MockRoleBindingClient
 
 		saName      = "test-service-account"
 		saNamespace = "test-ns"

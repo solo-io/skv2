@@ -8,24 +8,26 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/go-utils/randutils"
-	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
-	mc_client "github.com/solo-io/skv2/pkg/multicluster/client"
-	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/kubernetes"
-
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/go-utils/randutils"
 	kubehelp "github.com/solo-io/go-utils/testutils/kube"
+	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	"github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/controller"
+	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
+	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"github.com/solo-io/skv2/pkg/multicluster/auth"
+	mc_client "github.com/solo-io/skv2/pkg/multicluster/client"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
+	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/test"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"go.uber.org/zap"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -47,7 +49,11 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		logLevel        = zap.NewAtomicLevel()
 		ctx             = context.TODO()
 		remoteContext   = os.Getenv("REMOTE_CLUSTER_CONTEXT")
-		err             error
+
+		cancel        context.CancelFunc
+		masterManager manager.Manager
+		cluster2      = "cluster-two"
+		cluster1      = "cluster-one"
 	)
 
 	BeforeEach(func() {
@@ -56,8 +62,9 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			zaputil.Level(&logLevel),
 		))
 		ns = randutils.RandString(4)
+		var err error
 		for _, kubeContext := range []string{"", remoteContext} {
-			err := applyFile("things.test.io_v1_crds.yaml", "--context", kubeContext)
+			err = applyFile("things.test.io_v1_crds.yaml", "--context", kubeContext)
 			Expect(err).NotTo(HaveOccurred())
 			cfg := test.MustConfig(kubeContext)
 			kube := kubernetes.NewForConfigOrDie(cfg)
@@ -68,9 +75,47 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		Expect(err).NotTo(HaveOccurred())
 		remoteClientSet, err = NewClientsetFromConfig(test.MustConfig(remoteContext))
 		Expect(err).NotTo(HaveOccurred())
+
+		ctx, cancel = context.WithCancel(context.Background())
+		masterManager = test.MustManager(ctx, ns)
+		remoteCfg := test.ClientConfigWithContext(remoteContext)
+		loader := kubeconfig.NewKubeLoader(5 * time.Second)
+		nsClientFactory := k8s_core_v1.NamespaceClientFromConfigFactoryProvider()
+		roleClientFactory := rbac_v1.RoleClientFromConfigFactoryProvider()
+		clusterRoleClientFactory := rbac_v1.ClusterRoleClientFromConfigFactoryProvider()
+		clusterAuthClientFactory := auth.NewClusterAuthorizationFactory()
+		cfg := test.ClientConfigWithContext("")
+		restCfg, err := cfg.ClientConfig()
+		Expect(err).NotTo(HaveOccurred())
+		v1Clientset, err := k8s_core_v1.NewClientsetFromConfig(restCfg)
+		Expect(err).NotTo(HaveOccurred())
+		registrant := register.NewClusterRegistrant(
+			loader,
+			clusterAuthClientFactory,
+			v1Clientset.Secrets(),
+			nsClientFactory,
+			clusterRoleClientFactory,
+			roleClientFactory,
+		)
+		err = registrant.RegisterClusterFromConfig(ctx, remoteCfg, register.Options{
+			ClusterName:  cluster2,
+			Namespace:    ns,
+			RemoteCtx:    remoteContext,
+			ClusterRoles: auth.ServiceAccountClusterAdminRoles,
+		})
+		Expect(err).NotTo(HaveOccurred())
+		err = registrant.RegisterClusterFromConfig(ctx, cfg, register.Options{
+			ClusterName:  cluster1,
+			Namespace:    ns,
+			ClusterRoles: auth.ServiceAccountClusterAdminRoles,
+		})
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	AfterEach(func() {
+		if cancel != nil {
+			cancel()
+		}
 		for _, kubeContext := range []string{"", remoteContext} {
 			cfg := test.MustConfig(kubeContext)
 			kube := kubernetes.NewForConfigOrDie(cfg)
@@ -80,45 +125,6 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 	})
 
 	Context("multicluster", func() {
-		var (
-			cancel         = func() {}
-			masterManager  manager.Manager
-			remoteKcSecret *corev1.Secret
-			kcSecret       *corev1.Secret
-			cluster2       = "cluster-two"
-			cluster1       = "cluster-one"
-			err            error
-		)
-
-		mustNewKubeConfigSecret := func(context, clusterName string) *corev1.Secret {
-			cfg := test.MustClientConfigWithContext(context)
-			secret, err := kubeconfig.ToSecret(ns, clusterName, *cfg)
-			Expect(err).NotTo(HaveOccurred())
-			return secret
-		}
-
-		BeforeEach(func() {
-			ctx, cancel = context.WithCancel(context.Background())
-			masterManager = test.MustManager(ctx, ns)
-			remoteKcSecret, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(mustNewKubeConfigSecret(remoteContext, cluster2))
-			Expect(err).NotTo(HaveOccurred())
-			kcSecret, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(mustNewKubeConfigSecret("", cluster1))
-			Expect(err).NotTo(HaveOccurred())
-		})
-		AfterEach(func() {
-			cancel()
-			cfg, err := kubeutils.GetConfigWithContext("", os.Getenv("KUBECONFIG"), "")
-			Expect(err).NotTo(HaveOccurred())
-			kube := kubernetes.NewForConfigOrDie(cfg)
-			// clean up the remote kubeconfig secret
-			err = kube.CoreV1().Secrets(ns).Delete(remoteKcSecret.Name, &v1.DeleteOptions{})
-			Expect(err).NotTo(HaveOccurred())
-			// clean up the kubeconfig secret
-			err = kube.CoreV1().Secrets(ns).Delete(kcSecret.Name, &v1.DeleteOptions{})
-			if !errors.IsNotFound(err) {
-				Expect(err).NotTo(HaveOccurred())
-			}
-		})
 
 		Describe("clientset", func() {
 			It("works", func() {
@@ -156,7 +162,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			)
 
 			mustReconcile := func(clientSet Clientset, cluster string, paint *Paint, paints *concurrentPaintMap, reqs *concurrentRequestMap) {
-				err = clientSet.Paints().CreatePaint(ctx, paint)
+				err := clientSet.Paints().CreatePaint(ctx, paint)
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(func() *Paint {
@@ -238,9 +244,11 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				mustReconcile(remoteClientSet, cluster2, newPaint(ns, "paint-mc-delete-recreate"), paintMap, paintDeletes)
 				/**
 				When a KubeConfig secret is deleted, paint is no longer reconciled for that cluster
+				Save that secret so it can be recreated later
 				*/
-
-				err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(remoteKcSecret.Name, &v1.DeleteOptions{})
+				remoteKcSecret, err := kubehelp.MustKubeClient().CoreV1().Secrets(ns).Get(cluster2, metav1.GetOptions{})
+				Expect(err).NotTo(HaveOccurred())
+				err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(remoteKcSecret.Name, &metav1.DeleteOptions{})
 				Expect(err).NotTo(HaveOccurred())
 
 				// Sleep to be sure that the secret deletion propagates.
@@ -270,8 +278,16 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				/**
 				When a KubeConfig secret is restored, paint is again reconciled for that cluster
 				*/
-
-				_, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(mustNewKubeConfigSecret(remoteContext, cluster2))
+				secretCopy := &v1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      remoteKcSecret.GetName(),
+						Namespace: remoteKcSecret.GetNamespace(),
+						Labels:    remoteKcSecret.GetLabels(),
+					},
+					Data: remoteKcSecret.DeepCopy().Data,
+					Type: kubeconfig.SecretType,
+				}
+				_, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(secretCopy)
 				Expect(err).NotTo(HaveOccurred())
 
 				mustReconcile(masterClientSet, cluster1, newPaint(ns, "paint-mc-reconciler-3"), paintMap, paintDeletes)

@@ -23,14 +23,14 @@ import (
 func NewClusterRegistrant(
 	loader kubeconfig.KubeLoader,
 	authorization auth.ClusterAuthorizationFactory,
-	v1Clientset k8s_core_v1.Clientset,
+	secretClient k8s_core_v1.SecretClient,
 	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
 	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory,
 	roleClientFactory rbac_v1.RoleClientFromConfigFactory,
 ) ClusterRegistrant {
 	return &clusterRegistrant{
 		clusterAuthClientFactory: authorization,
-		secretClient:             v1Clientset.Secrets(),
+		secretClient:             secretClient,
 		nsClientFactory:          nsClientFactory,
 		clusterRoleClientFactory: clusterRoleClientFactory,
 		roleClientFactory:        roleClientFactory,
@@ -49,39 +49,46 @@ type clusterRegistrant struct {
 
 func (c *clusterRegistrant) RegisterCluster(
 	ctx context.Context,
-	remoteCfg, remoteCtx string,
+	remoteCfg string,
 	opts Options,
 ) error {
 
-	clientCfg, err := c.kubeLoader.GetClientConfigForContext(remoteCfg, remoteCtx)
+	remoteClientCfg, err := c.kubeLoader.GetClientConfigForContext(remoteCfg, opts.RemoteCtx)
 	if err != nil {
 		return err
 	}
 
-	return c.RegisterClusterFromConfig(ctx, clientCfg, opts)
+	return c.RegisterClusterFromConfig(ctx, remoteClientCfg, opts)
 }
 
 func (c *clusterRegistrant) RegisterClusterFromConfig(
 	ctx context.Context,
-	clientCfg clientcmd.ClientConfig,
+	remoteClientCfg clientcmd.ClientConfig,
 	opts Options,
 ) error {
-	cfg, err := clientCfg.ClientConfig()
+
+	if err := opts.validate(); err != nil {
+		return err
+	}
+
+	remoteCfg, err := remoteClientCfg.ClientConfig()
 	if err != nil {
 		return err
 	}
 
-	authClient, err := c.clusterAuthClientFactory(clientCfg)
+	authClient, err := c.clusterAuthClientFactory(remoteClientCfg)
 	if err != nil {
 		return err
 	}
 
 	var token string
 	if len(opts.Roles) != 0 {
-		if err = c.upsertRoles(ctx, cfg, opts.Roles); err != nil {
-			return err
+		if opts.UpsertRoles {
+			if err = c.upsertRoles(ctx, remoteCfg, opts.Roles); err != nil {
+				return err
+			}
 		}
-		token, err = authClient.BuildRemoteBearerToken(ctx, cfg, opts.ClusterName, opts.Namespace, opts.Roles)
+		token, err = authClient.BuildRemoteBearerToken(ctx, remoteCfg, opts.ClusterName, opts.Namespace, opts.Roles)
 		if err != nil {
 			return err
 		}
@@ -89,38 +96,43 @@ func (c *clusterRegistrant) RegisterClusterFromConfig(
 	} else {
 		var clusterRoles []*rbacv1.ClusterRole
 		if len(opts.ClusterRoles) != 0 {
-			if err = c.upsertClusterRoles(ctx, cfg, opts.ClusterRoles); err != nil {
-				return err
+			if opts.UpsertRoles {
+				if err = c.upsertClusterRoles(ctx, remoteCfg, opts.ClusterRoles); err != nil {
+					return err
+				}
 			}
 			clusterRoles = opts.ClusterRoles
 		}
 		token, err = authClient.BuildClusterScopedRemoteBearerToken(
 			ctx,
-			cfg,
+			remoteCfg,
 			opts.ClusterName,
 			opts.Namespace,
-			clusterRoles...,
+			clusterRoles,
 		)
 		if err != nil {
 			return err
 		}
 	}
 
-	rawRemoteCfg, err := clientCfg.RawConfig()
+	rawRemoteCfg, err := remoteClientCfg.RawConfig()
 	if err != nil {
 		return err
 	}
 
-	remoteContextName := rawRemoteCfg.CurrentContext
+	remoteContextName := opts.RemoteCtx
+	if opts.RemoteCtx == "" {
+		remoteContextName = rawRemoteCfg.CurrentContext
+	}
 	remoteContext := rawRemoteCfg.Contexts[remoteContextName]
 	remoteCluster := rawRemoteCfg.Clusters[remoteContext.Cluster]
 
 	// hacky step for running locally in KIND
-	if err = c.hackClusterConfigForLocalTestingInKIND(remoteCluster, remoteContextName, opts.LocalClusterDomainOverride); err != nil {
+	if err = c.hackClusterConfigForLocalTestingInKIND(remoteCluster, opts.RemoteCtx, opts.LocalClusterDomainOverride); err != nil {
 		return err
 	}
 
-	if err = c.ensureRemoteNamespace(ctx, opts.Namespace, cfg); err != nil {
+	if err = c.ensureRemoteNamespace(ctx, opts.Namespace, remoteCfg); err != nil {
 		return err
 	}
 

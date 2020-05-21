@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 
+	"github.com/rotisserie/eris"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -13,6 +14,9 @@ type Options struct {
 
 	// Name by which the cluster will be identified
 	ClusterName string
+
+	// Name of the remote cluster Kubeconfig Context
+	RemoteCtx string
 
 	// Namespace to write namespaced resources to in the "master" and "remote" clusters
 	Namespace string
@@ -42,6 +46,16 @@ type Options struct {
 	UpsertRoles bool
 }
 
+func (o Options) validate() error {
+	if o.Namespace == "" {
+		return eris.Errorf("Must specify namespace")
+	}
+	if o.ClusterName == "" {
+		return eris.Errorf("Must specify cluster name")
+	}
+	return nil
+}
+
 /*
 	Standard Cluster Registrant (one who registers) interface.
 
@@ -67,7 +81,7 @@ type ClusterRegistrant interface {
 	*/
 	RegisterCluster(
 		ctx context.Context,
-		remoteCfgPath, remoteCtx string,
+		remoteCfgPath string,
 		info Options,
 	) error
 }

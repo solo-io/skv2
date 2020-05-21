@@ -10,7 +10,7 @@ import (
 )
 
 // default KubeLoader
-func DefaultKubeLoaderProvider(timeout *time.Duration) KubeLoader {
+func NewKubeLoader(timeout time.Duration) KubeLoader {
 	return &kubeLoader{
 		timeout: timeout.String(),
 	}

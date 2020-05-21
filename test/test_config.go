@@ -57,14 +57,22 @@ func MustManagerNotStarted(ns string) manager.Manager {
 	return mgr
 }
 
-func MustClientConfigWithContext(context string) *api.Config {
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.ExplicitPath = os.Getenv("KUBECONFIG")
-	// NOTE: ConfigOverrides are NOT propagated to `GetStartingConfig()`, so we set CurrentContext on the resulting config
-	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, nil).ConfigAccess().GetStartingConfig()
+func MustApiConfigWithContext(context string) *api.Config {
+	clientCfg := ClientConfigWithContext(context)
+	cfg, err := clientCfg.ConfigAccess().GetStartingConfig()
 	Expect(err).NotTo(HaveOccurred())
 	if context != "" {
 		cfg.CurrentContext = context
 	}
+	return cfg
+}
+
+func ClientConfigWithContext(context string) clientcmd.ClientConfig {
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	loadingRules.ExplicitPath = os.Getenv("KUBECONFIG")
+	// NOTE: ConfigOverrides are NOT propagated to `GetStartingConfig()`, so we set CurrentContext on the resulting config
+	cfg := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, &clientcmd.ConfigOverrides{
+		CurrentContext: context,
+	})
 	return cfg
 }

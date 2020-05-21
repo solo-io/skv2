@@ -51,15 +51,15 @@ func (mr *MockClusterRegistrantMockRecorder) RegisterClusterFromConfig(ctx, remo
 }
 
 // RegisterCluster mocks base method.
-func (m *MockClusterRegistrant) RegisterCluster(ctx context.Context, remoteCfgPath, remoteCtx string, info register.Options) error {
+func (m *MockClusterRegistrant) RegisterCluster(ctx context.Context, remoteCfgPath string, info register.Options) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterCluster", ctx, remoteCfgPath, remoteCtx, info)
+	ret := m.ctrl.Call(m, "RegisterCluster", ctx, remoteCfgPath, info)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterCluster indicates an expected call of RegisterCluster.
-func (mr *MockClusterRegistrantMockRecorder) RegisterCluster(ctx, remoteCfgPath, remoteCtx, info interface{}) *gomock.Call {
+func (mr *MockClusterRegistrantMockRecorder) RegisterCluster(ctx, remoteCfgPath, info interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterCluster", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterCluster), ctx, remoteCfgPath, remoteCtx, info)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterCluster", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterCluster), ctx, remoteCfgPath, info)
 }
