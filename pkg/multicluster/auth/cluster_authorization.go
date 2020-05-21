@@ -15,11 +15,6 @@ import (
 )
 
 var (
-	// visible for testing
-	ServiceAccountClusterAdminRoles = []*k8s_rbac_types.ClusterRole{{
-		ObjectMeta: k8s_meta.ObjectMeta{Name: "cluster-admin"},
-	}}
-
 	EmptyRolesListError        = eris.New("Empty Roles list found, must specify at least one role to bind to.")
 	EmptyClusterRolesListError = eris.New("Empty ClusterRoles list found, must specify at least one role to bind to.")
 )

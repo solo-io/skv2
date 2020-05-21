@@ -6,3 +6,4 @@ vendor*/
 .vscode/
 # ignore packr files
 *-packr.g
+gomock_reflect_*/
