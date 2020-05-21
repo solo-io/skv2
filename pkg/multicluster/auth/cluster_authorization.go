@@ -16,11 +16,12 @@ import (
 
 var (
 	// visible for testing
-	ServiceAccountRoles = []*k8s_rbac_types.ClusterRole{{
+	ServiceAccountClusterAdminRoles = []*k8s_rbac_types.ClusterRole{{
 		ObjectMeta: k8s_meta.ObjectMeta{Name: "cluster-admin"},
 	}}
 
-	EmptyRolesListError = eris.New("Empty Roles list found, must specify at least one role to bind to.")
+	EmptyRolesListError        = eris.New("Empty Roles list found, must specify at least one role to bind to.")
+	EmptyClusterRolesListError = eris.New("Empty ClusterRoles list found, must specify at least one role to bind to.")
 )
 
 type clusterAuthorization struct {
@@ -45,20 +46,26 @@ func NewClusterAuthorizationFactory() ClusterAuthorizationFactory {
 			return nil, err
 		}
 		cfgCreator := NewRemoteAuthorityConfigCreator(v1Clientset.Secrets(), v1Clientset.ServiceAccounts())
-		return NewClusterAuthorization(cfgCreator, rbacClientset, v1Clientset), nil
+		return NewClusterAuthorization(
+			cfgCreator,
+			rbacClientset.ClusterRoleBindings(),
+			rbacClientset.RoleBindings(),
+			v1Clientset.ServiceAccounts(),
+		), nil
 	}
 }
 
 func NewClusterAuthorization(
 	configCreator RemoteAuthorityConfigCreator,
-	rbacClientset rbac_v1.Clientset,
-	coreClientset k8s_core_v1.Clientset,
+	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient,
+	roleBindingClient rbac_v1.RoleBindingClient,
+	serviceAccountClient k8s_core_v1.ServiceAccountClient,
 ) ClusterAuthorization {
 	return &clusterAuthorization{
 		configCreator:            configCreator,
-		clusterRoleBindingClient: rbacClientset.ClusterRoleBindings(),
-		roleBindingClient:        rbacClientset.RoleBindings(),
-		serviceAccountClient:     coreClientset.ServiceAccounts(),
+		clusterRoleBindingClient: clusterRoleBindingClient,
+		roleBindingClient:        roleBindingClient,
+		serviceAccountClient:     serviceAccountClient,
 	}
 }
 
@@ -66,8 +73,12 @@ func (c *clusterAuthorization) BuildClusterScopedRemoteBearerToken(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
 	name, namespace string,
-	clusterRoles ...*k8s_rbac_types.ClusterRole,
+	clusterRoles []*k8s_rbac_types.ClusterRole,
 ) (bearerToken string, err error) {
+
+	if len(clusterRoles) == 0 {
+		return "", EmptyClusterRolesListError
+	}
 
 	saToCreate := &core_v1.ServiceAccount{
 		ObjectMeta: k8s_meta.ObjectMeta{
@@ -80,12 +91,7 @@ func (c *clusterAuthorization) BuildClusterScopedRemoteBearerToken(
 		return "", err
 	}
 
-	roles := ServiceAccountRoles
-	if len(clusterRoles) != 0 {
-		roles = clusterRoles
-	}
-
-	if err = c.bindClusterRolesToServiceAccount(ctx, saToCreate, roles); err != nil {
+	if err = c.bindClusterRolesToServiceAccount(ctx, saToCreate, clusterRoles); err != nil {
 		return "", err
 	}
 

@@ -34,7 +34,7 @@ type ClusterAuthorization interface {
 		ctx context.Context,
 		targetClusterCfg *rest.Config,
 		name, namespace string,
-		clusterRoles ...*k8s_rbac_types.ClusterRole,
+		clusterRoles []*k8s_rbac_types.ClusterRole,
 	) (bearerToken string, err error)
 	// At least one Role is required to bind to, an empty list will be considered invalid
 	BuildRemoteBearerToken(

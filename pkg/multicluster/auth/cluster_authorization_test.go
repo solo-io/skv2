@@ -23,9 +23,7 @@ var _ = Describe("Cluster authorization", func() {
 		ctrl *gomock.Controller
 		ctx  context.Context
 
-		coreClientset *mock_k8s_core_clients.MockClientset
 		saClient      *mock_k8s_core_clients.MockServiceAccountClient
-		rbacClientset *mock_k8s_rbac_clients.MockClientset
 		crbClient     *mock_k8s_rbac_clients.MockClusterRoleBindingClient
 		rbClient      *mock_k8s_rbac_clients.MockRoleBindingClient
 
@@ -51,14 +49,9 @@ var _ = Describe("Cluster authorization", func() {
 		ctrl, ctx = gomock.WithContext(context.TODO(), GinkgoT())
 
 		saClient = mock_k8s_core_clients.NewMockServiceAccountClient(ctrl)
-		coreClientset = mock_k8s_core_clients.NewMockClientset(ctrl)
-		coreClientset.EXPECT().ServiceAccounts().Return(saClient)
 
 		rbClient = mock_k8s_rbac_clients.NewMockRoleBindingClient(ctrl)
 		crbClient = mock_k8s_rbac_clients.NewMockClusterRoleBindingClient(ctrl)
-		rbacClientset = mock_k8s_rbac_clients.NewMockClientset(ctrl)
-		rbacClientset.EXPECT().ClusterRoleBindings().Return(crbClient)
-		rbacClientset.EXPECT().RoleBindings().Return(rbClient)
 	})
 
 	AfterEach(func() {
@@ -67,7 +60,7 @@ var _ = Describe("Cluster authorization", func() {
 
 	It("reports an error when the service account can't be created", func() {
 		mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
-		clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+		clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, crbClient, rbClient, saClient)
 
 		saClient.EXPECT().
 			UpsertServiceAccount(ctx, &corev1.ServiceAccount{
@@ -88,7 +81,7 @@ var _ = Describe("Cluster authorization", func() {
 		It("will fail if ClusterRoleBinding fails to upsert", func() {
 			mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
 
-			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, crbClient, rbClient, saClient)
 
 			sa := &corev1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
@@ -103,7 +96,7 @@ var _ = Describe("Cluster authorization", func() {
 			crbClient.EXPECT().
 				UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountRoles[0].GetName()),
+						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountClusterAdminRoles[0].GetName()),
 					},
 					Subjects: []rbacv1.Subject{
 						{
@@ -115,7 +108,7 @@ var _ = Describe("Cluster authorization", func() {
 					RoleRef: rbacv1.RoleRef{
 						APIGroup: "rbac.authorization.k8s.io",
 						Kind:     "ClusterRole",
-						Name:     auth.ServiceAccountRoles[0].GetName(),
+						Name:     auth.ServiceAccountClusterAdminRoles[0].GetName(),
 					},
 				}).
 				Return(testErr)
@@ -134,7 +127,7 @@ var _ = Describe("Cluster authorization", func() {
 		It("works when its clients work", func() {
 			mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
 
-			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, crbClient, rbClient, saClient)
 
 			sa := &corev1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
@@ -149,7 +142,7 @@ var _ = Describe("Cluster authorization", func() {
 			crbClient.EXPECT().
 				UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountRoles[0].GetName()),
+						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountClusterAdminRoles[0].GetName()),
 					},
 					Subjects: []rbacv1.Subject{
 						{
@@ -161,7 +154,7 @@ var _ = Describe("Cluster authorization", func() {
 					RoleRef: rbacv1.RoleRef{
 						APIGroup: "rbac.authorization.k8s.io",
 						Kind:     "ClusterRole",
-						Name:     auth.ServiceAccountRoles[0].GetName(),
+						Name:     auth.ServiceAccountClusterAdminRoles[0].GetName(),
 					},
 				}).
 				Return(nil)
@@ -189,7 +182,7 @@ var _ = Describe("Cluster authorization", func() {
 		It("will fail if RoleBinding fails to upsert", func() {
 			mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
 
-			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, crbClient, rbClient, saClient)
 
 			sa := &corev1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
@@ -241,7 +234,7 @@ var _ = Describe("Cluster authorization", func() {
 		It("works when its clients work", func() {
 			mockConfigCreator := mock_auth.NewMockRemoteAuthorityConfigCreator(ctrl)
 
-			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, rbacClientset, coreClientset)
+			clusterAuthClient := auth.NewClusterAuthorization(mockConfigCreator, crbClient, rbClient, saClient)
 
 			sa := &corev1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{

@@ -71,9 +71,10 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 func (r *remoteAuthorityConfigCreator) waitForSecret(
 	ctx context.Context,
 	name, namespace string,
-) (foundSecret *k8s_core_types.Secret, err error) {
+) (*k8s_core_types.Secret, error) {
 
-	err = retry.Do(func() error {
+	var foundSecret *k8s_core_types.Secret
+	if err := retry.Do(func() error {
 		serviceAccount, err := r.serviceAccountClient.GetServiceAccount(
 			ctx,
 			client.ObjectKey{Name: name, Namespace: namespace},
@@ -85,9 +86,6 @@ func (r *remoteAuthorityConfigCreator) waitForSecret(
 		if len(serviceAccount.Secrets) == 0 {
 			return eris.Errorf("service account %s.%s does not have a token secret associated with it", name, namespace)
 		}
-		if len(serviceAccount.Secrets) != 1 {
-			return eris.Errorf("service account %s.%s unexpectedly has more than one secret", name, namespace)
-		}
 
 		secretName := serviceAccount.Secrets[0].Name
 
@@ -98,7 +96,9 @@ func (r *remoteAuthorityConfigCreator) waitForSecret(
 
 		foundSecret = secret
 		return nil
-	}, SecretLookupOpts...)
+	}, SecretLookupOpts...); err != nil {
+		return nil, err
+	}
 
-	return
+	return foundSecret, nil
 }

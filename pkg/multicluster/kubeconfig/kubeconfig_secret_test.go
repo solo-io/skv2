@@ -63,6 +63,10 @@ users:
 			Expect(secret).To(Equal(expectedSecret))
 		})
 
+	})
+
+	Describe("ToSecretWithKey", func() {
+
 		It("should convert a single KubeConfig to a single secret with a specified key", func() {
 			secretKey := "test-key"
 			expectedSecret := &v1.Secret{
@@ -79,6 +83,7 @@ users:
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).To(Equal(expectedSecret))
 		})
+
 	})
 
 	Describe("SecretToConfig", func() {
@@ -101,7 +106,11 @@ users:
 			Expect(actualConfig).NotTo(BeNil())
 		})
 
-		It("works with a specified key", func() {
+	})
+
+	Describe("SecretToConfigWithKey", func() {
+
+		It("works", func() {
 			secretKey := "test-key"
 			secret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -121,4 +130,5 @@ users:
 		})
 
 	})
+
 })
