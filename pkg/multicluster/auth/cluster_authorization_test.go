@@ -70,7 +70,13 @@ var _ = Describe("Cluster authorization", func() {
 				},
 			}).Return(testErr)
 
-		outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(ctx, testKubeConfig, saName, saNamespace)
+		outputBearerToken, err := clusterAuthClient.BuildClusterScopedRemoteBearerToken(
+			ctx,
+			testKubeConfig,
+			saName,
+			saNamespace,
+			auth.ServiceAccountClusterAdminRoles,
+		)
 
 		Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
 		Expect(err).To(Equal(testErr), "Should have reported the expected error")
@@ -118,6 +124,7 @@ var _ = Describe("Cluster authorization", func() {
 				testKubeConfig,
 				saName,
 				saNamespace,
+				auth.ServiceAccountClusterAdminRoles,
 			)
 
 			Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
@@ -169,6 +176,7 @@ var _ = Describe("Cluster authorization", func() {
 				testKubeConfig,
 				saName,
 				saNamespace,
+				auth.ServiceAccountClusterAdminRoles,
 			)
 
 			Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")
