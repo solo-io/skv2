@@ -101,13 +101,13 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			ClusterName:  cluster2,
 			Namespace:    ns,
 			RemoteCtx:    remoteContext,
-			ClusterRoles: auth.ServiceAccountClusterAdminRoles,
+			ClusterRoles: test.ServiceAccountClusterAdminRoles,
 		})
 		Expect(err).NotTo(HaveOccurred())
 		err = registrant.RegisterClusterFromConfig(ctx, cfg, register.Options{
 			ClusterName:  cluster1,
 			Namespace:    ns,
-			ClusterRoles: auth.ServiceAccountClusterAdminRoles,
+			ClusterRoles: test.ServiceAccountClusterAdminRoles,
 		})
 		Expect(err).NotTo(HaveOccurred())
 	})

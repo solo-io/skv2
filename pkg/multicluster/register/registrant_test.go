@@ -19,6 +19,7 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	mock_kubeconfig "github.com/solo-io/skv2/pkg/multicluster/kubeconfig/mocks"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
+	"github.com/solo-io/skv2/test"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -115,14 +116,14 @@ var _ = Describe("Registrant", func() {
 			Return(cfg, nil)
 
 		clusterAuthClient.EXPECT().
-			BuildClusterScopedRemoteBearerToken(ctx, cfg, clusterName, namespace, auth.ServiceAccountClusterAdminRoles).
+			BuildClusterScopedRemoteBearerToken(ctx, cfg, clusterName, namespace, test.ServiceAccountClusterAdminRoles).
 			Return("", testErr)
 
 		err := clusterRegistrant.RegisterCluster(ctx, remoteCfg, register.Options{
 			ClusterName:  clusterName,
 			Namespace:    namespace,
 			RemoteCtx:    remoteCtx,
-			ClusterRoles: auth.ServiceAccountClusterAdminRoles,
+			ClusterRoles: test.ServiceAccountClusterAdminRoles,
 		})
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
@@ -160,7 +161,7 @@ var _ = Describe("Registrant", func() {
 			Return(restCfg, nil)
 
 		clusterAuthClient.EXPECT().
-			BuildClusterScopedRemoteBearerToken(ctx, restCfg, clusterName, namespace, auth.ServiceAccountClusterAdminRoles).
+			BuildClusterScopedRemoteBearerToken(ctx, restCfg, clusterName, namespace, test.ServiceAccountClusterAdminRoles).
 			Return(token, nil)
 
 		clientConfig.EXPECT().
@@ -215,7 +216,7 @@ var _ = Describe("Registrant", func() {
 			ClusterName:  clusterName,
 			Namespace:    namespace,
 			RemoteCtx:    remoteCtx,
-			ClusterRoles: auth.ServiceAccountClusterAdminRoles,
+			ClusterRoles: test.ServiceAccountClusterAdminRoles,
 		})
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -253,7 +254,7 @@ var _ = Describe("Registrant", func() {
 			Return(restCfg, nil)
 
 		clusterAuthClient.EXPECT().
-			BuildClusterScopedRemoteBearerToken(ctx, restCfg, clusterName, namespace, auth.ServiceAccountClusterAdminRoles).
+			BuildClusterScopedRemoteBearerToken(ctx, restCfg, clusterName, namespace, test.ServiceAccountClusterAdminRoles).
 			Return(token, nil)
 
 		clientConfig.EXPECT().
@@ -315,7 +316,7 @@ var _ = Describe("Registrant", func() {
 			Namespace:                  namespace,
 			LocalClusterDomainOverride: clusterDomainOverride,
 			RemoteCtx:                  remoteCtx,
-			ClusterRoles:               auth.ServiceAccountClusterAdminRoles,
+			ClusterRoles:               test.ServiceAccountClusterAdminRoles,
 		})
 		Expect(err).NotTo(HaveOccurred())
 	})

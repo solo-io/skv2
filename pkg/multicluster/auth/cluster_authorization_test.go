@@ -12,6 +12,7 @@ import (
 	mock_k8s_rbac_clients "github.com/solo-io/skv2/pkg/generated/kubernetes/mocks/rbac.authorization.k8s.io/v1"
 	"github.com/solo-io/skv2/pkg/multicluster/auth"
 	mock_auth "github.com/solo-io/skv2/pkg/multicluster/auth/mocks"
+	"github.com/solo-io/skv2/test"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,7 +76,7 @@ var _ = Describe("Cluster authorization", func() {
 			testKubeConfig,
 			saName,
 			saNamespace,
-			auth.ServiceAccountClusterAdminRoles,
+			test.ServiceAccountClusterAdminRoles,
 		)
 
 		Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
@@ -102,7 +103,7 @@ var _ = Describe("Cluster authorization", func() {
 			crbClient.EXPECT().
 				UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountClusterAdminRoles[0].GetName()),
+						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), test.ServiceAccountClusterAdminRoles[0].GetName()),
 					},
 					Subjects: []rbacv1.Subject{
 						{
@@ -114,7 +115,7 @@ var _ = Describe("Cluster authorization", func() {
 					RoleRef: rbacv1.RoleRef{
 						APIGroup: "rbac.authorization.k8s.io",
 						Kind:     "ClusterRole",
-						Name:     auth.ServiceAccountClusterAdminRoles[0].GetName(),
+						Name:     test.ServiceAccountClusterAdminRoles[0].GetName(),
 					},
 				}).
 				Return(testErr)
@@ -124,7 +125,7 @@ var _ = Describe("Cluster authorization", func() {
 				testKubeConfig,
 				saName,
 				saNamespace,
-				auth.ServiceAccountClusterAdminRoles,
+				test.ServiceAccountClusterAdminRoles,
 			)
 
 			Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
@@ -149,7 +150,7 @@ var _ = Describe("Cluster authorization", func() {
 			crbClient.EXPECT().
 				UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), auth.ServiceAccountClusterAdminRoles[0].GetName()),
+						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.GetName(), test.ServiceAccountClusterAdminRoles[0].GetName()),
 					},
 					Subjects: []rbacv1.Subject{
 						{
@@ -161,7 +162,7 @@ var _ = Describe("Cluster authorization", func() {
 					RoleRef: rbacv1.RoleRef{
 						APIGroup: "rbac.authorization.k8s.io",
 						Kind:     "ClusterRole",
-						Name:     auth.ServiceAccountClusterAdminRoles[0].GetName(),
+						Name:     test.ServiceAccountClusterAdminRoles[0].GetName(),
 					},
 				}).
 				Return(nil)
@@ -176,7 +177,7 @@ var _ = Describe("Cluster authorization", func() {
 				testKubeConfig,
 				saName,
 				saNamespace,
-				auth.ServiceAccountClusterAdminRoles,
+				test.ServiceAccountClusterAdminRoles,
 			)
 
 			Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")

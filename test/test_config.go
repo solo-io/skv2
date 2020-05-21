@@ -6,12 +6,21 @@ import (
 
 	"github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	k8s_rbac_types "k8s.io/api/rbac/v1"
+	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
+
+var (
+	// visible for testing
+	ServiceAccountClusterAdminRoles = []*k8s_rbac_types.ClusterRole{{
+		ObjectMeta: k8s_meta.ObjectMeta{Name: "cluster-admin"},
+	}}
 )
 
 func MustConfig(context string) *rest.Config {
