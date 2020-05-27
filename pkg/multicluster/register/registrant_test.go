@@ -21,6 +21,7 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/solo-io/skv2/test"
 	k8s_core_types "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -217,6 +218,85 @@ var _ = Describe("Registrant", func() {
 			Namespace:    namespace,
 			RemoteCtx:    remoteCtx,
 			ClusterRoles: test.ServiceAccountClusterAdminRoles,
+		})
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("Will create passed in roles if specified", func() {
+		clusterRegistrant := register.NewClusterRegistrant(
+			loader, clusterAuthClientFactory, secretClient, nsClientFactory, clusterRoleClientFactory, roleClientFactory,
+		)
+
+		restCfg := &rest.Config{
+			Host: "mock-host",
+		}
+		apiCfg := api.Config{
+			Clusters: map[string]*api.Cluster{
+				clusterName: {
+					Server:                   "fake-server",
+					CertificateAuthorityData: []byte("fake-ca-data"),
+				},
+			},
+			Contexts: map[string]*api.Context{
+				remoteCtx: {
+					Cluster: clusterName,
+				},
+			},
+			CurrentContext: remoteCtx,
+		}
+		token := "token"
+		loader.EXPECT().
+			GetClientConfigForContext(remoteCfg, remoteCtx).
+			Return(clientConfig, nil)
+
+		clientConfig.EXPECT().
+			ClientConfig().
+			Return(restCfg, nil)
+
+		roles := []*rbacv1.Role{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-role",
+					Namespace: "test-ns",
+				},
+			},
+		}
+
+		roleClient.EXPECT().
+			UpsertRole(ctx, roles[0]).
+			Return(nil)
+
+		clusterAuthClient.EXPECT().
+			BuildRemoteBearerToken(ctx, restCfg, clusterName, namespace, roles).
+			Return(token, nil)
+
+		clientConfig.EXPECT().
+			RawConfig().
+			Return(apiCfg, nil)
+
+		nsClient.EXPECT().
+			GetNamespace(ctx, namespace).
+			Return(nil, nil)
+		secret := &k8s_core_types.Secret{
+			Data: map[string][]byte{"fake-date": []byte("some-bytes")},
+		}
+		secretClient.EXPECT().
+			GetSecret(ctx, client.ObjectKey{
+				Namespace: namespace,
+				Name:      clusterName,
+			}).
+			Return(secret, nil)
+
+		secretClient.EXPECT().
+			UpdateSecret(ctx, secret).
+			Return(nil)
+
+		err := clusterRegistrant.RegisterCluster(ctx, remoteCfg, register.Options{
+			ClusterName: clusterName,
+			Namespace:   namespace,
+			RemoteCtx:   remoteCtx,
+			Roles:       roles,
+			UpsertRoles: true,
 		})
 		Expect(err).NotTo(HaveOccurred())
 	})
