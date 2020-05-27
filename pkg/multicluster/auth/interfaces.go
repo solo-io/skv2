@@ -3,9 +3,9 @@ package auth
 import (
 	"context"
 
-	k8s_rbac_types "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_auth.go
@@ -34,14 +34,14 @@ type ClusterAuthorization interface {
 		ctx context.Context,
 		targetClusterCfg *rest.Config,
 		name, namespace string,
-		clusterRoles []*k8s_rbac_types.ClusterRole,
+		clusterRoles []client.ObjectKey,
 	) (bearerToken string, err error)
 	// At least one Role is required to bind to, an empty list will be considered invalid
 	BuildRemoteBearerToken(
 		ctx context.Context,
 		targetClusterCfg *rest.Config,
 		name, namespace string,
-		roles []*k8s_rbac_types.Role,
+		roles []client.ObjectKey,
 	) (bearerToken string, err error)
 }
 

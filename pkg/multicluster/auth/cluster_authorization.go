@@ -12,6 +12,7 @@ import (
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -68,7 +69,7 @@ func (c *clusterAuthorization) BuildClusterScopedRemoteBearerToken(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
 	name, namespace string,
-	clusterRoles []*k8s_rbac_types.ClusterRole,
+	clusterRoles []client.ObjectKey,
 ) (bearerToken string, err error) {
 
 	if len(clusterRoles) == 0 {
@@ -102,13 +103,13 @@ func (c *clusterAuthorization) BuildClusterScopedRemoteBearerToken(
 func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
 	ctx context.Context,
 	targetServiceAccount *core_v1.ServiceAccount,
-	roles []*k8s_rbac_types.ClusterRole,
+	roles []client.ObjectKey,
 ) error {
 
 	for _, role := range roles {
 		crbToCreate := &k8s_rbac_types.ClusterRoleBinding{
 			ObjectMeta: k8s_meta.ObjectMeta{
-				Name: fmt.Sprintf("%s-%s-clusterrole-binding", targetServiceAccount.GetName(), role.GetName()),
+				Name: fmt.Sprintf("%s-%s-clusterrole-binding", targetServiceAccount.GetName(), role.Name),
 			},
 			Subjects: []k8s_rbac_types.Subject{{
 				Kind:      "ServiceAccount",
@@ -118,7 +119,7 @@ func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
 			RoleRef: k8s_rbac_types.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "ClusterRole",
-				Name:     role.GetName(),
+				Name:     role.Name,
 			},
 		}
 
@@ -134,7 +135,7 @@ func (c *clusterAuthorization) BuildRemoteBearerToken(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
 	name, namespace string,
-	roles []*k8s_rbac_types.Role,
+	roles []client.ObjectKey,
 ) (bearerToken string, err error) {
 
 	if len(roles) == 0 {
@@ -168,13 +169,13 @@ func (c *clusterAuthorization) BuildRemoteBearerToken(
 func (c *clusterAuthorization) bindRolesToServiceAccount(
 	ctx context.Context,
 	targetServiceAccount *core_v1.ServiceAccount,
-	roles []*k8s_rbac_types.Role,
+	roles []client.ObjectKey,
 ) error {
 
 	for _, role := range roles {
 		rbToCreate := &k8s_rbac_types.RoleBinding{
 			ObjectMeta: k8s_meta.ObjectMeta{
-				Name: fmt.Sprintf("%s-%s-role-binding", targetServiceAccount.GetName(), role.GetName()),
+				Name: fmt.Sprintf("%s-%s-role-binding", targetServiceAccount.GetName(), role.Name),
 			},
 			Subjects: []k8s_rbac_types.Subject{{
 				Kind:      "ServiceAccount",
@@ -184,7 +185,7 @@ func (c *clusterAuthorization) bindRolesToServiceAccount(
 			RoleRef: k8s_rbac_types.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "Role",
-				Name:     role.GetName(),
+				Name:     role.Name,
 			},
 		}
 
