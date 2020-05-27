@@ -43,9 +43,14 @@ func (c *clusterWatcher) Run(master manager.Manager) error {
 }
 
 func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
-	clusterName, cfg, err := kubeconfig.SecretToConfig(obj)
+	clusterName, clientCfg, err := kubeconfig.SecretToConfig(obj)
 	if err != nil {
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
+	}
+
+	restCfg, err := clientCfg.ClientConfig()
+	if err != nil {
+		return reconcile.Result{}, eris.Wrap(err, "failed to create rest config from kubeconfig")
 	}
 
 	// If the cluster already has a manager, remove the existing instance and start again.
@@ -53,7 +58,7 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		c.removeCluster(clusterName)
 	}
 
-	mgr, err := manager.New(cfg.RestConfig, c.optionsWithDefaults())
+	mgr, err := manager.New(restCfg, c.optionsWithDefaults())
 	if err != nil {
 		return reconcile.Result{}, err
 	}
