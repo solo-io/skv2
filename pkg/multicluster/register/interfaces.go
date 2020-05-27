@@ -24,6 +24,10 @@ type Options struct {
 	// Namespace to write namespaced resources to in the "master" and "remote" clusters
 	// If left empty will return error
 	Namespace string
+
+	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// If left empty will return error
+	RemoteNamespace string
 }
 
 type RbacOptions struct {
@@ -48,6 +52,9 @@ func (o *Options) validate() error {
 	if o.Namespace == "" {
 		return eris.Errorf("Must specify namespace")
 	}
+	if o.RemoteNamespace == "" {
+		o.RemoteNamespace = o.Namespace
+	}
 	if o.ClusterName == "" {
 		return eris.Errorf("Must specify cluster name")
 	}
@@ -71,7 +78,7 @@ type ClusterRegistrant interface {
 	CreateRemoteAccessToken(
 		ctx context.Context,
 		remoteClientCfg clientcmd.ClientConfig,
-		sa *corev1.ServiceAccount,
+		sa client.ObjectKey,
 		opts RbacOptions,
 	) (token string, err error)
 

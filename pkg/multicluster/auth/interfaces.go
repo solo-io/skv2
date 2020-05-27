@@ -32,15 +32,13 @@ type ClusterAuthorization interface {
 	// If any clusterRoles are passed in it will attempt bind to them, otherwise it will default to cluster-admin
 	BuildClusterScopedRemoteBearerToken(
 		ctx context.Context,
-		targetClusterCfg *rest.Config,
-		name, namespace string,
+		serviceAccount client.ObjectKey,
 		clusterRoles []client.ObjectKey,
 	) (bearerToken string, err error)
 	// At least one Role is required to bind to, an empty list will be considered invalid
 	BuildRemoteBearerToken(
 		ctx context.Context,
-		targetClusterCfg *rest.Config,
-		name, namespace string,
+		serviceAccount client.ObjectKey,
 		roles []client.ObjectKey,
 	) (bearerToken string, err error)
 }

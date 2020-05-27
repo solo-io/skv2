@@ -3,14 +3,15 @@ package auth
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
 	core_v1 "k8s.io/api/core/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -20,11 +21,27 @@ var (
 	EmptyClusterRolesListError = eris.New("Empty ClusterRoles list found, must specify at least one role to bind to.")
 )
 
+const (
+	// visible for testing
+	SecretTokenKey = "token"
+)
+
+var (
+	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
+	// visible for testing
+	SecretLookupOpts = []retry.Option{
+		retry.Delay(time.Millisecond * 100),
+		retry.Attempts(7),
+		retry.DelayType(retry.BackOffDelay),
+	}
+)
+
 type clusterAuthorization struct {
 	configCreator            RemoteAuthorityConfigCreator
-	serviceAccountClient     k8s_core_v1.ServiceAccountClient
 	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient
 	roleBindingClient        rbac_v1.RoleBindingClient
+	secretClient             k8s_core_v1.SecretClient
+	serviceAccountClient     k8s_core_v1.ServiceAccountClient
 }
 
 func NewClusterAuthorizationFactory() ClusterAuthorizationFactory {
@@ -46,7 +63,6 @@ func NewClusterAuthorizationFactory() ClusterAuthorizationFactory {
 			cfgCreator,
 			rbacClientset.ClusterRoleBindings(),
 			rbacClientset.RoleBindings(),
-			v1Clientset.ServiceAccounts(),
 		), nil
 	}
 }
@@ -55,20 +71,17 @@ func NewClusterAuthorization(
 	configCreator RemoteAuthorityConfigCreator,
 	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient,
 	roleBindingClient rbac_v1.RoleBindingClient,
-	serviceAccountClient k8s_core_v1.ServiceAccountClient,
 ) ClusterAuthorization {
 	return &clusterAuthorization{
 		configCreator:            configCreator,
 		clusterRoleBindingClient: clusterRoleBindingClient,
 		roleBindingClient:        roleBindingClient,
-		serviceAccountClient:     serviceAccountClient,
 	}
 }
 
 func (c *clusterAuthorization) BuildClusterScopedRemoteBearerToken(
 	ctx context.Context,
-	targetClusterCfg *rest.Config,
-	name, namespace string,
+	serviceAccount client.ObjectKey,
 	clusterRoles []client.ObjectKey,
 ) (bearerToken string, err error) {
 
@@ -76,45 +89,28 @@ func (c *clusterAuthorization) BuildClusterScopedRemoteBearerToken(
 		return "", EmptyClusterRolesListError
 	}
 
-	saToCreate := &core_v1.ServiceAccount{
-		ObjectMeta: k8s_meta.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-
-	if err = c.serviceAccountClient.UpsertServiceAccount(ctx, saToCreate); err != nil {
+	if err = c.bindClusterRolesToServiceAccount(ctx, serviceAccount, clusterRoles); err != nil {
 		return "", err
 	}
 
-	if err = c.bindClusterRolesToServiceAccount(ctx, saToCreate, clusterRoles); err != nil {
-		return "", err
-	}
-
-	saConfig, err := c.configCreator.ConfigFromRemoteServiceAccount(ctx, targetClusterCfg, name, namespace)
-	if err != nil {
-		return "", err
-	}
-
-	// we only want the bearer token for that service account
-	return saConfig.BearerToken, nil
+	return c.getTokenForSa(ctx, serviceAccount)
 }
 
 func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
 	ctx context.Context,
-	targetServiceAccount *core_v1.ServiceAccount,
+	targetServiceAccount client.ObjectKey,
 	roles []client.ObjectKey,
 ) error {
 
 	for _, role := range roles {
 		crbToCreate := &k8s_rbac_types.ClusterRoleBinding{
 			ObjectMeta: k8s_meta.ObjectMeta{
-				Name: fmt.Sprintf("%s-%s-clusterrole-binding", targetServiceAccount.GetName(), role.Name),
+				Name: fmt.Sprintf("%s-%s-clusterrole-binding", targetServiceAccount.Name, role.Name),
 			},
 			Subjects: []k8s_rbac_types.Subject{{
 				Kind:      "ServiceAccount",
-				Name:      targetServiceAccount.GetName(),
-				Namespace: targetServiceAccount.GetNamespace(),
+				Name:      targetServiceAccount.Name,
+				Namespace: targetServiceAccount.Namespace,
 			}},
 			RoleRef: k8s_rbac_types.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
@@ -133,8 +129,7 @@ func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
 
 func (c *clusterAuthorization) BuildRemoteBearerToken(
 	ctx context.Context,
-	targetClusterCfg *rest.Config,
-	name, namespace string,
+	serviceAccount client.ObjectKey,
 	roles []client.ObjectKey,
 ) (bearerToken string, err error) {
 
@@ -142,45 +137,28 @@ func (c *clusterAuthorization) BuildRemoteBearerToken(
 		return "", EmptyRolesListError
 	}
 
-	saToCreate := &core_v1.ServiceAccount{
-		ObjectMeta: k8s_meta.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-
-	if err = c.serviceAccountClient.UpsertServiceAccount(ctx, saToCreate); err != nil {
+	if err = c.bindRolesToServiceAccount(ctx, serviceAccount, roles); err != nil {
 		return "", err
 	}
 
-	if err = c.bindRolesToServiceAccount(ctx, saToCreate, roles); err != nil {
-		return "", err
-	}
-
-	saConfig, err := c.configCreator.ConfigFromRemoteServiceAccount(ctx, targetClusterCfg, name, namespace)
-	if err != nil {
-		return "", err
-	}
-
-	// we only want the bearer token for that service account
-	return saConfig.BearerToken, nil
+	return c.getTokenForSa(ctx, serviceAccount)
 }
 
 func (c *clusterAuthorization) bindRolesToServiceAccount(
 	ctx context.Context,
-	targetServiceAccount *core_v1.ServiceAccount,
+	targetServiceAccount client.ObjectKey,
 	roles []client.ObjectKey,
 ) error {
 
 	for _, role := range roles {
 		rbToCreate := &k8s_rbac_types.RoleBinding{
 			ObjectMeta: k8s_meta.ObjectMeta{
-				Name: fmt.Sprintf("%s-%s-role-binding", targetServiceAccount.GetName(), role.Name),
+				Name: fmt.Sprintf("%s-%s-role-binding", targetServiceAccount.Name, role.Name),
 			},
 			Subjects: []k8s_rbac_types.Subject{{
 				Kind:      "ServiceAccount",
-				Name:      targetServiceAccount.GetName(),
-				Namespace: targetServiceAccount.GetNamespace(),
+				Name:      targetServiceAccount.Name,
+				Namespace: targetServiceAccount.Namespace,
 			}},
 			RoleRef: k8s_rbac_types.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
@@ -195,4 +173,41 @@ func (c *clusterAuthorization) bindRolesToServiceAccount(
 	}
 
 	return nil
+}
+
+func (c *clusterAuthorization) getTokenForSa(
+	ctx context.Context,
+	saRef client.ObjectKey,
+) (string, error) {
+	sa, err := c.serviceAccountClient.GetServiceAccount(ctx, saRef)
+	if err != nil {
+		return "", err
+	}
+	if len(sa.Secrets) == 0 {
+		return "", eris.Errorf(
+			"service account %s.%s does not have a token secret associated with it",
+			saRef.Name,
+			saRef.Namespace,
+		)
+	}
+	var foundSecret *core_v1.Secret
+	if err = retry.Do(func() error {
+		secretName := sa.Secrets[0].Name
+		secret, err := c.secretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: saRef.Namespace})
+		if err != nil {
+			return err
+		}
+
+		foundSecret = secret
+		return nil
+	}, SecretLookupOpts...); err != nil {
+		return "", SecretNotReady(err)
+	}
+
+	serviceAccountToken, ok := foundSecret.Data[SecretTokenKey]
+	if !ok {
+		return "", MalformedSecret
+	}
+
+	return string(serviceAccountToken), nil
 }

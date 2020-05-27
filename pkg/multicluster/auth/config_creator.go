@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
@@ -10,21 +9,6 @@ import (
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-)
-
-const (
-	// visible for testing
-	SecretTokenKey = "token"
-)
-
-var (
-	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
-	// visible for testing
-	SecretLookupOpts = []retry.Option{
-		retry.Delay(time.Millisecond * 100),
-		retry.Attempts(7),
-		retry.DelayType(retry.BackOffDelay),
-	}
 )
 
 func NewRemoteAuthorityConfigCreator(

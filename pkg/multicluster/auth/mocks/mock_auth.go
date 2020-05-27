@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "k8s.io/api/rbac/v1"
 	rest "k8s.io/client-go/rest"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockRemoteAuthorityConfigCreator is a mock of RemoteAuthorityConfigCreator interface.
@@ -75,31 +75,31 @@ func (m *MockClusterAuthorization) EXPECT() *MockClusterAuthorizationMockRecorde
 }
 
 // BuildClusterScopedRemoteBearerToken mocks base method.
-func (m *MockClusterAuthorization) BuildClusterScopedRemoteBearerToken(ctx context.Context, targetClusterCfg *rest.Config, name, namespace string, clusterRoles []*v1.ClusterRole) (string, error) {
+func (m *MockClusterAuthorization) BuildClusterScopedRemoteBearerToken(ctx context.Context, serviceAccount client.ObjectKey, clusterRoles []client.ObjectKey) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildClusterScopedRemoteBearerToken", ctx, targetClusterCfg, name, namespace, clusterRoles)
+	ret := m.ctrl.Call(m, "BuildClusterScopedRemoteBearerToken", ctx, serviceAccount, clusterRoles)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BuildClusterScopedRemoteBearerToken indicates an expected call of BuildClusterScopedRemoteBearerToken.
-func (mr *MockClusterAuthorizationMockRecorder) BuildClusterScopedRemoteBearerToken(ctx, targetClusterCfg, name, namespace, clusterRoles interface{}) *gomock.Call {
+func (mr *MockClusterAuthorizationMockRecorder) BuildClusterScopedRemoteBearerToken(ctx, serviceAccount, clusterRoles interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildClusterScopedRemoteBearerToken", reflect.TypeOf((*MockClusterAuthorization)(nil).BuildClusterScopedRemoteBearerToken), ctx, targetClusterCfg, name, namespace, clusterRoles)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildClusterScopedRemoteBearerToken", reflect.TypeOf((*MockClusterAuthorization)(nil).BuildClusterScopedRemoteBearerToken), ctx, serviceAccount, clusterRoles)
 }
 
 // BuildRemoteBearerToken mocks base method.
-func (m *MockClusterAuthorization) BuildRemoteBearerToken(ctx context.Context, targetClusterCfg *rest.Config, name, namespace string, roles []*v1.Role) (string, error) {
+func (m *MockClusterAuthorization) BuildRemoteBearerToken(ctx context.Context, serviceAccount client.ObjectKey, roles []client.ObjectKey) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildRemoteBearerToken", ctx, targetClusterCfg, name, namespace, roles)
+	ret := m.ctrl.Call(m, "BuildRemoteBearerToken", ctx, serviceAccount, roles)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BuildRemoteBearerToken indicates an expected call of BuildRemoteBearerToken.
-func (mr *MockClusterAuthorizationMockRecorder) BuildRemoteBearerToken(ctx, targetClusterCfg, name, namespace, roles interface{}) *gomock.Call {
+func (mr *MockClusterAuthorizationMockRecorder) BuildRemoteBearerToken(ctx, serviceAccount, roles interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildRemoteBearerToken", reflect.TypeOf((*MockClusterAuthorization)(nil).BuildRemoteBearerToken), ctx, targetClusterCfg, name, namespace, roles)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildRemoteBearerToken", reflect.TypeOf((*MockClusterAuthorization)(nil).BuildRemoteBearerToken), ctx, serviceAccount, roles)
 }

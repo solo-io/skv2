@@ -62,7 +62,7 @@ func NewMacTestingRegistrant(
 		kubeLoader:               loader,
 	}
 }
-}
+
 type clusterRegistrant struct {
 	clusterAuthClientFactory auth.ClusterAuthorizationFactory
 	secretClient             k8s_core_v1.SecretClient
@@ -111,18 +111,17 @@ func (c *clusterRegistrant) EnsureRemoteServiceAccount(
 		return nil, err
 	}
 	return existing, nil
-
 }
 
 func (c *clusterRegistrant) CreateRemoteAccessToken(
 	ctx context.Context,
 	remoteClientCfg clientcmd.ClientConfig,
-	sa *k8s_core_types.ServiceAccount,
+	sa client.ObjectKey,
 	opts RbacOptions,
 ) (token string, err error) {
 
 	if err = (&opts).validate(); err != nil {
-		return err
+		return "", err
 	}
 
 	remoteCfg, err := remoteClientCfg.ClientConfig()
@@ -147,9 +146,7 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 		}
 		token, err = authClient.BuildRemoteBearerToken(
 			ctx,
-			remoteCfg,
-			opts.ClusterName,
-			opts.Namespace,
+			sa,
 			opts.RoleBindings,
 		)
 		if err != nil {
@@ -170,9 +167,7 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 		}
 		token, err = authClient.BuildClusterScopedRemoteBearerToken(
 			ctx,
-			remoteCfg,
-			opts.ClusterName,
-			opts.Namespace,
+			sa,
 			opts.ClusterRoleBindings,
 		)
 		if err != nil {
@@ -229,7 +224,6 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 
 	return nil
 }
-
 
 func (c *clusterRegistrant) ensureRemoteNamespace(ctx context.Context, writeNamespace string, cfg *rest.Config) error {
 	nsClient, err := c.nsClientFactory(cfg)
