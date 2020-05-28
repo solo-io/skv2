@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 	"time"
@@ -414,7 +415,12 @@ func (c *clusterRegistrant) hackClusterConfigForLocalTestingInKIND(
 		(serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") &&
 		c.localClusterDomainOverride != "" {
 
-		remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localClusterDomainOverride, serverUrl.Port())
+		port := serverUrl.Port()
+		if host, newPort, err := net.SplitHostPort(c.localClusterDomainOverride); err == nil {
+			c.localClusterDomainOverride = host
+			port = newPort
+		}
+		remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localClusterDomainOverride, port)
 		remoteCluster.InsecureSkipTLSVerify = true
 		remoteCluster.CertificateAuthority = ""
 		remoteCluster.CertificateAuthorityData = []byte("")

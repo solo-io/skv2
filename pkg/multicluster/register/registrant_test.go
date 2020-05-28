@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var _ = FDescribe("Registrant", func() {
+var _ = Describe("Registrant", func() {
 	var (
 		ctx  context.Context
 		ctrl *gomock.Controller
