@@ -2,6 +2,7 @@ package register_test
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -14,6 +15,7 @@ import (
 	mock_k8s_rbac_clients "github.com/solo-io/skv2/pkg/generated/kubernetes/mocks/rbac.authorization.k8s.io/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
 	mock_clientcmd "github.com/solo-io/skv2/pkg/generated/mocks/k8s/clientcmd"
+	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	mock_register "github.com/solo-io/skv2/pkg/multicluster/register/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -23,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -94,7 +97,12 @@ var _ = FDescribe("Registrant", func() {
 
 		It("will create if does not exist", func() {
 			clusterRegistrant := register.NewClusterRegistrant(
-				clusterRbacBinderFactory, secretClient, nsClientFactory, saClientFactory, clusterRoleClientFactory, roleClientFactory,
+				clusterRbacBinderFactory,
+				secretClient,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
 			)
 
 			clientConfig.EXPECT().
@@ -137,7 +145,12 @@ var _ = FDescribe("Registrant", func() {
 
 		It("can successfully upsert all roles, and cluster roles", func() {
 			clusterRegistrant := register.NewClusterRegistrant(
-				clusterRbacBinderFactory, secretClient, nsClientFactory, saClientFactory, clusterRoleClientFactory, roleClientFactory,
+				clusterRbacBinderFactory,
+				secretClient,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
 			)
 
 			// Set secret lookup opts to reduce testing time
@@ -257,295 +270,202 @@ var _ = FDescribe("Registrant", func() {
 
 	Context("RegisterClusterWithToken", func() {
 
-	})
+		var (
+			token = "token"
+		)
 
-	// It("will fail if remote bearer token cannot be built", func() {
-	// 	clusterRegistrant := register.NewClusterRegistrant(
-	// 		clusterRbacBinderFactory, secretClient, nsClientFactory, clusterRoleClientFactory, roleClientFactory,
-	// 	)
-	//
-	// 	cfg := &rest.Config{
-	// 		Host: "mock-host",
-	// 	}
-	//
-	// 	clientConfig.EXPECT().
-	// 		ClientConfig().
-	// 		Return(cfg, nil)
-	//
-	// 	clusterRBACBinder.EXPECT().
-	// 		BuildClusterScopedRemoteBearerToken(ctx, cfg, clusterName, namespace, test.ServiceAccountClusterAdminRoles).
-	// 		Return("", testErr)
-	//
-	// 	err := clusterRegistrant.RegisterCluster(ctx, remoteCfg, register.Options{
-	// 		ClusterName:  clusterName,
-	// 		Namespace:    namespace,
-	// 		RemoteCtx:    remoteCtx,
-	// 		ClusterRoles: test.ServiceAccountClusterAdminRoles,
-	// 	})
-	// 	Expect(err).To(HaveOccurred())
-	// 	Expect(err).To(testutils.HaveInErrorChain(testErr))
-	// })
-	//
-	// It("will create secret if not found", func() {
-	// 	clusterRegistrant := register.NewClusterRegistrant(
-	// 		clusterRbacBinderFactory, secretClient, nsClientFactory, clusterRoleClientFactory, roleClientFactory,
-	// 	)
-	//
-	// 	restCfg := &rest.Config{
-	// 		Host: "mock-host",
-	// 	}
-	// 	apiCfg := api.Config{
-	// 		Clusters: map[string]*api.Cluster{
-	// 			clusterName: {
-	// 				Server:                   "fake-server",
-	// 				CertificateAuthorityData: []byte("fake-ca-data"),
-	// 			},
-	// 		},
-	// 		Contexts: map[string]*api.Context{
-	// 			remoteCtx: {
-	// 				Cluster: clusterName,
-	// 			},
-	// 		},
-	// 		CurrentContext: remoteCtx,
-	// 	}
-	// 	token := "token"
-	//
-	// 	clientConfig.EXPECT().
-	// 		ClientConfig().
-	// 		Return(restCfg, nil)
-	//
-	// 	clusterRBACBinder.EXPECT().
-	// 		BuildClusterScopedRemoteBearerToken(ctx, restCfg, clusterName, namespace, test.ServiceAccountClusterAdminRoles).
-	// 		Return(token, nil)
-	//
-	// 	clientConfig.EXPECT().
-	// 		RawConfig().
-	// 		Return(apiCfg, nil)
-	//
-	// 	nsClient.EXPECT().
-	// 		GetNamespace(ctx, namespace).
-	// 		Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
-	//
-	// 	nsClient.EXPECT().
-	// 		CreateNamespace(ctx, &k8s_core_types.Namespace{
-	// 			ObjectMeta: metav1.ObjectMeta{
-	// 				Name: namespace,
-	// 			},
-	// 		}).Return(nil)
-	//
-	// 	secretClient.EXPECT().
-	// 		GetSecret(ctx, client.ObjectKey{
-	// 			Namespace: namespace,
-	// 			Name:      clusterName,
-	// 		}).
-	// 		Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
-	//
-	// 	secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
-	// 		Kind:        "Secret",
-	// 		APIVersion:  "kubernetes_core",
-	// 		Preferences: api.Preferences{},
-	// 		Clusters: map[string]*api.Cluster{
-	// 			clusterName: apiCfg.Clusters[clusterName],
-	// 		},
-	// 		AuthInfos: map[string]*api.AuthInfo{
-	// 			clusterName: {
-	// 				Token: token,
-	// 			},
-	// 		},
-	// 		Contexts: map[string]*api.Context{
-	// 			clusterName: {
-	// 				Cluster:  clusterName,
-	// 				AuthInfo: clusterName,
-	// 			},
-	// 		},
-	// 		CurrentContext: clusterName,
-	// 	})
-	// 	Expect(err).NotTo(HaveOccurred())
-	//
-	// 	secretClient.EXPECT().
-	// 		CreateSecret(ctx, secret).
-	// 		Return(nil)
-	//
-	// 	err = clusterRegistrant.RegisterCluster(ctx, remoteCfg, register.Options{
-	// 		ClusterName:  clusterName,
-	// 		Namespace:    namespace,
-	// 		RemoteCtx:    remoteCtx,
-	// 		ClusterRoles: test.ServiceAccountClusterAdminRoles,
-	// 	})
-	// 	Expect(err).NotTo(HaveOccurred())
-	// })
-	//
-	// It("Will create passed in roles if specified", func() {
-	// 	clusterRegistrant := register.NewClusterRegistrant(
-	// 		clusterRbacBinderFactory, secretClient, nsClientFactory, clusterRoleClientFactory, roleClientFactory,
-	// 	)
-	//
-	// 	restCfg := &rest.Config{
-	// 		Host: "mock-host",
-	// 	}
-	// 	apiCfg := api.Config{
-	// 		Clusters: map[string]*api.Cluster{
-	// 			clusterName: {
-	// 				Server:                   "fake-server",
-	// 				CertificateAuthorityData: []byte("fake-ca-data"),
-	// 			},
-	// 		},
-	// 		Contexts: map[string]*api.Context{
-	// 			remoteCtx: {
-	// 				Cluster: clusterName,
-	// 			},
-	// 		},
-	// 		CurrentContext: remoteCtx,
-	// 	}
-	// 	token := "token"
-	//
-	// 	clientConfig.EXPECT().
-	// 		ClientConfig().
-	// 		Return(restCfg, nil)
-	//
-	// 	roles := []*rbacv1.Role{
-	// 		{
-	// 			ObjectMeta: metav1.ObjectMeta{
-	// 				Name:      "test-role",
-	// 				Namespace: "test-ns",
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	roleClient.EXPECT().
-	// 		UpsertRole(ctx, roles[0]).
-	// 		Return(nil)
-	//
-	// 	clusterRBACBinder.EXPECT().
-	// 		BuildRemoteBearerToken(ctx, restCfg, clusterName, namespace, roles).
-	// 		Return(token, nil)
-	//
-	// 	clientConfig.EXPECT().
-	// 		RawConfig().
-	// 		Return(apiCfg, nil)
-	//
-	// 	nsClient.EXPECT().
-	// 		GetNamespace(ctx, namespace).
-	// 		Return(nil, nil)
-	// 	secret := &k8s_core_types.Secret{
-	// 		Data: map[string][]byte{"fake-date": []byte("some-bytes")},
-	// 	}
-	// 	secretClient.EXPECT().
-	// 		GetSecret(ctx, client.ObjectKey{
-	// 			Namespace: namespace,
-	// 			Name:      clusterName,
-	// 		}).
-	// 		Return(secret, nil)
-	//
-	// 	secretClient.EXPECT().
-	// 		UpdateSecret(ctx, secret).
-	// 		Return(nil)
-	//
-	// 	err := clusterRegistrant.RegisterCluster(ctx, remoteCfg, register.Options{
-	// 		ClusterName: clusterName,
-	// 		Namespace:   namespace,
-	// 		RemoteCtx:   remoteCtx,
-	// 		Roles:       roles,
-	// 		UpsertRoles: true,
-	// 	})
-	// 	Expect(err).NotTo(HaveOccurred())
-	// })
-	//
-	// It("will overwrite the client config if a LocalClusterDomainOverride is passed in", func() {
-	// 	clusterRegistrant := register.NewClusterRegistrant(
-	// 		clusterRbacBinderFactory, secretClient, nsClientFactory, clusterRoleClientFactory, roleClientFactory,
-	// 	)
-	// 	clusterDomainOverride := "test-override"
-	// 	remoteCtx = "kind-test"
-	// 	restCfg := &rest.Config{
-	// 		Host: "mock-host",
-	// 	}
-	// 	apiCfg := api.Config{
-	// 		Clusters: map[string]*api.Cluster{
-	// 			clusterName: {
-	// 				Server:                   "http://localhost:9080",
-	// 				CertificateAuthorityData: []byte("fake-ca-data"),
-	// 			},
-	// 		},
-	// 		Contexts: map[string]*api.Context{
-	// 			remoteCtx: {
-	// 				Cluster: clusterName,
-	// 			},
-	// 		},
-	// 		CurrentContext: remoteCtx,
-	// 	}
-	// 	token := "token"
-	//
-	// 	clientConfig.EXPECT().
-	// 		ClientConfig().
-	// 		Return(restCfg, nil)
-	//
-	// 	clusterRBACBinder.EXPECT().
-	// 		BuildClusterScopedRemoteBearerToken(ctx, restCfg, clusterName, namespace, test.ServiceAccountClusterAdminRoles).
-	// 		Return(token, nil)
-	//
-	// 	clientConfig.EXPECT().
-	// 		RawConfig().
-	// 		Return(apiCfg, nil)
-	//
-	// 	nsClient.EXPECT().
-	// 		GetNamespace(ctx, namespace).
-	// 		Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
-	//
-	// 	nsClient.EXPECT().
-	// 		CreateNamespace(ctx, &k8s_core_types.Namespace{
-	// 			ObjectMeta: metav1.ObjectMeta{
-	// 				Name: namespace,
-	// 			},
-	// 		}).Return(nil)
-	//
-	// 	secretClient.EXPECT().
-	// 		GetSecret(ctx, client.ObjectKey{
-	// 			Namespace: namespace,
-	// 			Name:      clusterName,
-	// 		}).
-	// 		Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
-	//
-	// 	overwrittenApiConfig := apiCfg.DeepCopy()
-	// 	overwrittenApiConfig.Clusters[clusterName].Server = fmt.Sprintf("https://%s:9080", clusterDomainOverride)
-	// 	overwrittenApiConfig.Clusters[clusterName].InsecureSkipTLSVerify = true
-	// 	overwrittenApiConfig.Clusters[clusterName].CertificateAuthority = ""
-	// 	overwrittenApiConfig.Clusters[clusterName].CertificateAuthorityData = []byte("")
-	//
-	// 	secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
-	// 		Kind:        "Secret",
-	// 		APIVersion:  "kubernetes_core",
-	// 		Preferences: api.Preferences{},
-	// 		Clusters: map[string]*api.Cluster{
-	// 			clusterName: overwrittenApiConfig.Clusters[clusterName],
-	// 		},
-	// 		AuthInfos: map[string]*api.AuthInfo{
-	// 			clusterName: {
-	// 				Token: token,
-	// 			},
-	// 		},
-	// 		Contexts: map[string]*api.Context{
-	// 			clusterName: {
-	// 				Cluster:  clusterName,
-	// 				AuthInfo: clusterName,
-	// 			},
-	// 		},
-	// 		CurrentContext: clusterName,
-	// 	})
-	// 	Expect(err).NotTo(HaveOccurred())
-	//
-	// 	secretClient.EXPECT().
-	// 		CreateSecret(ctx, secret).
-	// 		Return(nil)
-	//
-	// 	err = clusterRegistrant.RegisterCluster(ctx, remoteCfg, register.Options{
-	// 		ClusterName:                clusterName,
-	// 		Namespace:                  namespace,
-	// 		LocalClusterDomainOverride: clusterDomainOverride,
-	// 		RemoteCtx:                  remoteCtx,
-	// 		ClusterRoles:               test.ServiceAccountClusterAdminRoles,
-	// 	})
-	// 	Expect(err).NotTo(HaveOccurred())
-	// })
+		It("works", func() {
+
+			clusterRegistrant := register.NewClusterRegistrant(
+				clusterRbacBinderFactory,
+				secretClient,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
+			)
+
+			opts := register.Options{
+				ClusterName:  clusterName,
+				Namespace:    namespace,
+				RemoteCtx:    remoteCtx,
+			}
+
+			restCfg := &rest.Config{
+				Host: "mock-host",
+			}
+			apiCfg := api.Config{
+				Clusters: map[string]*api.Cluster{
+					clusterName: {
+						Server:                   "fake-server",
+						CertificateAuthorityData: []byte("fake-ca-data"),
+					},
+				},
+				Contexts: map[string]*api.Context{
+					remoteCtx: {
+						Cluster: clusterName,
+					},
+				},
+				CurrentContext: remoteCtx,
+			}
+
+			clientConfig.EXPECT().
+				ClientConfig().
+				Return(restCfg, nil)
+
+
+			clientConfig.EXPECT().
+				RawConfig().
+				Return(apiCfg, nil)
+
+			nsClient.EXPECT().
+				GetNamespace(ctx, namespace).
+				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+
+			nsClient.EXPECT().
+				CreateNamespace(ctx, &k8s_core_types.Namespace{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: namespace,
+					},
+				}).Return(nil)
+
+			secretClient.EXPECT().
+				GetSecret(ctx, client.ObjectKey{
+					Namespace: namespace,
+					Name:      clusterName,
+				}).
+				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+				Kind:        "Secret",
+				APIVersion:  "kubernetes_core",
+				Preferences: api.Preferences{},
+				Clusters: map[string]*api.Cluster{
+					clusterName: apiCfg.Clusters[clusterName],
+				},
+				AuthInfos: map[string]*api.AuthInfo{
+					clusterName: {
+						Token: token,
+					},
+				},
+				Contexts: map[string]*api.Context{
+					clusterName: {
+						Cluster:  clusterName,
+						AuthInfo: clusterName,
+					},
+				},
+				CurrentContext: clusterName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			secretClient.EXPECT().
+				CreateSecret(ctx, secret).
+				Return(nil)
+
+			err = clusterRegistrant.RegisterClusterWithToken(ctx, clientConfig, token, opts)
+
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("can override local cluster domain", func() {
+			clusterDomainOverride := "test-override"
+
+			clusterRegistrant := register.NewTestingRegistrant(
+				clusterDomainOverride,
+				clusterRbacBinderFactory,
+				secretClient,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
+			)
+
+			opts := register.Options{
+				ClusterName:                clusterName,
+				Namespace:                  namespace,
+				RemoteCtx:                  "kind-test",
+			}
+
+			restCfg := &rest.Config{
+				Host: "mock-host",
+			}
+			apiCfg := api.Config{
+				Clusters: map[string]*api.Cluster{
+					clusterName: {
+						Server:                   "http://localhost:9080",
+						CertificateAuthorityData: []byte("fake-ca-data"),
+					},
+				},
+				Contexts: map[string]*api.Context{
+					opts.RemoteCtx: {
+						Cluster: clusterName,
+					},
+				},
+				CurrentContext: opts.RemoteCtx,
+			}
+
+			clientConfig.EXPECT().
+				ClientConfig().
+				Return(restCfg, nil)
+
+			clientConfig.EXPECT().
+				RawConfig().
+				Return(apiCfg, nil)
+
+			nsClient.EXPECT().
+				GetNamespace(ctx, namespace).
+				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+
+			nsClient.EXPECT().
+				CreateNamespace(ctx, &k8s_core_types.Namespace{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: namespace,
+					},
+				}).Return(nil)
+
+			secretClient.EXPECT().
+				GetSecret(ctx, client.ObjectKey{
+					Namespace: namespace,
+					Name:      clusterName,
+				}).
+				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+
+			overwrittenApiConfig := apiCfg.DeepCopy()
+			overwrittenApiConfig.Clusters[clusterName].Server = fmt.Sprintf("https://%s:9080", clusterDomainOverride)
+			overwrittenApiConfig.Clusters[clusterName].InsecureSkipTLSVerify = true
+			overwrittenApiConfig.Clusters[clusterName].CertificateAuthority = ""
+			overwrittenApiConfig.Clusters[clusterName].CertificateAuthorityData = []byte("")
+
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+				Kind:        "Secret",
+				APIVersion:  "kubernetes_core",
+				Preferences: api.Preferences{},
+				Clusters: map[string]*api.Cluster{
+					clusterName: overwrittenApiConfig.Clusters[clusterName],
+				},
+				AuthInfos: map[string]*api.AuthInfo{
+					clusterName: {
+						Token: token,
+					},
+				},
+				Contexts: map[string]*api.Context{
+					clusterName: {
+						Cluster:  clusterName,
+						AuthInfo: clusterName,
+					},
+				},
+				CurrentContext: clusterName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			secretClient.EXPECT().
+				CreateSecret(ctx, secret).
+				Return(nil)
+			err = clusterRegistrant.RegisterClusterWithToken(ctx, clientConfig, token, opts)
+
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+	})
 
 })

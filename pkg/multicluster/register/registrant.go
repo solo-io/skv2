@@ -65,11 +65,12 @@ func NewClusterRegistrant(
 	This is primarily useful when running multi cluster KinD environments on a mac as  the local IP needs
 	to be re-written to `host.docker.internal` so that the local instance knows to hit localhost.
 */
-func NewMacTestingRegistrant(
+func NewTestingRegistrant(
 	localClusterDomainOverride string,
 	clusterRBAC ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
 	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
+	saClientFactory k8s_core_v1.ServiceAccountClientFromConfigFactory,
 	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory,
 	roleClientFactory rbac_v1.RoleClientFromConfigFactory,
 ) ClusterRegistrant {
@@ -78,6 +79,7 @@ func NewMacTestingRegistrant(
 		clusterRBACBinderFactory:   clusterRBAC,
 		secretClient:               secretClient,
 		nsClientFactory:            nsClientFactory,
+		saClientFactory:            saClientFactory,
 		clusterRoleClientFactory:   clusterRoleClientFactory,
 		roleClientFactory:          roleClientFactory,
 	}
