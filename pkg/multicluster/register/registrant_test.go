@@ -37,6 +37,7 @@ var _ = Describe("Registrant", func() {
 		clusterRBACBinder        *mock_register.MockClusterRBACBinder
 		clusterRbacBinderFactory register.ClusterRBACBinderFactory
 		secretClient             *mock_k8s_core_clients.MockSecretClient
+		secretClientFactory      k8s_core_v1.SecretClientFromConfigFactory
 		nsClient                 *mock_k8s_core_clients.MockNamespaceClient
 		nsClientFactory          k8s_core_v1.NamespaceClientFromConfigFactory
 		saClient                 *mock_k8s_core_clients.MockServiceAccountClient
@@ -64,7 +65,9 @@ var _ = Describe("Registrant", func() {
 		ctrl, ctx = gomock.WithContext(context.TODO(), GinkgoT())
 
 		secretClient = mock_k8s_core_clients.NewMockSecretClient(ctrl)
-
+		secretClientFactory = func(_ *rest.Config) (k8s_core_v1.SecretClient, error) {
+			return secretClient, nil
+		}
 		nsClient = mock_k8s_core_clients.NewMockNamespaceClient(ctrl)
 		nsClientFactory = func(_ *rest.Config) (k8s_core_v1.NamespaceClient, error) {
 			return nsClient, nil
@@ -99,6 +102,7 @@ var _ = Describe("Registrant", func() {
 			clusterRegistrant := register.NewClusterRegistrant(
 				clusterRbacBinderFactory,
 				secretClient,
+				secretClientFactory,
 				nsClientFactory,
 				saClientFactory,
 				clusterRoleClientFactory,
@@ -147,6 +151,7 @@ var _ = Describe("Registrant", func() {
 			clusterRegistrant := register.NewClusterRegistrant(
 				clusterRbacBinderFactory,
 				secretClient,
+				secretClientFactory,
 				nsClientFactory,
 				saClientFactory,
 				clusterRoleClientFactory,
@@ -279,6 +284,7 @@ var _ = Describe("Registrant", func() {
 			clusterRegistrant := register.NewClusterRegistrant(
 				clusterRbacBinderFactory,
 				secretClient,
+				secretClientFactory,
 				nsClientFactory,
 				saClientFactory,
 				clusterRoleClientFactory,
@@ -373,6 +379,7 @@ var _ = Describe("Registrant", func() {
 				clusterDomainOverride,
 				clusterRbacBinderFactory,
 				secretClient,
+				secretClientFactory,
 				nsClientFactory,
 				saClientFactory,
 				clusterRoleClientFactory,

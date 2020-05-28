@@ -58,7 +58,7 @@ var _ = Describe("Cluster authorization", func() {
 			crbClient.EXPECT().
 				UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.Name, test.ServiceAccountClusterAdminRoles[0].GetName()),
+						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.Name, test.ServiceAccountClusterAdminRoles[0].Name),
 					},
 					Subjects: []rbacv1.Subject{
 						{
@@ -70,7 +70,7 @@ var _ = Describe("Cluster authorization", func() {
 					RoleRef: rbacv1.RoleRef{
 						APIGroup: "rbac.authorization.k8s.io",
 						Kind:     "ClusterRole",
-						Name:     test.ServiceAccountClusterAdminRoles[0].GetName(),
+						Name:     test.ServiceAccountClusterAdminRoles[0].Name,
 					},
 				}).
 				Return(testErr)
@@ -79,8 +79,7 @@ var _ = Describe("Cluster authorization", func() {
 				ctx,
 				sa,
 				[]client.ObjectKey{{
-					Namespace: test.ServiceAccountClusterAdminRoles[0].GetNamespace(),
-					Name:      test.ServiceAccountClusterAdminRoles[0].GetName(),
+					Name: test.ServiceAccountClusterAdminRoles[0].Name,
 				}},
 			)
 
@@ -95,7 +94,7 @@ var _ = Describe("Cluster authorization", func() {
 			crbClient.EXPECT().
 				UpsertClusterRoleBinding(ctx, &rbacv1.ClusterRoleBinding{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.Name, test.ServiceAccountClusterAdminRoles[0].GetName()),
+						Name: fmt.Sprintf("%s-%s-clusterrole-binding", sa.Name, test.ServiceAccountClusterAdminRoles[0].Name),
 					},
 					Subjects: []rbacv1.Subject{
 						{
@@ -107,7 +106,7 @@ var _ = Describe("Cluster authorization", func() {
 					RoleRef: rbacv1.RoleRef{
 						APIGroup: "rbac.authorization.k8s.io",
 						Kind:     "ClusterRole",
-						Name:     test.ServiceAccountClusterAdminRoles[0].GetName(),
+						Name:     test.ServiceAccountClusterAdminRoles[0].Name,
 					},
 				}).
 				Return(nil)
@@ -116,8 +115,7 @@ var _ = Describe("Cluster authorization", func() {
 				ctx,
 				sa,
 				[]client.ObjectKey{{
-					Namespace: test.ServiceAccountClusterAdminRoles[0].GetNamespace(),
-					Name:      test.ServiceAccountClusterAdminRoles[0].GetName(),
+					Name: test.ServiceAccountClusterAdminRoles[0].Name,
 				}},
 			)
 

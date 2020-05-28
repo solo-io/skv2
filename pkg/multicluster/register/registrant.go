@@ -45,6 +45,7 @@ var (
 func NewClusterRegistrant(
 	authorization ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
+	secretClientFactory k8s_core_v1.SecretClientFromConfigFactory,
 	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
 	saClientFactory k8s_core_v1.ServiceAccountClientFromConfigFactory,
 	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory,
@@ -54,6 +55,7 @@ func NewClusterRegistrant(
 		clusterRBACBinderFactory: authorization,
 		secretClient:             secretClient,
 		nsClientFactory:          nsClientFactory,
+		secretClientFactory:      secretClientFactory,
 		clusterRoleClientFactory: clusterRoleClientFactory,
 		roleClientFactory:        roleClientFactory,
 		saClientFactory:          saClientFactory,
@@ -70,6 +72,7 @@ func NewTestingRegistrant(
 	localClusterDomainOverride string,
 	clusterRBAC ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
+	secretClientFactory k8s_core_v1.SecretClientFromConfigFactory,
 	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
 	saClientFactory k8s_core_v1.ServiceAccountClientFromConfigFactory,
 	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory,
@@ -80,6 +83,7 @@ func NewTestingRegistrant(
 		clusterRBACBinderFactory:   clusterRBAC,
 		secretClient:               secretClient,
 		nsClientFactory:            nsClientFactory,
+		secretClientFactory:        secretClientFactory,
 		saClientFactory:            saClientFactory,
 		clusterRoleClientFactory:   clusterRoleClientFactory,
 		roleClientFactory:          roleClientFactory,
@@ -89,6 +93,7 @@ func NewTestingRegistrant(
 type clusterRegistrant struct {
 	clusterRBACBinderFactory ClusterRBACBinderFactory
 	secretClient             k8s_core_v1.SecretClient
+	secretClientFactory      k8s_core_v1.SecretClientFromConfigFactory
 	nsClientFactory          k8s_core_v1.NamespaceClientFromConfigFactory
 	saClientFactory          k8s_core_v1.ServiceAccountClientFromConfigFactory
 	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory
@@ -174,8 +179,10 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 			})
 		}
 	}
-	if err = rbacBinder.BindRoles(ctx, sa, roleBindings); err != nil {
-		return "", nil
+	if len(roleBindings) > 0 {
+		if err = rbacBinder.BindRoles(ctx, sa, roleBindings); err != nil {
+			return "", err
+		}
 	}
 
 	clusterRoleBindings := make([]client.ObjectKey, 0, len(opts.ClusterRoles)+len(opts.ClusterRoleBindings))
@@ -186,13 +193,14 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 		}
 		for _, v := range opts.ClusterRoles {
 			clusterRoleBindings = append(clusterRoleBindings, client.ObjectKey{
-				Namespace: v.GetNamespace(),
-				Name:      v.GetName(),
+				Name: v.GetName(),
 			})
 		}
 	}
-	if err = rbacBinder.BindClusterRoles(ctx, sa, clusterRoleBindings); err != nil {
-		return "", nil
+	if len(clusterRoleBindings) > 0 {
+		if err = rbacBinder.BindClusterRoles(ctx, sa, clusterRoleBindings); err != nil {
+			return "", err
+		}
 	}
 
 	return c.getTokenForSa(ctx, remoteCfg, sa)
@@ -369,10 +377,14 @@ func (c *clusterRegistrant) getTokenForSa(
 			saRef.Namespace,
 		)
 	}
+	remoteSecretClient, err := c.secretClientFactory(cfg)
+	if err != nil {
+		return "", err
+	}
 	var foundSecret *k8s_core_types.Secret
 	if err = retry.Do(func() error {
 		secretName := sa.Secrets[0].Name
-		secret, err := c.secretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: saRef.Namespace})
+		secret, err := remoteSecretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: saRef.Namespace})
 		if err != nil {
 			return err
 		}

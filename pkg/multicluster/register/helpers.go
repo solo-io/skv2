@@ -42,6 +42,7 @@ func DefaultRegistrant(context string) (ClusterRegistrant, error) {
 		return nil, err
 	}
 	nsClientFactory := k8s_core_v1.NamespaceClientFromConfigFactoryProvider()
+	secretClientFactory := k8s_core_v1.SecretClientFromConfigFactoryProvider()
 	saClientFactory := k8s_core_v1.ServiceAccountClientFromConfigFactoryProvider()
 	roleClientFactory := rbac_v1.RoleClientFromConfigFactoryProvider()
 	clusterRoleClientFactory := rbac_v1.ClusterRoleClientFromConfigFactoryProvider()
@@ -49,6 +50,7 @@ func DefaultRegistrant(context string) (ClusterRegistrant, error) {
 	registrant := NewClusterRegistrant(
 		clusterRBACBinderFactory,
 		clientset.Secrets(),
+		secretClientFactory,
 		nsClientFactory,
 		saClientFactory,
 		clusterRoleClientFactory,

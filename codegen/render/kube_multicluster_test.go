@@ -84,7 +84,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				Namespace:   ns,
 				RemoteCtx:   remoteContext,
 			},
-			ClusterRoles: test.ServiceAccountClusterAdminRoles,
+			ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 		}, registrant)
 		Expect(err).NotTo(HaveOccurred())
 		cfg := test.ClientConfigWithContext("")
@@ -93,7 +93,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				ClusterName: cluster1,
 				Namespace:   ns,
 			},
-			ClusterRoles: test.ServiceAccountClusterAdminRoles,
+			ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 		}, registrant)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -112,7 +112,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 
 	Context("multicluster", func() {
 
-		Describe("clientset", func() {
+		FDescribe("clientset", func() {
 			It("works", func() {
 				cw := watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns})
 				err := cw.Run(masterManager)
