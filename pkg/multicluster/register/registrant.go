@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
+	"github.com/avast/retry-go"
+	"github.com/rotisserie/eris"
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
-	"github.com/solo-io/skv2/pkg/multicluster/auth"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	k8s_core_types "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -20,21 +22,40 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	// visible for testing
+	SecretTokenKey = "token"
+)
+
+var (
+	MalformedSecret = eris.New("service account secret does not contain a bearer token")
+	SecretNotReady  = func(err error) error {
+		return eris.Wrap(err, "secret for service account not ready yet")
+	}
+	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
+	// visible for testing
+	SecretLookupOpts = []retry.Option{
+		retry.Delay(time.Millisecond * 100),
+		retry.Attempts(7),
+		retry.DelayType(retry.BackOffDelay),
+	}
+)
+
 func NewClusterRegistrant(
-	loader kubeconfig.KubeLoader,
-	authorization auth.ClusterAuthorizationFactory,
+	authorization ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
 	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
+	saClientFactory k8s_core_v1.ServiceAccountClientFromConfigFactory,
 	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory,
 	roleClientFactory rbac_v1.RoleClientFromConfigFactory,
 ) ClusterRegistrant {
 	return &clusterRegistrant{
-		clusterAuthClientFactory: authorization,
+		clusterRBACBinderFactory: authorization,
 		secretClient:             secretClient,
 		nsClientFactory:          nsClientFactory,
 		clusterRoleClientFactory: clusterRoleClientFactory,
 		roleClientFactory:        roleClientFactory,
-		kubeLoader:               loader,
+		saClientFactory:          saClientFactory,
 	}
 }
 
@@ -46,31 +67,29 @@ func NewClusterRegistrant(
 */
 func NewMacTestingRegistrant(
 	localClusterDomainOverride string,
-	loader kubeconfig.KubeLoader,
-	authorization auth.ClusterAuthorizationFactory,
+	clusterRBAC ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
 	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
 	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory,
 	roleClientFactory rbac_v1.RoleClientFromConfigFactory,
 ) ClusterRegistrant {
 	return &clusterRegistrant{
-		clusterAuthClientFactory: authorization,
-		secretClient:             secretClient,
-		nsClientFactory:          nsClientFactory,
-		clusterRoleClientFactory: clusterRoleClientFactory,
-		roleClientFactory:        roleClientFactory,
-		kubeLoader:               loader,
+		localClusterDomainOverride: localClusterDomainOverride,
+		clusterRBACBinderFactory:   clusterRBAC,
+		secretClient:               secretClient,
+		nsClientFactory:            nsClientFactory,
+		clusterRoleClientFactory:   clusterRoleClientFactory,
+		roleClientFactory:          roleClientFactory,
 	}
 }
 
 type clusterRegistrant struct {
-	clusterAuthClientFactory auth.ClusterAuthorizationFactory
+	clusterRBACBinderFactory ClusterRBACBinderFactory
 	secretClient             k8s_core_v1.SecretClient
 	nsClientFactory          k8s_core_v1.NamespaceClientFromConfigFactory
 	saClientFactory          k8s_core_v1.ServiceAccountClientFromConfigFactory
 	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory
 	roleClientFactory        rbac_v1.RoleClientFromConfigFactory
-	kubeLoader               kubeconfig.KubeLoader
 
 	localClusterDomainOverride string
 }
@@ -78,12 +97,17 @@ type clusterRegistrant struct {
 func (c *clusterRegistrant) EnsureRemoteServiceAccount(
 	ctx context.Context,
 	remoteClientCfg clientcmd.ClientConfig,
-	info Options,
+	opts Options,
 ) (*k8s_core_types.ServiceAccount, error) {
+
+	if err := (&opts).validate(); err != nil {
+		return nil, err
+	}
+
 	saToCreate := &k8s_core_types.ServiceAccount{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
-			Name:      info.ClusterName,
-			Namespace: info.Namespace,
+			Name:      opts.ClusterName,
+			Namespace: opts.RemoteNamespace,
 		},
 	}
 
@@ -129,52 +153,46 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 		return "", err
 	}
 
-	authClient, err := c.clusterAuthClientFactory(remoteClientCfg)
+	rbacBinder, err := c.clusterRBACBinderFactory(remoteClientCfg)
 	if err != nil {
 		return "", err
 	}
 
+	roleBindings := make([]client.ObjectKey, 0, len(opts.Roles)+len(opts.RoleBindings))
+	roleBindings = append(roleBindings, opts.RoleBindings...)
 	if len(opts.Roles) != 0 {
 		if err = c.upsertRoles(ctx, remoteCfg, opts.Roles); err != nil {
 			return "", err
 		}
 		for _, v := range opts.Roles {
-			opts.RoleBindings = append(opts.RoleBindings, client.ObjectKey{
+			roleBindings = append(roleBindings, client.ObjectKey{
 				Namespace: v.GetNamespace(),
 				Name:      v.GetName(),
 			})
 		}
-		token, err = authClient.BuildRemoteBearerToken(
-			ctx,
-			sa,
-			opts.RoleBindings,
-		)
-		if err != nil {
-			return "", err
-		}
-
+	}
+	if err = rbacBinder.BindRoles(ctx, sa, roleBindings); err != nil {
+		return "", nil
 	}
 
+	clusterRoleBindings := make([]client.ObjectKey, 0, len(opts.ClusterRoles)+len(opts.ClusterRoleBindings))
+	clusterRoleBindings = append(clusterRoleBindings, opts.ClusterRoleBindings...)
 	if len(opts.ClusterRoles) != 0 {
 		if err = c.upsertClusterRoles(ctx, remoteCfg, opts.ClusterRoles); err != nil {
 			return "", err
 		}
 		for _, v := range opts.ClusterRoles {
-			opts.ClusterRoleBindings = append(opts.ClusterRoleBindings, client.ObjectKey{
+			clusterRoleBindings = append(clusterRoleBindings, client.ObjectKey{
 				Namespace: v.GetNamespace(),
 				Name:      v.GetName(),
 			})
 		}
-		token, err = authClient.BuildClusterScopedRemoteBearerToken(
-			ctx,
-			sa,
-			opts.ClusterRoleBindings,
-		)
-		if err != nil {
-			return "", err
-		}
 	}
-	return token, nil
+	if err = rbacBinder.BindClusterRoles(ctx, sa, clusterRoleBindings); err != nil {
+		return "", nil
+	}
+
+	return c.getTokenForSa(ctx, remoteCfg, sa)
 }
 
 func (c *clusterRegistrant) RegisterClusterWithToken(
@@ -183,6 +201,11 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	token string,
 	opts Options,
 ) error {
+
+	if err := (&opts).validate(); err != nil {
+		return err
+	}
+
 	remoteCfg, err := remoteClientCfg.ClientConfig()
 	if err != nil {
 		return err
@@ -321,6 +344,48 @@ func (c *clusterRegistrant) upsertClusterRoles(
 		}
 	}
 	return nil
+}
+
+func (c *clusterRegistrant) getTokenForSa(
+	ctx context.Context,
+	cfg *rest.Config,
+	saRef client.ObjectKey,
+) (string, error) {
+	saClient, err := c.saClientFactory(cfg)
+	if err != nil {
+		return "", err
+	}
+	sa, err := saClient.GetServiceAccount(ctx, saRef)
+	if err != nil {
+		return "", err
+	}
+	if len(sa.Secrets) == 0 {
+		return "", eris.Errorf(
+			"service account %s.%s does not have a token secret associated with it",
+			saRef.Name,
+			saRef.Namespace,
+		)
+	}
+	var foundSecret *k8s_core_types.Secret
+	if err = retry.Do(func() error {
+		secretName := sa.Secrets[0].Name
+		secret, err := c.secretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: saRef.Namespace})
+		if err != nil {
+			return err
+		}
+
+		foundSecret = secret
+		return nil
+	}, SecretLookupOpts...); err != nil {
+		return "", SecretNotReady(err)
+	}
+
+	serviceAccountToken, ok := foundSecret.Data[SecretTokenKey]
+	if !ok {
+		return "", MalformedSecret
+	}
+
+	return string(serviceAccountToken), nil
 }
 
 // if:

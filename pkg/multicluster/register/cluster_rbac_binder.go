@@ -1,15 +1,12 @@
-package auth
+package register
 
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
-	core_v1 "k8s.io/api/core/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -21,36 +18,16 @@ var (
 	EmptyClusterRolesListError = eris.New("Empty ClusterRoles list found, must specify at least one role to bind to.")
 )
 
-const (
-	// visible for testing
-	SecretTokenKey = "token"
-)
-
-var (
-	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
-	// visible for testing
-	SecretLookupOpts = []retry.Option{
-		retry.Delay(time.Millisecond * 100),
-		retry.Attempts(7),
-		retry.DelayType(retry.BackOffDelay),
-	}
-)
-
 type clusterAuthorization struct {
-	configCreator            RemoteAuthorityConfigCreator
 	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient
 	roleBindingClient        rbac_v1.RoleBindingClient
 	secretClient             k8s_core_v1.SecretClient
 	serviceAccountClient     k8s_core_v1.ServiceAccountClient
 }
 
-func NewClusterAuthorizationFactory() ClusterAuthorizationFactory {
-	return func(cfg clientcmd.ClientConfig) (ClusterAuthorization, error) {
+func NewClusterRBACBinderFactory() ClusterRBACBinderFactory {
+	return func(cfg clientcmd.ClientConfig) (ClusterRBACBinder, error) {
 		restCfg, err := cfg.ClientConfig()
-		if err != nil {
-			return nil, err
-		}
-		v1Clientset, err := k8s_core_v1.NewClientsetFromConfig(restCfg)
 		if err != nil {
 			return nil, err
 		}
@@ -58,42 +35,34 @@ func NewClusterAuthorizationFactory() ClusterAuthorizationFactory {
 		if err != nil {
 			return nil, err
 		}
-		cfgCreator := NewRemoteAuthorityConfigCreator(v1Clientset.Secrets(), v1Clientset.ServiceAccounts())
-		return NewClusterAuthorization(
-			cfgCreator,
+		return NewClusterRBACBinder(
 			rbacClientset.ClusterRoleBindings(),
 			rbacClientset.RoleBindings(),
 		), nil
 	}
 }
 
-func NewClusterAuthorization(
-	configCreator RemoteAuthorityConfigCreator,
+func NewClusterRBACBinder(
 	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient,
 	roleBindingClient rbac_v1.RoleBindingClient,
-) ClusterAuthorization {
+) ClusterRBACBinder {
 	return &clusterAuthorization{
-		configCreator:            configCreator,
 		clusterRoleBindingClient: clusterRoleBindingClient,
 		roleBindingClient:        roleBindingClient,
 	}
 }
 
-func (c *clusterAuthorization) BuildClusterScopedRemoteBearerToken(
+func (c *clusterAuthorization) BindClusterRoles(
 	ctx context.Context,
 	serviceAccount client.ObjectKey,
 	clusterRoles []client.ObjectKey,
-) (bearerToken string, err error) {
+) error {
 
 	if len(clusterRoles) == 0 {
-		return "", EmptyClusterRolesListError
+		return EmptyClusterRolesListError
 	}
 
-	if err = c.bindClusterRolesToServiceAccount(ctx, serviceAccount, clusterRoles); err != nil {
-		return "", err
-	}
-
-	return c.getTokenForSa(ctx, serviceAccount)
+	return c.bindClusterRolesToServiceAccount(ctx, serviceAccount, clusterRoles)
 }
 
 func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
@@ -127,21 +96,17 @@ func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
 	return nil
 }
 
-func (c *clusterAuthorization) BuildRemoteBearerToken(
+func (c *clusterAuthorization) BindRoles(
 	ctx context.Context,
 	serviceAccount client.ObjectKey,
 	roles []client.ObjectKey,
-) (bearerToken string, err error) {
+)  error {
 
 	if len(roles) == 0 {
-		return "", EmptyRolesListError
+		return EmptyRolesListError
 	}
 
-	if err = c.bindRolesToServiceAccount(ctx, serviceAccount, roles); err != nil {
-		return "", err
-	}
-
-	return c.getTokenForSa(ctx, serviceAccount)
+	return c.bindRolesToServiceAccount(ctx, serviceAccount, roles)
 }
 
 func (c *clusterAuthorization) bindRolesToServiceAccount(
@@ -173,41 +138,4 @@ func (c *clusterAuthorization) bindRolesToServiceAccount(
 	}
 
 	return nil
-}
-
-func (c *clusterAuthorization) getTokenForSa(
-	ctx context.Context,
-	saRef client.ObjectKey,
-) (string, error) {
-	sa, err := c.serviceAccountClient.GetServiceAccount(ctx, saRef)
-	if err != nil {
-		return "", err
-	}
-	if len(sa.Secrets) == 0 {
-		return "", eris.Errorf(
-			"service account %s.%s does not have a token secret associated with it",
-			saRef.Name,
-			saRef.Namespace,
-		)
-	}
-	var foundSecret *core_v1.Secret
-	if err = retry.Do(func() error {
-		secretName := sa.Secrets[0].Name
-		secret, err := c.secretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: saRef.Namespace})
-		if err != nil {
-			return err
-		}
-
-		foundSecret = secret
-		return nil
-	}, SecretLookupOpts...); err != nil {
-		return "", SecretNotReady(err)
-	}
-
-	serviceAccountToken, ok := foundSecret.Data[SecretTokenKey]
-	if !ok {
-		return "", MalformedSecret
-	}
-
-	return string(serviceAccountToken), nil
 }
