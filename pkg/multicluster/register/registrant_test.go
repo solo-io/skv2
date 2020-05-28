@@ -286,9 +286,9 @@ var _ = Describe("Registrant", func() {
 			)
 
 			opts := register.Options{
-				ClusterName:  clusterName,
-				Namespace:    namespace,
-				RemoteCtx:    remoteCtx,
+				ClusterName: clusterName,
+				Namespace:   namespace,
+				RemoteCtx:   remoteCtx,
 			}
 
 			restCfg := &rest.Config{
@@ -312,7 +312,6 @@ var _ = Describe("Registrant", func() {
 			clientConfig.EXPECT().
 				ClientConfig().
 				Return(restCfg, nil)
-
 
 			clientConfig.EXPECT().
 				RawConfig().
@@ -381,9 +380,9 @@ var _ = Describe("Registrant", func() {
 			)
 
 			opts := register.Options{
-				ClusterName:                clusterName,
-				Namespace:                  namespace,
-				RemoteCtx:                  "kind-test",
+				ClusterName: clusterName,
+				Namespace:   namespace,
+				RemoteCtx:   "kind-test",
 			}
 
 			restCfg := &rest.Config{

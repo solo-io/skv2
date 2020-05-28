@@ -94,7 +94,6 @@ type ClusterRegistrant interface {
 	) error
 }
 
-
 // Given a way to authorize to a cluster, produce a bearer token that can authorize to that same cluster
 // using a newly-created service account token in that cluster.
 // Creates a service account in the target cluster with the name/namespace of `serviceAccountRef`

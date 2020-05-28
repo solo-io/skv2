@@ -100,7 +100,7 @@ func (c *clusterAuthorization) BindRoles(
 	ctx context.Context,
 	serviceAccount client.ObjectKey,
 	roles []client.ObjectKey,
-)  error {
+) error {
 
 	if len(roles) == 0 {
 		return EmptyRolesListError
