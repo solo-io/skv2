@@ -13,10 +13,7 @@ import (
 	kubehelp "github.com/solo-io/go-utils/testutils/kube"
 	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	"github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/controller"
-	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
-	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/skv2/pkg/multicluster/auth"
 	mc_client "github.com/solo-io/skv2/pkg/multicluster/client"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
@@ -79,36 +76,25 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		ctx, cancel = context.WithCancel(context.Background())
 		masterManager = test.MustManager(ctx, ns)
 		remoteCfg := test.ClientConfigWithContext(remoteContext)
-		loader := kubeconfig.NewKubeLoader(5 * time.Second)
-		nsClientFactory := k8s_core_v1.NamespaceClientFromConfigFactoryProvider()
-		roleClientFactory := rbac_v1.RoleClientFromConfigFactoryProvider()
-		clusterRoleClientFactory := rbac_v1.ClusterRoleClientFromConfigFactoryProvider()
-		clusterAuthClientFactory := auth.NewClusterAuthorizationFactory()
+		registrant, err := register.DefaultRegistrant("")
+		Expect(err).NotTo(HaveOccurred())
+		err = register.RegisterClusterFromConfig(ctx, remoteCfg, register.RbacOptions{
+			Options: register.Options{
+				ClusterName: cluster2,
+				Namespace:   ns,
+				RemoteCtx:   remoteContext,
+			},
+			ClusterRoles: test.ServiceAccountClusterAdminRoles,
+		}, registrant)
+		Expect(err).NotTo(HaveOccurred())
 		cfg := test.ClientConfigWithContext("")
-		restCfg, err := cfg.ClientConfig()
-		Expect(err).NotTo(HaveOccurred())
-		v1Clientset, err := k8s_core_v1.NewClientsetFromConfig(restCfg)
-		Expect(err).NotTo(HaveOccurred())
-		registrant := register.NewClusterRegistrant(
-			loader,
-			clusterAuthClientFactory,
-			v1Clientset.Secrets(),
-			nsClientFactory,
-			clusterRoleClientFactory,
-			roleClientFactory,
-		)
-		err = registrant.RegisterClusterFromConfig(ctx, remoteCfg, register.Options{
-			ClusterName:  cluster2,
-			Namespace:    ns,
-			RemoteCtx:    remoteContext,
+		err = register.RegisterClusterFromConfig(ctx, cfg, register.RbacOptions{
+			Options: register.Options{
+				ClusterName: cluster1,
+				Namespace:   ns,
+			},
 			ClusterRoles: test.ServiceAccountClusterAdminRoles,
-		})
-		Expect(err).NotTo(HaveOccurred())
-		err = registrant.RegisterClusterFromConfig(ctx, cfg, register.Options{
-			ClusterName:  cluster1,
-			Namespace:    ns,
-			ClusterRoles: test.ServiceAccountClusterAdminRoles,
-		})
+		}, registrant)
 		Expect(err).NotTo(HaveOccurred())
 	})
 

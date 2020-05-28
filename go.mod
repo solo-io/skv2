@@ -25,7 +25,6 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/pseudomuto/protoc-gen-doc v1.3.2 // indirect
 	github.com/rogpeppe/go-internal v1.5.2
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.4.2
@@ -41,7 +40,6 @@ require (
 	gonum.org/v1/netlib v0.0.0-20191031114514-eccb95939662 // indirect
 	google.golang.org/api v0.6.0
 	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
-	istio.io/tools v0.0.0-20200528021251-db5e33605687 // indirect
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
