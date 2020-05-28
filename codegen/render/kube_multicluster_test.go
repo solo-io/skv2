@@ -112,7 +112,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 
 	Context("multicluster", func() {
 
-		FDescribe("clientset", func() {
+		Describe("clientset", func() {
 			It("works", func() {
 				cw := watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns})
 				err := cw.Run(masterManager)
