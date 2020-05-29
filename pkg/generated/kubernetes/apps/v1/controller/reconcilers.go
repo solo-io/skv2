@@ -244,3 +244,118 @@ func (r genericReplicaSetFinalizer) Finalize(object ezkube.Object) error {
 	}
 	return r.finalizingReconciler.FinalizeReplicaSet(obj)
 }
+
+// Reconcile Upsert events for the DaemonSet Resource.
+// implemented by the user
+type DaemonSetReconciler interface {
+	ReconcileDaemonSet(obj *apps_v1.DaemonSet) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the DaemonSet Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type DaemonSetDeletionReconciler interface {
+	ReconcileDaemonSetDeletion(req reconcile.Request)
+}
+
+type DaemonSetReconcilerFuncs struct {
+	OnReconcileDaemonSet         func(obj *apps_v1.DaemonSet) (reconcile.Result, error)
+	OnReconcileDaemonSetDeletion func(req reconcile.Request)
+}
+
+func (f *DaemonSetReconcilerFuncs) ReconcileDaemonSet(obj *apps_v1.DaemonSet) (reconcile.Result, error) {
+	if f.OnReconcileDaemonSet == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileDaemonSet(obj)
+}
+
+func (f *DaemonSetReconcilerFuncs) ReconcileDaemonSetDeletion(req reconcile.Request) {
+	if f.OnReconcileDaemonSetDeletion == nil {
+		return
+	}
+	f.OnReconcileDaemonSetDeletion(req)
+}
+
+// Reconcile and finalize the DaemonSet Resource
+// implemented by the user
+type DaemonSetFinalizer interface {
+	DaemonSetReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	DaemonSetFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeDaemonSet(obj *apps_v1.DaemonSet) error
+}
+
+type DaemonSetReconcileLoop interface {
+	RunDaemonSetReconciler(ctx context.Context, rec DaemonSetReconciler, predicates ...predicate.Predicate) error
+}
+
+type daemonSetReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewDaemonSetReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) DaemonSetReconcileLoop {
+	return &daemonSetReconcileLoop{
+		loop: reconcile.NewLoop(name, mgr, &apps_v1.DaemonSet{}, options),
+	}
+}
+
+func (c *daemonSetReconcileLoop) RunDaemonSetReconciler(ctx context.Context, reconciler DaemonSetReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericDaemonSetReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(DaemonSetFinalizer); ok {
+		reconcilerWrapper = genericDaemonSetFinalizer{
+			genericDaemonSetReconciler: genericReconciler,
+			finalizingReconciler:       finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericDaemonSetHandler implements a generic reconcile.Reconciler
+type genericDaemonSetReconciler struct {
+	reconciler DaemonSetReconciler
+}
+
+func (r genericDaemonSetReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*apps_v1.DaemonSet)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: DaemonSet handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileDaemonSet(obj)
+}
+
+func (r genericDaemonSetReconciler) ReconcileDeletion(request reconcile.Request) {
+	if deletionReconciler, ok := r.reconciler.(DaemonSetDeletionReconciler); ok {
+		deletionReconciler.ReconcileDaemonSetDeletion(request)
+	}
+}
+
+// genericDaemonSetFinalizer implements a generic reconcile.FinalizingReconciler
+type genericDaemonSetFinalizer struct {
+	genericDaemonSetReconciler
+	finalizingReconciler DaemonSetFinalizer
+}
+
+func (r genericDaemonSetFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.DaemonSetFinalizerName()
+}
+
+func (r genericDaemonSetFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*apps_v1.DaemonSet)
+	if !ok {
+		return errors.Errorf("internal error: DaemonSet handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeDaemonSet(obj)
+}

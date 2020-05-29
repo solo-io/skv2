@@ -43,6 +43,8 @@ type Clientset interface {
 	Deployments() DeploymentClient
 	// clienset for the apps/v1/v1 APIs
 	ReplicaSets() ReplicaSetClient
+	// clienset for the apps/v1/v1 APIs
+	DaemonSets() DaemonSetClient
 }
 
 type clientSet struct {
@@ -75,6 +77,11 @@ func (c *clientSet) Deployments() DeploymentClient {
 // clienset for the apps/v1/v1 APIs
 func (c *clientSet) ReplicaSets() ReplicaSetClient {
 	return NewReplicaSetClient(c.client)
+}
+
+// clienset for the apps/v1/v1 APIs
+func (c *clientSet) DaemonSets() DaemonSetClient {
+	return NewDaemonSetClient(c.client)
 }
 
 // Reader knows how to read and list Deployments.
@@ -314,5 +321,125 @@ func (c *replicaSetClient) UpdateReplicaSetStatus(ctx context.Context, obj *Repl
 }
 
 func (c *replicaSetClient) PatchReplicaSetStatus(ctx context.Context, obj *ReplicaSet, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Reader knows how to read and list DaemonSets.
+type DaemonSetReader interface {
+	// Get retrieves a DaemonSet for the given object key
+	GetDaemonSet(ctx context.Context, key client.ObjectKey) (*DaemonSet, error)
+
+	// List retrieves list of DaemonSets for a given namespace and list options.
+	ListDaemonSet(ctx context.Context, opts ...client.ListOption) (*DaemonSetList, error)
+}
+
+// DaemonSetTransitionFunction instructs the DaemonSetWriter how to transition between an existing
+// DaemonSet object and a desired on an Upsert
+type DaemonSetTransitionFunction func(existing, desired *DaemonSet) error
+
+// Writer knows how to create, delete, and update DaemonSets.
+type DaemonSetWriter interface {
+	// Create saves the DaemonSet object.
+	CreateDaemonSet(ctx context.Context, obj *DaemonSet, opts ...client.CreateOption) error
+
+	// Delete deletes the DaemonSet object.
+	DeleteDaemonSet(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given DaemonSet object.
+	UpdateDaemonSet(ctx context.Context, obj *DaemonSet, opts ...client.UpdateOption) error
+
+	// Patch patches the given DaemonSet object.
+	PatchDaemonSet(ctx context.Context, obj *DaemonSet, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all DaemonSet objects matching the given options.
+	DeleteAllOfDaemonSet(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the DaemonSet object.
+	UpsertDaemonSet(ctx context.Context, obj *DaemonSet, transitionFuncs ...DaemonSetTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a DaemonSet object.
+type DaemonSetStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given DaemonSet object.
+	UpdateDaemonSetStatus(ctx context.Context, obj *DaemonSet, opts ...client.UpdateOption) error
+
+	// Patch patches the given DaemonSet object's subresource.
+	PatchDaemonSetStatus(ctx context.Context, obj *DaemonSet, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on DaemonSets.
+type DaemonSetClient interface {
+	DaemonSetReader
+	DaemonSetWriter
+	DaemonSetStatusWriter
+}
+
+type daemonSetClient struct {
+	client client.Client
+}
+
+func NewDaemonSetClient(client client.Client) *daemonSetClient {
+	return &daemonSetClient{client: client}
+}
+
+func (c *daemonSetClient) GetDaemonSet(ctx context.Context, key client.ObjectKey) (*DaemonSet, error) {
+	obj := &DaemonSet{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *daemonSetClient) ListDaemonSet(ctx context.Context, opts ...client.ListOption) (*DaemonSetList, error) {
+	list := &DaemonSetList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *daemonSetClient) CreateDaemonSet(ctx context.Context, obj *DaemonSet, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *daemonSetClient) DeleteDaemonSet(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &DaemonSet{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *daemonSetClient) UpdateDaemonSet(ctx context.Context, obj *DaemonSet, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *daemonSetClient) PatchDaemonSet(ctx context.Context, obj *DaemonSet, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *daemonSetClient) DeleteAllOfDaemonSet(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &DaemonSet{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *daemonSetClient) UpsertDaemonSet(ctx context.Context, obj *DaemonSet, transitionFuncs ...DaemonSetTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*DaemonSet), desired.(*DaemonSet)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *daemonSetClient) UpdateDaemonSetStatus(ctx context.Context, obj *DaemonSet, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *daemonSetClient) PatchDaemonSetStatus(ctx context.Context, obj *DaemonSet, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }

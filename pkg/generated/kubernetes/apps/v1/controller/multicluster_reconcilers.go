@@ -155,3 +155,73 @@ func (g genericReplicaSetMulticlusterReconciler) Reconcile(cluster string, objec
 	}
 	return g.reconciler.ReconcileReplicaSet(cluster, obj)
 }
+
+// Reconcile Upsert events for the DaemonSet Resource across clusters.
+// implemented by the user
+type MulticlusterDaemonSetReconciler interface {
+	ReconcileDaemonSet(clusterName string, obj *apps_v1.DaemonSet) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the DaemonSet Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterDaemonSetDeletionReconciler interface {
+	ReconcileDaemonSetDeletion(clusterName string, req reconcile.Request)
+}
+
+type MulticlusterDaemonSetReconcilerFuncs struct {
+	OnReconcileDaemonSet         func(clusterName string, obj *apps_v1.DaemonSet) (reconcile.Result, error)
+	OnReconcileDaemonSetDeletion func(clusterName string, req reconcile.Request)
+}
+
+func (f *MulticlusterDaemonSetReconcilerFuncs) ReconcileDaemonSet(clusterName string, obj *apps_v1.DaemonSet) (reconcile.Result, error) {
+	if f.OnReconcileDaemonSet == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileDaemonSet(clusterName, obj)
+}
+
+func (f *MulticlusterDaemonSetReconcilerFuncs) ReconcileDaemonSetDeletion(clusterName string, req reconcile.Request) {
+	if f.OnReconcileDaemonSetDeletion == nil {
+		return
+	}
+	f.OnReconcileDaemonSetDeletion(clusterName, req)
+}
+
+type MulticlusterDaemonSetReconcileLoop interface {
+	// AddMulticlusterDaemonSetReconciler adds a MulticlusterDaemonSetReconciler to the MulticlusterDaemonSetReconcileLoop.
+	AddMulticlusterDaemonSetReconciler(ctx context.Context, rec MulticlusterDaemonSetReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterDaemonSetReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterDaemonSetReconcileLoop) AddMulticlusterDaemonSetReconciler(ctx context.Context, rec MulticlusterDaemonSetReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericDaemonSetMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterDaemonSetReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterDaemonSetReconcileLoop {
+	return &multiclusterDaemonSetReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &apps_v1.DaemonSet{})}
+}
+
+type genericDaemonSetMulticlusterReconciler struct {
+	reconciler MulticlusterDaemonSetReconciler
+}
+
+func (g genericDaemonSetMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterDaemonSetDeletionReconciler); ok {
+		deletionReconciler.ReconcileDaemonSetDeletion(cluster, req)
+	}
+}
+
+func (g genericDaemonSetMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*apps_v1.DaemonSet)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: DaemonSet handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileDaemonSet(cluster, obj)
+}
