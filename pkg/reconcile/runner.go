@@ -168,6 +168,9 @@ func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error)
 					return reconcile.Result{}, err
 				}
 			}
+
+			// We have already finalized the object, so return early to skip reconcile.
+			return reconcile.Result{}, nil
 		}
 	}
 
