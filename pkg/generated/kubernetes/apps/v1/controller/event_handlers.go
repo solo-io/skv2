@@ -228,3 +228,110 @@ func (h genericReplicaSetHandler) Generic(object runtime.Object) error {
 	}
 	return h.handler.GenericReplicaSet(obj)
 }
+
+// Handle events for the DaemonSet Resource
+// DEPRECATED: Prefer reconciler pattern.
+type DaemonSetEventHandler interface {
+	CreateDaemonSet(obj *apps_v1.DaemonSet) error
+	UpdateDaemonSet(old, new *apps_v1.DaemonSet) error
+	DeleteDaemonSet(obj *apps_v1.DaemonSet) error
+	GenericDaemonSet(obj *apps_v1.DaemonSet) error
+}
+
+type DaemonSetEventHandlerFuncs struct {
+	OnCreate  func(obj *apps_v1.DaemonSet) error
+	OnUpdate  func(old, new *apps_v1.DaemonSet) error
+	OnDelete  func(obj *apps_v1.DaemonSet) error
+	OnGeneric func(obj *apps_v1.DaemonSet) error
+}
+
+func (f *DaemonSetEventHandlerFuncs) CreateDaemonSet(obj *apps_v1.DaemonSet) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *DaemonSetEventHandlerFuncs) DeleteDaemonSet(obj *apps_v1.DaemonSet) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *DaemonSetEventHandlerFuncs) UpdateDaemonSet(objOld, objNew *apps_v1.DaemonSet) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *DaemonSetEventHandlerFuncs) GenericDaemonSet(obj *apps_v1.DaemonSet) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type DaemonSetEventWatcher interface {
+	AddEventHandler(ctx context.Context, h DaemonSetEventHandler, predicates ...predicate.Predicate) error
+}
+
+type daemonSetEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewDaemonSetEventWatcher(name string, mgr manager.Manager) DaemonSetEventWatcher {
+	return &daemonSetEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &apps_v1.DaemonSet{}),
+	}
+}
+
+func (c *daemonSetEventWatcher) AddEventHandler(ctx context.Context, h DaemonSetEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericDaemonSetHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericDaemonSetHandler implements a generic events.EventHandler
+type genericDaemonSetHandler struct {
+	handler DaemonSetEventHandler
+}
+
+func (h genericDaemonSetHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*apps_v1.DaemonSet)
+	if !ok {
+		return errors.Errorf("internal error: DaemonSet handler received event for %T", object)
+	}
+	return h.handler.CreateDaemonSet(obj)
+}
+
+func (h genericDaemonSetHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*apps_v1.DaemonSet)
+	if !ok {
+		return errors.Errorf("internal error: DaemonSet handler received event for %T", object)
+	}
+	return h.handler.DeleteDaemonSet(obj)
+}
+
+func (h genericDaemonSetHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*apps_v1.DaemonSet)
+	if !ok {
+		return errors.Errorf("internal error: DaemonSet handler received event for %T", old)
+	}
+	objNew, ok := new.(*apps_v1.DaemonSet)
+	if !ok {
+		return errors.Errorf("internal error: DaemonSet handler received event for %T", new)
+	}
+	return h.handler.UpdateDaemonSet(objOld, objNew)
+}
+
+func (h genericDaemonSetHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*apps_v1.DaemonSet)
+	if !ok {
+		return errors.Errorf("internal error: DaemonSet handler received event for %T", object)
+	}
+	return h.handler.GenericDaemonSet(obj)
+}
