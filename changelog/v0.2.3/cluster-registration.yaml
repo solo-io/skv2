@@ -1,4 +1,0 @@
-changelog:
-- type: NEW_FEATURE
-  description: Transfer cluster registration code from SMH into skv2
-  issueLink: https://github.com/solo-io/skv2/issues/21
