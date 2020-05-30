@@ -23,6 +23,13 @@ type KubeCodeRenderer struct {
 	// the relative path to the api dir
 	// types will render in the package <module>/<apiRoot>/<group>/<version>
 	ApiRoot string
+
+	ContribTemplates ContribTemplates
+}
+
+type ContribTemplates struct {
+	Sets        inputTemplates
+	SetMatchers inputTemplates
 }
 
 var TypesTemplates = func(skipDeepCopy bool) inputTemplates {
@@ -73,11 +80,34 @@ func RenderApiTypes(grp Group) ([]OutFile, error) {
 		TypesTemplates:      TypesTemplates(grp.Generators.HasDeepcopy()),
 		ClientsTemplates:    ClientsTemplates,
 		ControllerTemplates: ControllerTemplates,
+		ContribTemplates:    contribTemplates,
 		GoModule:            grp.Module,
 		ApiRoot:             grp.ApiRoot,
 	}
 
 	return defaultKubeCodeRenderer.RenderKubeCode(grp)
+}
+
+var contribTemplates = ContribTemplates{
+	Sets: inputTemplates{
+		"contrib/sets/sets.gotmpl": {
+			Path: "sets/sets.go",
+		},
+	},
+	SetMatchers: inputTemplates{
+		"contrib/sets/set_matchers.gotmpl": {
+			Path: "sets/set_matchers.go",
+		},
+	},
+}
+
+func (r KubeCodeRenderer) addContribTemplates(grp Group, templatesToRender inputTemplates) {
+	if grp.RenderContrib.Sets {
+		templatesToRender.add(r.ContribTemplates.Sets)
+	}
+	if grp.RenderContrib.Sets {
+		templatesToRender.add(r.ContribTemplates.SetMatchers)
+	}
 }
 
 func (r KubeCodeRenderer) RenderKubeCode(grp Group) ([]OutFile, error) {
@@ -91,6 +121,8 @@ func (r KubeCodeRenderer) RenderKubeCode(grp Group) ([]OutFile, error) {
 	if grp.RenderController {
 		templatesToRender.add(r.ControllerTemplates)
 	}
+
+	r.addContribTemplates(grp, templatesToRender)
 
 	files, err := r.renderCoreTemplates(templatesToRender, grp)
 	if err != nil {

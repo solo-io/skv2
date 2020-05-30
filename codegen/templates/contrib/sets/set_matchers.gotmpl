@@ -1,0 +1,39 @@
+package {{.Version}}
+
+import (
+    "fmt"
+
+    "github.com/onsi/gomega/types"
+)
+
+{{- range $resource := $.Resources }}
+
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+
+func Match{{ $resource.Kind }}Set(expected {{ $resource.Kind }}Set) types.GomegaMatcher {
+    return &{{ $kindLowerCamel }}SetMatcher{
+        expected: expected,
+    }
+}
+
+type {{ $kindLowerCamel }}SetMatcher struct {
+    expected {{ $resource.Kind }}Set
+}
+
+func (matcher *{{ $kindLowerCamel }}SetMatcher) Match(actual interface{}) (success bool, err error) {
+    {{ $kindLowerCamel }}Set, ok := actual.({{ $resource.Kind }}Set)
+    if !ok {
+        return false, fmt.Errorf("Match{{ $resource.Kind }}Set expects a {{ $resource.Kind }}Set")
+    }
+    return matcher.expected.Equal({{ $kindLowerCamel }}Set), nil
+}
+
+func (matcher *{{ $kindLowerCamel }}SetMatcher) FailureMessage(actual interface{}) (message string) {
+    return fmt.Sprintf("Expected\n\t%#v\nto equal the set \n\t%#v", actual, matcher.expected)
+}
+
+func (matcher *{{ $kindLowerCamel }}SetMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+    return fmt.Sprintf("Expected\n\t%#v\nnot to equal the set\n\t%#v", actual, matcher.expected)
+}
+
+{{- end }}

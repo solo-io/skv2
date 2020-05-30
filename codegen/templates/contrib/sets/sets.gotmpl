@@ -1,0 +1,113 @@
+package {{.Version}}
+
+import (
+    {{- if $.CustomTypesImportPath }}
+
+    . "{{ $.CustomTypesImportPath }}"
+    {{- end}}
+)
+
+func key(objectMeta v1.ObjectMeta) string {
+    return objectMeta.GetName() + "-" + objectMeta.GetNamespace()
+}
+
+{{- range $resource := $.Resources }}
+
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+
+type {{ $resource.Kind }}Set interface {
+    Set() sets.String
+    List() []*{{ $resource.Kind }}
+    Map() map[string]*{{ $resource.Kind }}
+    Insert({{ $kindLowerCamel }} ...*{{ $resource.Kind }})
+    Equal({{ $kindLowerCamel }}Set {{ $resource.Kind }}Set) bool
+    Has({{ $kindLowerCamel }} *{{ $resource.Kind }}) bool
+    Delete({{ $kindLowerCamel }} *{{ $resource.Kind }})
+    Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
+    Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
+    Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
+}
+
+type {{ $kindLowerCamel }}Set struct {
+    set     sets.String
+    mapping map[string]*{{ $resource.Kind }}
+}
+
+func New{{ $resource.Kind }}Set({{ $resource.Kind }}s ...*{{ $resource.Kind }}) {{ $resource.Kind }}Set {
+    set := sets.NewString()
+    mapping := map[string]*{{ $resource.Kind }}{}
+    for _, {{ $resource.Kind }} := range {{ $resource.Kind }}s {
+        key := key({{ $resource.Kind }}.ObjectMeta)
+        set.Insert(key)
+        mapping[key] = {{ $resource.Kind }}
+    }
+    return &{{ $kindLowerCamel }}Set{set: set, mapping: mapping}
+}
+
+func (s {{ $kindLowerCamel }}Set) Set() sets.String {
+    return s.set
+}
+
+func (s {{ $kindLowerCamel }}Set) List() []*{{ $resource.Kind }} {
+    var {{ $resource.Kind }}s []*{{ $resource.Kind }}
+    for _, key := range s.set.List() {
+        {{ $resource.Kind }}s = append({{ $resource.Kind }}s, s.mapping[key])
+    }
+    return {{ $resource.Kind }}s
+}
+
+func (s {{ $kindLowerCamel }}Set) Map() map[string]*{{ $resource.Kind }} {
+    return s.mapping
+}
+
+func (s {{ $kindLowerCamel }}Set) Insert(
+    {{ $resource.Kind }}s ...*{{ $resource.Kind }},
+) {
+    for _, {{ $resource.Kind }} := range {{ $resource.Kind }}s {
+        key := key({{ $resource.Kind }}.ObjectMeta)
+        s.mapping[key] = {{ $resource.Kind }}
+        s.set.Insert(key)
+    }
+}
+
+func (s {{ $kindLowerCamel }}Set) Has({{ $resource.Kind }} *{{ $resource.Kind }}) bool {
+    return s.set.Has(key({{ $resource.Kind }}.ObjectMeta))
+}
+
+func (s {{ $kindLowerCamel }}Set) Equal(
+    {{ $resource.Kind }}Set {{ $resource.Kind }}Set,
+) bool {
+    return s.set.Equal({{ $resource.Kind }}Set.Set())
+}
+
+func (s {{ $kindLowerCamel }}Set) Delete({{ $resource.Kind }} *{{ $resource.Kind }}) {
+    key := key({{ $resource.Kind }}.ObjectMeta)
+    delete(s.mapping, key)
+    s.set.Delete(key)
+}
+
+func (s {{ $kindLowerCamel }}Set) Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
+    return New{{ $resource.Kind }}Set(append(s.List(), set.List()...)...)
+}
+
+func (s {{ $kindLowerCamel }}Set) Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
+    newSet := s.set.Difference(set.Set())
+    var new{{ $resource.Kind }}s []*{{ $resource.Kind }}
+    for key, _ := range newSet {
+        val, _ := s.mapping[key]
+        new{{ $resource.Kind }}s = append(new{{ $resource.Kind }}s, val)
+    }
+    return New{{ $resource.Kind }}Set(new{{ $resource.Kind }}s...)
+}
+
+func (s {{ $kindLowerCamel }}Set) Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
+    newSet := s.set.Intersection(set.Set())
+    var new{{ $resource.Kind }}s []*{{ $resource.Kind }}
+    for key, _ := range newSet {
+        val, _ := s.mapping[key]
+        new{{ $resource.Kind }}s = append(new{{ $resource.Kind }}s, val)
+    }
+    return New{{ $resource.Kind }}Set(new{{ $resource.Kind }}s...)
+}
+
+{{- end }}

@@ -89,6 +89,8 @@ type Group struct {
 
 	// data for providing custom templates to generate custom code for groups
 	CustomTemplates CustomTemplates
+
+	RenderContrib RenderContrib
 }
 
 type CustomTemplates struct {
@@ -102,6 +104,14 @@ type CustomTemplates struct {
 	// custom template funcs which will be inserted into the
 	// default template funcmap at rendering time
 	Funcs template.FuncMap
+}
+
+type RenderContrib struct {
+	// set data structure
+	Sets bool
+
+	// gomega matchers for set data structures
+	SetMatchers bool
 }
 
 // ensures the resources point to this group
