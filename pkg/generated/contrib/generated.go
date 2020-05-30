@@ -9,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-//go:generate go run temp.go
+//go:generate go run generated.go
 
 const (
 	generatedPackageName = "pkg/generated/contrib"
