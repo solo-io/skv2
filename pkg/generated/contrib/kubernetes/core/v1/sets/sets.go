@@ -8,6 +8,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// k8s resources are uniquely identified by their name and namespace
 func key(objectMeta v1.ObjectMeta) string {
 	return objectMeta.GetName() + "-" + objectMeta.GetNamespace()
 }
