@@ -366,23 +366,23 @@ func (c *clusterRegistrant) getTokenForSa(
 	if err != nil {
 		return "", err
 	}
-	sa, err := saClient.GetServiceAccount(ctx, saRef)
-	if err != nil {
-		return "", err
-	}
-	if len(sa.Secrets) == 0 {
-		return "", eris.Errorf(
-			"service account %s.%s does not have a token secret associated with it",
-			saRef.Name,
-			saRef.Namespace,
-		)
-	}
 	remoteSecretClient, err := c.secretClientFactory(cfg)
 	if err != nil {
 		return "", err
 	}
 	var foundSecret *k8s_core_types.Secret
 	if err = retry.Do(func() error {
+		sa, err := saClient.GetServiceAccount(ctx, saRef)
+		if err != nil {
+			return err
+		}
+		if len(sa.Secrets) == 0 {
+			return eris.Errorf(
+				"service account %s.%s does not have a token secret associated with it",
+				saRef.Name,
+				saRef.Namespace,
+			)
+		}
 		secretName := sa.Secrets[0].Name
 		secret, err := remoteSecretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: saRef.Namespace})
 		if err != nil {

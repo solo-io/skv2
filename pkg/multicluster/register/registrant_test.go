@@ -251,7 +251,8 @@ var _ = Describe("Registrant", func() {
 
 			saClient.EXPECT().
 				GetServiceAccount(ctx, sa).
-				Return(expectedSa, nil)
+				Return(expectedSa, nil).
+				Times(2)
 
 			secretClient.EXPECT().
 				GetSecret(ctx, client.ObjectKey{
