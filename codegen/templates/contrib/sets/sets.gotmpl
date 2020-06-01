@@ -9,7 +9,7 @@ import (
 
 // k8s resources are uniquely identified by their name and namespace
 func key(objectMeta v1.ObjectMeta) string {
-    return objectMeta.GetName() + "-" + objectMeta.GetNamespace()
+    return objectMeta.GetName() + "." + objectMeta.GetNamespace()
 }
 
 {{- range $resource := $.Resources }}
@@ -17,7 +17,7 @@ func key(objectMeta v1.ObjectMeta) string {
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 
 type {{ $resource.Kind }}Set interface {
-    Set() sets.String
+    Keys() sets.String
     List() []*{{ $resource.Kind }}
     Map() map[string]*{{ $resource.Kind }}
     Insert({{ $kindLowerCamel }} ...*{{ $resource.Kind }})

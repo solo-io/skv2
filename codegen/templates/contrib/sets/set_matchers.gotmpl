@@ -1,9 +1,13 @@
-package {{.Version}}
+package {{.Version}}_test
 
 import (
     "fmt"
 
     "github.com/onsi/gomega/types"
+    {{- if $.ApiRoot }}
+
+        . "{{ $.ApiRoot }}/sets"
+    {{- end}}
 )
 
 {{- range $resource := $.Resources }}

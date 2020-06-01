@@ -96,7 +96,7 @@ var contribTemplates = ContribTemplates{
 	},
 	SetMatchers: inputTemplates{
 		"contrib/sets/set_matchers.gotmpl": {
-			Path: "sets/set_matchers.go",
+			Path: "sets/test/set_matchers.go",
 		},
 	},
 }
@@ -105,7 +105,7 @@ func (r KubeCodeRenderer) addContribTemplates(grp Group, templatesToRender input
 	if grp.RenderContrib.Sets {
 		templatesToRender.add(r.ContribTemplates.Sets)
 	}
-	if grp.RenderContrib.Sets {
+	if grp.RenderContrib.SetMatchers {
 		templatesToRender.add(r.ContribTemplates.SetMatchers)
 	}
 }
@@ -121,7 +121,6 @@ func (r KubeCodeRenderer) RenderKubeCode(grp Group) ([]OutFile, error) {
 	if grp.RenderController {
 		templatesToRender.add(r.ControllerTemplates)
 	}
-
 	r.addContribTemplates(grp, templatesToRender)
 
 	files, err := r.renderCoreTemplates(templatesToRender, grp)

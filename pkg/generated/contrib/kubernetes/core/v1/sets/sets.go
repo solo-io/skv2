@@ -3,18 +3,18 @@
 package v1
 
 import (
-	"github.com/solo-io/skv2/pkg/contrib/sets"
 	. "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // k8s resources are uniquely identified by their name and namespace
 func key(objectMeta v1.ObjectMeta) string {
-	return objectMeta.GetName() + "-" + objectMeta.GetNamespace()
+	return objectMeta.GetName() + "." + objectMeta.GetNamespace()
 }
 
 type ServiceSet interface {
-	Set() sets.String
+	Keys() sets.String
 	List() []*Service
 	Map() map[string]*Service
 	Insert(service ...*Service)
@@ -109,7 +109,7 @@ func (s serviceSet) Intersection(set ServiceSet) ServiceSet {
 }
 
 type PodSet interface {
-	Set() sets.String
+	Keys() sets.String
 	List() []*Pod
 	Map() map[string]*Pod
 	Insert(pod ...*Pod)

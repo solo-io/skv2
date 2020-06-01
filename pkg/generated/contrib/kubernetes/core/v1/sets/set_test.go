@@ -3,6 +3,7 @@ package v1
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	v1_test "github.com/solo-io/skv2/pkg/generated/contrib/kubernetes/core/v1/sets/test"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -100,8 +101,8 @@ var _ = Describe("ServiceSet", func() {
 	It("should correctly match two sets", func() {
 		setA.Insert(serviceA, serviceB)
 		setB.Insert(serviceA, serviceB)
-		Expect(setA).To(MatchServiceSet(setB))
+		Expect(setA).To(v1_test.MatchServiceSet(setB))
 		setB.Insert(serviceC)
-		Expect(setA).ToNot(MatchServiceSet(setB))
+		Expect(setA).ToNot(v1_test.MatchServiceSet(setB))
 	})
 })
