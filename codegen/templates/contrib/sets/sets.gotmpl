@@ -1,16 +1,18 @@
-package {{.Version}}
+package {{.Version}}sets
 
 import (
     {{- if $.CustomTypesImportPath }}
 
     . "{{ $.CustomTypesImportPath }}"
-    {{- end}}
-)
+    {{- else}}
 
-// k8s resources are uniquely identified by their name and namespace
-func key(objectMeta v1.ObjectMeta) string {
-    return objectMeta.GetName() + "." + objectMeta.GetNamespace()
-}
+    . "{{ group_import_path $ }}"
+    {{- end}}
+
+    sksets "github.com/solo-io/skv2/pkg/contrib/sets"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/util/sets"
+)
 
 {{- range $resource := $.Resources }}
 
@@ -29,66 +31,62 @@ type {{ $resource.Kind }}Set interface {
     Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
 }
 
-type {{ $kindLowerCamel }}Set struct {
-    set     sets.String
-    mapping map[string]*{{ $resource.Kind }}
+func makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List []*{{ $resource.Kind }}) sksets.ResourceSet {
+    var genericResources []metav1.Object
+    for _, obj := range {{ $kindLowerCamel }}List {
+        genericResources = append(genericResources, obj)
+    }
+    return sksets.NewResourceSet(genericResources...)
 }
 
-func New{{ $resource.Kind }}Set({{ $resource.Kind }}s ...*{{ $resource.Kind }}) {{ $resource.Kind }}Set {
-    set := sets.NewString()
-    mapping := map[string]*{{ $resource.Kind }}{}
-    for _, {{ $resource.Kind }} := range {{ $resource.Kind }}s {
-        key := key({{ $resource.Kind }}.ObjectMeta)
-        set.Insert(key)
-        mapping[key] = {{ $resource.Kind }}
-    }
-    return &{{ $kindLowerCamel }}Set{set: set, mapping: mapping}
+type {{ $kindLowerCamel }}Set struct {
+    set sksets.ResourceSet
+}
+
+func New{{ $resource.Kind }}Set({{ $kindLowerCamel }}List ...*{{ $resource.Kind }}) {{ $resource.Kind }}Set {
+    return &{{ $kindLowerCamel }}Set{set: makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List)}
 }
 
 func (s {{ $kindLowerCamel }}Set) Keys() sets.String {
-    return sets.NewString(s.set.List()...)
+    return s.set.Keys()
 }
 
 func (s {{ $kindLowerCamel }}Set) List() []*{{ $resource.Kind }} {
-    var {{ $resource.Kind }}s []*{{ $resource.Kind }}
-    for _, key := range s.set.List() {
-        {{ $resource.Kind }}s = append({{ $resource.Kind }}s, s.mapping[key])
+    var {{ $kindLowerCamel }}List []*{{ $resource.Kind }}
+    for _, obj := range s.set.List() {
+        {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $resource.Kind }}))
     }
-    return {{ $resource.Kind }}s
+    return {{ $kindLowerCamel }}List
 }
 
 func (s {{ $kindLowerCamel }}Set) Map() map[string]*{{ $resource.Kind }} {
     newMap := map[string]*{{ $resource.Kind }}{}
-	for k, v := range s.mapping {
-		newMap[k] = v
-	}
-	return newMap
+    for k, v := range s.set.Map() {
+        newMap[k] = v.(*{{ $resource.Kind }})
+    }
+    return newMap
 }
 
 func (s {{ $kindLowerCamel }}Set) Insert(
-    {{ $resource.Kind }}s ...*{{ $resource.Kind }},
+        {{ $kindLowerCamel }}List ...*{{ $resource.Kind }},
 ) {
-    for _, {{ $resource.Kind }} := range {{ $resource.Kind }}s {
-        key := key({{ $resource.Kind }}.ObjectMeta)
-        s.mapping[key] = {{ $resource.Kind }}
-        s.set.Insert(key)
+    for _, obj := range {{ $kindLowerCamel }}List {
+        s.set.Insert(obj)
     }
 }
 
-func (s {{ $kindLowerCamel }}Set) Has({{ $resource.Kind }} *{{ $resource.Kind }}) bool {
-    return s.set.Has(key({{ $resource.Kind }}.ObjectMeta))
+func (s {{ $kindLowerCamel }}Set) Has({{ $kindLowerCamel }} *{{ $resource.Kind }}) bool {
+    return s.set.Has({{ $kindLowerCamel }})
 }
 
 func (s {{ $kindLowerCamel }}Set) Equal(
-    {{ $resource.Kind }}Set {{ $resource.Kind }}Set,
+        {{ $kindLowerCamel }}Set {{ $resource.Kind }}Set,
 ) bool {
-    return s.set.Equal({{ $resource.Kind }}Set.Keys())
+    return s.set.Equal(makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}Set.List()))
 }
 
 func (s {{ $kindLowerCamel }}Set) Delete({{ $resource.Kind }} *{{ $resource.Kind }}) {
-    key := key({{ $resource.Kind }}.ObjectMeta)
-    delete(s.mapping, key)
-    s.set.Delete(key)
+    s.set.Delete({{ $resource.Kind }})
 }
 
 func (s {{ $kindLowerCamel }}Set) Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
@@ -96,23 +94,17 @@ func (s {{ $kindLowerCamel }}Set) Union(set {{ $resource.Kind }}Set) {{ $resourc
 }
 
 func (s {{ $kindLowerCamel }}Set) Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
-    newSet := s.set.Difference(set.Keys())
-    var new{{ $resource.Kind }}s []*{{ $resource.Kind }}
-    for key, _ := range newSet {
-        val, _ := s.mapping[key]
-        new{{ $resource.Kind }}s = append(new{{ $resource.Kind }}s, val)
-    }
-    return New{{ $resource.Kind }}Set(new{{ $resource.Kind }}s...)
+    newSet := s.set.Difference(makeGeneric{{ $resource.Kind }}Set(set.List()))
+    return {{ $kindLowerCamel }}Set{set: newSet}
 }
 
 func (s {{ $kindLowerCamel }}Set) Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
-    newSet := s.set.Intersection(set.Keys())
-    var new{{ $resource.Kind }}s []*{{ $resource.Kind }}
-    for key, _ := range newSet {
-        val, _ := s.mapping[key]
-        new{{ $resource.Kind }}s = append(new{{ $resource.Kind }}s, val)
+    newSet := s.set.Intersection(makeGeneric{{ $resource.Kind }}Set(set.List()))
+    var {{ $kindLowerCamel }}List []*{{ $resource.Kind }}
+    for _, obj := range newSet.List() {
+        {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $resource.Kind }}))
     }
-    return New{{ $resource.Kind }}Set(new{{ $resource.Kind }}s...)
+    return New{{ $resource.Kind }}Set({{ $kindLowerCamel }}List...)
 }
 
 {{- end }}

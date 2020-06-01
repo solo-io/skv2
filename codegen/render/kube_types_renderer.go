@@ -97,12 +97,13 @@ func (r KubeCodeRenderer) RenderKubeCode(grp Group) ([]OutFile, error) {
 		return nil, err
 	}
 
-	customFiles, err := r.renderCustomTemplates(grp.CustomTemplates.Templates, grp.CustomTemplates.Funcs, grp)
-	if err != nil {
-		return nil, err
+	for _, customTemplates := range grp.CustomTemplates {
+		customFiles, err := r.renderCustomTemplates(customTemplates.Templates, customTemplates.Funcs, grp)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, customFiles...)
 	}
-
-	files = append(files, customFiles...)
 
 	// prepend output file paths with path to api dir
 	for i, out := range files {

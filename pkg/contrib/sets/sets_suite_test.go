@@ -1,4 +1,4 @@
-package v1_test
+package sets_test
 
 import (
 	"testing"

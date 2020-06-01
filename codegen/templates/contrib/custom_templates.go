@@ -10,14 +10,13 @@ const (
 	SetCustomTemplatePath = "sets/sets.gotmpl"
 )
 
-func Sets(customTemplate *model.CustomTemplates) error {
+var Sets = func() model.CustomTemplates {
 	packrBox := packr.NewBox("./")
 	templateContents, err := packrBox.FindString(SetCustomTemplatePath)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	return customTemplate.Merge(
-		map[string]string{
-			SetOutputFilename: templateContents,
-		})
-}
+	return model.CustomTemplates{
+		Templates: map[string]string{SetOutputFilename: templateContents},
+	}
+}()
