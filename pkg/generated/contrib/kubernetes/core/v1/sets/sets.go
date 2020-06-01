@@ -42,7 +42,7 @@ func NewServiceSet(Services ...*Service) ServiceSet {
 	return &serviceSet{set: set, mapping: mapping}
 }
 
-func (s serviceSet) Set() sets.String {
+func (s serviceSet) Keys() sets.String {
 	return s.set
 }
 
@@ -75,7 +75,7 @@ func (s serviceSet) Has(Service *Service) bool {
 func (s serviceSet) Equal(
 	ServiceSet ServiceSet,
 ) bool {
-	return s.set.Equal(ServiceSet.Set())
+	return s.set.Equal(ServiceSet.Keys())
 }
 
 func (s serviceSet) Delete(Service *Service) {
@@ -89,7 +89,7 @@ func (s serviceSet) Union(set ServiceSet) ServiceSet {
 }
 
 func (s serviceSet) Difference(set ServiceSet) ServiceSet {
-	newSet := s.set.Difference(set.Set())
+	newSet := s.set.Difference(set.Keys())
 	var newServices []*Service
 	for key, _ := range newSet {
 		val, _ := s.mapping[key]
@@ -99,7 +99,7 @@ func (s serviceSet) Difference(set ServiceSet) ServiceSet {
 }
 
 func (s serviceSet) Intersection(set ServiceSet) ServiceSet {
-	newSet := s.set.Intersection(set.Set())
+	newSet := s.set.Intersection(set.Keys())
 	var newServices []*Service
 	for key, _ := range newSet {
 		val, _ := s.mapping[key]
@@ -137,7 +137,7 @@ func NewPodSet(Pods ...*Pod) PodSet {
 	return &podSet{set: set, mapping: mapping}
 }
 
-func (s podSet) Set() sets.String {
+func (s podSet) Keys() sets.String {
 	return s.set
 }
 
@@ -170,7 +170,7 @@ func (s podSet) Has(Pod *Pod) bool {
 func (s podSet) Equal(
 	PodSet PodSet,
 ) bool {
-	return s.set.Equal(PodSet.Set())
+	return s.set.Equal(PodSet.Keys())
 }
 
 func (s podSet) Delete(Pod *Pod) {
@@ -184,7 +184,7 @@ func (s podSet) Union(set PodSet) PodSet {
 }
 
 func (s podSet) Difference(set PodSet) PodSet {
-	newSet := s.set.Difference(set.Set())
+	newSet := s.set.Difference(set.Keys())
 	var newPods []*Pod
 	for key, _ := range newSet {
 		val, _ := s.mapping[key]
@@ -194,7 +194,7 @@ func (s podSet) Difference(set PodSet) PodSet {
 }
 
 func (s podSet) Intersection(set PodSet) PodSet {
-	newSet := s.set.Intersection(set.Set())
+	newSet := s.set.Intersection(set.Keys())
 	var newPods []*Pod
 	for key, _ := range newSet {
 		val, _ := s.mapping[key]

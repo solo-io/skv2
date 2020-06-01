@@ -4,6 +4,7 @@ import (
 	"text/template"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/solo-kit/pkg/code-generator/model"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -104,6 +105,20 @@ type CustomTemplates struct {
 	// custom template funcs which will be inserted into the
 	// default template funcmap at rendering time
 	Funcs template.FuncMap
+}
+
+func (c *CustomTemplates) Merge(customTemplate map[string]string) error {
+	if c.Templates == nil {
+		c.Templates = map[string]string{}
+	}
+	for k, v := range customTemplate {
+		_, ok := c.Templates[k]
+		if ok {
+			return eris.Errorf("Custom template with key %s already exists.", k)
+		}
+		c.Templates[k] = v
+	}
+	return nil
 }
 
 type RenderContrib struct {

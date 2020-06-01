@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/codegen/templates/contrib"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -20,6 +21,12 @@ var (
 )
 
 func main() {
+	customTemplates := model.CustomTemplates{}
+	err := contrib.Sets(&customTemplates)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Println("starting contrib resource generation")
 	skv2Cmd := codegen.Command{
 		Groups: []model.Group{
@@ -41,6 +48,7 @@ func main() {
 					Sets:        true,
 					SetMatchers: true,
 				},
+				CustomTemplates:       customTemplates,
 				CustomTypesImportPath: "k8s.io/api/core/v1",
 				ApiRoot:               kubeGeneratedPackage,
 			},

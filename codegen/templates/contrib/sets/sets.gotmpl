@@ -45,7 +45,7 @@ func New{{ $resource.Kind }}Set({{ $resource.Kind }}s ...*{{ $resource.Kind }}) 
     return &{{ $kindLowerCamel }}Set{set: set, mapping: mapping}
 }
 
-func (s {{ $kindLowerCamel }}Set) Set() sets.String {
+func (s {{ $kindLowerCamel }}Set) Keys() sets.String {
     return s.set
 }
 
@@ -78,7 +78,7 @@ func (s {{ $kindLowerCamel }}Set) Has({{ $resource.Kind }} *{{ $resource.Kind }}
 func (s {{ $kindLowerCamel }}Set) Equal(
     {{ $resource.Kind }}Set {{ $resource.Kind }}Set,
 ) bool {
-    return s.set.Equal({{ $resource.Kind }}Set.Set())
+    return s.set.Equal({{ $resource.Kind }}Set.Keys())
 }
 
 func (s {{ $kindLowerCamel }}Set) Delete({{ $resource.Kind }} *{{ $resource.Kind }}) {
@@ -92,7 +92,7 @@ func (s {{ $kindLowerCamel }}Set) Union(set {{ $resource.Kind }}Set) {{ $resourc
 }
 
 func (s {{ $kindLowerCamel }}Set) Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
-    newSet := s.set.Difference(set.Set())
+    newSet := s.set.Difference(set.Keys())
     var new{{ $resource.Kind }}s []*{{ $resource.Kind }}
     for key, _ := range newSet {
         val, _ := s.mapping[key]
@@ -102,7 +102,7 @@ func (s {{ $kindLowerCamel }}Set) Difference(set {{ $resource.Kind }}Set) {{ $re
 }
 
 func (s {{ $kindLowerCamel }}Set) Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
-    newSet := s.set.Intersection(set.Set())
+    newSet := s.set.Intersection(set.Keys())
     var new{{ $resource.Kind }}s []*{{ $resource.Kind }}
     for key, _ := range newSet {
         val, _ := s.mapping[key]
