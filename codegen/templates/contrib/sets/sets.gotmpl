@@ -46,7 +46,7 @@ func New{{ $resource.Kind }}Set({{ $resource.Kind }}s ...*{{ $resource.Kind }}) 
 }
 
 func (s {{ $kindLowerCamel }}Set) Keys() sets.String {
-    return s.set
+    return sets.NewString(s.set.List()...)
 }
 
 func (s {{ $kindLowerCamel }}Set) List() []*{{ $resource.Kind }} {
@@ -58,7 +58,11 @@ func (s {{ $kindLowerCamel }}Set) List() []*{{ $resource.Kind }} {
 }
 
 func (s {{ $kindLowerCamel }}Set) Map() map[string]*{{ $resource.Kind }} {
-    return s.mapping
+    newMap := map[string]*{{ $resource.Kind }}{}
+	for k, v := range s.mapping {
+		newMap[k] = v
+	}
+	return newMap
 }
 
 func (s {{ $kindLowerCamel }}Set) Insert(

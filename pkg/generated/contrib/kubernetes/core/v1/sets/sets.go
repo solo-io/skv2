@@ -43,7 +43,7 @@ func NewServiceSet(Services ...*Service) ServiceSet {
 }
 
 func (s serviceSet) Keys() sets.String {
-	return s.set
+	return sets.NewString(s.set.List()...)
 }
 
 func (s serviceSet) List() []*Service {
@@ -55,7 +55,11 @@ func (s serviceSet) List() []*Service {
 }
 
 func (s serviceSet) Map() map[string]*Service {
-	return s.mapping
+	newMap := map[string]*Service{}
+	for k, v := range s.mapping {
+		newMap[k] = v
+	}
+	return newMap
 }
 
 func (s serviceSet) Insert(
@@ -138,7 +142,7 @@ func NewPodSet(Pods ...*Pod) PodSet {
 }
 
 func (s podSet) Keys() sets.String {
-	return s.set
+	return sets.NewString(s.set.List()...)
 }
 
 func (s podSet) List() []*Pod {
@@ -150,7 +154,11 @@ func (s podSet) List() []*Pod {
 }
 
 func (s podSet) Map() map[string]*Pod {
-	return s.mapping
+	newMap := map[string]*Pod{}
+	for k, v := range s.mapping {
+		newMap[k] = v
+	}
+	return newMap
 }
 
 func (s podSet) Insert(
