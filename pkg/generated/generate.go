@@ -87,10 +87,29 @@ func main() {
 					{
 						Kind: "ReplicaSet",
 					},
+					{
+						Kind: "DaemonSet",
+					},
 				},
 				RenderController:      true,
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/apps/v1",
+				ApiRoot:               kubeGeneratedPackage,
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "batch",
+					Version: "v1",
+				},
+				Module: "k8s.io/api",
+				Resources: []model.Resource{
+					{
+						Kind: "Job",
+					},
+				},
+				RenderController:      true,
+				RenderClients:         true,
+				CustomTypesImportPath: "k8s.io/api/batch/v1",
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
