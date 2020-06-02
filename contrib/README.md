@@ -4,7 +4,7 @@ Contributions to skv2 are welcome! Extensions to skv2 which are common across pr
 
 * Templates should go in `contrib/codegen/templates/` (e.g. `contrib/codegen/templates/sets.go.tmpl`) 
 * Libraries imported by contrib templates should go in `contrib/pkg/` (e.g. `contrib/pkg/sets.go`)
-* Test code should be added to `contrib/*_test.go` where `*` is the name of the template (e.g. `contrib/sets_test.go`)
+* Test code should be added to `contrib/tests/*_test.go` where `*` is the name of the template (e.g. `contrib/tests/sets_test.go`)
 * A `CustomTemplate` should be added to `contrib/custom_templates.go` like so:
 
 ```go
