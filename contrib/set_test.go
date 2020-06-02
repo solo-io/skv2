@@ -1,11 +1,11 @@
-package sets_test
+package contrib_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/sets"
-	"github.com/solo-io/skv2/pkg/contrib/sets"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/codegen/templates/contrib"
+	"github.com/solo-io/skv2/contrib"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -40,9 +40,7 @@ var _ = Describe("Cmd", func() {
 					RenderClients:    true,
 					RenderController: true,
 					ApiRoot:          "codegen/test/api",
-					CustomTemplates: []CustomTemplates{
-						contrib.Sets,
-					},
+					CustomTemplates:  contrib.AllCustomTemplates,
 				},
 			},
 			AnyVendorConfig: &sk_anyvendor.Imports{

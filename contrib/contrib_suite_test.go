@@ -1,4 +1,4 @@
-package sets_test
+package contrib_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestSets(t *testing.T) {
+func TestContrib(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Sets Suite")
+	RunSpecs(t, "Contrib Suite")
 }
