@@ -19,16 +19,23 @@ const (
 	SetCustomTemplatePath = "sets/sets.gotmpl"
 )
 
-var Sets = func() model.CustomTemplates {
-	templateContents, err := templatesBox.FindString(SetCustomTemplatePath)
+func init() {
+	sets, err := Sets()
 	if err != nil {
 		panic(err)
+	}
+	AllCustomTemplates = append(AllCustomTemplates, sets)
+}
+
+func Sets() (model.CustomTemplates, error) {
+
+	templateContents, err := templatesBox.FindString(SetCustomTemplatePath)
+	if err != nil {
+		return model.CustomTemplates{}, err
 	}
 	setsTemplates := model.CustomTemplates{
 		Templates: map[string]string{SetOutputFilename: templateContents},
 	}
-	// register sets
-	AllCustomTemplates = append(AllCustomTemplates, setsTemplates)
 
-	return setsTemplates
-}()
+	return setsTemplates, nil
+}

@@ -1,17 +1,16 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"path/filepath"
 
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/contrib"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate go run generate.go
-//go:generate ./parallel_mockgen.sh
 
 const (
 	generatedPackageName = "pkg/generated"
@@ -23,14 +22,6 @@ var (
 
 func main() {
 	log.Println("starting kube client generation")
-
-	// load custom client providers template
-	customClientProvidersBytes, err := ioutil.ReadFile("templates/custom_providers.gotmpl")
-	customClientProviders := string(customClientProvidersBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	skv2Cmd := codegen.Command{
 		Groups: []model.Group{
 			{
@@ -67,12 +58,8 @@ func main() {
 				RenderController:      true,
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/core/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
-				CustomTemplates: model.CustomTemplates{
-					Templates: map[string]string{
-						"client_providers.go": customClientProviders,
-					},
-				},
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -94,6 +81,7 @@ func main() {
 				RenderController:      true,
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/apps/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -110,6 +98,7 @@ func main() {
 				RenderController:      true,
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/batch/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -125,6 +114,7 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/admissionregistration/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -150,12 +140,8 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/rbac/v1",
-				CustomTemplates: model.CustomTemplates{
-					Templates: map[string]string{
-						"client_providers.go": customClientProviders,
-					},
-				},
-				ApiRoot: kubeGeneratedPackage,
+				CustomTemplates:       contrib.AllCustomTemplates,
+				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -169,6 +155,7 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/certificates/v1beta1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -185,6 +172,7 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 		},
