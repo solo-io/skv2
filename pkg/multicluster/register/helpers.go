@@ -11,6 +11,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
+/*
+	RegisterClusterFromConfig is meant to be a helper function to easily "register" a remote cluster.
+	Curently this entails:
+		1. Creating a `ServiceAccount` on the remote cluster.
+		2. Binding RBAC `Roles/ClusterRoles` to said `ServiceAccount`
+		3. And finally creating a kubeconfig `Secret` with the BearerToken of the remote `ServiceAccount`
+*/
 func RegisterClusterFromConfig(
 	ctx context.Context,
 	remoteCfg clientcmd.ClientConfig,
@@ -33,6 +40,11 @@ func RegisterClusterFromConfig(
 	return registrant.RegisterClusterWithToken(ctx, remoteCfg, token, opts.Options)
 }
 
+/*
+	DefaultRegistrant provider function.
+	Meant to be used in tandem with RegisterClusterFromConfig above.
+	They are exposed separately so the `Registrant` may be mocked for the function above.
+*/
 func DefaultRegistrant(context string) (ClusterRegistrant, error) {
 	cfg, err := config.GetConfigWithContext(context)
 	if err != nil {

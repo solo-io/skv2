@@ -40,17 +40,19 @@ type RbacOptions struct {
 	Options
 
 	// A list of roles to bind the New kubeconfig token to
+	// Any Roles in this list will be Upserted by the registrant, prior to binding
 	Roles []*k8s_rbac_types.Role
 
 	// A list of cluster roles to bind the New kubeconfig token to
+	// Any ClusterRoles in this list will be Upserted by the registrant, prior to binding
 	ClusterRoles []*k8s_rbac_types.ClusterRole
 
 	// List of roles which will be bound to by the created role bindings
-	// The Roles created from the above list will automatically appended
+	// The Roles upserted from the above list will automatically appended
 	RoleBindings []client.ObjectKey
 
 	// List of cluster roles which will be bound to by the created cluster role bindings
-	// The Roles created from the above list will automatically appended to the list
+	// The ClusterRoles upserted from the above list will automatically appended to the list
 	ClusterRoleBindings []client.ObjectKey
 }
 
@@ -75,12 +77,26 @@ func (o *Options) validate() error {
 	the registrant instance.
 */
 type ClusterRegistrant interface {
+
+	/*
+		EnsureRemoteServiceAccount takes an instance of a remote config, and ensure a ServiceAccount exists on the
+		remote cluster, in the namespace specified.
+
+		This `ServiceAccount` can then be used and/or referenced by `CreateRemoteAccessToken` below for the remainder
+		of the registration workflow
+	*/
 	EnsureRemoteServiceAccount(
 		ctx context.Context,
 		remoteClientCfg clientcmd.ClientConfig,
 		opts Options,
 	) (*corev1.ServiceAccount, error)
 
+	/*
+		CreateRemoteAccessToken takes an instance of a remote config, and a reference to an existing `ServiceAccount`,
+		and attempts to bind the given `RBAC` objects to said `ServiceAccount`, in the specified cluster.
+
+		The function will then return the `ServiceAccount` token,
+	*/
 	CreateRemoteAccessToken(
 		ctx context.Context,
 		remoteClientCfg clientcmd.ClientConfig,
@@ -89,8 +105,8 @@ type ClusterRegistrant interface {
 	) (token string, err error)
 
 	/*
-		RegisterClusterFromConfig takes an instance of the remote config, and the registration info, and registers
-		the cluster.
+		RegisterClusterWithToken takes an instance of the remote config, as well as a `BearerToken` and creates a
+		kubeconfig secret on the local cluster, in the specified namespace.
 	*/
 	RegisterClusterWithToken(
 		ctx context.Context,

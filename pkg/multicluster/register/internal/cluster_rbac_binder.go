@@ -25,6 +25,7 @@ type clusterAuthorization struct {
 	serviceAccountClient     k8s_core_v1.ServiceAccountClient
 }
 
+// Provider function fo the ClusterRBACBinderFactory
 func NewClusterRBACBinderFactory() ClusterRBACBinderFactory {
 	return func(cfg clientcmd.ClientConfig) (ClusterRBACBinder, error) {
 		restCfg, err := cfg.ClientConfig()
@@ -42,6 +43,7 @@ func NewClusterRBACBinderFactory() ClusterRBACBinderFactory {
 	}
 }
 
+// Provider function for the ClusterRBACBinder
 func NewClusterRBACBinder(
 	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient,
 	roleBindingClient rbac_v1.RoleBindingClient,

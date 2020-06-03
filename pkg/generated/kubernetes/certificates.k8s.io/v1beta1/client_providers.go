@@ -11,6 +11,8 @@ import (
   The intention of these providers are to be used for Mocking.
   They expose the Clients as interfaces, as well as factories to provide mocked versions
   of the clients when they require building within a component.
+
+  See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
 // Provider for CertificateSigningRequestClient from Client
