@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,13 +16,6 @@ var (
 	EmptyRolesListError        = eris.New("Empty Roles list found, must specify at least one role to bind to.")
 	EmptyClusterRolesListError = eris.New("Empty ClusterRoles list found, must specify at least one role to bind to.")
 )
-
-type clusterAuthorization struct {
-	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient
-	roleBindingClient        rbac_v1.RoleBindingClient
-	secretClient             k8s_core_v1.SecretClient
-	serviceAccountClient     k8s_core_v1.ServiceAccountClient
-}
 
 // Provider function fo the ClusterRBACBinderFactory
 func NewClusterRBACBinderFactory() ClusterRBACBinderFactory {
@@ -48,13 +40,18 @@ func NewClusterRBACBinder(
 	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient,
 	roleBindingClient rbac_v1.RoleBindingClient,
 ) ClusterRBACBinder {
-	return &clusterAuthorization{
+	return &clusterRbacBinder{
 		clusterRoleBindingClient: clusterRoleBindingClient,
 		roleBindingClient:        roleBindingClient,
 	}
 }
 
-func (c *clusterAuthorization) BindClusterRoles(
+type clusterRbacBinder struct {
+	clusterRoleBindingClient rbac_v1.ClusterRoleBindingClient
+	roleBindingClient        rbac_v1.RoleBindingClient
+}
+
+func (c *clusterRbacBinder) BindClusterRoles(
 	ctx context.Context,
 	serviceAccount client.ObjectKey,
 	clusterRoles []client.ObjectKey,
@@ -67,7 +64,7 @@ func (c *clusterAuthorization) BindClusterRoles(
 	return c.bindClusterRolesToServiceAccount(ctx, serviceAccount, clusterRoles)
 }
 
-func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
+func (c *clusterRbacBinder) bindClusterRolesToServiceAccount(
 	ctx context.Context,
 	targetServiceAccount client.ObjectKey,
 	roles []client.ObjectKey,
@@ -98,7 +95,7 @@ func (c *clusterAuthorization) bindClusterRolesToServiceAccount(
 	return nil
 }
 
-func (c *clusterAuthorization) BindRoles(
+func (c *clusterRbacBinder) BindRoles(
 	ctx context.Context,
 	serviceAccount client.ObjectKey,
 	roles []client.ObjectKey,
@@ -111,7 +108,7 @@ func (c *clusterAuthorization) BindRoles(
 	return c.bindRolesToServiceAccount(ctx, serviceAccount, roles)
 }
 
-func (c *clusterAuthorization) bindRolesToServiceAccount(
+func (c *clusterRbacBinder) bindRolesToServiceAccount(
 	ctx context.Context,
 	targetServiceAccount client.ObjectKey,
 	roles []client.ObjectKey,

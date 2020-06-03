@@ -5,7 +5,6 @@ import (
 
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
-	"github.com/solo-io/skv2/pkg/multicluster/register/internal"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -41,7 +40,10 @@ func RegisterClusterFromConfig(
 }
 
 /*
-	DefaultRegistrant provider function.
+	DefaultRegistrant provider function. This function will create a `ClusterRegistrant` using the
+	current kubeconfig, and the specified context. It will build all of the dependencies from the
+	availble `ClientConfig`.
+
 	Meant to be used in tandem with RegisterClusterFromConfig above.
 	They are exposed separately so the `Registrant` may be mocked for the function above.
 */
@@ -59,7 +61,7 @@ func DefaultRegistrant(context string) (ClusterRegistrant, error) {
 	saClientFactory := k8s_core_v1.ServiceAccountClientFromConfigFactoryProvider()
 	roleClientFactory := rbac_v1.RoleClientFromConfigFactoryProvider()
 	clusterRoleClientFactory := rbac_v1.ClusterRoleClientFromConfigFactoryProvider()
-	clusterRBACBinderFactory := internal.NewClusterRBACBinderFactory()
+	clusterRBACBinderFactory := NewClusterRBACBinderFactory()
 	registrant := NewClusterRegistrant(
 		clusterRBACBinderFactory,
 		clientset.Secrets(),
