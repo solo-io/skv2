@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.40.0
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.0.0
+	github.com/avast/retry-go v2.2.0+incompatible
 	github.com/aws/aws-sdk-go v1.30.15
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gertd/go-pluralize v0.1.1

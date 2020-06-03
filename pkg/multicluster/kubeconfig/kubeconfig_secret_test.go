@@ -46,6 +46,7 @@ users:
 	})
 
 	Describe("ToSecret", func() {
+
 		It("should convert a single KubeConfig to a single secret", func() {
 			expectedSecret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -61,9 +62,11 @@ users:
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).To(Equal(expectedSecret))
 		})
+
 	})
 
 	Describe("SecretToConfig", func() {
+
 		It("works", func() {
 			secret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -81,5 +84,7 @@ users:
 			Expect(actualCluster).To(Equal(clusterName))
 			Expect(actualConfig).NotTo(BeNil())
 		})
+
 	})
+
 })

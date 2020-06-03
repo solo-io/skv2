@@ -6,10 +6,18 @@ import (
 
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/contrib"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate go run generate.go
+
+// K8s config
+//go:generate  mockgen -package mock_clientcmd -destination ./mocks/k8s/clientcmd/config.go k8s.io/client-go/tools/clientcmd ClientConfig
+
+// K8s clients
+//go:generate mockgen -package mock_k8s_core_clients -destination ./kubernetes/mocks/core/v1/clients.go github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1 Clientset,ServiceClient,PodClient,NamespaceClient,NodeClient,ServiceAccountClient,SecretClient,ConfigMapClient
+//go:generate mockgen -package mock_k8s_rbac_clients -destination ./kubernetes/mocks/rbac.authorization.k8s.io/v1/clients.go github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1 Clientset,ClusterRoleBindingClient,RoleBindingClient,ClusterRoleClient,RoleClient
 
 const (
 	generatedPackageName = "pkg/generated"
@@ -57,6 +65,7 @@ func main() {
 				RenderController:      true,
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/core/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -79,6 +88,7 @@ func main() {
 				RenderController:      true,
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/apps/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -95,6 +105,7 @@ func main() {
 				RenderController:      true,
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/batch/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -110,6 +121,7 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/admissionregistration/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -135,6 +147,7 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/rbac/v1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -149,6 +162,7 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/api/certificates/v1beta1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 			{
@@ -165,6 +179,7 @@ func main() {
 				},
 				RenderClients:         true,
 				CustomTypesImportPath: "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
+				CustomTemplates:       contrib.AllCustomTemplates,
 				ApiRoot:               kubeGeneratedPackage,
 			},
 		},

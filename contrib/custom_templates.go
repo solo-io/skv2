@@ -32,3 +32,25 @@ var Sets = func() model.CustomTemplates {
 
 	return setsTemplates
 }()
+
+/*
+ClientProviders custom template
+*/
+const (
+	ClientProvidersOutputFilename     = "client_providers.go"
+	ClientProvidersCustomTemplatePath = "client_providers/client_providers.gotmpl"
+)
+
+var ClientProviders = func() model.CustomTemplates {
+	templateContents, err := templatesBox.FindString(ClientProvidersCustomTemplatePath)
+	if err != nil {
+		panic(err)
+	}
+	clientProvidersTemplate := model.CustomTemplates{
+		Templates: map[string]string{ClientProvidersOutputFilename: templateContents},
+	}
+	// register sets
+	AllCustomTemplates = append(AllCustomTemplates, clientProvidersTemplate)
+
+	return clientProvidersTemplate
+}()

@@ -5,6 +5,7 @@ import (
 
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/contrib"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -47,6 +48,7 @@ func main() {
 				RenderClients:    true,
 				RenderTypes:      true,
 				ApiRoot:          "pkg/api",
+				CustomTemplates:  contrib.AllCustomTemplates,
 			},
 		},
 		AnyVendorConfig: skv2Imports,

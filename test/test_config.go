@@ -9,9 +9,18 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
+
+var (
+	// visible for testing
+	ServiceAccountClusterAdminRoles = []client.ObjectKey{
+		{
+			Name: "cluster-admin",
+		},
+	}
 )
 
 func MustConfig(context string) *rest.Config {
@@ -46,25 +55,12 @@ func ManagerWithOpts(ctx context.Context, cfg *rest.Config, opts manager.Options
 	return mgr
 }
 
-func MustManagerNotStarted(ns string) manager.Manager {
-	mgr, err := manager.New(MustConfig(""), manager.Options{
-		Namespace: ns,
-		// Disable metrics and health probe to allow tests to run in parallel.
-		MetricsBindAddress:     "0",
-		HealthProbeBindAddress: "0",
-	})
-	Expect(err).NotTo(HaveOccurred())
-	return mgr
-}
-
-func MustClientConfigWithContext(context string) *api.Config {
+func ClientConfigWithContext(context string) clientcmd.ClientConfig {
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	loadingRules.ExplicitPath = os.Getenv("KUBECONFIG")
 	// NOTE: ConfigOverrides are NOT propagated to `GetStartingConfig()`, so we set CurrentContext on the resulting config
-	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, nil).ConfigAccess().GetStartingConfig()
-	Expect(err).NotTo(HaveOccurred())
-	if context != "" {
-		cfg.CurrentContext = context
-	}
+	cfg := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, &clientcmd.ConfigOverrides{
+		CurrentContext: context,
+	})
 	return cfg
 }
