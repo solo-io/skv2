@@ -28,14 +28,6 @@ var (
 
 // ToSecret converts a kubernetes api.Config to a secret with the provided name and namespace.
 func ToSecret(namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
-	return ToSecretWithKey(namespace, cluster, Key, kc)
-}
-
-func ToSecretWithKey(namespace, cluster, secretKey string, kc api.Config) (*kubev1.Secret, error) {
-	if secretKey == "" {
-		secretKey = Key
-	}
-
 	err := readCertAuthFileIfNecessary(kc)
 	if err != nil {
 		return nil, err
@@ -52,7 +44,7 @@ func ToSecretWithKey(namespace, cluster, secretKey string, kc api.Config) (*kube
 			Namespace: namespace,
 		},
 		Type: SecretType,
-		Data: map[string][]byte{secretKey: rawKubeConfig},
+		Data: map[string][]byte{Key: rawKubeConfig},
 	}, nil
 }
 
@@ -78,18 +70,8 @@ func readCertAuthFileIfNecessary(cfg api.Config) error {
 // SecretToConfig extracts the cluster name and *Config from a KubeConfig secret.
 // If the provided secret is not a KubeConfig secret, an error is returned.
 func SecretToConfig(secret *kubev1.Secret) (clusterName string, config clientcmd.ClientConfig, err error) {
-	return SecretToConfigWithKey(secret, Key)
-}
-
-// SecretToConfig extracts the cluster name and *Config from a KubeConfig secret.
-// If the provided secret is not a KubeConfig secret, an error is returned.
-func SecretToConfigWithKey(secret *kubev1.Secret, secretKey string) (clusterName string, config clientcmd.ClientConfig, err error) {
-	if secretKey == "" {
-		secretKey = Key
-	}
-
 	clusterName = secret.Name
-	kubeConfigBytes, ok := secret.Data[secretKey]
+	kubeConfigBytes, ok := secret.Data[Key]
 	if !ok {
 		return clusterName, nil, SecretHasNoKubeConfig(secret.ObjectMeta)
 	}
