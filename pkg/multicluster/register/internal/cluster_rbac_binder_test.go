@@ -1,4 +1,4 @@
-package register_test
+package internal_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	mock_k8s_rbac_clients "github.com/solo-io/skv2/pkg/generated/kubernetes/mocks/rbac.authorization.k8s.io/v1"
-	"github.com/solo-io/skv2/pkg/multicluster/register"
+	"github.com/solo-io/skv2/pkg/multicluster/register/internal"
 	"github.com/solo-io/skv2/test"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,7 +51,7 @@ var _ = Describe("Cluster authorization", func() {
 	Context("ClusterRoleBindings", func() {
 
 		It("will fail if ClusterRoleBinding fails to upsert", func() {
-			clusterRbacBinder := register.NewClusterRBACBinder(crbClient, rbClient)
+			clusterRbacBinder := internal.NewClusterRBACBinder(crbClient, rbClient)
 
 			sa := saObjectKey()
 
@@ -87,7 +87,7 @@ var _ = Describe("Cluster authorization", func() {
 		})
 
 		It("works when its clients work", func() {
-			clusterRbacBinder := register.NewClusterRBACBinder(crbClient, rbClient)
+			clusterRbacBinder := internal.NewClusterRBACBinder(crbClient, rbClient)
 
 			sa := saObjectKey()
 
@@ -127,7 +127,7 @@ var _ = Describe("Cluster authorization", func() {
 	Context("RoleBinding", func() {
 
 		It("will fail if RoleBinding fails to upsert", func() {
-			clusterRbacBinder := register.NewClusterRBACBinder(crbClient, rbClient)
+			clusterRbacBinder := internal.NewClusterRBACBinder(crbClient, rbClient)
 
 			sa := saObjectKey()
 
@@ -169,7 +169,7 @@ var _ = Describe("Cluster authorization", func() {
 		})
 
 		It("works when its clients work", func() {
-			clusterRbacBinder := register.NewClusterRBACBinder(crbClient, rbClient)
+			clusterRbacBinder := internal.NewClusterRBACBinder(crbClient, rbClient)
 
 			sa := saObjectKey()
 

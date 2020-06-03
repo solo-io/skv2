@@ -9,7 +9,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -54,27 +53,6 @@ func ManagerWithOpts(ctx context.Context, cfg *rest.Config, opts manager.Options
 	mgr.GetCache().WaitForCacheSync(ctx.Done())
 
 	return mgr
-}
-
-func MustManagerNotStarted(ns string) manager.Manager {
-	mgr, err := manager.New(MustConfig(""), manager.Options{
-		Namespace: ns,
-		// Disable metrics and health probe to allow tests to run in parallel.
-		MetricsBindAddress:     "0",
-		HealthProbeBindAddress: "0",
-	})
-	Expect(err).NotTo(HaveOccurred())
-	return mgr
-}
-
-func MustApiConfigWithContext(context string) *api.Config {
-	clientCfg := ClientConfigWithContext(context)
-	cfg, err := clientCfg.ConfigAccess().GetStartingConfig()
-	Expect(err).NotTo(HaveOccurred())
-	if context != "" {
-		cfg.CurrentContext = context
-	}
-	return cfg
 }
 
 func ClientConfigWithContext(context string) clientcmd.ClientConfig {

@@ -7,6 +7,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+/*
+  The intention of these providers are to be used for Mocking.
+  They expose the Clients as interfaces, as well as factories to provide mocked versions
+  of the clients when they require building within a component.
+*/
+
 // Provider for SecretClient from Client
 func SecretClientProvider(client client.Client) SecretClient {
 	return NewSecretClient(client)

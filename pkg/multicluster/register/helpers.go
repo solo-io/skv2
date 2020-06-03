@@ -5,6 +5,7 @@ import (
 
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
+	"github.com/solo-io/skv2/pkg/multicluster/register/internal"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -46,7 +47,7 @@ func DefaultRegistrant(context string) (ClusterRegistrant, error) {
 	saClientFactory := k8s_core_v1.ServiceAccountClientFromConfigFactoryProvider()
 	roleClientFactory := rbac_v1.RoleClientFromConfigFactoryProvider()
 	clusterRoleClientFactory := rbac_v1.ClusterRoleClientFromConfigFactoryProvider()
-	clusterRBACBinderFactory := NewClusterRBACBinderFactory()
+	clusterRBACBinderFactory := internal.NewClusterRBACBinderFactory()
 	registrant := NewClusterRegistrant(
 		clusterRBACBinderFactory,
 		clientset.Secrets(),

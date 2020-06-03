@@ -13,6 +13,7 @@ import (
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
 	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
+	"github.com/solo-io/skv2/pkg/multicluster/register/internal"
 	k8s_core_types "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -43,7 +44,7 @@ var (
 )
 
 func NewClusterRegistrant(
-	authorization ClusterRBACBinderFactory,
+	authorization internal.ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
 	secretClientFactory k8s_core_v1.SecretClientFromConfigFactory,
 	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
@@ -70,7 +71,7 @@ func NewClusterRegistrant(
 */
 func NewTestingRegistrant(
 	localClusterDomainOverride string,
-	clusterRBAC ClusterRBACBinderFactory,
+	clusterRBAC internal.ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
 	secretClientFactory k8s_core_v1.SecretClientFromConfigFactory,
 	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
@@ -91,7 +92,7 @@ func NewTestingRegistrant(
 }
 
 type clusterRegistrant struct {
-	clusterRBACBinderFactory ClusterRBACBinderFactory
+	clusterRBACBinderFactory internal.ClusterRBACBinderFactory
 	secretClient             k8s_core_v1.SecretClient
 	secretClientFactory      k8s_core_v1.SecretClientFromConfigFactory
 	nsClientFactory          k8s_core_v1.NamespaceClientFromConfigFactory

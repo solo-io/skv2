@@ -17,7 +17,8 @@ import (
 	mock_clientcmd "github.com/solo-io/skv2/pkg/generated/mocks/k8s/clientcmd"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
-	mock_register "github.com/solo-io/skv2/pkg/multicluster/register/mocks"
+	"github.com/solo-io/skv2/pkg/multicluster/register/internal"
+	mock_internal "github.com/solo-io/skv2/pkg/multicluster/register/internal/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -34,8 +35,8 @@ var _ = Describe("Registrant", func() {
 		ctx  context.Context
 		ctrl *gomock.Controller
 
-		clusterRBACBinder        *mock_register.MockClusterRBACBinder
-		clusterRbacBinderFactory register.ClusterRBACBinderFactory
+		clusterRBACBinder        *mock_internal.MockClusterRBACBinder
+		clusterRbacBinderFactory internal.ClusterRBACBinderFactory
 		secretClient             *mock_k8s_core_clients.MockSecretClient
 		secretClientFactory      k8s_core_v1.SecretClientFromConfigFactory
 		nsClient                 *mock_k8s_core_clients.MockNamespaceClient
@@ -85,8 +86,8 @@ var _ = Describe("Registrant", func() {
 			return roleClient, nil
 		}
 
-		clusterRBACBinder = mock_register.NewMockClusterRBACBinder(ctrl)
-		clusterRbacBinderFactory = func(_ clientcmd.ClientConfig) (register.ClusterRBACBinder, error) {
+		clusterRBACBinder = mock_internal.NewMockClusterRBACBinder(ctrl)
+		clusterRbacBinderFactory = func(_ clientcmd.ClientConfig) (internal.ClusterRBACBinder, error) {
 			return clusterRBACBinder, nil
 		}
 		clientConfig = mock_clientcmd.NewMockClientConfig(ctrl)
