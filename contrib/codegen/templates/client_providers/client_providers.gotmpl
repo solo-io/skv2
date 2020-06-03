@@ -1,0 +1,44 @@
+
+package {{.Version}}
+
+import (
+"context"
+
+"k8s.io/apimachinery/pkg/api/errors"
+"k8s.io/client-go/kubernetes/scheme"
+"k8s.io/client-go/rest"
+"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+/*
+  The intention of these providers are to be used for Mocking.
+  They expose the Clients as interfaces, as well as factories to provide mocked versions
+  of the clients when they require building within a component.
+
+  See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
+*/
+{{- range $resource := $.Resources }}
+
+// Provider for {{ $resource.Kind }}Client from Client
+func {{ $resource.Kind }}ClientProvider(client client.Client) {{ $resource.Kind }}Client {
+  return New{{ $resource.Kind }}Client(client)
+}
+
+type {{ $resource.Kind }}ClientFactory func(client client.Client) {{ $resource.Kind }}Client
+
+func {{ $resource.Kind }}ClientFactoryProvider() {{ $resource.Kind }}ClientFactory {
+  return {{ $resource.Kind }}ClientProvider
+}
+
+type {{ $resource.Kind }}ClientFromConfigFactory func(cfg *rest.Config) ({{ $resource.Kind }}Client, error)
+
+func {{ $resource.Kind }}ClientFromConfigFactoryProvider() {{ $resource.Kind }}ClientFromConfigFactory {
+  return func(cfg *rest.Config) ({{ $resource.Kind }}Client, error) {
+    clients, err := NewClientsetFromConfig(cfg)
+    if err != nil {
+      return nil, err
+    }
+    return clients.{{ pluralize $resource.Kind }}(), nil
+  }
+}
+{{- end }}

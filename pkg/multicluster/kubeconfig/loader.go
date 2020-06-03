@@ -4,26 +4,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/solo-io/go-utils/kubeutils"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-// given a path to a kube config file, convert it into either creds for hitting the API server of the cluster it points to,
-// or return the contexts/clusters it is aware of
-
-// only the pieces from a kube config that we need to operate on
-// mainly just used to simplify from the complexity of the actual object
-type KubeContext struct {
-	CurrentContext string
-	Contexts       map[string]*api.Context
-	Clusters       map[string]*api.Cluster
-}
-
 // default KubeLoader
-func DefaultKubeLoaderProvider(timeout *time.Duration) KubeLoader {
+func NewKubeLoader(timeout time.Duration) KubeLoader {
 	return &kubeLoader{
 		timeout: timeout.String(),
 	}
@@ -47,7 +34,11 @@ func (k *kubeLoader) GetRestConfigForContext(path string, context string) (*rest
 }
 
 func (k *kubeLoader) GetRestConfigFromBytes(config []byte) (*rest.Config, error) {
-	return clientcmd.RESTConfigFromKubeConfig(config)
+	clientCfg, err := clientcmd.NewClientConfigFromBytes(config)
+	if err != nil {
+		return nil, err
+	}
+	return clientCfg.ClientConfig()
 }
 
 func (k *kubeLoader) getConfigWithContext(masterURL, kubeconfigPath, context string) (clientcmd.ClientConfig, error) {
@@ -86,17 +77,4 @@ func (k *kubeLoader) GetRawConfigForContext(path, context string) (clientcmdapi.
 	}
 
 	return cfg.RawConfig()
-}
-
-func (k *kubeLoader) ParseContext(path string) (*KubeContext, error) {
-	cfg, err := kubeutils.GetKubeConfig("", path)
-	if err != nil {
-		return nil, err
-	}
-
-	return &KubeContext{
-		CurrentContext: cfg.CurrentContext,
-		Contexts:       cfg.Contexts,
-		Clusters:       cfg.Clusters,
-	}, nil
 }

@@ -88,7 +88,7 @@ type Group struct {
 	Descriptors []*model.DescriptorWithPath
 
 	// data for providing custom templates to generate custom code for groups
-	CustomTemplates CustomTemplates
+	CustomTemplates []CustomTemplates
 }
 
 type CustomTemplates struct {
