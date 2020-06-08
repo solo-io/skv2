@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix bug that causes chart generation to produce no files when a `FilterTemplate` function is not provided in the `codegen.Command`.
+    issueLink: https://github.com/solo-io/skv2/issues/47
