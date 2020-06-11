@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Adds the option to place `go:generate` directives for MockGen at the top of generated files.
-    issueLink: https://github.com/solo-io/skv2/issues/50
