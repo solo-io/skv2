@@ -1,11 +1,13 @@
 // Definitions for the Kubernetes Controllers
 package controller
 
+{{ $import_prefix := group_import_name $ }}
+
 import (
 	"context"
     "time"
 
-{{ group_import_name $ }} "{{ group_import_path $ }}"
+    {{ $import_prefix }} "{{ group_import_path $ }}"
 
     "github.com/pkg/errors"
     "github.com/solo-io/skv2/pkg/ezkube"
@@ -21,7 +23,7 @@ import (
 // Reconcile Upsert events for the {{ $resource.Kind }} Resource.
 // implemented by the user
 type {{ $resource.Kind }}Reconciler interface {
-    Reconcile{{ $resource.Kind }}(obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error)
+    Reconcile{{ $resource.Kind }}(obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the {{ $resource.Kind }} Resource.
@@ -33,11 +35,11 @@ type {{ $resource.Kind }}DeletionReconciler interface {
 }
 
 type {{ $resource.Kind }}ReconcilerFuncs struct {
-    OnReconcile{{ $resource.Kind }} func(obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error)
+    OnReconcile{{ $resource.Kind }} func(obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error)
     OnReconcile{{ $resource.Kind }}Deletion func(req reconcile.Request)
 }
 
-func (f *{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}(obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+func (f *{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}(obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     if f.OnReconcile{{ $resource.Kind }} == nil {
         return reconcile.Result{}, nil
     }
@@ -62,7 +64,7 @@ type {{ $resource.Kind }}Finalizer interface {
 
     // finalize the object before it is deleted.
     // Watchers created with a finalizing handler will a
-    Finalize{{ $resource.Kind }}(obj *{{ group_import_name $ }}.{{ $resource.Kind }}) error
+    Finalize{{ $resource.Kind }}(obj *{{ $import_prefix }}.{{ $resource.Kind }}) error
 }
 
 type {{ $resource.Kind }}ReconcileLoop interface {
@@ -75,7 +77,7 @@ type {{ $kindLowerCamel }}ReconcileLoop struct {
 
 func New{{ $resource.Kind }}ReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) {{ $resource.Kind }}ReconcileLoop {
     return &{{ $kindLowerCamel }}ReconcileLoop{
-        loop: reconcile.NewLoop(name, mgr, &{{ group_import_name $ }}.{{ $resource.Kind }}{}, options),
+        loop: reconcile.NewLoop(name, mgr, &{{ $import_prefix }}.{{ $resource.Kind }}{}, options),
     }
 }
 
@@ -102,7 +104,7 @@ type generic{{ $resource.Kind }}Reconciler struct {
 }
 
 func (r generic{{ $resource.Kind }}Reconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*{{ group_import_name $ }}.{{ $resource.Kind }})
+    obj, ok := object.(*{{ $import_prefix }}.{{ $resource.Kind }})
     if !ok {
         return reconcile.Result{}, errors.Errorf("internal error: {{ $resource.Kind }} handler received event for %T", object)
     }
@@ -127,7 +129,7 @@ func (r generic{{ $resource.Kind }}Finalizer) FinalizerName() string {
 }
 
 func (r generic{{ $resource.Kind }}Finalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*{{ group_import_name $ }}.{{ $resource.Kind }})
+    obj, ok := object.(*{{ $import_prefix }}.{{ $resource.Kind }})
     if !ok {
         return errors.Errorf("internal error: {{ $resource.Kind }} handler received event for %T", object)
     }

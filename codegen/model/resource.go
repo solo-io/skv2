@@ -78,6 +78,9 @@ type Group struct {
 	// Should we generate kubernetes Go controllers?
 	RenderController bool
 
+	// Enable to add //go:generate mockgen directive to the top of generated Go files.
+	MockgenDirective bool
+
 	// custom import path to the package
 	// containing the Go types
 	// use this if you are generating controllers

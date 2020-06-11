@@ -37,8 +37,8 @@ var Sets = func() model.CustomTemplates {
 ClientProviders custom template
 */
 const (
-	ClientProvidersOutputFilename     = "client_providers.go"
-	ClientProvidersCustomTemplatePath = "client_providers/client_providers.gotmpl"
+	ClientProvidersOutputFilename     = "providers/client_providers.go"
+	ClientProvidersCustomTemplatePath = "providers/client_providers.gotmpl"
 )
 
 var ClientProviders = func() model.CustomTemplates {

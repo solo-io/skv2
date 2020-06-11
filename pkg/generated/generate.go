@@ -10,8 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-//go:generate go run generate.go
-
 // K8s config
 //go:generate  mockgen -package mock_clientcmd -destination ./mocks/k8s/clientcmd/config.go k8s.io/client-go/tools/clientcmd ClientConfig
 

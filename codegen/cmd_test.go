@@ -39,6 +39,7 @@ var _ = Describe("Cmd", func() {
 					RenderTypes:      true,
 					RenderClients:    true,
 					RenderController: true,
+					MockgenDirective: true,
 					ApiRoot:          "codegen/test/api",
 					CustomTemplates:  contrib.AllCustomTemplates,
 				},

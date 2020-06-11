@@ -3,7 +3,7 @@
 package v1alpha1sets
 
 import (
-	. "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,18 +12,18 @@ import (
 
 type KubernetesClusterSet interface {
 	Keys() sets.String
-	List() []*KubernetesCluster
-	Map() map[string]*KubernetesCluster
-	Insert(kubernetesCluster ...*KubernetesCluster)
+	List() []*multicluster_solo_io_v1alpha1.KubernetesCluster
+	Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster
+	Insert(kubernetesCluster ...*multicluster_solo_io_v1alpha1.KubernetesCluster)
 	Equal(kubernetesClusterSet KubernetesClusterSet) bool
-	Has(kubernetesCluster *KubernetesCluster) bool
-	Delete(kubernetesCluster *KubernetesCluster)
+	Has(kubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) bool
+	Delete(kubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster)
 	Union(set KubernetesClusterSet) KubernetesClusterSet
 	Difference(set KubernetesClusterSet) KubernetesClusterSet
 	Intersection(set KubernetesClusterSet) KubernetesClusterSet
 }
 
-func makeGenericKubernetesClusterSet(kubernetesClusterList []*KubernetesCluster) sksets.ResourceSet {
+func makeGenericKubernetesClusterSet(kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster) sksets.ResourceSet {
 	var genericResources []metav1.Object
 	for _, obj := range kubernetesClusterList {
 		genericResources = append(genericResources, obj)
@@ -35,7 +35,7 @@ type kubernetesClusterSet struct {
 	set sksets.ResourceSet
 }
 
-func NewKubernetesClusterSet(kubernetesClusterList ...*KubernetesCluster) KubernetesClusterSet {
+func NewKubernetesClusterSet(kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster) KubernetesClusterSet {
 	return &kubernetesClusterSet{set: makeGenericKubernetesClusterSet(kubernetesClusterList)}
 }
 
@@ -43,31 +43,31 @@ func (s kubernetesClusterSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s kubernetesClusterSet) List() []*KubernetesCluster {
-	var kubernetesClusterList []*KubernetesCluster
+func (s kubernetesClusterSet) List() []*multicluster_solo_io_v1alpha1.KubernetesCluster {
+	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range s.set.List() {
-		kubernetesClusterList = append(kubernetesClusterList, obj.(*KubernetesCluster))
+		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 	}
 	return kubernetesClusterList
 }
 
-func (s kubernetesClusterSet) Map() map[string]*KubernetesCluster {
-	newMap := map[string]*KubernetesCluster{}
+func (s kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster {
+	newMap := map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
 	for k, v := range s.set.Map() {
-		newMap[k] = v.(*KubernetesCluster)
+		newMap[k] = v.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
 	}
 	return newMap
 }
 
 func (s kubernetesClusterSet) Insert(
-	kubernetesClusterList ...*KubernetesCluster,
+	kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) {
 	for _, obj := range kubernetesClusterList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s kubernetesClusterSet) Has(kubernetesCluster *KubernetesCluster) bool {
+func (s kubernetesClusterSet) Has(kubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) bool {
 	return s.set.Has(kubernetesCluster)
 }
 
@@ -77,7 +77,7 @@ func (s kubernetesClusterSet) Equal(
 	return s.set.Equal(makeGenericKubernetesClusterSet(kubernetesClusterSet.List()))
 }
 
-func (s kubernetesClusterSet) Delete(KubernetesCluster *KubernetesCluster) {
+func (s kubernetesClusterSet) Delete(KubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) {
 	s.set.Delete(KubernetesCluster)
 }
 
@@ -92,9 +92,9 @@ func (s kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClu
 
 func (s kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesClusterSet {
 	newSet := s.set.Intersection(makeGenericKubernetesClusterSet(set.List()))
-	var kubernetesClusterList []*KubernetesCluster
+	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range newSet.List() {
-		kubernetesClusterList = append(kubernetesClusterList, obj.(*KubernetesCluster))
+		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 	}
 	return NewKubernetesClusterSet(kubernetesClusterList...)
 }

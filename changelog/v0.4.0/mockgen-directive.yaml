@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Adds the option to place `go:generate` directives for MockGen at the top of generated files.
+    issueLink: https://github.com/solo-io/skv2/issues/50
+  - type: BREAKING_CHANGE
+    description: Generate client_providers in a `providers` subpackage
+    issueLink: https://github.com/solo-io/skv2/issues/52
