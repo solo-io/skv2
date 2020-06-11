@@ -10,8 +10,9 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
-	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
+	k8s_core_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
+	k8s_core_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/providers"
+	rbac_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/providers"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register/internal"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -46,11 +47,11 @@ var (
 func NewClusterRegistrant(
 	authorization internal.ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
-	secretClientFactory k8s_core_v1.SecretClientFromConfigFactory,
-	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
-	saClientFactory k8s_core_v1.ServiceAccountClientFromConfigFactory,
-	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory,
-	roleClientFactory rbac_v1.RoleClientFromConfigFactory,
+	secretClientFactory k8s_core_v1_providers.SecretClientFromConfigFactory,
+	nsClientFactory k8s_core_v1_providers.NamespaceClientFromConfigFactory,
+	saClientFactory k8s_core_v1_providers.ServiceAccountClientFromConfigFactory,
+	clusterRoleClientFactory rbac_v1_providers.ClusterRoleClientFromConfigFactory,
+	roleClientFactory rbac_v1_providers.RoleClientFromConfigFactory,
 ) ClusterRegistrant {
 	return &clusterRegistrant{
 		clusterRBACBinderFactory: authorization,
@@ -73,11 +74,11 @@ func NewTestingRegistrant(
 	localClusterDomainOverride string,
 	clusterRBAC internal.ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
-	secretClientFactory k8s_core_v1.SecretClientFromConfigFactory,
-	nsClientFactory k8s_core_v1.NamespaceClientFromConfigFactory,
-	saClientFactory k8s_core_v1.ServiceAccountClientFromConfigFactory,
-	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory,
-	roleClientFactory rbac_v1.RoleClientFromConfigFactory,
+	secretClientFactory k8s_core_v1_providers.SecretClientFromConfigFactory,
+	nsClientFactory k8s_core_v1_providers.NamespaceClientFromConfigFactory,
+	saClientFactory k8s_core_v1_providers.ServiceAccountClientFromConfigFactory,
+	clusterRoleClientFactory rbac_v1_providers.ClusterRoleClientFromConfigFactory,
+	roleClientFactory rbac_v1_providers.RoleClientFromConfigFactory,
 ) ClusterRegistrant {
 	return &clusterRegistrant{
 		localClusterDomainOverride: localClusterDomainOverride,
@@ -94,11 +95,11 @@ func NewTestingRegistrant(
 type clusterRegistrant struct {
 	clusterRBACBinderFactory internal.ClusterRBACBinderFactory
 	secretClient             k8s_core_v1.SecretClient
-	secretClientFactory      k8s_core_v1.SecretClientFromConfigFactory
-	nsClientFactory          k8s_core_v1.NamespaceClientFromConfigFactory
-	saClientFactory          k8s_core_v1.ServiceAccountClientFromConfigFactory
-	clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory
-	roleClientFactory        rbac_v1.RoleClientFromConfigFactory
+	secretClientFactory      k8s_core_v1_providers.SecretClientFromConfigFactory
+	nsClientFactory          k8s_core_v1_providers.NamespaceClientFromConfigFactory
+	saClientFactory          k8s_core_v1_providers.ServiceAccountClientFromConfigFactory
+	clusterRoleClientFactory rbac_v1_providers.ClusterRoleClientFromConfigFactory
+	roleClientFactory        rbac_v1_providers.RoleClientFromConfigFactory
 
 	localClusterDomainOverride string
 }

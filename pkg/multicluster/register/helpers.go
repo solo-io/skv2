@@ -3,8 +3,10 @@ package register
 import (
 	"context"
 
-	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
-	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
+	k8s_core_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
+	k8s_core_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/providers"
+	rbac_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/providers"
+
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -56,11 +58,11 @@ func DefaultRegistrant(context string) (ClusterRegistrant, error) {
 	if err != nil {
 		return nil, err
 	}
-	nsClientFactory := k8s_core_v1.NamespaceClientFromConfigFactoryProvider()
-	secretClientFactory := k8s_core_v1.SecretClientFromConfigFactoryProvider()
-	saClientFactory := k8s_core_v1.ServiceAccountClientFromConfigFactoryProvider()
-	roleClientFactory := rbac_v1.RoleClientFromConfigFactoryProvider()
-	clusterRoleClientFactory := rbac_v1.ClusterRoleClientFromConfigFactoryProvider()
+	nsClientFactory := k8s_core_v1_providers.NamespaceClientFromConfigFactoryProvider()
+	secretClientFactory := k8s_core_v1_providers.SecretClientFromConfigFactoryProvider()
+	saClientFactory := k8s_core_v1_providers.ServiceAccountClientFromConfigFactoryProvider()
+	roleClientFactory := rbac_v1_providers.RoleClientFromConfigFactoryProvider()
+	clusterRoleClientFactory := rbac_v1_providers.ClusterRoleClientFromConfigFactoryProvider()
 	clusterRBACBinderFactory := NewClusterRBACBinderFactory()
 	registrant := NewClusterRegistrant(
 		clusterRBACBinderFactory,

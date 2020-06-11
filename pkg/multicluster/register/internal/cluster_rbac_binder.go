@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
+	rbac_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
