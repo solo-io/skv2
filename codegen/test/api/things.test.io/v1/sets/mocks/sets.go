@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+	v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	v1sets "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/sets"
 	sets "k8s.io/apimachinery/pkg/util/sets"
 )
@@ -51,10 +51,10 @@ func (mr *MockPaintSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockPaintSet) List() []*v1sets.Paint {
+func (m *MockPaintSet) List() []*v1.Paint {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List")
-	ret0, _ := ret[0].([]*v1sets.Paint)
+	ret0, _ := ret[0].([]*v1.Paint)
 	return ret0
 }
 
@@ -65,10 +65,10 @@ func (mr *MockPaintSetMockRecorder) List() *gomock.Call {
 }
 
 // Map mocks base method.
-func (m *MockPaintSet) Map() map[string]*v1sets.Paint {
+func (m *MockPaintSet) Map() map[string]*v1.Paint {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
-	ret0, _ := ret[0].(map[string]*v1sets.Paint)
+	ret0, _ := ret[0].(map[string]*v1.Paint)
 	return ret0
 }
 
@@ -79,7 +79,7 @@ func (mr *MockPaintSetMockRecorder) Map() *gomock.Call {
 }
 
 // Insert mocks base method.
-func (m *MockPaintSet) Insert(paint ...*v1sets.Paint) {
+func (m *MockPaintSet) Insert(paint ...*v1.Paint) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range paint {
@@ -109,7 +109,7 @@ func (mr *MockPaintSetMockRecorder) Equal(paintSet interface{}) *gomock.Call {
 }
 
 // Has mocks base method.
-func (m *MockPaintSet) Has(paint *v1sets.Paint) bool {
+func (m *MockPaintSet) Has(paint *v1.Paint) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", paint)
 	ret0, _ := ret[0].(bool)
@@ -123,7 +123,7 @@ func (mr *MockPaintSetMockRecorder) Has(paint interface{}) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockPaintSet) Delete(paint *v1sets.Paint) {
+func (m *MockPaintSet) Delete(paint *v1.Paint) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", paint)
 }
@@ -214,10 +214,10 @@ func (mr *MockClusterResourceSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockClusterResourceSet) List() []*v1sets.ClusterResource {
+func (m *MockClusterResourceSet) List() []*v1.ClusterResource {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List")
-	ret0, _ := ret[0].([]*v1sets.ClusterResource)
+	ret0, _ := ret[0].([]*v1.ClusterResource)
 	return ret0
 }
 
@@ -228,10 +228,10 @@ func (mr *MockClusterResourceSetMockRecorder) List() *gomock.Call {
 }
 
 // Map mocks base method.
-func (m *MockClusterResourceSet) Map() map[string]*v1sets.ClusterResource {
+func (m *MockClusterResourceSet) Map() map[string]*v1.ClusterResource {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
-	ret0, _ := ret[0].(map[string]*v1sets.ClusterResource)
+	ret0, _ := ret[0].(map[string]*v1.ClusterResource)
 	return ret0
 }
 
@@ -242,7 +242,7 @@ func (mr *MockClusterResourceSetMockRecorder) Map() *gomock.Call {
 }
 
 // Insert mocks base method.
-func (m *MockClusterResourceSet) Insert(clusterResource ...*v1sets.ClusterResource) {
+func (m *MockClusterResourceSet) Insert(clusterResource ...*v1.ClusterResource) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range clusterResource {
@@ -272,7 +272,7 @@ func (mr *MockClusterResourceSetMockRecorder) Equal(clusterResourceSet interface
 }
 
 // Has mocks base method.
-func (m *MockClusterResourceSet) Has(clusterResource *v1sets.ClusterResource) bool {
+func (m *MockClusterResourceSet) Has(clusterResource *v1.ClusterResource) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", clusterResource)
 	ret0, _ := ret[0].(bool)
@@ -286,7 +286,7 @@ func (mr *MockClusterResourceSetMockRecorder) Has(clusterResource interface{}) *
 }
 
 // Delete mocks base method.
-func (m *MockClusterResourceSet) Delete(clusterResource *v1sets.ClusterResource) {
+func (m *MockClusterResourceSet) Delete(clusterResource *v1.ClusterResource) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", clusterResource)
 }

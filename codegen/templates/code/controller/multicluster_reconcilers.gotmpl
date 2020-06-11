@@ -1,10 +1,12 @@
 // Definitions for the multicluster Kubernetes Controllers
 package controller
 
+{{ $import_prefix := group_import_name $ }}
+
 import (
 	"context"
 
-	{{ group_import_name $ }} "{{ group_import_path $ }}"
+	{{ $import_prefix }} "{{ group_import_path $ }}"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -19,7 +21,7 @@ import (
 // Reconcile Upsert events for the {{ $resource.Kind }} Resource across clusters.
 // implemented by the user
 type Multicluster{{ $resource.Kind }}Reconciler interface {
-	Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error)
+	Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the {{ $resource.Kind }} Resource across clusters.
@@ -31,11 +33,11 @@ type Multicluster{{ $resource.Kind }}DeletionReconciler interface {
 }
 
 type Multicluster{{ $resource.Kind }}ReconcilerFuncs struct {
-	OnReconcile{{ $resource.Kind }}         func(clusterName string, obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error)
+	OnReconcile{{ $resource.Kind }}         func(clusterName string, obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error)
 	OnReconcile{{ $resource.Kind }}Deletion func(clusterName string, req reconcile.Request)
 }
 
-func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ group_import_name $ }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
 	if f.OnReconcile{{ $resource.Kind }} == nil {
 		return reconcile.Result{}, nil
 	}
@@ -65,7 +67,7 @@ func (m *multicluster{{ $resource.Kind }}ReconcileLoop) AddMulticluster{{ $resou
 }
 
 func NewMulticluster{{ $resource.Kind }}ReconcileLoop(name string, cw multicluster.ClusterWatcher) Multicluster{{ $resource.Kind }}ReconcileLoop {
-	return &multicluster{{ $resource.Kind }}ReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &{{ group_import_name $ }}.{{ $resource.Kind }}{})}
+	return &multicluster{{ $resource.Kind }}ReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &{{ $import_prefix }}.{{ $resource.Kind }}{})}
 }
 
 type generic{{ $resource.Kind }}MulticlusterReconciler struct {
@@ -79,7 +81,7 @@ func (g generic{{ $resource.Kind }}MulticlusterReconciler) ReconcileDeletion(clu
 }
 
 func (g generic{{ $resource.Kind }}MulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*{{ group_import_name $ }}.{{ $resource.Kind }})
+	obj, ok := object.(*{{ $import_prefix }}.{{ $resource.Kind }})
 	if !ok {
 		return reconcile.Result{}, errors.Errorf("internal error: {{ $resource.Kind }} handler received event for %T", object)
 	}

@@ -3,6 +3,8 @@
 package v1alpha1
 
 import (
+	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -15,22 +17,22 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
-// Provider for KubernetesClusterClient from Client
-func KubernetesClusterClientProvider(client client.Client) KubernetesClusterClient {
-	return NewKubernetesClusterClient(client)
+// Provider for KubernetesCluster Client from Client
+func KubernetesClusterClientProvider(client client.Client) multicluster_solo_io_v1alpha1.KubernetesClusterClient {
+	return multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client)
 }
 
-type KubernetesClusterClientFactory func(client client.Client) KubernetesClusterClient
+type KubernetesClusterClientFactory func(client client.Client) multicluster_solo_io_v1alpha1.KubernetesClusterClient
 
 func KubernetesClusterClientFactoryProvider() KubernetesClusterClientFactory {
 	return KubernetesClusterClientProvider
 }
 
-type KubernetesClusterClientFromConfigFactory func(cfg *rest.Config) (KubernetesClusterClient, error)
+type KubernetesClusterClientFromConfigFactory func(cfg *rest.Config) (multicluster_solo_io_v1alpha1.KubernetesClusterClient, error)
 
 func KubernetesClusterClientFromConfigFactoryProvider() KubernetesClusterClientFromConfigFactory {
-	return func(cfg *rest.Config) (KubernetesClusterClient, error) {
-		clients, err := NewClientsetFromConfig(cfg)
+	return func(cfg *rest.Config) (multicluster_solo_io_v1alpha1.KubernetesClusterClient, error) {
+		clients, err := multicluster_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
