@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for PaintClient from Clientset
+func PaintClientFromClientsetProvider(clients things_test_io_v1.Clientset) things_test_io_v1.PaintClient {
+	return clients.Paints()
+}
+
 // Provider for Paint Client from Client
 func PaintClientProvider(client client.Client) things_test_io_v1.PaintClient {
 	return things_test_io_v1.NewPaintClient(client)
@@ -38,6 +43,11 @@ func PaintClientFromConfigFactoryProvider() PaintClientFromConfigFactory {
 		}
 		return clients.Paints(), nil
 	}
+}
+
+// Provider for ClusterResourceClient from Clientset
+func ClusterResourceClientFromClientsetProvider(clients things_test_io_v1.Clientset) things_test_io_v1.ClusterResourceClient {
+	return clients.ClusterResources()
 }
 
 // Provider for ClusterResource Client from Client

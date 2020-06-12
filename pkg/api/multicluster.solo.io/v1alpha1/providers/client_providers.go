@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for KubernetesClusterClient from Clientset
+func KubernetesClusterClientFromClientsetProvider(clients multicluster_solo_io_v1alpha1.Clientset) multicluster_solo_io_v1alpha1.KubernetesClusterClient {
+	return clients.KubernetesClusters()
+}
+
 // Provider for KubernetesCluster Client from Client
 func KubernetesClusterClientProvider(client client.Client) multicluster_solo_io_v1alpha1.KubernetesClusterClient {
 	return multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client)

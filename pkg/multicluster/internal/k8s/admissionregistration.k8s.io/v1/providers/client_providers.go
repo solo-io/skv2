@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for ValidatingWebhookConfigurationClient from Clientset
+func ValidatingWebhookConfigurationClientFromClientsetProvider(clients admissionregistration_k8s_io_v1.Clientset) admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient {
+	return clients.ValidatingWebhookConfigurations()
+}
+
 // Provider for ValidatingWebhookConfiguration Client from Client
 func ValidatingWebhookConfigurationClientProvider(client client.Client) admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient {
 	return admissionregistration_k8s_io_v1.NewValidatingWebhookConfigurationClient(client)

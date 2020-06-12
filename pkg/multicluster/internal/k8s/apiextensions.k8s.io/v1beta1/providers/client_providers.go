@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for CustomResourceDefinitionClient from Clientset
+func CustomResourceDefinitionClientFromClientsetProvider(clients apiextensions_k8s_io_v1beta1.Clientset) apiextensions_k8s_io_v1beta1.CustomResourceDefinitionClient {
+	return clients.CustomResourceDefinitions()
+}
+
 // Provider for CustomResourceDefinition Client from Client
 func CustomResourceDefinitionClientProvider(client client.Client) apiextensions_k8s_io_v1beta1.CustomResourceDefinitionClient {
 	return apiextensions_k8s_io_v1beta1.NewCustomResourceDefinitionClient(client)
