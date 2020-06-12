@@ -13,6 +13,9 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
+// used for testing multicluster components
+//go:generate  mockgen -package mock_clientcmd -destination ./mock_clientcmd/config.go k8s.io/client-go/tools/clientcmd ClientConfig
+
 // Expose internal providers for Dependency Injection
 var (
 	NewClusterRBACBinderFactory = internal.NewClusterRBACBinderFactory

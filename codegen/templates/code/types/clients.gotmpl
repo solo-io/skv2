@@ -55,7 +55,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
     scheme := scheme.Scheme
-    if err := AddToScheme(scheme); err != nil{
+    if err := {{ $import_prefix }}AddToScheme(scheme); err != nil{
         return nil, err
     }
     client, err := client.New(cfg, client.Options{
@@ -152,7 +152,7 @@ func New{{ $resource.Kind }}Client(client client.Client) *{{ $kindLowerCamel }}C
 
 {{if $resource.ClusterScoped }}
 func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Context, name string) (*{{ $import_prefix }}{{ $resource.Kind }}, error) {
-    obj := &{{ $resource.Kind }}{}
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     key := client.ObjectKey{
         Name: name,
     }
@@ -163,7 +163,7 @@ func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Contex
 }
 {{- else }}
 func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey) (*{{ $import_prefix }}{{ $resource.Kind }}, error) {
-    obj := &{{ $resource.Kind }}{}
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     if err := c.client.Get(ctx, key, obj); err != nil {
         return nil, err
     }
@@ -172,7 +172,7 @@ func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Contex
 {{- end}}
 
 func (c *{{ $kindLowerCamel }}Client) List{{ $resource.Kind }}(ctx context.Context, opts ...client.ListOption) (*{{ $import_prefix }}{{ $resource.Kind }}List, error) {
-    list := &{{ $resource.Kind }}List{}
+    list := &{{ $import_prefix }}{{ $resource.Kind }}List{}
     if err := c.client.List(ctx, list, opts...); err != nil {
         return nil, err
     }
@@ -185,13 +185,13 @@ func (c *{{ $kindLowerCamel }}Client) Create{{ $resource.Kind }}(ctx context.Con
 
 {{if $resource.ClusterScoped }}
 func (c *{{ $kindLowerCamel }}Client) Delete{{ $resource.Kind }}(ctx context.Context, name string, opts ...client.DeleteOption) error {
-    obj := &{{ $resource.Kind }}{}
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     obj.SetName(name)
     return c.client.Delete(ctx, obj, opts...)
 }
 {{- else }}
 func (c *{{ $kindLowerCamel }}Client) Delete{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-    obj := &{{ $resource.Kind }}{}
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     obj.SetName(key.Name)
     obj.SetNamespace(key.Namespace)
     return c.client.Delete(ctx, obj, opts...)
@@ -207,7 +207,7 @@ func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}(ctx context.Cont
 }
 
 func (c *{{ $kindLowerCamel }}Client) DeleteAllOf{{ $resource.Kind }}(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-    obj := &{{ $resource.Kind }}{}
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
