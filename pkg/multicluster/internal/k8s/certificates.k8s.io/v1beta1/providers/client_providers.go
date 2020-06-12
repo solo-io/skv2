@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for CertificateSigningRequestClient from Clientset
+func CertificateSigningRequestClientFromClientsetProvider(clients certificates_k8s_io_v1beta1.Clientset) certificates_k8s_io_v1beta1.CertificateSigningRequestClient {
+	return clients.CertificateSigningRequests()
+}
+
 // Provider for CertificateSigningRequest Client from Client
 func CertificateSigningRequestClientProvider(client client.Client) certificates_k8s_io_v1beta1.CertificateSigningRequestClient {
 	return certificates_k8s_io_v1beta1.NewCertificateSigningRequestClient(client)

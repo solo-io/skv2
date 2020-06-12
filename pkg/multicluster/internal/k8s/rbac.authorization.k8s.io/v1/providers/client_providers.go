@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for RoleClient from Clientset
+func RoleClientFromClientsetProvider(clients rbac_authorization_k8s_io_v1.Clientset) rbac_authorization_k8s_io_v1.RoleClient {
+	return clients.Roles()
+}
+
 // Provider for Role Client from Client
 func RoleClientProvider(client client.Client) rbac_authorization_k8s_io_v1.RoleClient {
 	return rbac_authorization_k8s_io_v1.NewRoleClient(client)
@@ -38,6 +43,11 @@ func RoleClientFromConfigFactoryProvider() RoleClientFromConfigFactory {
 		}
 		return clients.Roles(), nil
 	}
+}
+
+// Provider for RoleBindingClient from Clientset
+func RoleBindingClientFromClientsetProvider(clients rbac_authorization_k8s_io_v1.Clientset) rbac_authorization_k8s_io_v1.RoleBindingClient {
+	return clients.RoleBindings()
 }
 
 // Provider for RoleBinding Client from Client
@@ -63,6 +73,11 @@ func RoleBindingClientFromConfigFactoryProvider() RoleBindingClientFromConfigFac
 	}
 }
 
+// Provider for ClusterRoleClient from Clientset
+func ClusterRoleClientFromClientsetProvider(clients rbac_authorization_k8s_io_v1.Clientset) rbac_authorization_k8s_io_v1.ClusterRoleClient {
+	return clients.ClusterRoles()
+}
+
 // Provider for ClusterRole Client from Client
 func ClusterRoleClientProvider(client client.Client) rbac_authorization_k8s_io_v1.ClusterRoleClient {
 	return rbac_authorization_k8s_io_v1.NewClusterRoleClient(client)
@@ -84,6 +99,11 @@ func ClusterRoleClientFromConfigFactoryProvider() ClusterRoleClientFromConfigFac
 		}
 		return clients.ClusterRoles(), nil
 	}
+}
+
+// Provider for ClusterRoleBindingClient from Clientset
+func ClusterRoleBindingClientFromClientsetProvider(clients rbac_authorization_k8s_io_v1.Clientset) rbac_authorization_k8s_io_v1.ClusterRoleBindingClient {
+	return clients.ClusterRoleBindings()
 }
 
 // Provider for ClusterRoleBinding Client from Client

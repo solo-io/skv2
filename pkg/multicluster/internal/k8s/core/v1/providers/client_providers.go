@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for SecretClient from Clientset
+func SecretClientFromClientsetProvider(clients v1.Clientset) v1.SecretClient {
+	return clients.Secrets()
+}
+
 // Provider for Secret Client from Client
 func SecretClientProvider(client client.Client) v1.SecretClient {
 	return v1.NewSecretClient(client)
@@ -40,6 +45,11 @@ func SecretClientFromConfigFactoryProvider() SecretClientFromConfigFactory {
 	}
 }
 
+// Provider for ServiceAccountClient from Clientset
+func ServiceAccountClientFromClientsetProvider(clients v1.Clientset) v1.ServiceAccountClient {
+	return clients.ServiceAccounts()
+}
+
 // Provider for ServiceAccount Client from Client
 func ServiceAccountClientProvider(client client.Client) v1.ServiceAccountClient {
 	return v1.NewServiceAccountClient(client)
@@ -61,6 +71,11 @@ func ServiceAccountClientFromConfigFactoryProvider() ServiceAccountClientFromCon
 		}
 		return clients.ServiceAccounts(), nil
 	}
+}
+
+// Provider for NamespaceClient from Clientset
+func NamespaceClientFromClientsetProvider(clients v1.Clientset) v1.NamespaceClient {
+	return clients.Namespaces()
 }
 
 // Provider for Namespace Client from Client

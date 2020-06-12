@@ -22,6 +22,11 @@ import (
 */
 {{- range $resource := $.Resources }}
 
+// Provider for {{ $resource.Kind }}Client from Clientset
+func {{ $resource.Kind }}ClientFromClientsetProvider(clients {{ $import_prefix }}.Clientset) {{ $import_prefix }}.{{ $resource.Kind }}Client {
+    return clients.{{ pluralize $resource.Kind }}()
+}
+
 // Provider for {{ $resource.Kind }} Client from Client
 func {{ $resource.Kind }}ClientProvider(client client.Client) {{ $import_prefix }}.{{ $resource.Kind }}Client {
     return {{ $import_prefix }}.New{{ $resource.Kind }}Client(client)
