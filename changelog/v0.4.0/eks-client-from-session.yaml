@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Expose EksClient constructor from session, allowing users to configure AWS client settings.
-    issueLink: https://github.com/solo-io/skv2/issues/57
