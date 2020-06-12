@@ -6,8 +6,8 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1/controller"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/controller"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"go.uber.org/zap"

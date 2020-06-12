@@ -3,18 +3,23 @@ package register_test
 import (
 	"context"
 	"fmt"
+
 	"time"
+
+	mock_k8s_core_clients "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/mocks"
+	rbac_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1"
+	mock_k8s_rbac_clients "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/mocks"
+	"github.com/solo-io/skv2/pkg/multicluster/register/mock_clientcmd"
+
+	k8s_core_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
+	k8s_core_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/providers"
+	rbac_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/providers"
 
 	"github.com/avast/retry-go"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	k8s_core_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/core/v1"
-	mock_k8s_core_clients "github.com/solo-io/skv2/pkg/generated/kubernetes/mocks/core/v1"
-	mock_k8s_rbac_clients "github.com/solo-io/skv2/pkg/generated/kubernetes/mocks/rbac.authorization.k8s.io/v1"
-	rbac_v1 "github.com/solo-io/skv2/pkg/generated/kubernetes/rbac.authorization.k8s.io/v1"
-	mock_clientcmd "github.com/solo-io/skv2/pkg/generated/mocks/k8s/clientcmd"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/solo-io/skv2/pkg/multicluster/register/internal"
@@ -38,15 +43,15 @@ var _ = Describe("Registrant", func() {
 		clusterRBACBinder        *mock_internal.MockClusterRBACBinder
 		clusterRbacBinderFactory internal.ClusterRBACBinderFactory
 		secretClient             *mock_k8s_core_clients.MockSecretClient
-		secretClientFactory      k8s_core_v1.SecretClientFromConfigFactory
+		secretClientFactory      k8s_core_v1_providers.SecretClientFromConfigFactory
 		nsClient                 *mock_k8s_core_clients.MockNamespaceClient
-		nsClientFactory          k8s_core_v1.NamespaceClientFromConfigFactory
+		nsClientFactory          k8s_core_v1_providers.NamespaceClientFromConfigFactory
 		saClient                 *mock_k8s_core_clients.MockServiceAccountClient
-		saClientFactory          k8s_core_v1.ServiceAccountClientFromConfigFactory
+		saClientFactory          k8s_core_v1_providers.ServiceAccountClientFromConfigFactory
 		clusterRoleClient        *mock_k8s_rbac_clients.MockClusterRoleClient
-		clusterRoleClientFactory rbac_v1.ClusterRoleClientFromConfigFactory
+		clusterRoleClientFactory rbac_v1_providers.ClusterRoleClientFromConfigFactory
 		roleClient               *mock_k8s_rbac_clients.MockRoleClient
-		roleClientFactory        rbac_v1.RoleClientFromConfigFactory
+		roleClientFactory        rbac_v1_providers.RoleClientFromConfigFactory
 		clientConfig             *mock_clientcmd.MockClientConfig
 
 		_, remoteCtx, clusterName, namespace = "cfg-path", "context", "cluster-name", "namespace"
