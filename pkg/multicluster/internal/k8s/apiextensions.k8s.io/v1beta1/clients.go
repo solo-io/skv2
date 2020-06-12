@@ -50,7 +50,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
-	if err := AddToScheme(scheme); err != nil {
+	if err := apiextensions_k8s_io_v1beta1.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	client, err := client.New(cfg, client.Options{
@@ -131,7 +131,7 @@ func NewCustomResourceDefinitionClient(client client.Client) *customResourceDefi
 }
 
 func (c *customResourceDefinitionClient) GetCustomResourceDefinition(ctx context.Context, name string) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error) {
-	obj := &CustomResourceDefinition{}
+	obj := &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
 	key := client.ObjectKey{
 		Name: name,
 	}
@@ -142,7 +142,7 @@ func (c *customResourceDefinitionClient) GetCustomResourceDefinition(ctx context
 }
 
 func (c *customResourceDefinitionClient) ListCustomResourceDefinition(ctx context.Context, opts ...client.ListOption) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinitionList, error) {
-	list := &CustomResourceDefinitionList{}
+	list := &apiextensions_k8s_io_v1beta1.CustomResourceDefinitionList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (c *customResourceDefinitionClient) CreateCustomResourceDefinition(ctx cont
 }
 
 func (c *customResourceDefinitionClient) DeleteCustomResourceDefinition(ctx context.Context, name string, opts ...client.DeleteOption) error {
-	obj := &CustomResourceDefinition{}
+	obj := &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
 	obj.SetName(name)
 	return c.client.Delete(ctx, obj, opts...)
 }
@@ -168,7 +168,7 @@ func (c *customResourceDefinitionClient) PatchCustomResourceDefinition(ctx conte
 }
 
 func (c *customResourceDefinitionClient) DeleteAllOfCustomResourceDefinition(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &CustomResourceDefinition{}
+	obj := &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 

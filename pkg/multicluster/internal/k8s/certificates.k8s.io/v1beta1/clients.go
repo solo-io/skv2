@@ -50,7 +50,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
-	if err := AddToScheme(scheme); err != nil {
+	if err := certificates_k8s_io_v1beta1.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	client, err := client.New(cfg, client.Options{
@@ -131,7 +131,7 @@ func NewCertificateSigningRequestClient(client client.Client) *certificateSignin
 }
 
 func (c *certificateSigningRequestClient) GetCertificateSigningRequest(ctx context.Context, key client.ObjectKey) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error) {
-	obj := &CertificateSigningRequest{}
+	obj := &certificates_k8s_io_v1beta1.CertificateSigningRequest{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (c *certificateSigningRequestClient) GetCertificateSigningRequest(ctx conte
 }
 
 func (c *certificateSigningRequestClient) ListCertificateSigningRequest(ctx context.Context, opts ...client.ListOption) (*certificates_k8s_io_v1beta1.CertificateSigningRequestList, error) {
-	list := &CertificateSigningRequestList{}
+	list := &certificates_k8s_io_v1beta1.CertificateSigningRequestList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (c *certificateSigningRequestClient) CreateCertificateSigningRequest(ctx co
 }
 
 func (c *certificateSigningRequestClient) DeleteCertificateSigningRequest(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &CertificateSigningRequest{}
+	obj := &certificates_k8s_io_v1beta1.CertificateSigningRequest{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
@@ -166,7 +166,7 @@ func (c *certificateSigningRequestClient) PatchCertificateSigningRequest(ctx con
 }
 
 func (c *certificateSigningRequestClient) DeleteAllOfCertificateSigningRequest(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &CertificateSigningRequest{}
+	obj := &certificates_k8s_io_v1beta1.CertificateSigningRequest{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 

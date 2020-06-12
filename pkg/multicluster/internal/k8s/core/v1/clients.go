@@ -54,7 +54,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
-	if err := AddToScheme(scheme); err != nil {
+	if err := v1.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	client, err := client.New(cfg, client.Options{
@@ -145,7 +145,7 @@ func NewSecretClient(client client.Client) *secretClient {
 }
 
 func (c *secretClient) GetSecret(ctx context.Context, key client.ObjectKey) (*v1.Secret, error) {
-	obj := &Secret{}
+	obj := &v1.Secret{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (c *secretClient) GetSecret(ctx context.Context, key client.ObjectKey) (*v1
 }
 
 func (c *secretClient) ListSecret(ctx context.Context, opts ...client.ListOption) (*v1.SecretList, error) {
-	list := &SecretList{}
+	list := &v1.SecretList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (c *secretClient) CreateSecret(ctx context.Context, obj *v1.Secret, opts ..
 }
 
 func (c *secretClient) DeleteSecret(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &Secret{}
+	obj := &v1.Secret{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
@@ -180,7 +180,7 @@ func (c *secretClient) PatchSecret(ctx context.Context, obj *v1.Secret, patch cl
 }
 
 func (c *secretClient) DeleteAllOfSecret(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &Secret{}
+	obj := &v1.Secret{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
@@ -265,7 +265,7 @@ func NewServiceAccountClient(client client.Client) *serviceAccountClient {
 }
 
 func (c *serviceAccountClient) GetServiceAccount(ctx context.Context, key client.ObjectKey) (*v1.ServiceAccount, error) {
-	obj := &ServiceAccount{}
+	obj := &v1.ServiceAccount{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func (c *serviceAccountClient) GetServiceAccount(ctx context.Context, key client
 }
 
 func (c *serviceAccountClient) ListServiceAccount(ctx context.Context, opts ...client.ListOption) (*v1.ServiceAccountList, error) {
-	list := &ServiceAccountList{}
+	list := &v1.ServiceAccountList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func (c *serviceAccountClient) CreateServiceAccount(ctx context.Context, obj *v1
 }
 
 func (c *serviceAccountClient) DeleteServiceAccount(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &ServiceAccount{}
+	obj := &v1.ServiceAccount{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
@@ -300,7 +300,7 @@ func (c *serviceAccountClient) PatchServiceAccount(ctx context.Context, obj *v1.
 }
 
 func (c *serviceAccountClient) DeleteAllOfServiceAccount(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &ServiceAccount{}
+	obj := &v1.ServiceAccount{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
@@ -385,7 +385,7 @@ func NewNamespaceClient(client client.Client) *namespaceClient {
 }
 
 func (c *namespaceClient) GetNamespace(ctx context.Context, name string) (*v1.Namespace, error) {
-	obj := &Namespace{}
+	obj := &v1.Namespace{}
 	key := client.ObjectKey{
 		Name: name,
 	}
@@ -396,7 +396,7 @@ func (c *namespaceClient) GetNamespace(ctx context.Context, name string) (*v1.Na
 }
 
 func (c *namespaceClient) ListNamespace(ctx context.Context, opts ...client.ListOption) (*v1.NamespaceList, error) {
-	list := &NamespaceList{}
+	list := &v1.NamespaceList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -408,7 +408,7 @@ func (c *namespaceClient) CreateNamespace(ctx context.Context, obj *v1.Namespace
 }
 
 func (c *namespaceClient) DeleteNamespace(ctx context.Context, name string, opts ...client.DeleteOption) error {
-	obj := &Namespace{}
+	obj := &v1.Namespace{}
 	obj.SetName(name)
 	return c.client.Delete(ctx, obj, opts...)
 }
@@ -422,7 +422,7 @@ func (c *namespaceClient) PatchNamespace(ctx context.Context, obj *v1.Namespace,
 }
 
 func (c *namespaceClient) DeleteAllOfNamespace(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &Namespace{}
+	obj := &v1.Namespace{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 

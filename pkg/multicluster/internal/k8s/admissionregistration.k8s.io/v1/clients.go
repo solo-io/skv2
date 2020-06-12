@@ -50,7 +50,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
-	if err := AddToScheme(scheme); err != nil {
+	if err := admissionregistration_k8s_io_v1.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	client, err := client.New(cfg, client.Options{
@@ -131,7 +131,7 @@ func NewValidatingWebhookConfigurationClient(client client.Client) *validatingWe
 }
 
 func (c *validatingWebhookConfigurationClient) GetValidatingWebhookConfiguration(ctx context.Context, key client.ObjectKey) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error) {
-	obj := &ValidatingWebhookConfiguration{}
+	obj := &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (c *validatingWebhookConfigurationClient) GetValidatingWebhookConfiguration
 }
 
 func (c *validatingWebhookConfigurationClient) ListValidatingWebhookConfiguration(ctx context.Context, opts ...client.ListOption) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationList, error) {
-	list := &ValidatingWebhookConfigurationList{}
+	list := &admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (c *validatingWebhookConfigurationClient) CreateValidatingWebhookConfigurat
 }
 
 func (c *validatingWebhookConfigurationClient) DeleteValidatingWebhookConfiguration(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &ValidatingWebhookConfiguration{}
+	obj := &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
@@ -166,7 +166,7 @@ func (c *validatingWebhookConfigurationClient) PatchValidatingWebhookConfigurati
 }
 
 func (c *validatingWebhookConfigurationClient) DeleteAllOfValidatingWebhookConfiguration(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &ValidatingWebhookConfiguration{}
+	obj := &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 

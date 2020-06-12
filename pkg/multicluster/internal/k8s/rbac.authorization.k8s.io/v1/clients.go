@@ -56,7 +56,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
-	if err := AddToScheme(scheme); err != nil {
+	if err := rbac_authorization_k8s_io_v1.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	client, err := client.New(cfg, client.Options{
@@ -152,7 +152,7 @@ func NewRoleClient(client client.Client) *roleClient {
 }
 
 func (c *roleClient) GetRole(ctx context.Context, key client.ObjectKey) (*rbac_authorization_k8s_io_v1.Role, error) {
-	obj := &Role{}
+	obj := &rbac_authorization_k8s_io_v1.Role{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (c *roleClient) GetRole(ctx context.Context, key client.ObjectKey) (*rbac_a
 }
 
 func (c *roleClient) ListRole(ctx context.Context, opts ...client.ListOption) (*rbac_authorization_k8s_io_v1.RoleList, error) {
-	list := &RoleList{}
+	list := &rbac_authorization_k8s_io_v1.RoleList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (c *roleClient) CreateRole(ctx context.Context, obj *rbac_authorization_k8s
 }
 
 func (c *roleClient) DeleteRole(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &Role{}
+	obj := &rbac_authorization_k8s_io_v1.Role{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
@@ -187,7 +187,7 @@ func (c *roleClient) PatchRole(ctx context.Context, obj *rbac_authorization_k8s_
 }
 
 func (c *roleClient) DeleteAllOfRole(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &Role{}
+	obj := &rbac_authorization_k8s_io_v1.Role{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
@@ -272,7 +272,7 @@ func NewRoleBindingClient(client client.Client) *roleBindingClient {
 }
 
 func (c *roleBindingClient) GetRoleBinding(ctx context.Context, key client.ObjectKey) (*rbac_authorization_k8s_io_v1.RoleBinding, error) {
-	obj := &RoleBinding{}
+	obj := &rbac_authorization_k8s_io_v1.RoleBinding{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
@@ -280,7 +280,7 @@ func (c *roleBindingClient) GetRoleBinding(ctx context.Context, key client.Objec
 }
 
 func (c *roleBindingClient) ListRoleBinding(ctx context.Context, opts ...client.ListOption) (*rbac_authorization_k8s_io_v1.RoleBindingList, error) {
-	list := &RoleBindingList{}
+	list := &rbac_authorization_k8s_io_v1.RoleBindingList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -292,7 +292,7 @@ func (c *roleBindingClient) CreateRoleBinding(ctx context.Context, obj *rbac_aut
 }
 
 func (c *roleBindingClient) DeleteRoleBinding(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &RoleBinding{}
+	obj := &rbac_authorization_k8s_io_v1.RoleBinding{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
@@ -307,7 +307,7 @@ func (c *roleBindingClient) PatchRoleBinding(ctx context.Context, obj *rbac_auth
 }
 
 func (c *roleBindingClient) DeleteAllOfRoleBinding(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &RoleBinding{}
+	obj := &rbac_authorization_k8s_io_v1.RoleBinding{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
@@ -392,7 +392,7 @@ func NewClusterRoleClient(client client.Client) *clusterRoleClient {
 }
 
 func (c *clusterRoleClient) GetClusterRole(ctx context.Context, name string) (*rbac_authorization_k8s_io_v1.ClusterRole, error) {
-	obj := &ClusterRole{}
+	obj := &rbac_authorization_k8s_io_v1.ClusterRole{}
 	key := client.ObjectKey{
 		Name: name,
 	}
@@ -403,7 +403,7 @@ func (c *clusterRoleClient) GetClusterRole(ctx context.Context, name string) (*r
 }
 
 func (c *clusterRoleClient) ListClusterRole(ctx context.Context, opts ...client.ListOption) (*rbac_authorization_k8s_io_v1.ClusterRoleList, error) {
-	list := &ClusterRoleList{}
+	list := &rbac_authorization_k8s_io_v1.ClusterRoleList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -415,7 +415,7 @@ func (c *clusterRoleClient) CreateClusterRole(ctx context.Context, obj *rbac_aut
 }
 
 func (c *clusterRoleClient) DeleteClusterRole(ctx context.Context, name string, opts ...client.DeleteOption) error {
-	obj := &ClusterRole{}
+	obj := &rbac_authorization_k8s_io_v1.ClusterRole{}
 	obj.SetName(name)
 	return c.client.Delete(ctx, obj, opts...)
 }
@@ -429,7 +429,7 @@ func (c *clusterRoleClient) PatchClusterRole(ctx context.Context, obj *rbac_auth
 }
 
 func (c *clusterRoleClient) DeleteAllOfClusterRole(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &ClusterRole{}
+	obj := &rbac_authorization_k8s_io_v1.ClusterRole{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
@@ -514,7 +514,7 @@ func NewClusterRoleBindingClient(client client.Client) *clusterRoleBindingClient
 }
 
 func (c *clusterRoleBindingClient) GetClusterRoleBinding(ctx context.Context, name string) (*rbac_authorization_k8s_io_v1.ClusterRoleBinding, error) {
-	obj := &ClusterRoleBinding{}
+	obj := &rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
 	key := client.ObjectKey{
 		Name: name,
 	}
@@ -525,7 +525,7 @@ func (c *clusterRoleBindingClient) GetClusterRoleBinding(ctx context.Context, na
 }
 
 func (c *clusterRoleBindingClient) ListClusterRoleBinding(ctx context.Context, opts ...client.ListOption) (*rbac_authorization_k8s_io_v1.ClusterRoleBindingList, error) {
-	list := &ClusterRoleBindingList{}
+	list := &rbac_authorization_k8s_io_v1.ClusterRoleBindingList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
@@ -537,7 +537,7 @@ func (c *clusterRoleBindingClient) CreateClusterRoleBinding(ctx context.Context,
 }
 
 func (c *clusterRoleBindingClient) DeleteClusterRoleBinding(ctx context.Context, name string, opts ...client.DeleteOption) error {
-	obj := &ClusterRoleBinding{}
+	obj := &rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
 	obj.SetName(name)
 	return c.client.Delete(ctx, obj, opts...)
 }
@@ -551,7 +551,7 @@ func (c *clusterRoleBindingClient) PatchClusterRoleBinding(ctx context.Context, 
 }
 
 func (c *clusterRoleBindingClient) DeleteAllOfClusterRoleBinding(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &ClusterRoleBinding{}
+	obj := &rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
