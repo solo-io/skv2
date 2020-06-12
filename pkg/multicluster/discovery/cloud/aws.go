@@ -23,6 +23,13 @@ func NewEksClient(region string, creds *credentials.Credentials) (EksClient, err
 	}, nil
 }
 
+// Construct client from preconfigured session.
+func NewEksClientFromSession(sess *session.Session) EksClient {
+	return &awsClient{
+		sess: sess,
+	}
+}
+
 type awsClient struct {
 	sess *session.Session
 }
