@@ -1,0 +1,5 @@
+changelog:
+- type: NON_USER_FACING
+  description: >
+    Quote the `image` field in the operator deployment Helm template to adhere to the
+    [Helm best practices](https://helm.sh/docs/chart_best_practices/values/#make-types-clear).

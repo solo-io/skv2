@@ -43,7 +43,7 @@ spec:
 [[ toYaml $operator.Volumes | indent 6 ]]
 [[- end ]]
       containers:
-      - image: {{ $[[ $operatorVar ]]Image.registry }}/{{ $[[ $operatorVar ]]Image.repository }}:{{ $[[ $operatorVar ]]Image.tag }}
+      - image: {{ printf "%v/%v:%v" $[[ $operatorVar ]]Image.registry $[[ $operatorVar ]]Image.repository $[[ $operatorVar ]]Image.tag | quote }}
 [[- if $operator.Args ]]
         args:
 [[ toYaml $operator.Args | indent 8 ]]
