@@ -54,13 +54,15 @@ func Upsert(ctx context.Context, c client.Client, obj runtime.Object, transition
 }
 
 func transition(existing, desired runtime.Object, transitionFuncs []TransitionFunc) error {
-	if existingMeta, ok := existing.(metav1.Object); ok {
-		desired.(metav1.Object).SetResourceVersion(existingMeta.GetResourceVersion())
-	}
 	for _, txFunc := range transitionFuncs {
 		if err := txFunc(existing, desired); err != nil {
 			return err
 		}
 	}
+
+	if existingMeta, ok := existing.(metav1.Object); ok {
+		desired.(metav1.Object).SetResourceVersion(existingMeta.GetResourceVersion())
+	}
+
 	return nil
 }
