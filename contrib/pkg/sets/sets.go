@@ -7,7 +7,7 @@ import (
 
 // k8s resources are uniquely identified by their name and namespace
 func Key(objectMeta metav1.Object) string {
-	return objectMeta.GetName() + "." + objectMeta.GetNamespace()
+	return objectMeta.GetName() + "." + objectMeta.GetNamespace() + "." + objectMeta.GetClusterName()
 }
 
 type ResourceSet interface {
