@@ -1,0 +1,16 @@
+// Definitions for the Kubernetes types
+package {{ .Version }}
+
+import (
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    {{- if $.CustomTypesImportPath }}
+    . "{{ $.CustomTypesImportPath }}"
+    {{- end}}
+)
+
+{{- range $resource := $.Resources }}
+
+// {{ $resource.Kind }}Slice represents a slice of *{{ $resource.Kind }}
+type {{ $resource.Kind }}Slice []*{{ $resource.Kind }}
+
+{{- end }}

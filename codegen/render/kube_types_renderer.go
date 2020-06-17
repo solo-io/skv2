@@ -56,6 +56,9 @@ var ClientsTemplates = inputTemplates{
 	"code/types/clients.gotmpl": {
 		Path: "clients.go",
 	},
+	"code/types/type_helpers.gotmpl": {
+		Path: "type_helpers.go",
+	},
 }
 
 var ControllerTemplates = inputTemplates{
