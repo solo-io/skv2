@@ -246,7 +246,7 @@ func NewMulticluster{{ $resource.Kind }}Client(client multicluster.Client) Multi
     return &multicluster{{ $resource.Kind }}Client{client: client}
 }
 
-func (m *multicluster{{ $resource.Kind }}Client) Cluster(cluster string) (Clientset, error) {
+func (m *multicluster{{ $resource.Kind }}Client) Cluster(cluster string) ({{ $resource.Kind }}Client, error) {
     client, err := m.client.Cluster(cluster)
     if err != nil {
         return nil, err
