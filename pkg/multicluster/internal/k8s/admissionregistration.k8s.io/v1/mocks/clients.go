@@ -554,3 +554,41 @@ func (mr *MockValidatingWebhookConfigurationClientMockRecorder) PatchValidatingW
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchValidatingWebhookConfigurationStatus", reflect.TypeOf((*MockValidatingWebhookConfigurationClient)(nil).PatchValidatingWebhookConfigurationStatus), varargs...)
 }
+
+// MockMulticlusterValidatingWebhookConfigurationClient is a mock of MulticlusterValidatingWebhookConfigurationClient interface.
+type MockMulticlusterValidatingWebhookConfigurationClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterValidatingWebhookConfigurationClientMockRecorder
+}
+
+// MockMulticlusterValidatingWebhookConfigurationClientMockRecorder is the mock recorder for MockMulticlusterValidatingWebhookConfigurationClient.
+type MockMulticlusterValidatingWebhookConfigurationClientMockRecorder struct {
+	mock *MockMulticlusterValidatingWebhookConfigurationClient
+}
+
+// NewMockMulticlusterValidatingWebhookConfigurationClient creates a new mock instance.
+func NewMockMulticlusterValidatingWebhookConfigurationClient(ctrl *gomock.Controller) *MockMulticlusterValidatingWebhookConfigurationClient {
+	mock := &MockMulticlusterValidatingWebhookConfigurationClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterValidatingWebhookConfigurationClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterValidatingWebhookConfigurationClient) EXPECT() *MockMulticlusterValidatingWebhookConfigurationClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterValidatingWebhookConfigurationClient) Cluster(cluster string) (v1.ValidatingWebhookConfigurationClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1.ValidatingWebhookConfigurationClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterValidatingWebhookConfigurationClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterValidatingWebhookConfigurationClient)(nil).Cluster), cluster)
+}

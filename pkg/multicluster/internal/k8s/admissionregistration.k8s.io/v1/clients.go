@@ -190,3 +190,25 @@ func (c *validatingWebhookConfigurationClient) UpdateValidatingWebhookConfigurat
 func (c *validatingWebhookConfigurationClient) PatchValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
+
+// Provides ValidatingWebhookConfigurationClients for multiple clusters.
+type MulticlusterValidatingWebhookConfigurationClient interface {
+	// Cluster returns a ValidatingWebhookConfigurationClient for the given cluster
+	Cluster(cluster string) (ValidatingWebhookConfigurationClient, error)
+}
+
+type multiclusterValidatingWebhookConfigurationClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterValidatingWebhookConfigurationClient(client multicluster.Client) MulticlusterValidatingWebhookConfigurationClient {
+	return &multiclusterValidatingWebhookConfigurationClient{client: client}
+}
+
+func (m *multiclusterValidatingWebhookConfigurationClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewValidatingWebhookConfigurationClient(client), nil
+}

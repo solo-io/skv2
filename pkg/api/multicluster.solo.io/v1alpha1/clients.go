@@ -187,3 +187,25 @@ func (c *kubernetesClusterClient) UpdateKubernetesClusterStatus(ctx context.Cont
 func (c *kubernetesClusterClient) PatchKubernetesClusterStatus(ctx context.Context, obj *KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
+
+// Provides KubernetesClusterClients for multiple clusters.
+type MulticlusterKubernetesClusterClient interface {
+	// Cluster returns a KubernetesClusterClient for the given cluster
+	Cluster(cluster string) (KubernetesClusterClient, error)
+}
+
+type multiclusterKubernetesClusterClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterKubernetesClusterClient(client multicluster.Client) MulticlusterKubernetesClusterClient {
+	return &multiclusterKubernetesClusterClient{client: client}
+}
+
+func (m *multiclusterKubernetesClusterClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewKubernetesClusterClient(client), nil
+}

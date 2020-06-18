@@ -554,3 +554,41 @@ func (mr *MockCertificateSigningRequestClientMockRecorder) PatchCertificateSigni
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateSigningRequestStatus", reflect.TypeOf((*MockCertificateSigningRequestClient)(nil).PatchCertificateSigningRequestStatus), varargs...)
 }
+
+// MockMulticlusterCertificateSigningRequestClient is a mock of MulticlusterCertificateSigningRequestClient interface.
+type MockMulticlusterCertificateSigningRequestClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterCertificateSigningRequestClientMockRecorder
+}
+
+// MockMulticlusterCertificateSigningRequestClientMockRecorder is the mock recorder for MockMulticlusterCertificateSigningRequestClient.
+type MockMulticlusterCertificateSigningRequestClientMockRecorder struct {
+	mock *MockMulticlusterCertificateSigningRequestClient
+}
+
+// NewMockMulticlusterCertificateSigningRequestClient creates a new mock instance.
+func NewMockMulticlusterCertificateSigningRequestClient(ctrl *gomock.Controller) *MockMulticlusterCertificateSigningRequestClient {
+	mock := &MockMulticlusterCertificateSigningRequestClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterCertificateSigningRequestClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterCertificateSigningRequestClient) EXPECT() *MockMulticlusterCertificateSigningRequestClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterCertificateSigningRequestClient) Cluster(cluster string) (v1beta1.CertificateSigningRequestClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1beta1.CertificateSigningRequestClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterCertificateSigningRequestClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterCertificateSigningRequestClient)(nil).Cluster), cluster)
+}

@@ -212,6 +212,28 @@ func (c *roleClient) PatchRoleStatus(ctx context.Context, obj *rbac_authorizatio
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides RoleClients for multiple clusters.
+type MulticlusterRoleClient interface {
+	// Cluster returns a RoleClient for the given cluster
+	Cluster(cluster string) (RoleClient, error)
+}
+
+type multiclusterRoleClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterRoleClient(client multicluster.Client) MulticlusterRoleClient {
+	return &multiclusterRoleClient{client: client}
+}
+
+func (m *multiclusterRoleClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleClient(client), nil
+}
+
 // Reader knows how to read and list RoleBindings.
 type RoleBindingReader interface {
 	// Get retrieves a RoleBinding for the given object key
@@ -330,6 +352,28 @@ func (c *roleBindingClient) UpdateRoleBindingStatus(ctx context.Context, obj *rb
 
 func (c *roleBindingClient) PatchRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides RoleBindingClients for multiple clusters.
+type MulticlusterRoleBindingClient interface {
+	// Cluster returns a RoleBindingClient for the given cluster
+	Cluster(cluster string) (RoleBindingClient, error)
+}
+
+type multiclusterRoleBindingClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterRoleBindingClient(client multicluster.Client) MulticlusterRoleBindingClient {
+	return &multiclusterRoleBindingClient{client: client}
+}
+
+func (m *multiclusterRoleBindingClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleBindingClient(client), nil
 }
 
 // Reader knows how to read and list ClusterRoles.
@@ -454,6 +498,28 @@ func (c *clusterRoleClient) PatchClusterRoleStatus(ctx context.Context, obj *rba
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides ClusterRoleClients for multiple clusters.
+type MulticlusterClusterRoleClient interface {
+	// Cluster returns a ClusterRoleClient for the given cluster
+	Cluster(cluster string) (ClusterRoleClient, error)
+}
+
+type multiclusterClusterRoleClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterClusterRoleClient(client multicluster.Client) MulticlusterClusterRoleClient {
+	return &multiclusterClusterRoleClient{client: client}
+}
+
+func (m *multiclusterClusterRoleClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewClusterRoleClient(client), nil
+}
+
 // Reader knows how to read and list ClusterRoleBindings.
 type ClusterRoleBindingReader interface {
 	// Get retrieves a ClusterRoleBinding for the given object key
@@ -574,4 +640,26 @@ func (c *clusterRoleBindingClient) UpdateClusterRoleBindingStatus(ctx context.Co
 
 func (c *clusterRoleBindingClient) PatchClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides ClusterRoleBindingClients for multiple clusters.
+type MulticlusterClusterRoleBindingClient interface {
+	// Cluster returns a ClusterRoleBindingClient for the given cluster
+	Cluster(cluster string) (ClusterRoleBindingClient, error)
+}
+
+type multiclusterClusterRoleBindingClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterClusterRoleBindingClient(client multicluster.Client) MulticlusterClusterRoleBindingClient {
+	return &multiclusterClusterRoleBindingClient{client: client}
+}
+
+func (m *multiclusterClusterRoleBindingClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewClusterRoleBindingClient(client), nil
 }

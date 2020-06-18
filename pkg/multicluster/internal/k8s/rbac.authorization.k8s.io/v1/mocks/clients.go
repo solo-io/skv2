@@ -597,6 +597,44 @@ func (mr *MockRoleClientMockRecorder) PatchRoleStatus(ctx, obj, patch interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchRoleStatus", reflect.TypeOf((*MockRoleClient)(nil).PatchRoleStatus), varargs...)
 }
 
+// MockMulticlusterRoleClient is a mock of MulticlusterRoleClient interface.
+type MockMulticlusterRoleClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterRoleClientMockRecorder
+}
+
+// MockMulticlusterRoleClientMockRecorder is the mock recorder for MockMulticlusterRoleClient.
+type MockMulticlusterRoleClientMockRecorder struct {
+	mock *MockMulticlusterRoleClient
+}
+
+// NewMockMulticlusterRoleClient creates a new mock instance.
+func NewMockMulticlusterRoleClient(ctrl *gomock.Controller) *MockMulticlusterRoleClient {
+	mock := &MockMulticlusterRoleClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterRoleClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterRoleClient) EXPECT() *MockMulticlusterRoleClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterRoleClient) Cluster(cluster string) (v1.RoleClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1.RoleClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterRoleClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterRoleClient)(nil).Cluster), cluster)
+}
+
 // MockRoleBindingReader is a mock of RoleBindingReader interface.
 type MockRoleBindingReader struct {
 	ctrl     *gomock.Controller
@@ -1061,6 +1099,44 @@ func (mr *MockRoleBindingClientMockRecorder) PatchRoleBindingStatus(ctx, obj, pa
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchRoleBindingStatus", reflect.TypeOf((*MockRoleBindingClient)(nil).PatchRoleBindingStatus), varargs...)
+}
+
+// MockMulticlusterRoleBindingClient is a mock of MulticlusterRoleBindingClient interface.
+type MockMulticlusterRoleBindingClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterRoleBindingClientMockRecorder
+}
+
+// MockMulticlusterRoleBindingClientMockRecorder is the mock recorder for MockMulticlusterRoleBindingClient.
+type MockMulticlusterRoleBindingClientMockRecorder struct {
+	mock *MockMulticlusterRoleBindingClient
+}
+
+// NewMockMulticlusterRoleBindingClient creates a new mock instance.
+func NewMockMulticlusterRoleBindingClient(ctrl *gomock.Controller) *MockMulticlusterRoleBindingClient {
+	mock := &MockMulticlusterRoleBindingClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterRoleBindingClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterRoleBindingClient) EXPECT() *MockMulticlusterRoleBindingClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterRoleBindingClient) Cluster(cluster string) (v1.RoleBindingClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1.RoleBindingClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterRoleBindingClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterRoleBindingClient)(nil).Cluster), cluster)
 }
 
 // MockClusterRoleReader is a mock of ClusterRoleReader interface.
@@ -1529,6 +1605,44 @@ func (mr *MockClusterRoleClientMockRecorder) PatchClusterRoleStatus(ctx, obj, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleStatus", reflect.TypeOf((*MockClusterRoleClient)(nil).PatchClusterRoleStatus), varargs...)
 }
 
+// MockMulticlusterClusterRoleClient is a mock of MulticlusterClusterRoleClient interface.
+type MockMulticlusterClusterRoleClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterClusterRoleClientMockRecorder
+}
+
+// MockMulticlusterClusterRoleClientMockRecorder is the mock recorder for MockMulticlusterClusterRoleClient.
+type MockMulticlusterClusterRoleClientMockRecorder struct {
+	mock *MockMulticlusterClusterRoleClient
+}
+
+// NewMockMulticlusterClusterRoleClient creates a new mock instance.
+func NewMockMulticlusterClusterRoleClient(ctrl *gomock.Controller) *MockMulticlusterClusterRoleClient {
+	mock := &MockMulticlusterClusterRoleClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterClusterRoleClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterClusterRoleClient) EXPECT() *MockMulticlusterClusterRoleClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterClusterRoleClient) Cluster(cluster string) (v1.ClusterRoleClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1.ClusterRoleClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterClusterRoleClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterClusterRoleClient)(nil).Cluster), cluster)
+}
+
 // MockClusterRoleBindingReader is a mock of ClusterRoleBindingReader interface.
 type MockClusterRoleBindingReader struct {
 	ctrl     *gomock.Controller
@@ -1993,4 +2107,42 @@ func (mr *MockClusterRoleBindingClientMockRecorder) PatchClusterRoleBindingStatu
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleBindingStatus", reflect.TypeOf((*MockClusterRoleBindingClient)(nil).PatchClusterRoleBindingStatus), varargs...)
+}
+
+// MockMulticlusterClusterRoleBindingClient is a mock of MulticlusterClusterRoleBindingClient interface.
+type MockMulticlusterClusterRoleBindingClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterClusterRoleBindingClientMockRecorder
+}
+
+// MockMulticlusterClusterRoleBindingClientMockRecorder is the mock recorder for MockMulticlusterClusterRoleBindingClient.
+type MockMulticlusterClusterRoleBindingClientMockRecorder struct {
+	mock *MockMulticlusterClusterRoleBindingClient
+}
+
+// NewMockMulticlusterClusterRoleBindingClient creates a new mock instance.
+func NewMockMulticlusterClusterRoleBindingClient(ctrl *gomock.Controller) *MockMulticlusterClusterRoleBindingClient {
+	mock := &MockMulticlusterClusterRoleBindingClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterClusterRoleBindingClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterClusterRoleBindingClient) EXPECT() *MockMulticlusterClusterRoleBindingClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterClusterRoleBindingClient) Cluster(cluster string) (v1.ClusterRoleBindingClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1.ClusterRoleBindingClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterClusterRoleBindingClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterClusterRoleBindingClient)(nil).Cluster), cluster)
 }

@@ -192,3 +192,25 @@ func (c *customResourceDefinitionClient) UpdateCustomResourceDefinitionStatus(ct
 func (c *customResourceDefinitionClient) PatchCustomResourceDefinitionStatus(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
+
+// Provides CustomResourceDefinitionClients for multiple clusters.
+type MulticlusterCustomResourceDefinitionClient interface {
+	// Cluster returns a CustomResourceDefinitionClient for the given cluster
+	Cluster(cluster string) (CustomResourceDefinitionClient, error)
+}
+
+type multiclusterCustomResourceDefinitionClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterCustomResourceDefinitionClient(client multicluster.Client) MulticlusterCustomResourceDefinitionClient {
+	return &multiclusterCustomResourceDefinitionClient{client: client}
+}
+
+func (m *multiclusterCustomResourceDefinitionClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewCustomResourceDefinitionClient(client), nil
+}

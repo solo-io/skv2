@@ -205,6 +205,28 @@ func (c *secretClient) PatchSecretStatus(ctx context.Context, obj *v1.Secret, pa
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides SecretClients for multiple clusters.
+type MulticlusterSecretClient interface {
+	// Cluster returns a SecretClient for the given cluster
+	Cluster(cluster string) (SecretClient, error)
+}
+
+type multiclusterSecretClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterSecretClient(client multicluster.Client) MulticlusterSecretClient {
+	return &multiclusterSecretClient{client: client}
+}
+
+func (m *multiclusterSecretClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewSecretClient(client), nil
+}
+
 // Reader knows how to read and list ServiceAccounts.
 type ServiceAccountReader interface {
 	// Get retrieves a ServiceAccount for the given object key
@@ -323,6 +345,28 @@ func (c *serviceAccountClient) UpdateServiceAccountStatus(ctx context.Context, o
 
 func (c *serviceAccountClient) PatchServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides ServiceAccountClients for multiple clusters.
+type MulticlusterServiceAccountClient interface {
+	// Cluster returns a ServiceAccountClient for the given cluster
+	Cluster(cluster string) (ServiceAccountClient, error)
+}
+
+type multiclusterServiceAccountClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterServiceAccountClient(client multicluster.Client) MulticlusterServiceAccountClient {
+	return &multiclusterServiceAccountClient{client: client}
+}
+
+func (m *multiclusterServiceAccountClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewServiceAccountClient(client), nil
 }
 
 // Reader knows how to read and list Namespaces.
@@ -445,4 +489,26 @@ func (c *namespaceClient) UpdateNamespaceStatus(ctx context.Context, obj *v1.Nam
 
 func (c *namespaceClient) PatchNamespaceStatus(ctx context.Context, obj *v1.Namespace, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides NamespaceClients for multiple clusters.
+type MulticlusterNamespaceClient interface {
+	// Cluster returns a NamespaceClient for the given cluster
+	Cluster(cluster string) (NamespaceClient, error)
+}
+
+type multiclusterNamespaceClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterNamespaceClient(client multicluster.Client) MulticlusterNamespaceClient {
+	return &multiclusterNamespaceClient{client: client}
+}
+
+func (m *multiclusterNamespaceClient) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewNamespaceClient(client), nil
 }
