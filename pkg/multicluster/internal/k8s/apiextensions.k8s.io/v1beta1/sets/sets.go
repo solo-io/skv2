@@ -8,6 +8,7 @@ import (
 	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -23,6 +24,7 @@ type CustomResourceDefinitionSet interface {
 	Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
 	Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
 	Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
+	Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error)
 }
 
 func makeGenericCustomResourceDefinitionSet(customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) sksets.ResourceSet {
@@ -99,4 +101,13 @@ func (s customResourceDefinitionSet) Intersection(set CustomResourceDefinitionSe
 		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
 	}
 	return NewCustomResourceDefinitionSet(customResourceDefinitionList...)
+}
+
+func (s customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error) {
+	obj, err := s.set.Find(&apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition), nil
 }

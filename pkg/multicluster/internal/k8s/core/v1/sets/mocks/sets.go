@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 	sets "k8s.io/apimachinery/pkg/util/sets"
@@ -176,6 +177,21 @@ func (mr *MockSecretSetMockRecorder) Intersection(set interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockSecretSet)(nil).Intersection), set)
 }
 
+// Find mocks base method.
+func (m *MockSecretSet) Find(id ezkube.ResourceId) (*v1.Secret, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.Secret)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockSecretSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockSecretSet)(nil).Find), id)
+}
+
 // MockServiceAccountSet is a mock of ServiceAccountSet interface.
 type MockServiceAccountSet struct {
 	ctrl     *gomock.Controller
@@ -339,6 +355,21 @@ func (mr *MockServiceAccountSetMockRecorder) Intersection(set interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockServiceAccountSet)(nil).Intersection), set)
 }
 
+// Find mocks base method.
+func (m *MockServiceAccountSet) Find(id ezkube.ResourceId) (*v1.ServiceAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.ServiceAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockServiceAccountSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockServiceAccountSet)(nil).Find), id)
+}
+
 // MockNamespaceSet is a mock of NamespaceSet interface.
 type MockNamespaceSet struct {
 	ctrl     *gomock.Controller
@@ -500,4 +531,19 @@ func (m *MockNamespaceSet) Intersection(set v1sets.NamespaceSet) v1sets.Namespac
 func (mr *MockNamespaceSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockNamespaceSet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockNamespaceSet) Find(id ezkube.ResourceId) (*v1.Namespace, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.Namespace)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockNamespaceSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockNamespaceSet)(nil).Find), id)
 }

@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/sets"
 	v1 "k8s.io/api/rbac/v1"
 	sets "k8s.io/apimachinery/pkg/util/sets"
@@ -176,6 +177,21 @@ func (mr *MockRoleSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockRoleSet)(nil).Intersection), set)
 }
 
+// Find mocks base method.
+func (m *MockRoleSet) Find(id ezkube.ResourceId) (*v1.Role, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.Role)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockRoleSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRoleSet)(nil).Find), id)
+}
+
 // MockRoleBindingSet is a mock of RoleBindingSet interface.
 type MockRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -337,6 +353,21 @@ func (m *MockRoleBindingSet) Intersection(set v1sets.RoleBindingSet) v1sets.Role
 func (mr *MockRoleBindingSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockRoleBindingSet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockRoleBindingSet) Find(id ezkube.ResourceId) (*v1.RoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.RoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockRoleBindingSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRoleBindingSet)(nil).Find), id)
 }
 
 // MockClusterRoleSet is a mock of ClusterRoleSet interface.
@@ -502,6 +533,21 @@ func (mr *MockClusterRoleSetMockRecorder) Intersection(set interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockClusterRoleSet)(nil).Intersection), set)
 }
 
+// Find mocks base method.
+func (m *MockClusterRoleSet) Find(id ezkube.ResourceId) (*v1.ClusterRole, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.ClusterRole)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockClusterRoleSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockClusterRoleSet)(nil).Find), id)
+}
+
 // MockClusterRoleBindingSet is a mock of ClusterRoleBindingSet interface.
 type MockClusterRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -663,4 +709,19 @@ func (m *MockClusterRoleBindingSet) Intersection(set v1sets.ClusterRoleBindingSe
 func (mr *MockClusterRoleBindingSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockClusterRoleBindingSet) Find(id ezkube.ResourceId) (*v1.ClusterRoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.ClusterRoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockClusterRoleBindingSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Find), id)
 }

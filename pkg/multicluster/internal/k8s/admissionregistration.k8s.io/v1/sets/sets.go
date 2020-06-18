@@ -8,6 +8,7 @@ import (
 	admissionregistration_k8s_io_v1 "k8s.io/api/admissionregistration/v1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -23,6 +24,7 @@ type ValidatingWebhookConfigurationSet interface {
 	Union(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet
 	Difference(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet
 	Intersection(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet
+	Find(id ezkube.ResourceId) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error)
 }
 
 func makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) sksets.ResourceSet {
@@ -99,4 +101,13 @@ func (s validatingWebhookConfigurationSet) Intersection(set ValidatingWebhookCon
 		validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 	}
 	return NewValidatingWebhookConfigurationSet(validatingWebhookConfigurationList...)
+}
+
+func (s validatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error) {
+	obj, err := s.set.Find(&admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration), nil
 }

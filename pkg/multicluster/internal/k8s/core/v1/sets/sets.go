@@ -8,6 +8,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -23,6 +24,7 @@ type SecretSet interface {
 	Union(set SecretSet) SecretSet
 	Difference(set SecretSet) SecretSet
 	Intersection(set SecretSet) SecretSet
+	Find(id ezkube.ResourceId) (*v1.Secret, error)
 }
 
 func makeGenericSecretSet(secretList []*v1.Secret) sksets.ResourceSet {
@@ -101,6 +103,15 @@ func (s secretSet) Intersection(set SecretSet) SecretSet {
 	return NewSecretSet(secretList...)
 }
 
+func (s secretSet) Find(id ezkube.ResourceId) (*v1.Secret, error) {
+	obj, err := s.set.Find(&v1.Secret{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*v1.Secret), nil
+}
+
 type ServiceAccountSet interface {
 	Keys() sets.String
 	List() []*v1.ServiceAccount
@@ -112,6 +123,7 @@ type ServiceAccountSet interface {
 	Union(set ServiceAccountSet) ServiceAccountSet
 	Difference(set ServiceAccountSet) ServiceAccountSet
 	Intersection(set ServiceAccountSet) ServiceAccountSet
+	Find(id ezkube.ResourceId) (*v1.ServiceAccount, error)
 }
 
 func makeGenericServiceAccountSet(serviceAccountList []*v1.ServiceAccount) sksets.ResourceSet {
@@ -190,6 +202,15 @@ func (s serviceAccountSet) Intersection(set ServiceAccountSet) ServiceAccountSet
 	return NewServiceAccountSet(serviceAccountList...)
 }
 
+func (s serviceAccountSet) Find(id ezkube.ResourceId) (*v1.ServiceAccount, error) {
+	obj, err := s.set.Find(&v1.ServiceAccount{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*v1.ServiceAccount), nil
+}
+
 type NamespaceSet interface {
 	Keys() sets.String
 	List() []*v1.Namespace
@@ -201,6 +222,7 @@ type NamespaceSet interface {
 	Union(set NamespaceSet) NamespaceSet
 	Difference(set NamespaceSet) NamespaceSet
 	Intersection(set NamespaceSet) NamespaceSet
+	Find(id ezkube.ResourceId) (*v1.Namespace, error)
 }
 
 func makeGenericNamespaceSet(namespaceList []*v1.Namespace) sksets.ResourceSet {
@@ -277,4 +299,13 @@ func (s namespaceSet) Intersection(set NamespaceSet) NamespaceSet {
 		namespaceList = append(namespaceList, obj.(*v1.Namespace))
 	}
 	return NewNamespaceSet(namespaceList...)
+}
+
+func (s namespaceSet) Find(id ezkube.ResourceId) (*v1.Namespace, error) {
+	obj, err := s.set.Find(&v1.Namespace{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*v1.Namespace), nil
 }
