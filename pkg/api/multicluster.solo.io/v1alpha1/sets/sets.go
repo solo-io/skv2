@@ -6,6 +6,7 @@ import (
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -21,6 +22,7 @@ type KubernetesClusterSet interface {
 	Union(set KubernetesClusterSet) KubernetesClusterSet
 	Difference(set KubernetesClusterSet) KubernetesClusterSet
 	Intersection(set KubernetesClusterSet) KubernetesClusterSet
+	Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error)
 }
 
 func makeGenericKubernetesClusterSet(kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster) sksets.ResourceSet {
@@ -97,4 +99,13 @@ func (s kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesC
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 	}
 	return NewKubernetesClusterSet(kubernetesClusterList...)
+}
+
+func (s kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error) {
+	obj, err := s.set.Find(&multicluster_solo_io_v1alpha1.KubernetesCluster{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster), nil
 }
