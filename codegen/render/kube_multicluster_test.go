@@ -14,7 +14,6 @@ import (
 	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	"github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/controller"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	mc_client "github.com/solo-io/skv2/pkg/multicluster/client"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
@@ -117,7 +116,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				cw := watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns})
 				err := cw.Run(masterManager)
 				Expect(err).NotTo(HaveOccurred())
-				mcClientset := mc_client.NewClient(cw)
+				mcClientset := multicluster.NewClient(cw)
 				clientset := NewMulticlusterClientset(mcClientset)
 
 				masterPaint := newPaint(ns, "paint-mc-clientset-master")
