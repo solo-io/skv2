@@ -22,6 +22,6 @@ type ManagerSet interface {
 
 // ManagerSet maintains a manager for every cluster in the system.
 type ClusterSet interface {
-	// List the clusters currently known to the set
+	// List the clusters (sorted) currently known to the set
 	ListClusters() []string
 }
