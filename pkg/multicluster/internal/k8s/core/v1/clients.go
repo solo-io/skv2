@@ -219,7 +219,7 @@ func NewMulticlusterSecretClient(client multicluster.Client) MulticlusterSecretC
 	return &multiclusterSecretClient{client: client}
 }
 
-func (m *multiclusterSecretClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterSecretClient) Cluster(cluster string) (SecretClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
@@ -361,7 +361,7 @@ func NewMulticlusterServiceAccountClient(client multicluster.Client) Multicluste
 	return &multiclusterServiceAccountClient{client: client}
 }
 
-func (m *multiclusterServiceAccountClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterServiceAccountClient) Cluster(cluster string) (ServiceAccountClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
@@ -505,7 +505,7 @@ func NewMulticlusterNamespaceClient(client multicluster.Client) MulticlusterName
 	return &multiclusterNamespaceClient{client: client}
 }
 
-func (m *multiclusterNamespaceClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterNamespaceClient) Cluster(cluster string) (NamespaceClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err

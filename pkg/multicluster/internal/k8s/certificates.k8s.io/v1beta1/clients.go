@@ -205,7 +205,7 @@ func NewMulticlusterCertificateSigningRequestClient(client multicluster.Client) 
 	return &multiclusterCertificateSigningRequestClient{client: client}
 }
 
-func (m *multiclusterCertificateSigningRequestClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterCertificateSigningRequestClient) Cluster(cluster string) (CertificateSigningRequestClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err

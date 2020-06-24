@@ -8,7 +8,7 @@ import (
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -23,10 +23,11 @@ type PaintSet interface {
 	Union(set PaintSet) PaintSet
 	Difference(set PaintSet) PaintSet
 	Intersection(set PaintSet) PaintSet
+	Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error)
 }
 
 func makeGenericPaintSet(paintList []*things_test_io_v1.Paint) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range paintList {
 		genericResources = append(genericResources, obj)
 	}
@@ -101,6 +102,15 @@ func (s paintSet) Intersection(set PaintSet) PaintSet {
 	return NewPaintSet(paintList...)
 }
 
+func (s paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) {
+	obj, err := s.set.Find(&things_test_io_v1.Paint{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*things_test_io_v1.Paint), nil
+}
+
 type ClusterResourceSet interface {
 	Keys() sets.String
 	List() []*things_test_io_v1.ClusterResource
@@ -112,10 +122,11 @@ type ClusterResourceSet interface {
 	Union(set ClusterResourceSet) ClusterResourceSet
 	Difference(set ClusterResourceSet) ClusterResourceSet
 	Intersection(set ClusterResourceSet) ClusterResourceSet
+	Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error)
 }
 
 func makeGenericClusterResourceSet(clusterResourceList []*things_test_io_v1.ClusterResource) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range clusterResourceList {
 		genericResources = append(genericResources, obj)
 	}
@@ -188,4 +199,13 @@ func (s clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResource
 		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
 	}
 	return NewClusterResourceSet(clusterResourceList...)
+}
+
+func (s clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error) {
+	obj, err := s.set.Find(&things_test_io_v1.ClusterResource{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*things_test_io_v1.ClusterResource), nil
 }

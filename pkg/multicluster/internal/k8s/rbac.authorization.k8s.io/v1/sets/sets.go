@@ -9,7 +9,6 @@ import (
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -28,7 +27,7 @@ type RoleSet interface {
 }
 
 func makeGenericRoleSet(roleList []*rbac_authorization_k8s_io_v1.Role) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range roleList {
 		genericResources = append(genericResources, obj)
 	}
@@ -127,7 +126,7 @@ type RoleBindingSet interface {
 }
 
 func makeGenericRoleBindingSet(roleBindingList []*rbac_authorization_k8s_io_v1.RoleBinding) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range roleBindingList {
 		genericResources = append(genericResources, obj)
 	}
@@ -226,7 +225,7 @@ type ClusterRoleSet interface {
 }
 
 func makeGenericClusterRoleSet(clusterRoleList []*rbac_authorization_k8s_io_v1.ClusterRole) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range clusterRoleList {
 		genericResources = append(genericResources, obj)
 	}
@@ -325,7 +324,7 @@ type ClusterRoleBindingSet interface {
 }
 
 func makeGenericClusterRoleBindingSet(clusterRoleBindingList []*rbac_authorization_k8s_io_v1.ClusterRoleBinding) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range clusterRoleBindingList {
 		genericResources = append(genericResources, obj)
 	}

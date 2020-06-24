@@ -202,7 +202,7 @@ func NewMulticlusterKubernetesClusterClient(client multicluster.Client) Multiclu
 	return &multiclusterKubernetesClusterClient{client: client}
 }
 
-func (m *multiclusterKubernetesClusterClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterKubernetesClusterClient) Cluster(cluster string) (KubernetesClusterClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err

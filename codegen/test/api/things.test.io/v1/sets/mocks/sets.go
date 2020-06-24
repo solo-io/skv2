@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	v1sets "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/sets"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	sets "k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -176,6 +177,21 @@ func (mr *MockPaintSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockPaintSet)(nil).Intersection), set)
 }
 
+// Find mocks base method.
+func (m *MockPaintSet) Find(id ezkube.ResourceId) (*v1.Paint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.Paint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockPaintSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockPaintSet)(nil).Find), id)
+}
+
 // MockClusterResourceSet is a mock of ClusterResourceSet interface.
 type MockClusterResourceSet struct {
 	ctrl     *gomock.Controller
@@ -337,4 +353,19 @@ func (m *MockClusterResourceSet) Intersection(set v1sets.ClusterResourceSet) v1s
 func (mr *MockClusterResourceSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockClusterResourceSet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockClusterResourceSet) Find(id ezkube.ResourceId) (*v1.ClusterResource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.ClusterResource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockClusterResourceSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockClusterResourceSet)(nil).Find), id)
 }

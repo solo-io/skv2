@@ -205,7 +205,7 @@ func NewMulticlusterValidatingWebhookConfigurationClient(client multicluster.Cli
 	return &multiclusterValidatingWebhookConfigurationClient{client: client}
 }
 
-func (m *multiclusterValidatingWebhookConfigurationClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterValidatingWebhookConfigurationClient) Cluster(cluster string) (ValidatingWebhookConfigurationClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err

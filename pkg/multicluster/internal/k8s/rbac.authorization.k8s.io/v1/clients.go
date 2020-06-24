@@ -226,7 +226,7 @@ func NewMulticlusterRoleClient(client multicluster.Client) MulticlusterRoleClien
 	return &multiclusterRoleClient{client: client}
 }
 
-func (m *multiclusterRoleClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterRoleClient) Cluster(cluster string) (RoleClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
@@ -368,7 +368,7 @@ func NewMulticlusterRoleBindingClient(client multicluster.Client) MulticlusterRo
 	return &multiclusterRoleBindingClient{client: client}
 }
 
-func (m *multiclusterRoleBindingClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterRoleBindingClient) Cluster(cluster string) (RoleBindingClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
@@ -512,7 +512,7 @@ func NewMulticlusterClusterRoleClient(client multicluster.Client) MulticlusterCl
 	return &multiclusterClusterRoleClient{client: client}
 }
 
-func (m *multiclusterClusterRoleClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterClusterRoleClient) Cluster(cluster string) (ClusterRoleClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
@@ -656,7 +656,7 @@ func NewMulticlusterClusterRoleBindingClient(client multicluster.Client) Multicl
 	return &multiclusterClusterRoleBindingClient{client: client}
 }
 
-func (m *multiclusterClusterRoleBindingClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterClusterRoleBindingClient) Cluster(cluster string) (ClusterRoleBindingClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err

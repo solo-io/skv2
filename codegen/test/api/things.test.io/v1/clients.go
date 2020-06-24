@@ -197,6 +197,28 @@ func (c *paintClient) PatchPaintStatus(ctx context.Context, obj *Paint, patch cl
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides PaintClients for multiple clusters.
+type MulticlusterPaintClient interface {
+	// Cluster returns a PaintClient for the given cluster
+	Cluster(cluster string) (PaintClient, error)
+}
+
+type multiclusterPaintClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterPaintClient(client multicluster.Client) MulticlusterPaintClient {
+	return &multiclusterPaintClient{client: client}
+}
+
+func (m *multiclusterPaintClient) Cluster(cluster string) (PaintClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewPaintClient(client), nil
+}
+
 // Reader knows how to read and list ClusterResources.
 type ClusterResourceReader interface {
 	// Get retrieves a ClusterResource for the given object key
@@ -317,4 +339,26 @@ func (c *clusterResourceClient) UpdateClusterResourceStatus(ctx context.Context,
 
 func (c *clusterResourceClient) PatchClusterResourceStatus(ctx context.Context, obj *ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides ClusterResourceClients for multiple clusters.
+type MulticlusterClusterResourceClient interface {
+	// Cluster returns a ClusterResourceClient for the given cluster
+	Cluster(cluster string) (ClusterResourceClient, error)
+}
+
+type multiclusterClusterResourceClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterClusterResourceClient(client multicluster.Client) MulticlusterClusterResourceClient {
+	return &multiclusterClusterResourceClient{client: client}
+}
+
+func (m *multiclusterClusterResourceClient) Cluster(cluster string) (ClusterResourceClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewClusterResourceClient(client), nil
 }

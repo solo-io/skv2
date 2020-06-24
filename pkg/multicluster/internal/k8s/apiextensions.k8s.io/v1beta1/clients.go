@@ -207,7 +207,7 @@ func NewMulticlusterCustomResourceDefinitionClient(client multicluster.Client) M
 	return &multiclusterCustomResourceDefinitionClient{client: client}
 }
 
-func (m *multiclusterCustomResourceDefinitionClient) Cluster(cluster string) (Clientset, error) {
+func (m *multiclusterCustomResourceDefinitionClient) Cluster(cluster string) (CustomResourceDefinitionClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
