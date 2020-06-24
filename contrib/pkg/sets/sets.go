@@ -28,7 +28,7 @@ type ResourceSet interface {
 	Union(set ResourceSet) ResourceSet
 	Difference(set ResourceSet) ResourceSet
 	Intersection(set ResourceSet) ResourceSet
-	Find(resoruceType, id ezkube.ResourceId) (ezkube.ResourceId, error)
+	Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error)
 }
 
 type resourceSet struct {
@@ -111,6 +111,8 @@ func (s resourceSet) Union(set ResourceSet) ResourceSet {
 }
 
 func (s resourceSet) Difference(set ResourceSet) ResourceSet {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	newSet := s.set.Difference(set.Keys())
 	var newResources []ezkube.ResourceId
 	for key, _ := range newSet {
@@ -121,6 +123,8 @@ func (s resourceSet) Difference(set ResourceSet) ResourceSet {
 }
 
 func (s resourceSet) Intersection(set ResourceSet) ResourceSet {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	newSet := s.set.Intersection(set.Keys())
 	var newResources []ezkube.ResourceId
 	for key, _ := range newSet {
