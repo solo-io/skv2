@@ -114,7 +114,7 @@ var _ = Describe("PaintSet", func() {
 
 	It("can create a set from a kube list", func() {
 		setA.Insert(paintA, paintB)
-		setC := NewPaintSetFromKubeList(&v1.PaintList{
+		setC := NewPaintSetFromList(&v1.PaintList{
 			Items: []v1.Paint{*paintA, *paintB},
 		})
 		Expect(setA).To(Equal(setC))
