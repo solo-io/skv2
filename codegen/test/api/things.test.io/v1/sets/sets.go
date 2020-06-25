@@ -24,6 +24,7 @@ type PaintSet interface {
 	Difference(set PaintSet) PaintSet
 	Intersection(set PaintSet) PaintSet
 	Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error)
+	Length() int
 }
 
 func makeGenericPaintSet(paintList []*things_test_io_v1.Paint) sksets.ResourceSet {
@@ -40,6 +41,14 @@ type paintSet struct {
 
 func NewPaintSet(paintList ...*things_test_io_v1.Paint) PaintSet {
 	return &paintSet{set: makeGenericPaintSet(paintList)}
+}
+
+func NewPaintSetFromKubeList(paintList *things_test_io_v1.PaintList) PaintSet {
+	list := make([]*things_test_io_v1.Paint, 0, len(paintList.Items))
+	for idx := range paintList.Items {
+		list = append(list, &paintList.Items[idx])
+	}
+	return &paintSet{set: makeGenericPaintSet(list)}
 }
 
 func (s paintSet) Keys() sets.String {
@@ -110,6 +119,9 @@ func (s paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) {
 
 	return obj.(*things_test_io_v1.Paint), nil
 }
+func (s paintSet) Length() int {
+	return s.set.Length()
+}
 
 type ClusterResourceSet interface {
 	Keys() sets.String
@@ -123,6 +135,7 @@ type ClusterResourceSet interface {
 	Difference(set ClusterResourceSet) ClusterResourceSet
 	Intersection(set ClusterResourceSet) ClusterResourceSet
 	Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error)
+	Length() int
 }
 
 func makeGenericClusterResourceSet(clusterResourceList []*things_test_io_v1.ClusterResource) sksets.ResourceSet {
@@ -139,6 +152,14 @@ type clusterResourceSet struct {
 
 func NewClusterResourceSet(clusterResourceList ...*things_test_io_v1.ClusterResource) ClusterResourceSet {
 	return &clusterResourceSet{set: makeGenericClusterResourceSet(clusterResourceList)}
+}
+
+func NewClusterResourceSetFromKubeList(clusterResourceList *things_test_io_v1.ClusterResourceList) ClusterResourceSet {
+	list := make([]*things_test_io_v1.ClusterResource, 0, len(clusterResourceList.Items))
+	for idx := range clusterResourceList.Items {
+		list = append(list, &clusterResourceList.Items[idx])
+	}
+	return &clusterResourceSet{set: makeGenericClusterResourceSet(list)}
 }
 
 func (s clusterResourceSet) Keys() sets.String {
@@ -208,4 +229,7 @@ func (s clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Clust
 	}
 
 	return obj.(*things_test_io_v1.ClusterResource), nil
+}
+func (s clusterResourceSet) Length() int {
+	return s.set.Length()
 }

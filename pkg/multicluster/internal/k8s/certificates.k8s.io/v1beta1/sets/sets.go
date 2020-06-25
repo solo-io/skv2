@@ -24,6 +24,7 @@ type CertificateSigningRequestSet interface {
 	Difference(set CertificateSigningRequestSet) CertificateSigningRequestSet
 	Intersection(set CertificateSigningRequestSet) CertificateSigningRequestSet
 	Find(id ezkube.ResourceId) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error)
+	Length() int
 }
 
 func makeGenericCertificateSigningRequestSet(certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest) sksets.ResourceSet {
@@ -40,6 +41,14 @@ type certificateSigningRequestSet struct {
 
 func NewCertificateSigningRequestSet(certificateSigningRequestList ...*certificates_k8s_io_v1beta1.CertificateSigningRequest) CertificateSigningRequestSet {
 	return &certificateSigningRequestSet{set: makeGenericCertificateSigningRequestSet(certificateSigningRequestList)}
+}
+
+func NewCertificateSigningRequestSetFromKubeList(certificateSigningRequestList *certificates_k8s_io_v1beta1.CertificateSigningRequestList) CertificateSigningRequestSet {
+	list := make([]*certificates_k8s_io_v1beta1.CertificateSigningRequest, 0, len(certificateSigningRequestList.Items))
+	for idx := range certificateSigningRequestList.Items {
+		list = append(list, &certificateSigningRequestList.Items[idx])
+	}
+	return &certificateSigningRequestSet{set: makeGenericCertificateSigningRequestSet(list)}
 }
 
 func (s certificateSigningRequestSet) Keys() sets.String {
@@ -109,4 +118,7 @@ func (s certificateSigningRequestSet) Find(id ezkube.ResourceId) (*certificates_
 	}
 
 	return obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest), nil
+}
+func (s certificateSigningRequestSet) Length() int {
+	return s.set.Length()
 }

@@ -191,3 +191,17 @@ func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Find(id interface{}
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Find), id)
 }
+
+// Length mocks base method.
+func (m *MockValidatingWebhookConfigurationSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Length))
+}

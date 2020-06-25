@@ -192,6 +192,20 @@ func (mr *MockPaintSetMockRecorder) Find(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockPaintSet)(nil).Find), id)
 }
 
+// Length mocks base method.
+func (m *MockPaintSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockPaintSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockPaintSet)(nil).Length))
+}
+
 // MockClusterResourceSet is a mock of ClusterResourceSet interface.
 type MockClusterResourceSet struct {
 	ctrl     *gomock.Controller
@@ -368,4 +382,18 @@ func (m *MockClusterResourceSet) Find(id ezkube.ResourceId) (*v1.ClusterResource
 func (mr *MockClusterResourceSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockClusterResourceSet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockClusterResourceSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockClusterResourceSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockClusterResourceSet)(nil).Length))
 }

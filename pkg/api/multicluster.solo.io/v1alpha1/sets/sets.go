@@ -22,6 +22,7 @@ type KubernetesClusterSet interface {
 	Difference(set KubernetesClusterSet) KubernetesClusterSet
 	Intersection(set KubernetesClusterSet) KubernetesClusterSet
 	Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error)
+	Length() int
 }
 
 func makeGenericKubernetesClusterSet(kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster) sksets.ResourceSet {
@@ -38,6 +39,14 @@ type kubernetesClusterSet struct {
 
 func NewKubernetesClusterSet(kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster) KubernetesClusterSet {
 	return &kubernetesClusterSet{set: makeGenericKubernetesClusterSet(kubernetesClusterList)}
+}
+
+func NewKubernetesClusterSetFromKubeList(kubernetesClusterList *multicluster_solo_io_v1alpha1.KubernetesClusterList) KubernetesClusterSet {
+	list := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(kubernetesClusterList.Items))
+	for idx := range kubernetesClusterList.Items {
+		list = append(list, &kubernetesClusterList.Items[idx])
+	}
+	return &kubernetesClusterSet{set: makeGenericKubernetesClusterSet(list)}
 }
 
 func (s kubernetesClusterSet) Keys() sets.String {
@@ -107,4 +116,7 @@ func (s kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_
 	}
 
 	return obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster), nil
+}
+func (s kubernetesClusterSet) Length() int {
+	return s.set.Length()
 }

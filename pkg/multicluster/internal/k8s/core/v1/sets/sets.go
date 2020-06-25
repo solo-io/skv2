@@ -24,6 +24,7 @@ type SecretSet interface {
 	Difference(set SecretSet) SecretSet
 	Intersection(set SecretSet) SecretSet
 	Find(id ezkube.ResourceId) (*v1.Secret, error)
+	Length() int
 }
 
 func makeGenericSecretSet(secretList []*v1.Secret) sksets.ResourceSet {
@@ -40,6 +41,14 @@ type secretSet struct {
 
 func NewSecretSet(secretList ...*v1.Secret) SecretSet {
 	return &secretSet{set: makeGenericSecretSet(secretList)}
+}
+
+func NewSecretSetFromKubeList(secretList *v1.SecretList) SecretSet {
+	list := make([]*v1.Secret, 0, len(secretList.Items))
+	for idx := range secretList.Items {
+		list = append(list, &secretList.Items[idx])
+	}
+	return &secretSet{set: makeGenericSecretSet(list)}
 }
 
 func (s secretSet) Keys() sets.String {
@@ -110,6 +119,9 @@ func (s secretSet) Find(id ezkube.ResourceId) (*v1.Secret, error) {
 
 	return obj.(*v1.Secret), nil
 }
+func (s secretSet) Length() int {
+	return s.set.Length()
+}
 
 type ServiceAccountSet interface {
 	Keys() sets.String
@@ -123,6 +135,7 @@ type ServiceAccountSet interface {
 	Difference(set ServiceAccountSet) ServiceAccountSet
 	Intersection(set ServiceAccountSet) ServiceAccountSet
 	Find(id ezkube.ResourceId) (*v1.ServiceAccount, error)
+	Length() int
 }
 
 func makeGenericServiceAccountSet(serviceAccountList []*v1.ServiceAccount) sksets.ResourceSet {
@@ -139,6 +152,14 @@ type serviceAccountSet struct {
 
 func NewServiceAccountSet(serviceAccountList ...*v1.ServiceAccount) ServiceAccountSet {
 	return &serviceAccountSet{set: makeGenericServiceAccountSet(serviceAccountList)}
+}
+
+func NewServiceAccountSetFromKubeList(serviceAccountList *v1.ServiceAccountList) ServiceAccountSet {
+	list := make([]*v1.ServiceAccount, 0, len(serviceAccountList.Items))
+	for idx := range serviceAccountList.Items {
+		list = append(list, &serviceAccountList.Items[idx])
+	}
+	return &serviceAccountSet{set: makeGenericServiceAccountSet(list)}
 }
 
 func (s serviceAccountSet) Keys() sets.String {
@@ -209,6 +230,9 @@ func (s serviceAccountSet) Find(id ezkube.ResourceId) (*v1.ServiceAccount, error
 
 	return obj.(*v1.ServiceAccount), nil
 }
+func (s serviceAccountSet) Length() int {
+	return s.set.Length()
+}
 
 type NamespaceSet interface {
 	Keys() sets.String
@@ -222,6 +246,7 @@ type NamespaceSet interface {
 	Difference(set NamespaceSet) NamespaceSet
 	Intersection(set NamespaceSet) NamespaceSet
 	Find(id ezkube.ResourceId) (*v1.Namespace, error)
+	Length() int
 }
 
 func makeGenericNamespaceSet(namespaceList []*v1.Namespace) sksets.ResourceSet {
@@ -238,6 +263,14 @@ type namespaceSet struct {
 
 func NewNamespaceSet(namespaceList ...*v1.Namespace) NamespaceSet {
 	return &namespaceSet{set: makeGenericNamespaceSet(namespaceList)}
+}
+
+func NewNamespaceSetFromKubeList(namespaceList *v1.NamespaceList) NamespaceSet {
+	list := make([]*v1.Namespace, 0, len(namespaceList.Items))
+	for idx := range namespaceList.Items {
+		list = append(list, &namespaceList.Items[idx])
+	}
+	return &namespaceSet{set: makeGenericNamespaceSet(list)}
 }
 
 func (s namespaceSet) Keys() sets.String {
@@ -307,4 +340,7 @@ func (s namespaceSet) Find(id ezkube.ResourceId) (*v1.Namespace, error) {
 	}
 
 	return obj.(*v1.Namespace), nil
+}
+func (s namespaceSet) Length() int {
+	return s.set.Length()
 }

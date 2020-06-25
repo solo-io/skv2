@@ -192,6 +192,20 @@ func (mr *MockRoleSetMockRecorder) Find(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRoleSet)(nil).Find), id)
 }
 
+// Length mocks base method.
+func (m *MockRoleSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockRoleSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRoleSet)(nil).Length))
+}
+
 // MockRoleBindingSet is a mock of RoleBindingSet interface.
 type MockRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -368,6 +382,20 @@ func (m *MockRoleBindingSet) Find(id ezkube.ResourceId) (*v1.RoleBinding, error)
 func (mr *MockRoleBindingSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRoleBindingSet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockRoleBindingSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockRoleBindingSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRoleBindingSet)(nil).Length))
 }
 
 // MockClusterRoleSet is a mock of ClusterRoleSet interface.
@@ -548,6 +576,20 @@ func (mr *MockClusterRoleSetMockRecorder) Find(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockClusterRoleSet)(nil).Find), id)
 }
 
+// Length mocks base method.
+func (m *MockClusterRoleSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockClusterRoleSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockClusterRoleSet)(nil).Length))
+}
+
 // MockClusterRoleBindingSet is a mock of ClusterRoleBindingSet interface.
 type MockClusterRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -724,4 +766,18 @@ func (m *MockClusterRoleBindingSet) Find(id ezkube.ResourceId) (*v1.ClusterRoleB
 func (mr *MockClusterRoleBindingSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockClusterRoleBindingSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockClusterRoleBindingSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Length))
 }

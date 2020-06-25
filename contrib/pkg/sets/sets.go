@@ -29,6 +29,7 @@ type ResourceSet interface {
 	Difference(set ResourceSet) ResourceSet
 	Intersection(set ResourceSet) ResourceSet
 	Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error)
+	Length() int
 }
 
 type resourceSet struct {
@@ -148,4 +149,8 @@ func (s resourceSet) Find(
 	}
 
 	return resource, nil
+}
+
+func (s resourceSet) Length() int {
+	return len(s.mapping)
 }

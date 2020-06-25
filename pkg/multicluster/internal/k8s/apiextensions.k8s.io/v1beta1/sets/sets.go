@@ -24,6 +24,7 @@ type CustomResourceDefinitionSet interface {
 	Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
 	Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
 	Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error)
+	Length() int
 }
 
 func makeGenericCustomResourceDefinitionSet(customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) sksets.ResourceSet {
@@ -40,6 +41,14 @@ type customResourceDefinitionSet struct {
 
 func NewCustomResourceDefinitionSet(customResourceDefinitionList ...*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) CustomResourceDefinitionSet {
 	return &customResourceDefinitionSet{set: makeGenericCustomResourceDefinitionSet(customResourceDefinitionList)}
+}
+
+func NewCustomResourceDefinitionSetFromKubeList(customResourceDefinitionList *apiextensions_k8s_io_v1beta1.CustomResourceDefinitionList) CustomResourceDefinitionSet {
+	list := make([]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, 0, len(customResourceDefinitionList.Items))
+	for idx := range customResourceDefinitionList.Items {
+		list = append(list, &customResourceDefinitionList.Items[idx])
+	}
+	return &customResourceDefinitionSet{set: makeGenericCustomResourceDefinitionSet(list)}
 }
 
 func (s customResourceDefinitionSet) Keys() sets.String {
@@ -109,4 +118,7 @@ func (s customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions_
 	}
 
 	return obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition), nil
+}
+func (s customResourceDefinitionSet) Length() int {
+	return s.set.Length()
 }

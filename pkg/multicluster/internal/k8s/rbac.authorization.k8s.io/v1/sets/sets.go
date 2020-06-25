@@ -24,6 +24,7 @@ type RoleSet interface {
 	Difference(set RoleSet) RoleSet
 	Intersection(set RoleSet) RoleSet
 	Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.Role, error)
+	Length() int
 }
 
 func makeGenericRoleSet(roleList []*rbac_authorization_k8s_io_v1.Role) sksets.ResourceSet {
@@ -40,6 +41,14 @@ type roleSet struct {
 
 func NewRoleSet(roleList ...*rbac_authorization_k8s_io_v1.Role) RoleSet {
 	return &roleSet{set: makeGenericRoleSet(roleList)}
+}
+
+func NewRoleSetFromKubeList(roleList *rbac_authorization_k8s_io_v1.RoleList) RoleSet {
+	list := make([]*rbac_authorization_k8s_io_v1.Role, 0, len(roleList.Items))
+	for idx := range roleList.Items {
+		list = append(list, &roleList.Items[idx])
+	}
+	return &roleSet{set: makeGenericRoleSet(list)}
 }
 
 func (s roleSet) Keys() sets.String {
@@ -110,6 +119,9 @@ func (s roleSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.Role,
 
 	return obj.(*rbac_authorization_k8s_io_v1.Role), nil
 }
+func (s roleSet) Length() int {
+	return s.set.Length()
+}
 
 type RoleBindingSet interface {
 	Keys() sets.String
@@ -123,6 +135,7 @@ type RoleBindingSet interface {
 	Difference(set RoleBindingSet) RoleBindingSet
 	Intersection(set RoleBindingSet) RoleBindingSet
 	Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.RoleBinding, error)
+	Length() int
 }
 
 func makeGenericRoleBindingSet(roleBindingList []*rbac_authorization_k8s_io_v1.RoleBinding) sksets.ResourceSet {
@@ -139,6 +152,14 @@ type roleBindingSet struct {
 
 func NewRoleBindingSet(roleBindingList ...*rbac_authorization_k8s_io_v1.RoleBinding) RoleBindingSet {
 	return &roleBindingSet{set: makeGenericRoleBindingSet(roleBindingList)}
+}
+
+func NewRoleBindingSetFromKubeList(roleBindingList *rbac_authorization_k8s_io_v1.RoleBindingList) RoleBindingSet {
+	list := make([]*rbac_authorization_k8s_io_v1.RoleBinding, 0, len(roleBindingList.Items))
+	for idx := range roleBindingList.Items {
+		list = append(list, &roleBindingList.Items[idx])
+	}
+	return &roleBindingSet{set: makeGenericRoleBindingSet(list)}
 }
 
 func (s roleBindingSet) Keys() sets.String {
@@ -209,6 +230,9 @@ func (s roleBindingSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v
 
 	return obj.(*rbac_authorization_k8s_io_v1.RoleBinding), nil
 }
+func (s roleBindingSet) Length() int {
+	return s.set.Length()
+}
 
 type ClusterRoleSet interface {
 	Keys() sets.String
@@ -222,6 +246,7 @@ type ClusterRoleSet interface {
 	Difference(set ClusterRoleSet) ClusterRoleSet
 	Intersection(set ClusterRoleSet) ClusterRoleSet
 	Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.ClusterRole, error)
+	Length() int
 }
 
 func makeGenericClusterRoleSet(clusterRoleList []*rbac_authorization_k8s_io_v1.ClusterRole) sksets.ResourceSet {
@@ -238,6 +263,14 @@ type clusterRoleSet struct {
 
 func NewClusterRoleSet(clusterRoleList ...*rbac_authorization_k8s_io_v1.ClusterRole) ClusterRoleSet {
 	return &clusterRoleSet{set: makeGenericClusterRoleSet(clusterRoleList)}
+}
+
+func NewClusterRoleSetFromKubeList(clusterRoleList *rbac_authorization_k8s_io_v1.ClusterRoleList) ClusterRoleSet {
+	list := make([]*rbac_authorization_k8s_io_v1.ClusterRole, 0, len(clusterRoleList.Items))
+	for idx := range clusterRoleList.Items {
+		list = append(list, &clusterRoleList.Items[idx])
+	}
+	return &clusterRoleSet{set: makeGenericClusterRoleSet(list)}
 }
 
 func (s clusterRoleSet) Keys() sets.String {
@@ -308,6 +341,9 @@ func (s clusterRoleSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v
 
 	return obj.(*rbac_authorization_k8s_io_v1.ClusterRole), nil
 }
+func (s clusterRoleSet) Length() int {
+	return s.set.Length()
+}
 
 type ClusterRoleBindingSet interface {
 	Keys() sets.String
@@ -321,6 +357,7 @@ type ClusterRoleBindingSet interface {
 	Difference(set ClusterRoleBindingSet) ClusterRoleBindingSet
 	Intersection(set ClusterRoleBindingSet) ClusterRoleBindingSet
 	Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.ClusterRoleBinding, error)
+	Length() int
 }
 
 func makeGenericClusterRoleBindingSet(clusterRoleBindingList []*rbac_authorization_k8s_io_v1.ClusterRoleBinding) sksets.ResourceSet {
@@ -337,6 +374,14 @@ type clusterRoleBindingSet struct {
 
 func NewClusterRoleBindingSet(clusterRoleBindingList ...*rbac_authorization_k8s_io_v1.ClusterRoleBinding) ClusterRoleBindingSet {
 	return &clusterRoleBindingSet{set: makeGenericClusterRoleBindingSet(clusterRoleBindingList)}
+}
+
+func NewClusterRoleBindingSetFromKubeList(clusterRoleBindingList *rbac_authorization_k8s_io_v1.ClusterRoleBindingList) ClusterRoleBindingSet {
+	list := make([]*rbac_authorization_k8s_io_v1.ClusterRoleBinding, 0, len(clusterRoleBindingList.Items))
+	for idx := range clusterRoleBindingList.Items {
+		list = append(list, &clusterRoleBindingList.Items[idx])
+	}
+	return &clusterRoleBindingSet{set: makeGenericClusterRoleBindingSet(list)}
 }
 
 func (s clusterRoleBindingSet) Keys() sets.String {
@@ -406,4 +451,7 @@ func (s clusterRoleBindingSet) Find(id ezkube.ResourceId) (*rbac_authorization_k
 	}
 
 	return obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding), nil
+}
+func (s clusterRoleBindingSet) Length() int {
+	return s.set.Length()
 }

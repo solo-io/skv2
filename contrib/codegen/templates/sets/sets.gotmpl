@@ -26,6 +26,7 @@ type {{ $resource.Kind }}Set interface {
     Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
     Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
     Find(id ezkube.ResourceId) (*{{ $import_prefix }}.{{ $resource.Kind }}, error)
+    Length() int
 }
 
 func makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}) sksets.ResourceSet {
@@ -42,6 +43,14 @@ type {{ $kindLowerCamel }}Set struct {
 
 func New{{ $resource.Kind }}Set({{ $kindLowerCamel }}List ...*{{ $import_prefix }}.{{ $resource.Kind }}) {{ $resource.Kind }}Set {
     return &{{ $kindLowerCamel }}Set{set: makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List)}
+}
+
+func New{{ $resource.Kind }}SetFromKubeList({{ $kindLowerCamel }}List *{{ $import_prefix }}.{{ $resource.Kind }}List) {{ $resource.Kind }}Set {
+    list := make([]*{{ $import_prefix }}.{{ $resource.Kind }}, 0, len({{ $kindLowerCamel }}List.Items))
+    for idx := range {{ $kindLowerCamel }}List.Items {
+        list = append(list, &{{ $kindLowerCamel }}List.Items[idx])
+    }
+    return &{{ $kindLowerCamel }}Set{set: makeGeneric{{ $resource.Kind }}Set(list)}
 }
 
 func (s {{ $kindLowerCamel }}Set) Keys() sets.String {
@@ -112,6 +121,9 @@ func (s {{ $kindLowerCamel }}Set) Find(id ezkube.ResourceId) (*{{ $import_prefix
     }
 
     return obj.(*{{ $import_prefix }}.{{ $resource.Kind }}), nil
+}
+func (s {{ $kindLowerCamel }}Set) Length() int {
+    return s.set.Length()
 }
 
 {{- end }}

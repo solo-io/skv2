@@ -24,6 +24,7 @@ type ValidatingWebhookConfigurationSet interface {
 	Difference(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet
 	Intersection(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet
 	Find(id ezkube.ResourceId) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error)
+	Length() int
 }
 
 func makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) sksets.ResourceSet {
@@ -40,6 +41,14 @@ type validatingWebhookConfigurationSet struct {
 
 func NewValidatingWebhookConfigurationSet(validatingWebhookConfigurationList ...*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) ValidatingWebhookConfigurationSet {
 	return &validatingWebhookConfigurationSet{set: makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList)}
+}
+
+func NewValidatingWebhookConfigurationSetFromKubeList(validatingWebhookConfigurationList *admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationList) ValidatingWebhookConfigurationSet {
+	list := make([]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, 0, len(validatingWebhookConfigurationList.Items))
+	for idx := range validatingWebhookConfigurationList.Items {
+		list = append(list, &validatingWebhookConfigurationList.Items[idx])
+	}
+	return &validatingWebhookConfigurationSet{set: makeGenericValidatingWebhookConfigurationSet(list)}
 }
 
 func (s validatingWebhookConfigurationSet) Keys() sets.String {
@@ -109,4 +118,7 @@ func (s validatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*admissio
 	}
 
 	return obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration), nil
+}
+func (s validatingWebhookConfigurationSet) Length() int {
+	return s.set.Length()
 }
