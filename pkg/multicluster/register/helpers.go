@@ -49,7 +49,7 @@ func RegisterClusterFromConfig(
 	Meant to be used in tandem with RegisterClusterFromConfig above.
 	They are exposed separately so the `Registrant` may be mocked for the function above.
 */
-func DefaultRegistrant(context string) (ClusterRegistrant, error) {
+func DefaultRegistrant(context, localDomainOverride string) (ClusterRegistrant, error) {
 	cfg, err := config.GetConfigWithContext(context)
 	if err != nil {
 		return nil, err
@@ -64,7 +64,8 @@ func DefaultRegistrant(context string) (ClusterRegistrant, error) {
 	roleClientFactory := rbac_v1_providers.RoleClientFromConfigFactoryProvider()
 	clusterRoleClientFactory := rbac_v1_providers.ClusterRoleClientFromConfigFactoryProvider()
 	clusterRBACBinderFactory := NewClusterRBACBinderFactory()
-	registrant := NewClusterRegistrant(
+	registrant := NewTestingRegistrant(
+		localDomainOverride,
 		clusterRBACBinderFactory,
 		clientset.Secrets(),
 		secretClientFactory,
