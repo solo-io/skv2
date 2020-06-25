@@ -192,6 +192,20 @@ func (mr *MockSecretSetMockRecorder) Find(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockSecretSet)(nil).Find), id)
 }
 
+// Length mocks base method.
+func (m *MockSecretSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockSecretSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockSecretSet)(nil).Length))
+}
+
 // MockServiceAccountSet is a mock of ServiceAccountSet interface.
 type MockServiceAccountSet struct {
 	ctrl     *gomock.Controller
@@ -370,6 +384,20 @@ func (mr *MockServiceAccountSetMockRecorder) Find(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockServiceAccountSet)(nil).Find), id)
 }
 
+// Length mocks base method.
+func (m *MockServiceAccountSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockServiceAccountSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockServiceAccountSet)(nil).Length))
+}
+
 // MockNamespaceSet is a mock of NamespaceSet interface.
 type MockNamespaceSet struct {
 	ctrl     *gomock.Controller
@@ -546,4 +574,18 @@ func (m *MockNamespaceSet) Find(id ezkube.ResourceId) (*v1.Namespace, error) {
 func (mr *MockNamespaceSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockNamespaceSet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockNamespaceSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockNamespaceSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockNamespaceSet)(nil).Length))
 }

@@ -24,6 +24,7 @@ type ValidatingWebhookConfigurationSet interface {
 	Difference(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet
 	Intersection(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet
 	Find(id ezkube.ResourceId) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error)
+	Length() int
 }
 
 func makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) sksets.ResourceSet {
@@ -42,11 +43,19 @@ func NewValidatingWebhookConfigurationSet(validatingWebhookConfigurationList ...
 	return &validatingWebhookConfigurationSet{set: makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList)}
 }
 
-func (s validatingWebhookConfigurationSet) Keys() sets.String {
+func NewValidatingWebhookConfigurationSetFromList(validatingWebhookConfigurationList *admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationList) ValidatingWebhookConfigurationSet {
+	list := make([]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, 0, len(validatingWebhookConfigurationList.Items))
+	for idx := range validatingWebhookConfigurationList.Items {
+		list = append(list, &validatingWebhookConfigurationList.Items[idx])
+	}
+	return &validatingWebhookConfigurationSet{set: makeGenericValidatingWebhookConfigurationSet(list)}
+}
+
+func (s *validatingWebhookConfigurationSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s validatingWebhookConfigurationSet) List() []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
+func (s *validatingWebhookConfigurationSet) List() []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
 	var validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
 	for _, obj := range s.set.List() {
 		validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
@@ -54,7 +63,7 @@ func (s validatingWebhookConfigurationSet) List() []*admissionregistration_k8s_i
 	return validatingWebhookConfigurationList
 }
 
-func (s validatingWebhookConfigurationSet) Map() map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
+func (s *validatingWebhookConfigurationSet) Map() map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
 	newMap := map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
@@ -62,7 +71,7 @@ func (s validatingWebhookConfigurationSet) Map() map[string]*admissionregistrati
 	return newMap
 }
 
-func (s validatingWebhookConfigurationSet) Insert(
+func (s *validatingWebhookConfigurationSet) Insert(
 	validatingWebhookConfigurationList ...*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration,
 ) {
 	for _, obj := range validatingWebhookConfigurationList {
@@ -70,30 +79,30 @@ func (s validatingWebhookConfigurationSet) Insert(
 	}
 }
 
-func (s validatingWebhookConfigurationSet) Has(validatingWebhookConfiguration *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool {
+func (s *validatingWebhookConfigurationSet) Has(validatingWebhookConfiguration *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool {
 	return s.set.Has(validatingWebhookConfiguration)
 }
 
-func (s validatingWebhookConfigurationSet) Equal(
+func (s *validatingWebhookConfigurationSet) Equal(
 	validatingWebhookConfigurationSet ValidatingWebhookConfigurationSet,
 ) bool {
 	return s.set.Equal(makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationSet.List()))
 }
 
-func (s validatingWebhookConfigurationSet) Delete(ValidatingWebhookConfiguration *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) {
+func (s *validatingWebhookConfigurationSet) Delete(ValidatingWebhookConfiguration *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) {
 	s.set.Delete(ValidatingWebhookConfiguration)
 }
 
-func (s validatingWebhookConfigurationSet) Union(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
+func (s *validatingWebhookConfigurationSet) Union(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
 	return NewValidatingWebhookConfigurationSet(append(s.List(), set.List()...)...)
 }
 
-func (s validatingWebhookConfigurationSet) Difference(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
+func (s *validatingWebhookConfigurationSet) Difference(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
 	newSet := s.set.Difference(makeGenericValidatingWebhookConfigurationSet(set.List()))
-	return validatingWebhookConfigurationSet{set: newSet}
+	return &validatingWebhookConfigurationSet{set: newSet}
 }
 
-func (s validatingWebhookConfigurationSet) Intersection(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
+func (s *validatingWebhookConfigurationSet) Intersection(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
 	newSet := s.set.Intersection(makeGenericValidatingWebhookConfigurationSet(set.List()))
 	var validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
 	for _, obj := range newSet.List() {
@@ -102,11 +111,15 @@ func (s validatingWebhookConfigurationSet) Intersection(set ValidatingWebhookCon
 	return NewValidatingWebhookConfigurationSet(validatingWebhookConfigurationList...)
 }
 
-func (s validatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error) {
+func (s *validatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error) {
 	obj, err := s.set.Find(&admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration), nil
+}
+
+func (s *validatingWebhookConfigurationSet) Length() int {
+	return s.set.Length()
 }

@@ -106,4 +106,18 @@ var _ = Describe("PaintSet", func() {
 		setB.Insert(paintC)
 		Expect(setA).ToNot(Equal(setB))
 	})
+
+	It("should return corrent length", func() {
+		setA.Insert(paintA, paintB)
+		Expect(setA.Length()).To(Equal(2))
+	})
+
+	It("can create a set from a kube list", func() {
+		setA.Insert(paintA, paintB)
+		setC := NewPaintSetFromList(&v1.PaintList{
+			Items: []v1.Paint{*paintA, *paintB},
+		})
+		Expect(setA).To(Equal(setC))
+
+	})
 })

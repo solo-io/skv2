@@ -191,3 +191,17 @@ func (mr *MockCertificateSigningRequestSetMockRecorder) Find(id interface{}) *go
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Find), id)
 }
+
+// Length mocks base method.
+func (m *MockCertificateSigningRequestSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockCertificateSigningRequestSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Length))
+}

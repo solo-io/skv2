@@ -24,6 +24,7 @@ type PaintSet interface {
 	Difference(set PaintSet) PaintSet
 	Intersection(set PaintSet) PaintSet
 	Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error)
+	Length() int
 }
 
 func makeGenericPaintSet(paintList []*things_test_io_v1.Paint) sksets.ResourceSet {
@@ -42,11 +43,19 @@ func NewPaintSet(paintList ...*things_test_io_v1.Paint) PaintSet {
 	return &paintSet{set: makeGenericPaintSet(paintList)}
 }
 
-func (s paintSet) Keys() sets.String {
+func NewPaintSetFromList(paintList *things_test_io_v1.PaintList) PaintSet {
+	list := make([]*things_test_io_v1.Paint, 0, len(paintList.Items))
+	for idx := range paintList.Items {
+		list = append(list, &paintList.Items[idx])
+	}
+	return &paintSet{set: makeGenericPaintSet(list)}
+}
+
+func (s *paintSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s paintSet) List() []*things_test_io_v1.Paint {
+func (s *paintSet) List() []*things_test_io_v1.Paint {
 	var paintList []*things_test_io_v1.Paint
 	for _, obj := range s.set.List() {
 		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
@@ -54,7 +63,7 @@ func (s paintSet) List() []*things_test_io_v1.Paint {
 	return paintList
 }
 
-func (s paintSet) Map() map[string]*things_test_io_v1.Paint {
+func (s *paintSet) Map() map[string]*things_test_io_v1.Paint {
 	newMap := map[string]*things_test_io_v1.Paint{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*things_test_io_v1.Paint)
@@ -62,7 +71,7 @@ func (s paintSet) Map() map[string]*things_test_io_v1.Paint {
 	return newMap
 }
 
-func (s paintSet) Insert(
+func (s *paintSet) Insert(
 	paintList ...*things_test_io_v1.Paint,
 ) {
 	for _, obj := range paintList {
@@ -70,30 +79,30 @@ func (s paintSet) Insert(
 	}
 }
 
-func (s paintSet) Has(paint *things_test_io_v1.Paint) bool {
+func (s *paintSet) Has(paint *things_test_io_v1.Paint) bool {
 	return s.set.Has(paint)
 }
 
-func (s paintSet) Equal(
+func (s *paintSet) Equal(
 	paintSet PaintSet,
 ) bool {
 	return s.set.Equal(makeGenericPaintSet(paintSet.List()))
 }
 
-func (s paintSet) Delete(Paint *things_test_io_v1.Paint) {
+func (s *paintSet) Delete(Paint *things_test_io_v1.Paint) {
 	s.set.Delete(Paint)
 }
 
-func (s paintSet) Union(set PaintSet) PaintSet {
+func (s *paintSet) Union(set PaintSet) PaintSet {
 	return NewPaintSet(append(s.List(), set.List()...)...)
 }
 
-func (s paintSet) Difference(set PaintSet) PaintSet {
+func (s *paintSet) Difference(set PaintSet) PaintSet {
 	newSet := s.set.Difference(makeGenericPaintSet(set.List()))
-	return paintSet{set: newSet}
+	return &paintSet{set: newSet}
 }
 
-func (s paintSet) Intersection(set PaintSet) PaintSet {
+func (s *paintSet) Intersection(set PaintSet) PaintSet {
 	newSet := s.set.Intersection(makeGenericPaintSet(set.List()))
 	var paintList []*things_test_io_v1.Paint
 	for _, obj := range newSet.List() {
@@ -102,13 +111,17 @@ func (s paintSet) Intersection(set PaintSet) PaintSet {
 	return NewPaintSet(paintList...)
 }
 
-func (s paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) {
+func (s *paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) {
 	obj, err := s.set.Find(&things_test_io_v1.Paint{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*things_test_io_v1.Paint), nil
+}
+
+func (s *paintSet) Length() int {
+	return s.set.Length()
 }
 
 type ClusterResourceSet interface {
@@ -123,6 +136,7 @@ type ClusterResourceSet interface {
 	Difference(set ClusterResourceSet) ClusterResourceSet
 	Intersection(set ClusterResourceSet) ClusterResourceSet
 	Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error)
+	Length() int
 }
 
 func makeGenericClusterResourceSet(clusterResourceList []*things_test_io_v1.ClusterResource) sksets.ResourceSet {
@@ -141,11 +155,19 @@ func NewClusterResourceSet(clusterResourceList ...*things_test_io_v1.ClusterReso
 	return &clusterResourceSet{set: makeGenericClusterResourceSet(clusterResourceList)}
 }
 
-func (s clusterResourceSet) Keys() sets.String {
+func NewClusterResourceSetFromList(clusterResourceList *things_test_io_v1.ClusterResourceList) ClusterResourceSet {
+	list := make([]*things_test_io_v1.ClusterResource, 0, len(clusterResourceList.Items))
+	for idx := range clusterResourceList.Items {
+		list = append(list, &clusterResourceList.Items[idx])
+	}
+	return &clusterResourceSet{set: makeGenericClusterResourceSet(list)}
+}
+
+func (s *clusterResourceSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s clusterResourceSet) List() []*things_test_io_v1.ClusterResource {
+func (s *clusterResourceSet) List() []*things_test_io_v1.ClusterResource {
 	var clusterResourceList []*things_test_io_v1.ClusterResource
 	for _, obj := range s.set.List() {
 		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
@@ -153,7 +175,7 @@ func (s clusterResourceSet) List() []*things_test_io_v1.ClusterResource {
 	return clusterResourceList
 }
 
-func (s clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource {
+func (s *clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource {
 	newMap := map[string]*things_test_io_v1.ClusterResource{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*things_test_io_v1.ClusterResource)
@@ -161,7 +183,7 @@ func (s clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource 
 	return newMap
 }
 
-func (s clusterResourceSet) Insert(
+func (s *clusterResourceSet) Insert(
 	clusterResourceList ...*things_test_io_v1.ClusterResource,
 ) {
 	for _, obj := range clusterResourceList {
@@ -169,30 +191,30 @@ func (s clusterResourceSet) Insert(
 	}
 }
 
-func (s clusterResourceSet) Has(clusterResource *things_test_io_v1.ClusterResource) bool {
+func (s *clusterResourceSet) Has(clusterResource *things_test_io_v1.ClusterResource) bool {
 	return s.set.Has(clusterResource)
 }
 
-func (s clusterResourceSet) Equal(
+func (s *clusterResourceSet) Equal(
 	clusterResourceSet ClusterResourceSet,
 ) bool {
 	return s.set.Equal(makeGenericClusterResourceSet(clusterResourceSet.List()))
 }
 
-func (s clusterResourceSet) Delete(ClusterResource *things_test_io_v1.ClusterResource) {
+func (s *clusterResourceSet) Delete(ClusterResource *things_test_io_v1.ClusterResource) {
 	s.set.Delete(ClusterResource)
 }
 
-func (s clusterResourceSet) Union(set ClusterResourceSet) ClusterResourceSet {
+func (s *clusterResourceSet) Union(set ClusterResourceSet) ClusterResourceSet {
 	return NewClusterResourceSet(append(s.List(), set.List()...)...)
 }
 
-func (s clusterResourceSet) Difference(set ClusterResourceSet) ClusterResourceSet {
+func (s *clusterResourceSet) Difference(set ClusterResourceSet) ClusterResourceSet {
 	newSet := s.set.Difference(makeGenericClusterResourceSet(set.List()))
-	return clusterResourceSet{set: newSet}
+	return &clusterResourceSet{set: newSet}
 }
 
-func (s clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResourceSet {
+func (s *clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResourceSet {
 	newSet := s.set.Intersection(makeGenericClusterResourceSet(set.List()))
 	var clusterResourceList []*things_test_io_v1.ClusterResource
 	for _, obj := range newSet.List() {
@@ -201,11 +223,15 @@ func (s clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResource
 	return NewClusterResourceSet(clusterResourceList...)
 }
 
-func (s clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error) {
+func (s *clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error) {
 	obj, err := s.set.Find(&things_test_io_v1.ClusterResource{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*things_test_io_v1.ClusterResource), nil
+}
+
+func (s *clusterResourceSet) Length() int {
+	return s.set.Length()
 }
