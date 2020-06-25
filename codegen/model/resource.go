@@ -99,9 +99,6 @@ type CustomTemplates struct {
 	// maps output filename to template text
 	Templates map[string]string
 
-	// custom data that can be provided for use with custom templates
-	Data interface{}
-
 	// custom template funcs which will be inserted into the
 	// default template funcmap at rendering time
 	Funcs template.FuncMap

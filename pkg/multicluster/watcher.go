@@ -19,3 +19,9 @@ type ManagerSet interface {
 	// Cluster returns a manager for the given cluster, or an error if one does not exist.
 	Cluster(cluster string) (manager.Manager, error)
 }
+
+// ManagerSet maintains a manager for every cluster in the system.
+type ClusterSet interface {
+	// List the clusters (sorted) currently known to the set
+	ListClusters() []string
+}

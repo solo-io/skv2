@@ -78,6 +78,34 @@ func (m *ObjectRef) Hash(hasher hash.Hash64) (uint64, error) {
 }
 
 // Hash function
+func (m *ClusterObjectRef) Hash(hasher hash.Hash64) (uint64, error) {
+	if m == nil {
+		return 0, nil
+	}
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	var err error
+	if _, err = hasher.Write([]byte("core.skv2.solo.io.github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1.ClusterObjectRef")); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetName())); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetNamespace())); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetClusterName())); err != nil {
+		return 0, err
+	}
+
+	return hasher.Sum64(), nil
+}
+
+// Hash function
 func (m *Status) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil

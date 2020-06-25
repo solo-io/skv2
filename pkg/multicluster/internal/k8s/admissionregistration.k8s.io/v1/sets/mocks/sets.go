@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/admissionregistration.k8s.io/v1/sets"
 	v1 "k8s.io/api/admissionregistration/v1"
 	sets "k8s.io/apimachinery/pkg/util/sets"
@@ -174,4 +175,19 @@ func (m *MockValidatingWebhookConfigurationSet) Intersection(set v1sets.Validati
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockValidatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*v1.ValidatingWebhookConfiguration, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.ValidatingWebhookConfiguration)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Find), id)
 }

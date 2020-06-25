@@ -190,3 +190,25 @@ func (c *certificateSigningRequestClient) UpdateCertificateSigningRequestStatus(
 func (c *certificateSigningRequestClient) PatchCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
+
+// Provides CertificateSigningRequestClients for multiple clusters.
+type MulticlusterCertificateSigningRequestClient interface {
+	// Cluster returns a CertificateSigningRequestClient for the given cluster
+	Cluster(cluster string) (CertificateSigningRequestClient, error)
+}
+
+type multiclusterCertificateSigningRequestClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterCertificateSigningRequestClient(client multicluster.Client) MulticlusterCertificateSigningRequestClient {
+	return &multiclusterCertificateSigningRequestClient{client: client}
+}
+
+func (m *multiclusterCertificateSigningRequestClient) Cluster(cluster string) (CertificateSigningRequestClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewCertificateSigningRequestClient(client), nil
+}

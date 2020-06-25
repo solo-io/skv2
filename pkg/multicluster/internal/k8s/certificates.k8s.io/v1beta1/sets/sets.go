@@ -8,7 +8,7 @@ import (
 	certificates_k8s_io_v1beta1 "k8s.io/api/certificates/v1beta1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -23,10 +23,11 @@ type CertificateSigningRequestSet interface {
 	Union(set CertificateSigningRequestSet) CertificateSigningRequestSet
 	Difference(set CertificateSigningRequestSet) CertificateSigningRequestSet
 	Intersection(set CertificateSigningRequestSet) CertificateSigningRequestSet
+	Find(id ezkube.ResourceId) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error)
 }
 
 func makeGenericCertificateSigningRequestSet(certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range certificateSigningRequestList {
 		genericResources = append(genericResources, obj)
 	}
@@ -99,4 +100,13 @@ func (s certificateSigningRequestSet) Intersection(set CertificateSigningRequest
 		certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 	}
 	return NewCertificateSigningRequestSet(certificateSigningRequestList...)
+}
+
+func (s certificateSigningRequestSet) Find(id ezkube.ResourceId) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error) {
+	obj, err := s.set.Find(&certificates_k8s_io_v1beta1.CertificateSigningRequest{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest), nil
 }

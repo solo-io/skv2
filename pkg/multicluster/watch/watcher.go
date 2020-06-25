@@ -2,6 +2,7 @@ package watch
 
 import (
 	"context"
+	"sort"
 	"sync"
 
 	"github.com/rotisserie/eris"
@@ -24,6 +25,7 @@ type clusterWatcher struct {
 
 var _ multicluster.ClusterWatcher = &clusterWatcher{}
 var _ multicluster.ManagerSet = &clusterWatcher{}
+var _ multicluster.ClusterSet = &clusterWatcher{}
 
 // NewClusterWatcher returns a *clusterWatcher.
 // When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
@@ -81,6 +83,10 @@ func (c *clusterWatcher) RegisterClusterHandler(handler multicluster.ClusterHand
 
 func (c *clusterWatcher) Cluster(cluster string) (manager.Manager, error) {
 	return c.managers.get(cluster)
+}
+
+func (s *clusterWatcher) ListClusters() []string {
+	return s.managers.list()
 }
 
 func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
@@ -160,6 +166,18 @@ func (s *managerSet) delete(cluster string) {
 	}
 	am.cancel()
 	delete(s.asyncManagers, cluster)
+}
+
+func (s *managerSet) list() []string {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	var output []string
+	for cluster := range s.asyncManagers {
+		output = append(output, cluster)
+	}
+	sort.Strings(output)
+	return output
 }
 
 func (s *managerSet) applyHandler(h multicluster.ClusterHandler) {

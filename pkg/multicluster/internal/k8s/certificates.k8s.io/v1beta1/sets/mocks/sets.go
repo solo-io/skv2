@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1beta1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/certificates.k8s.io/v1beta1/sets"
 	v1beta1 "k8s.io/api/certificates/v1beta1"
 	sets "k8s.io/apimachinery/pkg/util/sets"
@@ -174,4 +175,19 @@ func (m *MockCertificateSigningRequestSet) Intersection(set v1beta1sets.Certific
 func (mr *MockCertificateSigningRequestSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockCertificateSigningRequestSet) Find(id ezkube.ResourceId) (*v1beta1.CertificateSigningRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1beta1.CertificateSigningRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockCertificateSigningRequestSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Find), id)
 }

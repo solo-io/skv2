@@ -39,6 +39,10 @@ type Command struct {
 	// the k8s api groups for which to compile
 	Groups []render.Group
 
+	// top-level custom templates to render.
+	// these will recieve all groups as inputs
+	TopLevelTemplates []model.CustomTemplates
+
 	// optinal helm chart to render
 	Chart *model.Chart
 
@@ -96,6 +100,12 @@ func (c Command) Execute() error {
 		group.Init()
 
 		if err := c.generateGroup(group); err != nil {
+			return err
+		}
+	}
+
+	for _, template := range c.TopLevelTemplates {
+		if err := c.generateTopLevelTemplates(template); err != nil {
 			return err
 		}
 	}
@@ -169,6 +179,25 @@ func (c Command) generateGroup(grp model.Group) error {
 	}
 
 	if err := render.KubeCodegen(grp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) error {
+
+	fileWriter := &writer.DefaultFileWriter{
+		Root:   c.moduleRoot,
+		Header: c.GeneratedHeader,
+	}
+
+	customCode, err := render.DefaultTemplateRenderer.RenderCustomTemplates(templates.Templates, templates.Funcs, c.Groups)
+	if err != nil {
+		return err
+	}
+
+	if err := fileWriter.WriteFiles(customCode); err != nil {
 		return err
 	}
 

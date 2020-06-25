@@ -1,36 +1,45 @@
 package sets
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sync"
+
+	"github.com/rotisserie/eris"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
+var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) error {
+	return eris.Errorf("%T with id %v not found", resourceType, Key(id))
+}
+
 // k8s resources are uniquely identified by their name and namespace
-func Key(objectMeta metav1.Object) string {
-	return objectMeta.GetName() + "." + objectMeta.GetNamespace()
+func Key(id ezkube.ResourceId) string {
+	return id.GetName() + "." + id.GetNamespace() + "." + id.GetClusterName()
 }
 
 type ResourceSet interface {
 	Keys() sets.String
-	List() []metav1.Object
-	Map() map[string]metav1.Object
-	Insert(resource ...metav1.Object)
+	List() []ezkube.ResourceId
+	Map() map[string]ezkube.ResourceId
+	Insert(resource ...ezkube.ResourceId)
 	Equal(resourceSet ResourceSet) bool
-	Has(resource metav1.Object) bool
-	Delete(resource metav1.Object)
+	Has(resource ezkube.ResourceId) bool
+	Delete(resource ezkube.ResourceId)
 	Union(set ResourceSet) ResourceSet
 	Difference(set ResourceSet) ResourceSet
 	Intersection(set ResourceSet) ResourceSet
+	Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error)
 }
 
 type resourceSet struct {
+	lock    sync.RWMutex
 	set     sets.String
-	mapping map[string]metav1.Object
+	mapping map[string]ezkube.ResourceId
 }
 
-func NewResourceSet(resources ...metav1.Object) ResourceSet {
+func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
 	set := sets.NewString()
-	mapping := map[string]metav1.Object{}
+	mapping := map[string]ezkube.ResourceId{}
 	for _, resource := range resources {
 		key := Key(resource)
 		set.Insert(key)
@@ -43,16 +52,20 @@ func (s resourceSet) Keys() sets.String {
 	return sets.NewString(s.set.List()...)
 }
 
-func (s resourceSet) List() []metav1.Object {
-	var Resources []metav1.Object
+func (s resourceSet) List() []ezkube.ResourceId {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	var Resources []ezkube.ResourceId
 	for _, key := range s.set.List() {
 		Resources = append(Resources, s.mapping[key])
 	}
 	return Resources
 }
 
-func (s resourceSet) Map() map[string]metav1.Object {
-	newMap := map[string]metav1.Object{}
+func (s resourceSet) Map() map[string]ezkube.ResourceId {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	newMap := map[string]ezkube.ResourceId{}
 	for k, v := range s.mapping {
 		newMap[k] = v
 	}
@@ -60,8 +73,10 @@ func (s resourceSet) Map() map[string]metav1.Object {
 }
 
 func (s resourceSet) Insert(
-	Resources ...metav1.Object,
+	Resources ...ezkube.ResourceId,
 ) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	for _, Resource := range Resources {
 		key := Key(Resource)
 		s.mapping[key] = Resource
@@ -69,17 +84,23 @@ func (s resourceSet) Insert(
 	}
 }
 
-func (s resourceSet) Has(resource metav1.Object) bool {
+func (s resourceSet) Has(resource ezkube.ResourceId) bool {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return s.set.Has(Key(resource))
 }
 
 func (s resourceSet) Equal(
 	ResourceSet ResourceSet,
 ) bool {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return s.set.Equal(ResourceSet.Keys())
 }
 
-func (s resourceSet) Delete(resource metav1.Object) {
+func (s resourceSet) Delete(resource ezkube.ResourceId) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	key := Key(resource)
 	delete(s.mapping, key)
 	s.set.Delete(key)
@@ -90,8 +111,10 @@ func (s resourceSet) Union(set ResourceSet) ResourceSet {
 }
 
 func (s resourceSet) Difference(set ResourceSet) ResourceSet {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	newSet := s.set.Difference(set.Keys())
-	var newResources []metav1.Object
+	var newResources []ezkube.ResourceId
 	for key, _ := range newSet {
 		val, _ := s.mapping[key]
 		newResources = append(newResources, val)
@@ -100,11 +123,29 @@ func (s resourceSet) Difference(set ResourceSet) ResourceSet {
 }
 
 func (s resourceSet) Intersection(set ResourceSet) ResourceSet {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	newSet := s.set.Intersection(set.Keys())
-	var newResources []metav1.Object
+	var newResources []ezkube.ResourceId
 	for key, _ := range newSet {
 		val, _ := s.mapping[key]
 		newResources = append(newResources, val)
 	}
 	return NewResourceSet(newResources...)
+}
+
+func (s resourceSet) Find(
+	resourceType,
+	id ezkube.ResourceId,
+) (ezkube.ResourceId, error) {
+
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	key := Key(id)
+	resource, ok := s.mapping[key]
+	if !ok {
+		return nil, NotFoundErr(resourceType, id)
+	}
+
+	return resource, nil
 }

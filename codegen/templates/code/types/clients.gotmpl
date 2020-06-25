@@ -232,4 +232,26 @@ func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}Status(ctx contex
     return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides {{ $resource.Kind }}Clients for multiple clusters.
+type Multicluster{{ $resource.Kind }}Client interface {
+    // Cluster returns a {{ $resource.Kind }}Client for the given cluster
+    Cluster(cluster string) ({{ $resource.Kind }}Client, error)
+}
+
+type multicluster{{ $resource.Kind }}Client struct {
+    client multicluster.Client
+}
+
+func NewMulticluster{{ $resource.Kind }}Client(client multicluster.Client) Multicluster{{ $resource.Kind }}Client {
+    return &multicluster{{ $resource.Kind }}Client{client: client}
+}
+
+func (m *multicluster{{ $resource.Kind }}Client) Cluster(cluster string) ({{ $resource.Kind }}Client, error) {
+    client, err := m.client.Cluster(cluster)
+    if err != nil {
+        return nil, err
+    }
+    return  New{{ $resource.Kind }}Client(client), nil
+}
+
 {{- end }}

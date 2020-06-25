@@ -554,3 +554,41 @@ func (mr *MockCustomResourceDefinitionClientMockRecorder) PatchCustomResourceDef
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCustomResourceDefinitionStatus", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).PatchCustomResourceDefinitionStatus), varargs...)
 }
+
+// MockMulticlusterCustomResourceDefinitionClient is a mock of MulticlusterCustomResourceDefinitionClient interface.
+type MockMulticlusterCustomResourceDefinitionClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterCustomResourceDefinitionClientMockRecorder
+}
+
+// MockMulticlusterCustomResourceDefinitionClientMockRecorder is the mock recorder for MockMulticlusterCustomResourceDefinitionClient.
+type MockMulticlusterCustomResourceDefinitionClientMockRecorder struct {
+	mock *MockMulticlusterCustomResourceDefinitionClient
+}
+
+// NewMockMulticlusterCustomResourceDefinitionClient creates a new mock instance.
+func NewMockMulticlusterCustomResourceDefinitionClient(ctrl *gomock.Controller) *MockMulticlusterCustomResourceDefinitionClient {
+	mock := &MockMulticlusterCustomResourceDefinitionClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterCustomResourceDefinitionClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterCustomResourceDefinitionClient) EXPECT() *MockMulticlusterCustomResourceDefinitionClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterCustomResourceDefinitionClient) Cluster(cluster string) (v1beta1.CustomResourceDefinitionClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1beta1.CustomResourceDefinitionClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterCustomResourceDefinitionClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterCustomResourceDefinitionClient)(nil).Cluster), cluster)
+}

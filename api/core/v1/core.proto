@@ -28,6 +28,19 @@ message ObjectRef {
     string namespace = 4;
 }
 
+// Resource reference for an object
+message ClusterObjectRef {
+
+    // name of the resource being referenced
+    string name = 1;
+
+    // namespace of the resource being referenced
+    string namespace = 2;
+
+    // name of the cluster in which the resource exists
+    string cluster_name = 3;
+}
+
 // A generic status
 message Status {
 

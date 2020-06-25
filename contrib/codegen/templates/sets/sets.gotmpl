@@ -6,7 +6,7 @@ import (
     {{ $import_prefix }} "{{ group_import_path $ }}"
 
     sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "github.com/solo-io/skv2/pkg/ezkube"
     "k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -25,10 +25,11 @@ type {{ $resource.Kind }}Set interface {
     Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
     Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
     Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
+    Find(id ezkube.ResourceId) (*{{ $import_prefix }}.{{ $resource.Kind }}, error)
 }
 
 func makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}) sksets.ResourceSet {
-    var genericResources []metav1.Object
+    var genericResources []ezkube.ResourceId
     for _, obj := range {{ $kindLowerCamel }}List {
         genericResources = append(genericResources, obj)
     }
@@ -101,6 +102,16 @@ func (s {{ $kindLowerCamel }}Set) Intersection(set {{ $resource.Kind }}Set) {{ $
         {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
     }
     return New{{ $resource.Kind }}Set({{ $kindLowerCamel }}List...)
+}
+
+
+func (s {{ $kindLowerCamel }}Set) Find(id ezkube.ResourceId) (*{{ $import_prefix }}.{{ $resource.Kind }}, error) {
+	obj, err := s.set.Find(&{{ $import_prefix }}.{{ $resource.Kind }}{}, id)
+	if err != nil {
+		return nil, err
+    }
+
+    return obj.(*{{ $import_prefix }}.{{ $resource.Kind }}), nil
 }
 
 {{- end }}
