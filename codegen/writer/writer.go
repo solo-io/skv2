@@ -12,6 +12,13 @@ import (
 	"golang.org/x/tools/imports"
 )
 
+var commentPrefixes = map[string]string{
+	".go":    "//",
+	".proto": "//",
+	".js":    "//",
+	".ts":    "//",
+}
+
 type FileWriter interface {
 	WriteFiles(files []render.OutFile) error
 }
@@ -38,15 +45,14 @@ func (w *DefaultFileWriter) WriteFiles(files []render.OutFile) error {
 
 		log.Printf("Writing %v", name)
 
-		// set default comment char to "#" as this is the most common
-		commentChar := "#"
-		switch filepath.Ext(name) {
-		case ".go":
-			commentChar = "//"
+		commentPrefix := commentPrefixes[filepath.Ext(name)]
+		if commentPrefix == "" {
+			// set default comment char to "#" as this is the most common
+			commentPrefix = "#"
 		}
 
 		if w.Header != "" {
-			content = fmt.Sprintf("%s %s\n\n", commentChar, w.Header) + content
+			content = fmt.Sprintf("%s %s\n\n", commentPrefix, w.Header) + content
 		}
 
 		if err := ioutil.WriteFile(name, []byte(content), perm); err != nil {
