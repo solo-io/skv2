@@ -41,7 +41,7 @@ func NewKubernetesClusterSet(kubernetesClusterList ...*multicluster_solo_io_v1al
 	return &kubernetesClusterSet{set: makeGenericKubernetesClusterSet(kubernetesClusterList)}
 }
 
-func NewKubernetesClusterSetFromKubeList(kubernetesClusterList *multicluster_solo_io_v1alpha1.KubernetesClusterList) KubernetesClusterSet {
+func NewKubernetesClusterSetFromList(kubernetesClusterList *multicluster_solo_io_v1alpha1.KubernetesClusterList) KubernetesClusterSet {
 	list := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(kubernetesClusterList.Items))
 	for idx := range kubernetesClusterList.Items {
 		list = append(list, &kubernetesClusterList.Items[idx])
@@ -117,6 +117,7 @@ func (s *kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io
 
 	return obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster), nil
 }
+
 func (s *kubernetesClusterSet) Length() int {
 	return s.set.Length()
 }

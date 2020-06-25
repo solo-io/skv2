@@ -43,7 +43,7 @@ func NewValidatingWebhookConfigurationSet(validatingWebhookConfigurationList ...
 	return &validatingWebhookConfigurationSet{set: makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList)}
 }
 
-func NewValidatingWebhookConfigurationSetFromKubeList(validatingWebhookConfigurationList *admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationList) ValidatingWebhookConfigurationSet {
+func NewValidatingWebhookConfigurationSetFromList(validatingWebhookConfigurationList *admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationList) ValidatingWebhookConfigurationSet {
 	list := make([]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, 0, len(validatingWebhookConfigurationList.Items))
 	for idx := range validatingWebhookConfigurationList.Items {
 		list = append(list, &validatingWebhookConfigurationList.Items[idx])
@@ -119,6 +119,7 @@ func (s *validatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*admissi
 
 	return obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration), nil
 }
+
 func (s *validatingWebhookConfigurationSet) Length() int {
 	return s.set.Length()
 }

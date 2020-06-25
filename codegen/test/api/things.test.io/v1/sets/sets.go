@@ -43,7 +43,7 @@ func NewPaintSet(paintList ...*things_test_io_v1.Paint) PaintSet {
 	return &paintSet{set: makeGenericPaintSet(paintList)}
 }
 
-func NewPaintSetFromKubeList(paintList *things_test_io_v1.PaintList) PaintSet {
+func NewPaintSetFromList(paintList *things_test_io_v1.PaintList) PaintSet {
 	list := make([]*things_test_io_v1.Paint, 0, len(paintList.Items))
 	for idx := range paintList.Items {
 		list = append(list, &paintList.Items[idx])
@@ -119,6 +119,7 @@ func (s *paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) 
 
 	return obj.(*things_test_io_v1.Paint), nil
 }
+
 func (s *paintSet) Length() int {
 	return s.set.Length()
 }
@@ -154,7 +155,7 @@ func NewClusterResourceSet(clusterResourceList ...*things_test_io_v1.ClusterReso
 	return &clusterResourceSet{set: makeGenericClusterResourceSet(clusterResourceList)}
 }
 
-func NewClusterResourceSetFromKubeList(clusterResourceList *things_test_io_v1.ClusterResourceList) ClusterResourceSet {
+func NewClusterResourceSetFromList(clusterResourceList *things_test_io_v1.ClusterResourceList) ClusterResourceSet {
 	list := make([]*things_test_io_v1.ClusterResource, 0, len(clusterResourceList.Items))
 	for idx := range clusterResourceList.Items {
 		list = append(list, &clusterResourceList.Items[idx])
@@ -230,6 +231,7 @@ func (s *clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Clus
 
 	return obj.(*things_test_io_v1.ClusterResource), nil
 }
+
 func (s *clusterResourceSet) Length() int {
 	return s.set.Length()
 }

@@ -43,7 +43,7 @@ func NewCertificateSigningRequestSet(certificateSigningRequestList ...*certifica
 	return &certificateSigningRequestSet{set: makeGenericCertificateSigningRequestSet(certificateSigningRequestList)}
 }
 
-func NewCertificateSigningRequestSetFromKubeList(certificateSigningRequestList *certificates_k8s_io_v1beta1.CertificateSigningRequestList) CertificateSigningRequestSet {
+func NewCertificateSigningRequestSetFromList(certificateSigningRequestList *certificates_k8s_io_v1beta1.CertificateSigningRequestList) CertificateSigningRequestSet {
 	list := make([]*certificates_k8s_io_v1beta1.CertificateSigningRequest, 0, len(certificateSigningRequestList.Items))
 	for idx := range certificateSigningRequestList.Items {
 		list = append(list, &certificateSigningRequestList.Items[idx])
@@ -119,6 +119,7 @@ func (s *certificateSigningRequestSet) Find(id ezkube.ResourceId) (*certificates
 
 	return obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest), nil
 }
+
 func (s *certificateSigningRequestSet) Length() int {
 	return s.set.Length()
 }

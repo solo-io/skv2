@@ -43,7 +43,7 @@ func NewCustomResourceDefinitionSet(customResourceDefinitionList ...*apiextensio
 	return &customResourceDefinitionSet{set: makeGenericCustomResourceDefinitionSet(customResourceDefinitionList)}
 }
 
-func NewCustomResourceDefinitionSetFromKubeList(customResourceDefinitionList *apiextensions_k8s_io_v1beta1.CustomResourceDefinitionList) CustomResourceDefinitionSet {
+func NewCustomResourceDefinitionSetFromList(customResourceDefinitionList *apiextensions_k8s_io_v1beta1.CustomResourceDefinitionList) CustomResourceDefinitionSet {
 	list := make([]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, 0, len(customResourceDefinitionList.Items))
 	for idx := range customResourceDefinitionList.Items {
 		list = append(list, &customResourceDefinitionList.Items[idx])
@@ -119,6 +119,7 @@ func (s *customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions
 
 	return obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition), nil
 }
+
 func (s *customResourceDefinitionSet) Length() int {
 	return s.set.Length()
 }

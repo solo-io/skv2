@@ -45,7 +45,7 @@ func New{{ $resource.Kind }}Set({{ $kindLowerCamel }}List ...*{{ $import_prefix 
     return &{{ $kindLowerCamel }}Set{set: makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List)}
 }
 
-func New{{ $resource.Kind }}SetFromKubeList({{ $kindLowerCamel }}List *{{ $import_prefix }}.{{ $resource.Kind }}List) {{ $resource.Kind }}Set {
+func New{{ $resource.Kind }}SetFromList({{ $kindLowerCamel }}List *{{ $import_prefix }}.{{ $resource.Kind }}List) {{ $resource.Kind }}Set {
     list := make([]*{{ $import_prefix }}.{{ $resource.Kind }}, 0, len({{ $kindLowerCamel }}List.Items))
     for idx := range {{ $kindLowerCamel }}List.Items {
         list = append(list, &{{ $kindLowerCamel }}List.Items[idx])
@@ -122,6 +122,7 @@ func (s *{{ $kindLowerCamel }}Set) Find(id ezkube.ResourceId) (*{{ $import_prefi
 
     return obj.(*{{ $import_prefix }}.{{ $resource.Kind }}), nil
 }
+
 func (s *{{ $kindLowerCamel }}Set) Length() int {
     return s.set.Length()
 }

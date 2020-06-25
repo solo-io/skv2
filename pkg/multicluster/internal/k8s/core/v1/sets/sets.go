@@ -43,7 +43,7 @@ func NewSecretSet(secretList ...*v1.Secret) SecretSet {
 	return &secretSet{set: makeGenericSecretSet(secretList)}
 }
 
-func NewSecretSetFromKubeList(secretList *v1.SecretList) SecretSet {
+func NewSecretSetFromList(secretList *v1.SecretList) SecretSet {
 	list := make([]*v1.Secret, 0, len(secretList.Items))
 	for idx := range secretList.Items {
 		list = append(list, &secretList.Items[idx])
@@ -119,6 +119,7 @@ func (s *secretSet) Find(id ezkube.ResourceId) (*v1.Secret, error) {
 
 	return obj.(*v1.Secret), nil
 }
+
 func (s *secretSet) Length() int {
 	return s.set.Length()
 }
@@ -154,7 +155,7 @@ func NewServiceAccountSet(serviceAccountList ...*v1.ServiceAccount) ServiceAccou
 	return &serviceAccountSet{set: makeGenericServiceAccountSet(serviceAccountList)}
 }
 
-func NewServiceAccountSetFromKubeList(serviceAccountList *v1.ServiceAccountList) ServiceAccountSet {
+func NewServiceAccountSetFromList(serviceAccountList *v1.ServiceAccountList) ServiceAccountSet {
 	list := make([]*v1.ServiceAccount, 0, len(serviceAccountList.Items))
 	for idx := range serviceAccountList.Items {
 		list = append(list, &serviceAccountList.Items[idx])
@@ -230,6 +231,7 @@ func (s *serviceAccountSet) Find(id ezkube.ResourceId) (*v1.ServiceAccount, erro
 
 	return obj.(*v1.ServiceAccount), nil
 }
+
 func (s *serviceAccountSet) Length() int {
 	return s.set.Length()
 }
@@ -265,7 +267,7 @@ func NewNamespaceSet(namespaceList ...*v1.Namespace) NamespaceSet {
 	return &namespaceSet{set: makeGenericNamespaceSet(namespaceList)}
 }
 
-func NewNamespaceSetFromKubeList(namespaceList *v1.NamespaceList) NamespaceSet {
+func NewNamespaceSetFromList(namespaceList *v1.NamespaceList) NamespaceSet {
 	list := make([]*v1.Namespace, 0, len(namespaceList.Items))
 	for idx := range namespaceList.Items {
 		list = append(list, &namespaceList.Items[idx])
@@ -341,6 +343,7 @@ func (s *namespaceSet) Find(id ezkube.ResourceId) (*v1.Namespace, error) {
 
 	return obj.(*v1.Namespace), nil
 }
+
 func (s *namespaceSet) Length() int {
 	return s.set.Length()
 }
