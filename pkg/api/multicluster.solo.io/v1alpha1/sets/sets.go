@@ -49,11 +49,11 @@ func NewKubernetesClusterSetFromKubeList(kubernetesClusterList *multicluster_sol
 	return &kubernetesClusterSet{set: makeGenericKubernetesClusterSet(list)}
 }
 
-func (s kubernetesClusterSet) Keys() sets.String {
+func (s *kubernetesClusterSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s kubernetesClusterSet) List() []*multicluster_solo_io_v1alpha1.KubernetesCluster {
+func (s *kubernetesClusterSet) List() []*multicluster_solo_io_v1alpha1.KubernetesCluster {
 	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range s.set.List() {
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
@@ -61,7 +61,7 @@ func (s kubernetesClusterSet) List() []*multicluster_solo_io_v1alpha1.Kubernetes
 	return kubernetesClusterList
 }
 
-func (s kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster {
+func (s *kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster {
 	newMap := map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
@@ -69,7 +69,7 @@ func (s kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.Ku
 	return newMap
 }
 
-func (s kubernetesClusterSet) Insert(
+func (s *kubernetesClusterSet) Insert(
 	kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) {
 	for _, obj := range kubernetesClusterList {
@@ -77,30 +77,30 @@ func (s kubernetesClusterSet) Insert(
 	}
 }
 
-func (s kubernetesClusterSet) Has(kubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) bool {
+func (s *kubernetesClusterSet) Has(kubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) bool {
 	return s.set.Has(kubernetesCluster)
 }
 
-func (s kubernetesClusterSet) Equal(
+func (s *kubernetesClusterSet) Equal(
 	kubernetesClusterSet KubernetesClusterSet,
 ) bool {
 	return s.set.Equal(makeGenericKubernetesClusterSet(kubernetesClusterSet.List()))
 }
 
-func (s kubernetesClusterSet) Delete(KubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) {
+func (s *kubernetesClusterSet) Delete(KubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) {
 	s.set.Delete(KubernetesCluster)
 }
 
-func (s kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
+func (s *kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
 	return NewKubernetesClusterSet(append(s.List(), set.List()...)...)
 }
 
-func (s kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
+func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
 	newSet := s.set.Difference(makeGenericKubernetesClusterSet(set.List()))
-	return kubernetesClusterSet{set: newSet}
+	return &kubernetesClusterSet{set: newSet}
 }
 
-func (s kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesClusterSet {
+func (s *kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesClusterSet {
 	newSet := s.set.Intersection(makeGenericKubernetesClusterSet(set.List()))
 	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range newSet.List() {
@@ -109,7 +109,7 @@ func (s kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesC
 	return NewKubernetesClusterSet(kubernetesClusterList...)
 }
 
-func (s kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error) {
+func (s *kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error) {
 	obj, err := s.set.Find(&multicluster_solo_io_v1alpha1.KubernetesCluster{}, id)
 	if err != nil {
 		return nil, err
@@ -117,6 +117,6 @@ func (s kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_
 
 	return obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster), nil
 }
-func (s kubernetesClusterSet) Length() int {
+func (s *kubernetesClusterSet) Length() int {
 	return s.set.Length()
 }

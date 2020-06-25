@@ -49,11 +49,11 @@ func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
 	return &resourceSet{set: set, mapping: mapping}
 }
 
-func (s resourceSet) Keys() sets.String {
+func (s *resourceSet) Keys() sets.String {
 	return sets.NewString(s.set.List()...)
 }
 
-func (s resourceSet) List() []ezkube.ResourceId {
+func (s *resourceSet) List() []ezkube.ResourceId {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	var Resources []ezkube.ResourceId
@@ -63,7 +63,7 @@ func (s resourceSet) List() []ezkube.ResourceId {
 	return Resources
 }
 
-func (s resourceSet) Map() map[string]ezkube.ResourceId {
+func (s *resourceSet) Map() map[string]ezkube.ResourceId {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	newMap := map[string]ezkube.ResourceId{}
@@ -73,7 +73,7 @@ func (s resourceSet) Map() map[string]ezkube.ResourceId {
 	return newMap
 }
 
-func (s resourceSet) Insert(
+func (s *resourceSet) Insert(
 	Resources ...ezkube.ResourceId,
 ) {
 	s.lock.Lock()
@@ -85,13 +85,13 @@ func (s resourceSet) Insert(
 	}
 }
 
-func (s resourceSet) Has(resource ezkube.ResourceId) bool {
+func (s *resourceSet) Has(resource ezkube.ResourceId) bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	return s.set.Has(Key(resource))
 }
 
-func (s resourceSet) Equal(
+func (s *resourceSet) Equal(
 	ResourceSet ResourceSet,
 ) bool {
 	s.lock.RLock()
@@ -99,7 +99,7 @@ func (s resourceSet) Equal(
 	return s.set.Equal(ResourceSet.Keys())
 }
 
-func (s resourceSet) Delete(resource ezkube.ResourceId) {
+func (s *resourceSet) Delete(resource ezkube.ResourceId) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	key := Key(resource)
@@ -107,11 +107,11 @@ func (s resourceSet) Delete(resource ezkube.ResourceId) {
 	s.set.Delete(key)
 }
 
-func (s resourceSet) Union(set ResourceSet) ResourceSet {
+func (s *resourceSet) Union(set ResourceSet) ResourceSet {
 	return NewResourceSet(append(s.List(), set.List()...)...)
 }
 
-func (s resourceSet) Difference(set ResourceSet) ResourceSet {
+func (s *resourceSet) Difference(set ResourceSet) ResourceSet {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	newSet := s.set.Difference(set.Keys())
@@ -123,7 +123,7 @@ func (s resourceSet) Difference(set ResourceSet) ResourceSet {
 	return NewResourceSet(newResources...)
 }
 
-func (s resourceSet) Intersection(set ResourceSet) ResourceSet {
+func (s *resourceSet) Intersection(set ResourceSet) ResourceSet {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	newSet := s.set.Intersection(set.Keys())
@@ -135,7 +135,7 @@ func (s resourceSet) Intersection(set ResourceSet) ResourceSet {
 	return NewResourceSet(newResources...)
 }
 
-func (s resourceSet) Find(
+func (s *resourceSet) Find(
 	resourceType,
 	id ezkube.ResourceId,
 ) (ezkube.ResourceId, error) {
@@ -151,6 +151,9 @@ func (s resourceSet) Find(
 	return resource, nil
 }
 
-func (s resourceSet) Length() int {
+func (s *resourceSet) Length() int {
+
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return len(s.mapping)
 }

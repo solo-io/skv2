@@ -51,11 +51,11 @@ func NewCertificateSigningRequestSetFromKubeList(certificateSigningRequestList *
 	return &certificateSigningRequestSet{set: makeGenericCertificateSigningRequestSet(list)}
 }
 
-func (s certificateSigningRequestSet) Keys() sets.String {
+func (s *certificateSigningRequestSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s certificateSigningRequestSet) List() []*certificates_k8s_io_v1beta1.CertificateSigningRequest {
+func (s *certificateSigningRequestSet) List() []*certificates_k8s_io_v1beta1.CertificateSigningRequest {
 	var certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest
 	for _, obj := range s.set.List() {
 		certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
@@ -63,7 +63,7 @@ func (s certificateSigningRequestSet) List() []*certificates_k8s_io_v1beta1.Cert
 	return certificateSigningRequestList
 }
 
-func (s certificateSigningRequestSet) Map() map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest {
+func (s *certificateSigningRequestSet) Map() map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest {
 	newMap := map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
@@ -71,7 +71,7 @@ func (s certificateSigningRequestSet) Map() map[string]*certificates_k8s_io_v1be
 	return newMap
 }
 
-func (s certificateSigningRequestSet) Insert(
+func (s *certificateSigningRequestSet) Insert(
 	certificateSigningRequestList ...*certificates_k8s_io_v1beta1.CertificateSigningRequest,
 ) {
 	for _, obj := range certificateSigningRequestList {
@@ -79,30 +79,30 @@ func (s certificateSigningRequestSet) Insert(
 	}
 }
 
-func (s certificateSigningRequestSet) Has(certificateSigningRequest *certificates_k8s_io_v1beta1.CertificateSigningRequest) bool {
+func (s *certificateSigningRequestSet) Has(certificateSigningRequest *certificates_k8s_io_v1beta1.CertificateSigningRequest) bool {
 	return s.set.Has(certificateSigningRequest)
 }
 
-func (s certificateSigningRequestSet) Equal(
+func (s *certificateSigningRequestSet) Equal(
 	certificateSigningRequestSet CertificateSigningRequestSet,
 ) bool {
 	return s.set.Equal(makeGenericCertificateSigningRequestSet(certificateSigningRequestSet.List()))
 }
 
-func (s certificateSigningRequestSet) Delete(CertificateSigningRequest *certificates_k8s_io_v1beta1.CertificateSigningRequest) {
+func (s *certificateSigningRequestSet) Delete(CertificateSigningRequest *certificates_k8s_io_v1beta1.CertificateSigningRequest) {
 	s.set.Delete(CertificateSigningRequest)
 }
 
-func (s certificateSigningRequestSet) Union(set CertificateSigningRequestSet) CertificateSigningRequestSet {
+func (s *certificateSigningRequestSet) Union(set CertificateSigningRequestSet) CertificateSigningRequestSet {
 	return NewCertificateSigningRequestSet(append(s.List(), set.List()...)...)
 }
 
-func (s certificateSigningRequestSet) Difference(set CertificateSigningRequestSet) CertificateSigningRequestSet {
+func (s *certificateSigningRequestSet) Difference(set CertificateSigningRequestSet) CertificateSigningRequestSet {
 	newSet := s.set.Difference(makeGenericCertificateSigningRequestSet(set.List()))
-	return certificateSigningRequestSet{set: newSet}
+	return &certificateSigningRequestSet{set: newSet}
 }
 
-func (s certificateSigningRequestSet) Intersection(set CertificateSigningRequestSet) CertificateSigningRequestSet {
+func (s *certificateSigningRequestSet) Intersection(set CertificateSigningRequestSet) CertificateSigningRequestSet {
 	newSet := s.set.Intersection(makeGenericCertificateSigningRequestSet(set.List()))
 	var certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest
 	for _, obj := range newSet.List() {
@@ -111,7 +111,7 @@ func (s certificateSigningRequestSet) Intersection(set CertificateSigningRequest
 	return NewCertificateSigningRequestSet(certificateSigningRequestList...)
 }
 
-func (s certificateSigningRequestSet) Find(id ezkube.ResourceId) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error) {
+func (s *certificateSigningRequestSet) Find(id ezkube.ResourceId) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error) {
 	obj, err := s.set.Find(&certificates_k8s_io_v1beta1.CertificateSigningRequest{}, id)
 	if err != nil {
 		return nil, err
@@ -119,6 +119,6 @@ func (s certificateSigningRequestSet) Find(id ezkube.ResourceId) (*certificates_
 
 	return obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest), nil
 }
-func (s certificateSigningRequestSet) Length() int {
+func (s *certificateSigningRequestSet) Length() int {
 	return s.set.Length()
 }
