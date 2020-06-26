@@ -44,33 +44,15 @@ var (
 	}
 )
 
-func NewClusterRegistrant(
-	authorization internal.ClusterRBACBinderFactory,
-	secretClient k8s_core_v1.SecretClient,
-	secretClientFactory k8s_core_v1_providers.SecretClientFromConfigFactory,
-	nsClientFactory k8s_core_v1_providers.NamespaceClientFromConfigFactory,
-	saClientFactory k8s_core_v1_providers.ServiceAccountClientFromConfigFactory,
-	clusterRoleClientFactory rbac_v1_providers.ClusterRoleClientFromConfigFactory,
-	roleClientFactory rbac_v1_providers.RoleClientFromConfigFactory,
-) ClusterRegistrant {
-	return &clusterRegistrant{
-		clusterRBACBinderFactory: authorization,
-		secretClient:             secretClient,
-		nsClientFactory:          nsClientFactory,
-		secretClientFactory:      secretClientFactory,
-		clusterRoleClientFactory: clusterRoleClientFactory,
-		roleClientFactory:        roleClientFactory,
-		saClientFactory:          saClientFactory,
-	}
-}
-
 /*
-	This option should be used mostly for testing.
-	When passed in, it will overwrite the Api Server endpoint in the the kubeconfig before it is written.
-	This is primarily useful when running multi cluster KinD environments on a mac as  the local IP needs
-	to be re-written to `host.docker.internal` so that the local instance knows to hit localhost.
+	NewClusterRegistrant returns an implementation of ClusterRegistrant.
+
+	localClusterDomainOverride is optional. When passed in, it will overwrite the Api Server endpoint in
+	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
+	on a mac as  the local IP needs to be re-written to `host.docker.internal` so that the local instance
+	knows to hit localhost.
 */
-func NewTestingRegistrant(
+func NewClusterRegistrant(
 	localClusterDomainOverride string,
 	clusterRBAC internal.ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
