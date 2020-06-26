@@ -34,7 +34,6 @@ var _ = Describe("Cmd", func() {
 							ClusterScoped: true,
 						},
 					},
-					RenderProtos:     true,
 					RenderManifests:  true,
 					RenderTypes:      true,
 					RenderClients:    true,
@@ -47,6 +46,7 @@ var _ = Describe("Cmd", func() {
 			AnyVendorConfig: &sk_anyvendor.Imports{
 				Local: []string{"codegen/test/*.proto"},
 			},
+			RenderProtos: true,
 
 			Chart: &Chart{
 				Operators: []Operator{
