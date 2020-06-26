@@ -3,6 +3,8 @@ package contrib
 import (
 	"github.com/gobuffalo/packr"
 	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/contrib/codegen/funcs"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // AllCustomTemplates will be generated for the
@@ -54,3 +56,25 @@ var ClientProviders = func() model.CustomTemplates {
 
 	return clientProvidersTemplate
 }()
+
+/*
+InputSnapshot custom template
+*/
+const (
+	InputSnapshotCustomTemplatePath = "input/input_snapshot.gotmpl"
+)
+
+var InputSnapshot = func(outputFilename, groupModule string, selectFromGroups []model.Group, resourcesToSelect map[schema.GroupVersion][]string) model.CustomTemplates {
+	templateContents, err := templatesBox.FindString(InputSnapshotCustomTemplatePath)
+	if err != nil {
+		panic(err)
+	}
+	inputSnapshotTemplate := model.CustomTemplates{
+		Templates: map[string]string{outputFilename: templateContents},
+		Funcs:     funcs.MakeTopLevelFuncs(groupModule, selectFromGroups, resourcesToSelect),
+	}
+	// register sets
+	AllCustomTemplates = append(AllCustomTemplates, inputSnapshotTemplate)
+
+	return inputSnapshotTemplate
+}
