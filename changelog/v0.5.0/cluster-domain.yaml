@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Expose cluster_domain field on KubernetesCluster CRD.
+    issueLink: https://github.com/solo-io/skv2/issues/74
