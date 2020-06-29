@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add contrib template for generated Input Reconciler.
+    issueLink: https://github.com/solo-io/skv2/issues/78
+  - type: NEW_FEATURE
+    description: Add contrib template for generated Output Snapshot.
+    issueLink: https://github.com/solo-io/skv2/issues/77

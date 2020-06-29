@@ -48,7 +48,7 @@ func main() {
 			RenderClients:    true,
 			RenderTypes:      true,
 			ApiRoot:          "pkg/api",
-			CustomTemplates:  contrib.AllCustomTemplates,
+			CustomTemplates:  contrib.AllGroupCustomTemplates,
 		},
 	}
 

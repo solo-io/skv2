@@ -40,7 +40,7 @@ var _ = Describe("Cmd", func() {
 					RenderController: true,
 					MockgenDirective: true,
 					ApiRoot:          "codegen/test/api",
-					CustomTemplates:  contrib.AllCustomTemplates,
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
 				},
 			},
 			AnyVendorConfig: &sk_anyvendor.Imports{
