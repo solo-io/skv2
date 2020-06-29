@@ -33,7 +33,7 @@ type CrossGroupTemplateParameters struct {
 	ResourcesToSelect map[schema.GroupVersion][]string
 }
 
-func (p CrossGroupTemplateParameters) constructTemplate(params CrossGroupTemplateParameters, templatePath string) model.CustomTemplates  {
+func (p CrossGroupTemplateParameters) constructTemplate(params CrossGroupTemplateParameters, templatePath string) model.CustomTemplates {
 	templateContents, err := templatesBox.FindString(templatePath)
 	if err != nil {
 		panic(err)
@@ -61,7 +61,7 @@ func InputSnapshot(params CrossGroupTemplateParameters) model.CustomTemplates {
 }
 
 // register InputSnapshot
-var _ = func()bool{
+var _ = func() bool {
 	registeredCrossGroupTemplates = append(registeredCrossGroupTemplates, InputSnapshot)
 	return false
 }()
@@ -79,11 +79,10 @@ func InputReconciler(params CrossGroupTemplateParameters) model.CustomTemplates 
 }
 
 // register InputReconciler
-var _ = func()bool{
+var _ = func() bool {
 	registeredCrossGroupTemplates = append(registeredCrossGroupTemplates, InputReconciler)
 	return false
 }()
-
 
 /*
 OutputSnapshot custom template
@@ -98,7 +97,7 @@ func OutputSnapshot(params CrossGroupTemplateParameters) model.CustomTemplates {
 }
 
 // register OutputSnapshot
-var _ = func()bool{
+var _ = func() bool {
 	registeredCrossGroupTemplates = append(registeredCrossGroupTemplates, OutputSnapshot)
 	return false
 }()

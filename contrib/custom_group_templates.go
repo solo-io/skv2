@@ -7,7 +7,7 @@ import (
 
 /*
 Define custom templates that live on the group level here.
- */
+*/
 
 // use to get all group-level templates in contrib
 var AllGroupCustomTemplates []model.CustomTemplates

@@ -83,35 +83,35 @@ func clientImportPath(grp importedGroup) string {
 func selectResources(groups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) []importedGroup {
 	var selectedResources []importedGroup
 	for clientModule, groups := range groups {
-	for _, group := range groups {
-		resources := resourcesToSelect[group.GroupVersion]
-		if len(resources) == 0 {
-			continue
-		}
-		filteredGroup := group
-		filteredGroup.Resources = nil
-
-		isResourceSelected := func(kind string) bool {
-			for _, resource := range resources {
-				if resource == kind {
-					return true
-				}
-			}
-			return false
-		}
-
-		for _, resource := range group.Resources {
-			if !isResourceSelected(resource.Kind) {
+		for _, group := range groups {
+			resources := resourcesToSelect[group.GroupVersion]
+			if len(resources) == 0 {
 				continue
 			}
-			filteredGroup.Resources = append(filteredGroup.Resources, resource)
-		}
+			filteredGroup := group
+			filteredGroup.Resources = nil
 
-		selectedResources = append(selectedResources, importedGroup{
-			Group:    filteredGroup,
-			GoModule: clientModule,
-		})
-	}
+			isResourceSelected := func(kind string) bool {
+				for _, resource := range resources {
+					if resource == kind {
+						return true
+					}
+				}
+				return false
+			}
+
+			for _, resource := range group.Resources {
+				if !isResourceSelected(resource.Kind) {
+					continue
+				}
+				filteredGroup.Resources = append(filteredGroup.Resources, resource)
+			}
+
+			selectedResources = append(selectedResources, importedGroup{
+				Group:    filteredGroup,
+				GoModule: clientModule,
+			})
+		}
 	}
 
 	sort.SliceStable(selectedResources, func(i, j int) bool {
