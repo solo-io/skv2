@@ -16,6 +16,8 @@ package {{ package }}
 
 import (
     "context"
+
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
     "github.com/hashicorp/go-multierror"
     "github.com/solo-io/skv2/pkg/multicluster"
     "github.com/solo-io/skv2/pkg/reconcile"
@@ -47,14 +49,14 @@ var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
 
 type multiClusterReconcilerImpl struct {
     ctx       context.Context
-    reconcileFunc func() error
+    reconcileFunc func(metav1.Object) error
 }
 
 // register the reconcile func with the cluster watcher
 func RegisterMultiClusterReconciler(
         ctx context.Context,
         clusters multicluster.ClusterWatcher,
-        reconcileFunc func() error,
+        reconcileFunc func(metav1.Object) error,
 ) {
     r := &multiClusterReconcilerImpl{
         ctx:       ctx,
@@ -83,7 +85,8 @@ func RegisterMultiClusterReconciler(
 
 func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-    return reconcile.Result{}, r.reconcileFunc()
+    obj.ClusterName = clusterName
+    return reconcile.Result{}, r.reconcileFunc(obj)
 }
 {{- end }}
 {{- end }}
@@ -106,14 +109,14 @@ var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
 
 type singleClusterReconcilerImpl struct {
     ctx       context.Context
-    reconcileFunc func() error
+    reconcileFunc func(metav1.Object) error
 }
 
 // register the reconcile func with the manager
 func RegisterSingleClusterReconciler(
         ctx context.Context,
         mgr manager.Manager,
-        reconcileFunc func() error,
+        reconcileFunc func(metav1.Object) error,
 ) error {
     r := &singleClusterReconcilerImpl{
         ctx:       ctx,
@@ -146,7 +149,7 @@ func RegisterSingleClusterReconciler(
 
 func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-    return reconcile.Result{}, r.reconcileFunc()
+    return reconcile.Result{}, r.reconcileFunc(obj)
 }
 {{- end }}
 {{- end }}
