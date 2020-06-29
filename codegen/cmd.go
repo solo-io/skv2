@@ -185,9 +185,7 @@ func (c Command) renderProtos() ([]*skmodel.DescriptorWithPath, error) {
 }
 
 func (c Command) generateGroup(grp model.Group, descriptors []*skmodel.DescriptorWithPath) error {
-	if err := c.compileProtosAndUpdateGroup(&grp, descriptors); err != nil {
-		return err
-	}
+	c.addDescriptorsToGroup(&grp, descriptors)
 
 	fileWriter := &writer.DefaultFileWriter{
 		Root:   c.moduleRoot,
@@ -250,11 +248,11 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 // compiles protos and attaches descriptors to the group and its resources
 // it is important to run this func before rendering as it attaches protos to the
 // group model
-func (c Command) compileProtosAndUpdateGroup(grp *render.Group, descriptors []*skmodel.DescriptorWithPath) error {
-	var foundSpec bool
+func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*skmodel.DescriptorWithPath) {
 	descriptorMap := map[string]*skmodel.DescriptorWithPath{}
 
 	for i, resource := range grp.Resources {
+		var foundSpec bool
 
 		// attach the proto messages for spec and status to each resource
 		// these are processed by renderers at later stages
@@ -278,19 +276,17 @@ func (c Command) compileProtosAndUpdateGroup(grp *render.Group, descriptors []*s
 
 			}
 
-			if !foundSpec {
-				logrus.Warnf("no package found for %v", resource.Group.Group)
-			}
 		}
 
 		grp.Resources[i] = resource
+		if !foundSpec {
+			logrus.Warnf("no package found for resource %v.%v", resource.Kind, resource.Group.Group)
+		}
 	}
 
 	for _, descriptor := range descriptorMap {
 		grp.Descriptors = append(grp.Descriptors, descriptor)
 	}
-
-	return nil
 }
 
 func (c Command) generateBuild(build model.Build) error {

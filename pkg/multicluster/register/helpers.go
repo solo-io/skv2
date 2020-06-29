@@ -3,6 +3,9 @@ package register
 import (
 	"context"
 
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"os"
+
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
 	k8s_core_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/providers"
 	rbac_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/providers"
@@ -80,4 +83,34 @@ func DefaultRegistrant(context, clusterDomainOverride string) (ClusterRegistrant
 		roleClientFactory,
 	)
 	return registrant, nil
+}
+
+// Attempts to load a Client KubeConfig from a default list of sources.
+func GetClientConfigWithContext(masterURL, kubeCfgPath, context string) (clientcmd.ClientConfig, error) {
+	verifiedKubeConfigPath := clientcmd.RecommendedHomeFile
+	if kubeCfgPath != "" {
+		verifiedKubeConfigPath = kubeCfgPath
+	}
+
+	if err := assertKubeConfigExists(verifiedKubeConfigPath); err != nil {
+		return nil, err
+	}
+
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	loadingRules.ExplicitPath = verifiedKubeConfigPath
+	configOverrides := &clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: masterURL}}
+
+	if context != "" {
+		configOverrides.CurrentContext = context
+	}
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides), nil
+}
+
+// expects `path` to be nonempty
+func assertKubeConfigExists(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		return err
+	}
+
+	return nil
 }
