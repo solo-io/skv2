@@ -1,6 +1,8 @@
 package funcs
 
 import (
+	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -16,11 +18,10 @@ type importedGroup struct {
 // make funcs for "Top Level" templates, i.e.: templates which
 // combine resources from multiple (including externally defined) codegen Groups.
 //
-// groupModule = the module containing the codegen Group. only required if the codegen group is defined in a different go module than the types (i.e. it is using a CustomTypesImportPath)
-// selectFromGroups = the set of groups from which to select resources for the snapshot
+// selectFromGroups = a map of Go modules to (a superset of) the imported codegen Groups. only required if the codegen group is defined in a different go module than the types (i.e. it is using a CustomTypesImportPath)
 // resourcesToSelect = the GVKs of the resources which we want to select from the provided groups
-func MakeTopLevelFuncs(groupModule string, selectFromGroups []model.Group, resourcesToSelect map[schema.GroupVersion][]string) template.FuncMap {
-	importedGroups := selectResources(groupModule, selectFromGroups, resourcesToSelect)
+func MakeTopLevelFuncs(outputFile string, selectFromGroups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) template.FuncMap {
+	importedGroups := selectResources(selectFromGroups, resourcesToSelect)
 	var groups []model.Group
 	groupImports := map[schema.GroupVersion]importedGroup{}
 
@@ -30,6 +31,10 @@ func MakeTopLevelFuncs(groupModule string, selectFromGroups []model.Group, resou
 	}
 
 	return template.FuncMap{
+		"package": func() string {
+			dirs := filepath.SplitList(filepath.Dir(outputFile))
+			return dirs[len(dirs)-1] // last path element = package name
+		},
 		"imported_groups": func() []model.Group { return groups },
 		"client_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
@@ -80,37 +85,43 @@ func clientImportPath(grp importedGroup) string {
 }
 
 // pass empty string if clients live in the same go module as the type definitions
-func selectResources(clientModule string, groups []model.Group, resourcesToSelect map[schema.GroupVersion][]string) []importedGroup {
+func selectResources(groups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) []importedGroup {
 	var selectedResources []importedGroup
-	for _, group := range groups {
-		resources := resourcesToSelect[group.GroupVersion]
-		if len(resources) == 0 {
-			continue
-		}
-		filteredGroup := group
-		filteredGroup.Resources = nil
-
-		isResourceSelected := func(kind string) bool {
-			for _, resource := range resources {
-				if resource == kind {
-					return true
-				}
-			}
-			return false
-		}
-
-		for _, resource := range group.Resources {
-			if !isResourceSelected(resource.Kind) {
+	for clientModule, groups := range groups {
+		for _, group := range groups {
+			resources := resourcesToSelect[group.GroupVersion]
+			if len(resources) == 0 {
 				continue
 			}
-			filteredGroup.Resources = append(filteredGroup.Resources, resource)
-		}
+			filteredGroup := group
+			filteredGroup.Resources = nil
 
-		selectedResources = append(selectedResources, importedGroup{
-			Group:    filteredGroup,
-			GoModule: clientModule,
-		})
+			isResourceSelected := func(kind string) bool {
+				for _, resource := range resources {
+					if resource == kind {
+						return true
+					}
+				}
+				return false
+			}
+
+			for _, resource := range group.Resources {
+				if !isResourceSelected(resource.Kind) {
+					continue
+				}
+				filteredGroup.Resources = append(filteredGroup.Resources, resource)
+			}
+
+			selectedResources = append(selectedResources, importedGroup{
+				Group:    filteredGroup,
+				GoModule: clientModule,
+			})
+		}
 	}
+
+	sort.SliceStable(selectedResources, func(i, j int) bool {
+		return selectedResources[i].GoModule < selectedResources[j].GoModule
+	})
 
 	return selectedResources
 }

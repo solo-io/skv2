@@ -1,7 +1,21 @@
-// Definitions for Input Snapshots
-package input
-
 {{ $groups := imported_groups }}
+
+// The Input Snapshot contains the set of all:
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+// * {{ $kindPlural }}
+{{- end }}
+{{- end }}
+// read from a given cluster or set of clusters, across all namespaces.
+//
+// A snapshot can be constructed from either a single Manager (for a single cluster)
+// or a ClusterWatcher (for multiple clusters) using the SnapshotBuilder.
+//
+// Resources in a MultiCluster snapshot will have their ClusterName set to the
+// name of the cluster from which the resource was read.
+
+package {{ package }}
 
 import (
     "context"

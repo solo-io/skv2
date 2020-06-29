@@ -94,7 +94,7 @@ func Groups() []model.Group {
 		group.RenderClients = true
 		group.RenderController = true
 		group.MockgenDirective = true
-		group.CustomTemplates = contrib.AllCustomTemplates
+		group.CustomTemplates = contrib.AllGroupCustomTemplates
 		groups[i] = group
 	}
 	return groups
