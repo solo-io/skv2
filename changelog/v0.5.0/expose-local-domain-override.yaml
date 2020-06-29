@@ -1,3 +1,4 @@
 changelog:
-  - type: NON_USER_FACING
+  - type: BREAKING_CHANGE
     description: Expose localDomainOverride on default cluster registrant.
+    issueLink: https://github.com/solo-io/skv2/issues/76
