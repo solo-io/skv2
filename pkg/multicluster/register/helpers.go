@@ -3,8 +3,12 @@ package register
 import (
 	"context"
 
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	k8s_rbac_types "k8s.io/api/rbac/v1"
+	"k8s.io/client-go/rest"
+
 	"os"
+
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
 	k8s_core_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/providers"
@@ -15,13 +19,94 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
+// Options for registering a cluster
+type RegistrationOptions struct {
+	// override the url of the k8s server
+	MasterURL string
+
+	// override the path of the local kubeconfig
+	KubeCfgPath string
+
+	// override the context to use from the local kubeconfig.
+	// if unset, use current context
+	KubeContext string
+
+	// localClusterDomainOverride is optional. When passed in, it will overwrite the Api Server endpoint in
+	//	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
+	//	on a mac as  the local IP needs to be re-written to `host.docker.internal` so that the local instance
+	//	knows to hit localhost.
+	ClusterDomainOverride string
+
+	// Name by which the cluster will be identified
+	// If left empty will return error
+	ClusterName string
+
+	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// If left empty will return error
+	Namespace string
+
+	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// If left empty will return error
+	RemoteNamespace string
+
+	// A list of roles to bind the New kubeconfig token to
+	// Any Roles in this list will be Upserted by the registrant, prior to binding
+	Roles []*k8s_rbac_types.Role
+
+	// A list of cluster roles to bind the New kubeconfig token to
+	// Any ClusterRoles in this list will be Upserted by the registrant, prior to binding
+	ClusterRoles []*k8s_rbac_types.ClusterRole
+
+	// List of roles which will be bound to by the created role bindings
+	// The Roles upserted from the above list will automatically appended
+	RoleBindings []client.ObjectKey
+
+	// List of cluster roles which will be bound to by the created cluster role bindings
+	// The ClusterRoles upserted from the above list will automatically appended to the list
+	ClusterRoleBindings []client.ObjectKey
+}
+
 /*
-	RegisterClusterFromConfig is meant to be a helper function to easily "register" a remote cluster.
-	Curently this entails:
+	RegisterCluster is meant to be a helper function to easily "register" a remote cluster.
+	Currently this entails:
 		1. Creating a `ServiceAccount` on the remote cluster.
 		2. Binding RBAC `Roles/ClusterRoles` to said `ServiceAccount`
 		3. And finally creating a kubeconfig `Secret` with the BearerToken of the remote `ServiceAccount`
 */
+func (opts RegistrationOptions) RegisterCluster(
+	ctx context.Context,
+) error {
+	cfg, err := getClientConfigWithContext(opts.MasterURL, opts.KubeCfgPath, opts.KubeContext)
+	if err != nil {
+		return err
+	}
+
+	restCfg, err := cfg.ClientConfig()
+	if err != nil {
+		return err
+	}
+
+	registrant, err := defaultRegistrant(restCfg, opts.ClusterDomainOverride)
+	if err != nil {
+		return err
+	}
+
+	rbacOpts := RbacOptions{
+		Options: Options{
+			ClusterName:     opts.ClusterName,
+			RemoteCtx:       opts.KubeContext,
+			Namespace:       opts.Namespace,
+			RemoteNamespace: opts.RemoteNamespace,
+		},
+		Roles:               opts.Roles,
+		ClusterRoles:        opts.ClusterRoles,
+		RoleBindings:        opts.RoleBindings,
+		ClusterRoleBindings: opts.ClusterRoleBindings,
+	}
+
+	return RegisterClusterFromConfig(ctx, cfg, rbacOpts, registrant)
+}
+
 func RegisterClusterFromConfig(
 	ctx context.Context,
 	remoteCfg clientcmd.ClientConfig,
@@ -62,6 +147,11 @@ func DefaultRegistrant(context, clusterDomainOverride string) (ClusterRegistrant
 	if err != nil {
 		return nil, err
 	}
+
+	return defaultRegistrant(cfg, clusterDomainOverride)
+}
+
+func defaultRegistrant(cfg *rest.Config, clusterDomainOverride string) (ClusterRegistrant, error) {
 	clientset, err := k8s_core_v1.NewClientsetFromConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -86,7 +176,7 @@ func DefaultRegistrant(context, clusterDomainOverride string) (ClusterRegistrant
 }
 
 // Attempts to load a Client KubeConfig from a default list of sources.
-func GetClientConfigWithContext(masterURL, kubeCfgPath, context string) (clientcmd.ClientConfig, error) {
+func getClientConfigWithContext(masterURL, kubeCfgPath, context string) (clientcmd.ClientConfig, error) {
 	verifiedKubeConfigPath := clientcmd.RecommendedHomeFile
 	if kubeCfgPath != "" {
 		verifiedKubeConfigPath = kubeCfgPath
