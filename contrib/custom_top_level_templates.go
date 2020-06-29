@@ -6,17 +6,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// use to get all cross-group templates in contrib
-func AllCrossGroupTemplates(params CrossGroupTemplateParameters) []model.CustomTemplates {
-	var templates []model.CustomTemplates
-	for _, tmpl := range registeredCrossGroupTemplates {
-		templates = append(templates, tmpl(params))
-	}
-	return templates
-}
-
-var registeredCrossGroupTemplates []func(params CrossGroupTemplateParameters) model.CustomTemplates
-
 /*
 Define custom templates that live on the group level here.
 */
@@ -40,7 +29,7 @@ func (p CrossGroupTemplateParameters) constructTemplate(params CrossGroupTemplat
 	}
 	inputSnapshotTemplate := model.CustomTemplates{
 		Templates: map[string]string{params.OutputFilename: templateContents},
-		Funcs:     funcs.MakeTopLevelFuncs(params.SelectFromGroups, params.ResourcesToSelect),
+		Funcs:     funcs.MakeTopLevelFuncs(params.OutputFilename, params.SelectFromGroups, params.ResourcesToSelect),
 	}
 
 	return inputSnapshotTemplate
@@ -60,12 +49,6 @@ func InputSnapshot(params CrossGroupTemplateParameters) model.CustomTemplates {
 	return params.constructTemplate(params, InputSnapshotCustomTemplatePath)
 }
 
-// register InputSnapshot
-var _ = func() bool {
-	registeredCrossGroupTemplates = append(registeredCrossGroupTemplates, InputSnapshot)
-	return false
-}()
-
 /*
 InputReconciler custom template
 */
@@ -78,12 +61,6 @@ func InputReconciler(params CrossGroupTemplateParameters) model.CustomTemplates 
 	return params.constructTemplate(params, InputReconcilerCustomTemplatePath)
 }
 
-// register InputReconciler
-var _ = func() bool {
-	registeredCrossGroupTemplates = append(registeredCrossGroupTemplates, InputReconciler)
-	return false
-}()
-
 /*
 OutputSnapshot custom template
 */
@@ -95,9 +72,3 @@ const (
 func OutputSnapshot(params CrossGroupTemplateParameters) model.CustomTemplates {
 	return params.constructTemplate(params, OutputSnapshotCustomTemplatePath)
 }
-
-// register OutputSnapshot
-var _ = func() bool {
-	registeredCrossGroupTemplates = append(registeredCrossGroupTemplates, OutputSnapshot)
-	return false
-}()

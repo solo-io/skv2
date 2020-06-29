@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
@@ -19,7 +20,7 @@ type importedGroup struct {
 //
 // selectFromGroups = a map of Go modules to (a superset of) the imported codegen Groups. only required if the codegen group is defined in a different go module than the types (i.e. it is using a CustomTypesImportPath)
 // resourcesToSelect = the GVKs of the resources which we want to select from the provided groups
-func MakeTopLevelFuncs(selectFromGroups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) template.FuncMap {
+func MakeTopLevelFuncs(outputFile string, selectFromGroups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) template.FuncMap {
 	importedGroups := selectResources(selectFromGroups, resourcesToSelect)
 	var groups []model.Group
 	groupImports := map[schema.GroupVersion]importedGroup{}
@@ -30,6 +31,10 @@ func MakeTopLevelFuncs(selectFromGroups map[string][]model.Group, resourcesToSel
 	}
 
 	return template.FuncMap{
+		"package": func() string {
+			dirs := filepath.SplitList(filepath.Dir(outputFile))
+			return dirs[len(dirs)-1] // last path element = package name
+		},
 		"imported_groups": func() []model.Group { return groups },
 		"client_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
