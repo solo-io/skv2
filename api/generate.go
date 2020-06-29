@@ -45,7 +45,6 @@ func main() {
 			},
 			RenderManifests:  true,
 			RenderController: true,
-			RenderProtos:     true,
 			RenderClients:    true,
 			RenderTypes:      true,
 			ApiRoot:          "pkg/api",
@@ -59,6 +58,7 @@ func main() {
 	skv2Cmd := codegen.Command{
 		Groups:          groups,
 		AnyVendorConfig: skv2Imports,
+		RenderProtos:    true,
 	}
 	if err := skv2Cmd.Execute(); err != nil {
 		log.Fatal(err)

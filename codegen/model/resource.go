@@ -50,15 +50,8 @@ type Group struct {
 	// the root directory for generated API code
 	ApiRoot string
 
-	// search protos recursively starting from this directory.
-	// will default vendor_any if empty
-	ProtoDir string
-
 	// the kinds in the group
 	Resources []Resource
-
-	// Should we compile protos?
-	RenderProtos bool
 
 	// Should we generate kubernetes manifests?
 	RenderManifests bool
@@ -92,6 +85,10 @@ type Group struct {
 
 	// data for providing custom templates to generate custom code for groups
 	CustomTemplates []CustomTemplates
+}
+
+func (g Group) HasProtos() bool {
+	return len(g.Descriptors) > 0
 }
 
 type CustomTemplates struct {

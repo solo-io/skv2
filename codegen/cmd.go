@@ -65,6 +65,13 @@ type Command struct {
 	// go and docker commands
 	Builder builder.Builder
 
+	// Should we compile protos?
+	RenderProtos bool
+
+	// search protos recursively starting from this directory.
+	// will default vendor_any if empty
+	ProtoDir string
+
 	// the path to the root dir of the module on disk
 	// files will be written relative to this dir,
 	// except kube clientsets which
@@ -91,6 +98,11 @@ func (c Command) Execute() error {
 		c.GeneratedHeader = DefaultHeader
 	}
 
+	descriptors, err := c.renderProtos()
+	if err != nil {
+		return err
+	}
+
 	if err := c.generateChart(); err != nil {
 		return err
 	}
@@ -99,7 +111,7 @@ func (c Command) Execute() error {
 		// init connects children to their parents
 		group.Init()
 
-		if err := c.generateGroup(group); err != nil {
+		if err := c.generateGroup(group, descriptors); err != nil {
 			return err
 		}
 	}
@@ -141,8 +153,39 @@ func (c Command) generateChart() error {
 	return nil
 }
 
-func (c Command) generateGroup(grp model.Group) error {
-	if err := c.compileProtosAndUpdateGroup(&grp); err != nil {
+func (c Command) renderProtos() ([]*skmodel.DescriptorWithPath, error) {
+	if !c.RenderProtos {
+		return nil, nil
+	}
+
+	if c.ProtoDir == "" {
+		c.ProtoDir = anyvendor.DefaultDepDir
+	}
+
+	if c.AnyVendorConfig != nil {
+		mgr, err := manager.NewManager(c.ctx, c.moduleRoot)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := mgr.Ensure(c.ctx, c.AnyVendorConfig.ToAnyvendorConfig()); err != nil {
+			return nil, err
+		}
+	}
+	descriptors, err := proto.CompileProtos(
+		c.moduleRoot,
+		c.moduleName,
+		c.ProtoDir,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return descriptors, nil
+}
+
+func (c Command) generateGroup(grp model.Group, descriptors []*skmodel.DescriptorWithPath) error {
+	if err := c.compileProtosAndUpdateGroup(&grp, descriptors); err != nil {
 		return err
 	}
 
@@ -207,70 +250,47 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 // compiles protos and attaches descriptors to the group and its resources
 // it is important to run this func before rendering as it attaches protos to the
 // group model
-func (c Command) compileProtosAndUpdateGroup(grp *render.Group) error {
-	if !grp.RenderProtos {
-		return nil
-	}
-
-	if grp.ProtoDir == "" {
-		grp.ProtoDir = anyvendor.DefaultDepDir
-	}
-
-	if c.AnyVendorConfig != nil {
-		mgr, err := manager.NewManager(c.ctx, c.moduleRoot)
-		if err != nil {
-			return err
-		}
-
-		if err := mgr.Ensure(c.ctx, c.AnyVendorConfig.ToAnyvendorConfig()); err != nil {
-			return err
-		}
-	}
-	descriptors, err := proto.CompileProtos(
-		grp.Module,
-		grp.ApiRoot,
-		grp.ProtoDir,
-	)
-	if err != nil {
-		return err
-	}
-
-	// set the descriptors on the group for compilation
-	grp.Descriptors = descriptors
+func (c Command) compileProtosAndUpdateGroup(grp *render.Group, descriptors []*skmodel.DescriptorWithPath) error {
+	var foundSpec bool
+	descriptorMap := map[string]*skmodel.DescriptorWithPath{}
 
 	for i, resource := range grp.Resources {
+
 		// attach the proto messages for spec and status to each resource
 		// these are processed by renderers at later stages
-		addMessagesToResource(descriptors, &resource)
+		for _, fileDescriptor := range descriptors {
+
+			if fileDescriptor.GetPackage() == resource.Group.Group {
+
+				if specMessage := fileDescriptor.GetMessage(resource.Spec.Type.Name); specMessage != nil {
+					resource.Spec.Type.Message = specMessage
+					resource.Spec.Type.GoPackage = fileDescriptor.GetOptions().GetGoPackage()
+					foundSpec = true
+					descriptorMap[fileDescriptor.GetName()+fileDescriptor.GetPackage()] = fileDescriptor
+				}
+
+				if resource.Status != nil {
+					if statusMessage := fileDescriptor.GetMessage(resource.Status.Type.Name); statusMessage != nil {
+						resource.Status.Type.Message = statusMessage
+						descriptorMap[fileDescriptor.GetName()+fileDescriptor.GetPackage()] = fileDescriptor
+					}
+				}
+
+			}
+
+			if !foundSpec {
+				logrus.Warnf("no package found for %v", resource.Group.Group)
+			}
+		}
+
 		grp.Resources[i] = resource
 	}
 
+	for _, descriptor := range descriptorMap {
+		grp.Descriptors = append(grp.Descriptors, descriptor)
+	}
+
 	return nil
-}
-
-func addMessagesToResource(descriptors []*skmodel.DescriptorWithPath, resource *model.Resource) {
-	var foundSpec bool
-	for _, fileDescriptor := range descriptors {
-
-		if fileDescriptor.GetPackage() == resource.Group.Group {
-
-			if specMessage := fileDescriptor.GetMessage(resource.Spec.Type.Name); specMessage != nil {
-				resource.Spec.Type.Message = specMessage
-				resource.Spec.Type.GoPackage = fileDescriptor.GetOptions().GetGoPackage()
-				foundSpec = true
-			}
-
-			if resource.Status != nil {
-				if statusMessage := fileDescriptor.GetMessage(resource.Status.Type.Name); statusMessage != nil {
-					resource.Status.Type.Message = statusMessage
-				}
-			}
-
-		}
-	}
-	if !foundSpec {
-		logrus.Warnf("no package found for %v", resource.Group.Group)
-	}
 }
 
 func (c Command) generateBuild(build model.Build) error {

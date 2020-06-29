@@ -16,10 +16,10 @@ import (
 
 // make sure the pkg matches the go_package option in the proto
 // TODO: validate this
-func CompileProtos(goModule, apiRoot, protoDir string) ([]*model.DescriptorWithPath, error) {
+func CompileProtos(goModule, moduleName, protoDir string) ([]*model.DescriptorWithPath, error) {
 	log.Printf("Compiling protos in %v", protoDir)
 
-	// need to be in module root so protoc runs on the expected apiRoot
+	// need to be in module root so protoc runs on the expecte
 	if err := os.Chdir(util.GetModuleRoot()); err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func CompileProtos(goModule, apiRoot, protoDir string) ([]*model.DescriptorWithP
 
 	// copy the files generated for our package into our repo from the
 	// tmp dir
-	return descriptors, copyFiles(filepath.Join(protoOutDir, goModule, apiRoot), apiRoot)
+	return descriptors, copyFiles(filepath.Join(protoOutDir, moduleName), goModule)
 }
 
 func copyFiles(srcDir, destDir string) error {
@@ -64,7 +64,6 @@ func copyFiles(srcDir, destDir string) error {
 		}
 
 		destFile := filepath.Join(destDir, strings.TrimPrefix(srcFile, srcDir))
-		destFile = strings.TrimPrefix(destFile, "/")
 
 		// copy
 		srcReader, err := os.Open(srcFile)
