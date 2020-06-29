@@ -106,6 +106,7 @@ var _ = Describe("Registrant", func() {
 
 		It("will create if does not exist", func() {
 			clusterRegistrant := register.NewClusterRegistrant(
+				"",
 				clusterRbacBinderFactory,
 				secretClient,
 				secretClientFactory,
@@ -155,6 +156,7 @@ var _ = Describe("Registrant", func() {
 
 		It("can successfully upsert all roles, and cluster roles", func() {
 			clusterRegistrant := register.NewClusterRegistrant(
+				"",
 				clusterRbacBinderFactory,
 				secretClient,
 				secretClientFactory,
@@ -289,6 +291,7 @@ var _ = Describe("Registrant", func() {
 		It("works", func() {
 
 			clusterRegistrant := register.NewClusterRegistrant(
+				"",
 				clusterRbacBinderFactory,
 				secretClient,
 				secretClientFactory,
@@ -382,7 +385,7 @@ var _ = Describe("Registrant", func() {
 		It("can override local cluster domain", func() {
 			clusterDomainOverride := "test-override"
 
-			clusterRegistrant := register.NewTestingRegistrant(
+			clusterRegistrant := register.NewClusterRegistrant(
 				clusterDomainOverride,
 				clusterRbacBinderFactory,
 				secretClient,

@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Expose clusterDomainOverride on default cluster registrant.
+    issueLink: https://github.com/solo-io/skv2/issues/76
