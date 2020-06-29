@@ -32,7 +32,7 @@ func MakeTopLevelFuncs(outputFile string, selectFromGroups map[string][]model.Gr
 
 	return template.FuncMap{
 		"package": func() string {
-			dirs := filepath.SplitList(filepath.Dir(outputFile))
+			dirs := strings.Split(filepath.Dir(outputFile), string(filepath.Separator))
 			return dirs[len(dirs)-1] // last path element = package name
 		},
 		"imported_groups": func() []model.Group { return groups },
