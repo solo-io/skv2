@@ -75,7 +75,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		ctx, cancel = context.WithCancel(context.Background())
 		masterManager = test.MustManager(ctx, ns)
 		remoteCfg := test.ClientConfigWithContext(remoteContext)
-		registrant, err := register.DefaultRegistrant("")
+		registrant, err := register.DefaultRegistrant("", "")
 		Expect(err).NotTo(HaveOccurred())
 		err = register.RegisterClusterFromConfig(ctx, remoteCfg, register.RbacOptions{
 			Options: register.Options{

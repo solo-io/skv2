@@ -44,12 +44,17 @@ func RegisterClusterFromConfig(
 /*
 	DefaultRegistrant provider function. This function will create a `ClusterRegistrant` using the
 	current kubeconfig, and the specified context. It will build all of the dependencies from the
-	availble `ClientConfig`.
+	available `ClientConfig`.
+
+	The clusterDomainOverride parameter is optional. When passed in, it will overwrite the Api Server
+	endpoint in the kubeconfig before it is written. This is primarily useful when running multi cluster
+	KinD environments on a mac as  the local IP needs to be re-written to `host.docker.internal` so
+	that the local instance knows to hit localhost.
 
 	Meant to be used in tandem with RegisterClusterFromConfig above.
 	They are exposed separately so the `Registrant` may be mocked for the function above.
 */
-func DefaultRegistrant(context string) (ClusterRegistrant, error) {
+func DefaultRegistrant(context, clusterDomainOverride string) (ClusterRegistrant, error) {
 	cfg, err := config.GetConfigWithContext(context)
 	if err != nil {
 		return nil, err
@@ -65,6 +70,7 @@ func DefaultRegistrant(context string) (ClusterRegistrant, error) {
 	clusterRoleClientFactory := rbac_v1_providers.ClusterRoleClientFromConfigFactoryProvider()
 	clusterRBACBinderFactory := NewClusterRBACBinderFactory()
 	registrant := NewClusterRegistrant(
+		clusterDomainOverride,
 		clusterRBACBinderFactory,
 		clientset.Secrets(),
 		secretClientFactory,
