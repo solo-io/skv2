@@ -83,9 +83,6 @@ type Command struct {
 
 	// context of the command
 	ctx context.Context
-
-	// proto descriptors will be available to the templates if the group was compiled with them.
-	descriptors []*skmodel.DescriptorWithPath
 }
 
 // function to execute skv2 code gen from another repository
@@ -101,7 +98,8 @@ func (c Command) Execute() error {
 		c.GeneratedHeader = DefaultHeader
 	}
 
-	if err := c.renderProtos(); err != nil {
+	descriptors, err := c.renderProtos()
+	if err != nil {
 		return err
 	}
 
@@ -113,7 +111,7 @@ func (c Command) Execute() error {
 		// init connects children to their parents
 		group.Init()
 
-		if err := c.generateGroup(group); err != nil {
+		if err := c.generateGroup(group, descriptors); err != nil {
 			return err
 		}
 	}
@@ -155,9 +153,9 @@ func (c Command) generateChart() error {
 	return nil
 }
 
-func (c Command) renderProtos() error {
+func (c Command) renderProtos() ([]*skmodel.DescriptorWithPath, error) {
 	if !c.RenderProtos {
-		return nil
+		return nil, nil
 	}
 
 	if c.ProtoDir == "" {
@@ -167,11 +165,11 @@ func (c Command) renderProtos() error {
 	if c.AnyVendorConfig != nil {
 		mgr, err := manager.NewManager(c.ctx, c.moduleRoot)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := mgr.Ensure(c.ctx, c.AnyVendorConfig.ToAnyvendorConfig()); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	descriptors, err := proto.CompileProtos(
@@ -180,16 +178,14 @@ func (c Command) renderProtos() error {
 		c.ProtoDir,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// set the descriptors on the group for compilation
-	c.descriptors = descriptors
-	return nil
+	return descriptors, nil
 }
 
-func (c Command) generateGroup(grp model.Group) error {
-	if err := c.compileProtosAndUpdateGroup(&grp); err != nil {
+func (c Command) generateGroup(grp model.Group, descriptors []*skmodel.DescriptorWithPath) error {
+	if err := c.compileProtosAndUpdateGroup(&grp, descriptors); err != nil {
 		return err
 	}
 
@@ -254,7 +250,7 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 // compiles protos and attaches descriptors to the group and its resources
 // it is important to run this func before rendering as it attaches protos to the
 // group model
-func (c Command) compileProtosAndUpdateGroup(grp *render.Group) error {
+func (c Command) compileProtosAndUpdateGroup(grp *render.Group, descriptors []*skmodel.DescriptorWithPath) error {
 	var foundSpec bool
 	descriptorMap := map[string]*skmodel.DescriptorWithPath{}
 
@@ -262,7 +258,7 @@ func (c Command) compileProtosAndUpdateGroup(grp *render.Group) error {
 
 		// attach the proto messages for spec and status to each resource
 		// these are processed by renderers at later stages
-		for _, fileDescriptor := range c.descriptors {
+		for _, fileDescriptor := range descriptors {
 
 			if fileDescriptor.GetPackage() == resource.Group.Group {
 
