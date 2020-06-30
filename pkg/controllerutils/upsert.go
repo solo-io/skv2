@@ -3,7 +3,6 @@ package controllerutils
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -43,7 +42,7 @@ func Upsert(ctx context.Context, c client.Client, obj runtime.Object, transition
 		return controllerutil.OperationResultNone, err
 	}
 
-	if equality.Semantic.DeepEqual(existing, obj) {
+	if ObjectsEqual(existing, obj) {
 		return controllerutil.OperationResultNone, nil
 	}
 
