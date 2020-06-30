@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Differentiate between local and remote kube configs during streamlined cluster registration powered by RegistrationOptions.
+    issueLink: https://github.com/solo-io/skv2/issues/88
