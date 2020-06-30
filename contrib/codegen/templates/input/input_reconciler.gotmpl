@@ -89,7 +89,7 @@ func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName s
     return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
     contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
     return r.reconcileFunc(clusterName)
 }
@@ -114,7 +114,7 @@ var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
 
 type singleClusterReconcilerImpl struct {
     ctx       context.Context
-    reconcileFunc func(metav1.Object) error
+    reconcileFunc func() error
 }
 
 // register the reconcile func with the manager
