@@ -89,16 +89,9 @@ func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName s
     return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request) {
+func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request) error {
     contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-    if err := r.reconcileFunc(clusterName); err != nil {
-        contextutils.LoggerFrom(r.ctx).Errorw(
-            "error occured while reconciling delete event",
-            "cluster", clusterName,
-            "obj", req,
-            zap.Error(err),
-            )
-    }
+    return r.reconcileFunc(clusterName)
 }
 {{- end }}
 {{- end }}
@@ -164,15 +157,9 @@ func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $typ
     return reconcile.Result{}, r.reconcileFunc()
 }
 
-func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) {
+func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
     contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-    if err := r.reconcileFunc(clusterName); err != nil {
-      contextutils.LoggerFrom(r.ctx).Errorw(
-        "error occured while reconciling delete event",
-        "obj", req,
-        zap.Error(err),
-      )
-    }
+    return r.reconcileFunc()
 }
 {{- end }}
 {{- end }}
