@@ -194,8 +194,9 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 						paintMap.add(clusterName, obj)
 						return result, e
 					},
-					OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) {
+					OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) error {
 						paintDeletes.add(clusterName, req)
+						return nil
 					},
 				})
 
@@ -217,8 +218,9 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 						paintMap.add(clusterName, obj)
 						return result, e
 					},
-					OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) {
+					OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) error {
 						paintDeletes.add(clusterName, req)
+						return nil
 					},
 				})
 
@@ -293,8 +295,9 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 						paintMap.add(clusterName, obj)
 						return result, e
 					},
-					OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) {
+					OnReconcilePaintDeletion: func(clusterName string, req reconcile.Request) error {
 						deleteMap.add(clusterName, req)
+						return nil
 					},
 				})
 
