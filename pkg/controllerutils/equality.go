@@ -36,6 +36,10 @@ func ObjectsEqual(obj1, obj2 runtime.Object) bool {
 			// skip ObjectMeta field, as we already asserted relevant fields are equal
 			continue
 		}
+		if value1.Type().Field(i).Name == "TypeMeta" {
+			// skip TypeMeta field, as it is set by the server and not relevant for object comparison
+			continue
+		}
 
 		field1 := value1.Field(i).Interface()
 		field2 := value2.Field(i).Interface()
