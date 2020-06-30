@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add controllerutils.ObjectsEqual for "Relevant" object equality.
+    issueLink: https://github.com/solo-io/skv2/issues/82
+  - type: FIX
+    description: Upsert now properly assets objects are non-equal before performing an update.
+    issueLink: https://github.com/solo-io/skv2/issues/81
