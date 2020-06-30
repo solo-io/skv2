@@ -28,12 +28,12 @@ type CertificateSigningRequestReconciler interface {
 // before being deleted.
 // implemented by the user
 type CertificateSigningRequestDeletionReconciler interface {
-	ReconcileCertificateSigningRequestDeletion(req reconcile.Request)
+	ReconcileCertificateSigningRequestDeletion(req reconcile.Request) error
 }
 
 type CertificateSigningRequestReconcilerFuncs struct {
 	OnReconcileCertificateSigningRequest         func(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) (reconcile.Result, error)
-	OnReconcileCertificateSigningRequestDeletion func(req reconcile.Request)
+	OnReconcileCertificateSigningRequestDeletion func(req reconcile.Request) error
 }
 
 func (f *CertificateSigningRequestReconcilerFuncs) ReconcileCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *CertificateSigningRequestReconcilerFuncs) ReconcileCertificateSigningRe
 	return f.OnReconcileCertificateSigningRequest(obj)
 }
 
-func (f *CertificateSigningRequestReconcilerFuncs) ReconcileCertificateSigningRequestDeletion(req reconcile.Request) {
+func (f *CertificateSigningRequestReconcilerFuncs) ReconcileCertificateSigningRequestDeletion(req reconcile.Request) error {
 	if f.OnReconcileCertificateSigningRequestDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileCertificateSigningRequestDeletion(req)
+	return f.OnReconcileCertificateSigningRequestDeletion(req)
 }
 
 // Reconcile and finalize the CertificateSigningRequest Resource
@@ -108,10 +108,11 @@ func (r genericCertificateSigningRequestReconciler) Reconcile(object ezkube.Obje
 	return r.reconciler.ReconcileCertificateSigningRequest(obj)
 }
 
-func (r genericCertificateSigningRequestReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericCertificateSigningRequestReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(CertificateSigningRequestDeletionReconciler); ok {
-		deletionReconciler.ReconcileCertificateSigningRequestDeletion(request)
+		return deletionReconciler.ReconcileCertificateSigningRequestDeletion(request)
 	}
+	return nil
 }
 
 // genericCertificateSigningRequestFinalizer implements a generic reconcile.FinalizingReconciler

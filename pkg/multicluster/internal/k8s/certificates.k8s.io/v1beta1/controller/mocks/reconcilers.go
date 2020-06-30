@@ -77,9 +77,11 @@ func (m *MockCertificateSigningRequestDeletionReconciler) EXPECT() *MockCertific
 }
 
 // ReconcileCertificateSigningRequestDeletion mocks base method.
-func (m *MockCertificateSigningRequestDeletionReconciler) ReconcileCertificateSigningRequestDeletion(req reconcile.Request) {
+func (m *MockCertificateSigningRequestDeletionReconciler) ReconcileCertificateSigningRequestDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileCertificateSigningRequestDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileCertificateSigningRequestDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileCertificateSigningRequestDeletion indicates an expected call of ReconcileCertificateSigningRequestDeletion.

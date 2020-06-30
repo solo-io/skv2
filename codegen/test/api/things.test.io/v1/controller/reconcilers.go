@@ -28,12 +28,12 @@ type PaintReconciler interface {
 // before being deleted.
 // implemented by the user
 type PaintDeletionReconciler interface {
-	ReconcilePaintDeletion(req reconcile.Request)
+	ReconcilePaintDeletion(req reconcile.Request) error
 }
 
 type PaintReconcilerFuncs struct {
 	OnReconcilePaint         func(obj *things_test_io_v1.Paint) (reconcile.Result, error)
-	OnReconcilePaintDeletion func(req reconcile.Request)
+	OnReconcilePaintDeletion func(req reconcile.Request) error
 }
 
 func (f *PaintReconcilerFuncs) ReconcilePaint(obj *things_test_io_v1.Paint) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *PaintReconcilerFuncs) ReconcilePaint(obj *things_test_io_v1.Paint) (rec
 	return f.OnReconcilePaint(obj)
 }
 
-func (f *PaintReconcilerFuncs) ReconcilePaintDeletion(req reconcile.Request) {
+func (f *PaintReconcilerFuncs) ReconcilePaintDeletion(req reconcile.Request) error {
 	if f.OnReconcilePaintDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcilePaintDeletion(req)
+	return f.OnReconcilePaintDeletion(req)
 }
 
 // Reconcile and finalize the Paint Resource
@@ -108,10 +108,11 @@ func (r genericPaintReconciler) Reconcile(object ezkube.Object) (reconcile.Resul
 	return r.reconciler.ReconcilePaint(obj)
 }
 
-func (r genericPaintReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericPaintReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(PaintDeletionReconciler); ok {
-		deletionReconciler.ReconcilePaintDeletion(request)
+		return deletionReconciler.ReconcilePaintDeletion(request)
 	}
+	return nil
 }
 
 // genericPaintFinalizer implements a generic reconcile.FinalizingReconciler
@@ -143,12 +144,12 @@ type ClusterResourceReconciler interface {
 // before being deleted.
 // implemented by the user
 type ClusterResourceDeletionReconciler interface {
-	ReconcileClusterResourceDeletion(req reconcile.Request)
+	ReconcileClusterResourceDeletion(req reconcile.Request) error
 }
 
 type ClusterResourceReconcilerFuncs struct {
 	OnReconcileClusterResource         func(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
-	OnReconcileClusterResourceDeletion func(req reconcile.Request)
+	OnReconcileClusterResourceDeletion func(req reconcile.Request) error
 }
 
 func (f *ClusterResourceReconcilerFuncs) ReconcileClusterResource(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error) {
@@ -158,11 +159,11 @@ func (f *ClusterResourceReconcilerFuncs) ReconcileClusterResource(obj *things_te
 	return f.OnReconcileClusterResource(obj)
 }
 
-func (f *ClusterResourceReconcilerFuncs) ReconcileClusterResourceDeletion(req reconcile.Request) {
+func (f *ClusterResourceReconcilerFuncs) ReconcileClusterResourceDeletion(req reconcile.Request) error {
 	if f.OnReconcileClusterResourceDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileClusterResourceDeletion(req)
+	return f.OnReconcileClusterResourceDeletion(req)
 }
 
 // Reconcile and finalize the ClusterResource Resource
@@ -223,10 +224,11 @@ func (r genericClusterResourceReconciler) Reconcile(object ezkube.Object) (recon
 	return r.reconciler.ReconcileClusterResource(obj)
 }
 
-func (r genericClusterResourceReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericClusterResourceReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(ClusterResourceDeletionReconciler); ok {
-		deletionReconciler.ReconcileClusterResourceDeletion(request)
+		return deletionReconciler.ReconcileClusterResourceDeletion(request)
 	}
+	return nil
 }
 
 // genericClusterResourceFinalizer implements a generic reconcile.FinalizingReconciler

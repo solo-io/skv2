@@ -29,12 +29,12 @@ type MulticlusterRoleReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterRoleDeletionReconciler interface {
-	ReconcileRoleDeletion(clusterName string, req reconcile.Request)
+	ReconcileRoleDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterRoleReconcilerFuncs struct {
 	OnReconcileRole         func(clusterName string, obj *rbac_authorization_k8s_io_v1.Role) (reconcile.Result, error)
-	OnReconcileRoleDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileRoleDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterRoleReconcilerFuncs) ReconcileRole(clusterName string, obj *rbac_authorization_k8s_io_v1.Role) (reconcile.Result, error) {
@@ -44,11 +44,11 @@ func (f *MulticlusterRoleReconcilerFuncs) ReconcileRole(clusterName string, obj 
 	return f.OnReconcileRole(clusterName, obj)
 }
 
-func (f *MulticlusterRoleReconcilerFuncs) ReconcileRoleDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterRoleReconcilerFuncs) ReconcileRoleDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileRoleDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileRoleDeletion(clusterName, req)
+	return f.OnReconcileRoleDeletion(clusterName, req)
 }
 
 type MulticlusterRoleReconcileLoop interface {
@@ -74,10 +74,11 @@ type genericRoleMulticlusterReconciler struct {
 	reconciler MulticlusterRoleReconciler
 }
 
-func (g genericRoleMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericRoleMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterRoleDeletionReconciler); ok {
-		deletionReconciler.ReconcileRoleDeletion(cluster, req)
+		return deletionReconciler.ReconcileRoleDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericRoleMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
@@ -99,12 +100,12 @@ type MulticlusterRoleBindingReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterRoleBindingDeletionReconciler interface {
-	ReconcileRoleBindingDeletion(clusterName string, req reconcile.Request)
+	ReconcileRoleBindingDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterRoleBindingReconcilerFuncs struct {
 	OnReconcileRoleBinding         func(clusterName string, obj *rbac_authorization_k8s_io_v1.RoleBinding) (reconcile.Result, error)
-	OnReconcileRoleBindingDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileRoleBindingDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterRoleBindingReconcilerFuncs) ReconcileRoleBinding(clusterName string, obj *rbac_authorization_k8s_io_v1.RoleBinding) (reconcile.Result, error) {
@@ -114,11 +115,11 @@ func (f *MulticlusterRoleBindingReconcilerFuncs) ReconcileRoleBinding(clusterNam
 	return f.OnReconcileRoleBinding(clusterName, obj)
 }
 
-func (f *MulticlusterRoleBindingReconcilerFuncs) ReconcileRoleBindingDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterRoleBindingReconcilerFuncs) ReconcileRoleBindingDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileRoleBindingDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileRoleBindingDeletion(clusterName, req)
+	return f.OnReconcileRoleBindingDeletion(clusterName, req)
 }
 
 type MulticlusterRoleBindingReconcileLoop interface {
@@ -144,10 +145,11 @@ type genericRoleBindingMulticlusterReconciler struct {
 	reconciler MulticlusterRoleBindingReconciler
 }
 
-func (g genericRoleBindingMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericRoleBindingMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterRoleBindingDeletionReconciler); ok {
-		deletionReconciler.ReconcileRoleBindingDeletion(cluster, req)
+		return deletionReconciler.ReconcileRoleBindingDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericRoleBindingMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
@@ -169,12 +171,12 @@ type MulticlusterClusterRoleReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterClusterRoleDeletionReconciler interface {
-	ReconcileClusterRoleDeletion(clusterName string, req reconcile.Request)
+	ReconcileClusterRoleDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterClusterRoleReconcilerFuncs struct {
 	OnReconcileClusterRole         func(clusterName string, obj *rbac_authorization_k8s_io_v1.ClusterRole) (reconcile.Result, error)
-	OnReconcileClusterRoleDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileClusterRoleDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterClusterRoleReconcilerFuncs) ReconcileClusterRole(clusterName string, obj *rbac_authorization_k8s_io_v1.ClusterRole) (reconcile.Result, error) {
@@ -184,11 +186,11 @@ func (f *MulticlusterClusterRoleReconcilerFuncs) ReconcileClusterRole(clusterNam
 	return f.OnReconcileClusterRole(clusterName, obj)
 }
 
-func (f *MulticlusterClusterRoleReconcilerFuncs) ReconcileClusterRoleDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterClusterRoleReconcilerFuncs) ReconcileClusterRoleDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileClusterRoleDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileClusterRoleDeletion(clusterName, req)
+	return f.OnReconcileClusterRoleDeletion(clusterName, req)
 }
 
 type MulticlusterClusterRoleReconcileLoop interface {
@@ -214,10 +216,11 @@ type genericClusterRoleMulticlusterReconciler struct {
 	reconciler MulticlusterClusterRoleReconciler
 }
 
-func (g genericClusterRoleMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericClusterRoleMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterClusterRoleDeletionReconciler); ok {
-		deletionReconciler.ReconcileClusterRoleDeletion(cluster, req)
+		return deletionReconciler.ReconcileClusterRoleDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericClusterRoleMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
@@ -239,12 +242,12 @@ type MulticlusterClusterRoleBindingReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterClusterRoleBindingDeletionReconciler interface {
-	ReconcileClusterRoleBindingDeletion(clusterName string, req reconcile.Request)
+	ReconcileClusterRoleBindingDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterClusterRoleBindingReconcilerFuncs struct {
 	OnReconcileClusterRoleBinding         func(clusterName string, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding) (reconcile.Result, error)
-	OnReconcileClusterRoleBindingDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileClusterRoleBindingDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterClusterRoleBindingReconcilerFuncs) ReconcileClusterRoleBinding(clusterName string, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding) (reconcile.Result, error) {
@@ -254,11 +257,11 @@ func (f *MulticlusterClusterRoleBindingReconcilerFuncs) ReconcileClusterRoleBind
 	return f.OnReconcileClusterRoleBinding(clusterName, obj)
 }
 
-func (f *MulticlusterClusterRoleBindingReconcilerFuncs) ReconcileClusterRoleBindingDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterClusterRoleBindingReconcilerFuncs) ReconcileClusterRoleBindingDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileClusterRoleBindingDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileClusterRoleBindingDeletion(clusterName, req)
+	return f.OnReconcileClusterRoleBindingDeletion(clusterName, req)
 }
 
 type MulticlusterClusterRoleBindingReconcileLoop interface {
@@ -284,10 +287,11 @@ type genericClusterRoleBindingMulticlusterReconciler struct {
 	reconciler MulticlusterClusterRoleBindingReconciler
 }
 
-func (g genericClusterRoleBindingMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericClusterRoleBindingMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterClusterRoleBindingDeletionReconciler); ok {
-		deletionReconciler.ReconcileClusterRoleBindingDeletion(cluster, req)
+		return deletionReconciler.ReconcileClusterRoleBindingDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericClusterRoleBindingMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {

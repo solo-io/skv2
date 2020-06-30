@@ -77,9 +77,11 @@ func (m *MockMulticlusterRoleDeletionReconciler) EXPECT() *MockMulticlusterRoleD
 }
 
 // ReconcileRoleDeletion mocks base method.
-func (m *MockMulticlusterRoleDeletionReconciler) ReconcileRoleDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterRoleDeletionReconciler) ReconcileRoleDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileRoleDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileRoleDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileRoleDeletion indicates an expected call of ReconcileRoleDeletion.
@@ -190,9 +192,11 @@ func (m *MockMulticlusterRoleBindingDeletionReconciler) EXPECT() *MockMulticlust
 }
 
 // ReconcileRoleBindingDeletion mocks base method.
-func (m *MockMulticlusterRoleBindingDeletionReconciler) ReconcileRoleBindingDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterRoleBindingDeletionReconciler) ReconcileRoleBindingDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileRoleBindingDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileRoleBindingDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileRoleBindingDeletion indicates an expected call of ReconcileRoleBindingDeletion.
@@ -303,9 +307,11 @@ func (m *MockMulticlusterClusterRoleDeletionReconciler) EXPECT() *MockMulticlust
 }
 
 // ReconcileClusterRoleDeletion mocks base method.
-func (m *MockMulticlusterClusterRoleDeletionReconciler) ReconcileClusterRoleDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterClusterRoleDeletionReconciler) ReconcileClusterRoleDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileClusterRoleDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileClusterRoleDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileClusterRoleDeletion indicates an expected call of ReconcileClusterRoleDeletion.
@@ -416,9 +422,11 @@ func (m *MockMulticlusterClusterRoleBindingDeletionReconciler) EXPECT() *MockMul
 }
 
 // ReconcileClusterRoleBindingDeletion mocks base method.
-func (m *MockMulticlusterClusterRoleBindingDeletionReconciler) ReconcileClusterRoleBindingDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterClusterRoleBindingDeletionReconciler) ReconcileClusterRoleBindingDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileClusterRoleBindingDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileClusterRoleBindingDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileClusterRoleBindingDeletion indicates an expected call of ReconcileClusterRoleBindingDeletion.

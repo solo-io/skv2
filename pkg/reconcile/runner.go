@@ -30,7 +30,8 @@ type Reconciler interface {
 
 type DeletionReconciler interface {
 	// we received a reconcile request for an object that was removed from the cache
-	ReconcileDeletion(request Request)
+	// requeue the object if returning an error
+	ReconcileDeletion(request Request) error
 }
 
 type FinalizingReconciler interface {
@@ -127,7 +128,7 @@ func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error)
 
 		// call OnDelete
 		if deletionReconciler, ok := ec.reconciler.(DeletionReconciler); ok {
-			deletionReconciler.ReconcileDeletion(request)
+			return reconcile.Result{}, deletionReconciler.ReconcileDeletion(request)
 		}
 
 		return reconcile.Result{}, nil

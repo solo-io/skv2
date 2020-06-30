@@ -77,9 +77,11 @@ func (m *MockMulticlusterValidatingWebhookConfigurationDeletionReconciler) EXPEC
 }
 
 // ReconcileValidatingWebhookConfigurationDeletion mocks base method.
-func (m *MockMulticlusterValidatingWebhookConfigurationDeletionReconciler) ReconcileValidatingWebhookConfigurationDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterValidatingWebhookConfigurationDeletionReconciler) ReconcileValidatingWebhookConfigurationDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileValidatingWebhookConfigurationDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileValidatingWebhookConfigurationDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileValidatingWebhookConfigurationDeletion indicates an expected call of ReconcileValidatingWebhookConfigurationDeletion.

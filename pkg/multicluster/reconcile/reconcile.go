@@ -67,10 +67,11 @@ func (m multiclusterReconciler) Reconcile(object ezkube.Object) (reconcile.Resul
 	return m.userReconciler.Reconcile(m.cluster, object)
 }
 
-func (m multiclusterReconciler) ReconcileDeletion(request reconcile.Request) {
+func (m multiclusterReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := m.userReconciler.(multicluster.DeletionReconciler); ok {
-		deletionReconciler.ReconcileDeletion(m.cluster, request)
+		return deletionReconciler.ReconcileDeletion(m.cluster, request)
 	}
+	return nil
 }
 
 type clusterLoopSet struct {

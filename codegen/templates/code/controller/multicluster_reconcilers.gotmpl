@@ -29,12 +29,12 @@ type Multicluster{{ $resource.Kind }}Reconciler interface {
 // before being deleted.
 // implemented by the user
 type Multicluster{{ $resource.Kind }}DeletionReconciler interface {
-	Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request)
+	Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request) error
 }
 
 type Multicluster{{ $resource.Kind }}ReconcilerFuncs struct {
 	OnReconcile{{ $resource.Kind }}         func(clusterName string, obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error)
-	OnReconcile{{ $resource.Kind }}Deletion func(clusterName string, req reconcile.Request)
+	OnReconcile{{ $resource.Kind }}Deletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
@@ -44,11 +44,11 @@ func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.
 	return f.OnReconcile{{ $resource.Kind }}(clusterName, obj)
 }
 
-func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request) {
+func (f *Multicluster{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}Deletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcile{{ $resource.Kind }}Deletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcile{{ $resource.Kind }}Deletion(clusterName, req)
+	return f.OnReconcile{{ $resource.Kind }}Deletion(clusterName, req)
 }
 
 type Multicluster{{ $resource.Kind }}ReconcileLoop interface {
@@ -74,10 +74,11 @@ type generic{{ $resource.Kind }}MulticlusterReconciler struct {
 	reconciler Multicluster{{ $resource.Kind }}Reconciler
 }
 
-func (g generic{{ $resource.Kind }}MulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g generic{{ $resource.Kind }}MulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(Multicluster{{ $resource.Kind }}DeletionReconciler); ok {
-		deletionReconciler.Reconcile{{ $resource.Kind }}Deletion(cluster, req)
+		return deletionReconciler.Reconcile{{ $resource.Kind }}Deletion(cluster, req)
 	}
+	return nil
 }
 
 func (g generic{{ $resource.Kind }}MulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {

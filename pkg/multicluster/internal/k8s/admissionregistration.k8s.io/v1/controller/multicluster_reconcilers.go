@@ -29,12 +29,12 @@ type MulticlusterValidatingWebhookConfigurationReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterValidatingWebhookConfigurationDeletionReconciler interface {
-	ReconcileValidatingWebhookConfigurationDeletion(clusterName string, req reconcile.Request)
+	ReconcileValidatingWebhookConfigurationDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterValidatingWebhookConfigurationReconcilerFuncs struct {
 	OnReconcileValidatingWebhookConfiguration         func(clusterName string, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) (reconcile.Result, error)
-	OnReconcileValidatingWebhookConfigurationDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileValidatingWebhookConfigurationDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterValidatingWebhookConfigurationReconcilerFuncs) ReconcileValidatingWebhookConfiguration(clusterName string, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) (reconcile.Result, error) {
@@ -44,11 +44,11 @@ func (f *MulticlusterValidatingWebhookConfigurationReconcilerFuncs) ReconcileVal
 	return f.OnReconcileValidatingWebhookConfiguration(clusterName, obj)
 }
 
-func (f *MulticlusterValidatingWebhookConfigurationReconcilerFuncs) ReconcileValidatingWebhookConfigurationDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterValidatingWebhookConfigurationReconcilerFuncs) ReconcileValidatingWebhookConfigurationDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileValidatingWebhookConfigurationDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileValidatingWebhookConfigurationDeletion(clusterName, req)
+	return f.OnReconcileValidatingWebhookConfigurationDeletion(clusterName, req)
 }
 
 type MulticlusterValidatingWebhookConfigurationReconcileLoop interface {
@@ -74,10 +74,11 @@ type genericValidatingWebhookConfigurationMulticlusterReconciler struct {
 	reconciler MulticlusterValidatingWebhookConfigurationReconciler
 }
 
-func (g genericValidatingWebhookConfigurationMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericValidatingWebhookConfigurationMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterValidatingWebhookConfigurationDeletionReconciler); ok {
-		deletionReconciler.ReconcileValidatingWebhookConfigurationDeletion(cluster, req)
+		return deletionReconciler.ReconcileValidatingWebhookConfigurationDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericValidatingWebhookConfigurationMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {

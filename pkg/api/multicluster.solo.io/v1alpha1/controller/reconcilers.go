@@ -26,12 +26,12 @@ type KubernetesClusterReconciler interface {
 // before being deleted.
 // implemented by the user
 type KubernetesClusterDeletionReconciler interface {
-	ReconcileKubernetesClusterDeletion(req reconcile.Request)
+	ReconcileKubernetesClusterDeletion(req reconcile.Request) error
 }
 
 type KubernetesClusterReconcilerFuncs struct {
 	OnReconcileKubernetesCluster         func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error)
-	OnReconcileKubernetesClusterDeletion func(req reconcile.Request)
+	OnReconcileKubernetesClusterDeletion func(req reconcile.Request) error
 }
 
 func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
@@ -41,11 +41,11 @@ func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesCluster(obj *multi
 	return f.OnReconcileKubernetesCluster(obj)
 }
 
-func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesClusterDeletion(req reconcile.Request) {
+func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesClusterDeletion(req reconcile.Request) error {
 	if f.OnReconcileKubernetesClusterDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileKubernetesClusterDeletion(req)
+	return f.OnReconcileKubernetesClusterDeletion(req)
 }
 
 // Reconcile and finalize the KubernetesCluster Resource
@@ -106,10 +106,11 @@ func (r genericKubernetesClusterReconciler) Reconcile(object ezkube.Object) (rec
 	return r.reconciler.ReconcileKubernetesCluster(obj)
 }
 
-func (r genericKubernetesClusterReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericKubernetesClusterReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(KubernetesClusterDeletionReconciler); ok {
-		deletionReconciler.ReconcileKubernetesClusterDeletion(request)
+		return deletionReconciler.ReconcileKubernetesClusterDeletion(request)
 	}
+	return nil
 }
 
 // genericKubernetesClusterFinalizer implements a generic reconcile.FinalizingReconciler

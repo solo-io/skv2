@@ -77,9 +77,11 @@ func (m *MockCustomResourceDefinitionDeletionReconciler) EXPECT() *MockCustomRes
 }
 
 // ReconcileCustomResourceDefinitionDeletion mocks base method.
-func (m *MockCustomResourceDefinitionDeletionReconciler) ReconcileCustomResourceDefinitionDeletion(req reconcile.Request) {
+func (m *MockCustomResourceDefinitionDeletionReconciler) ReconcileCustomResourceDefinitionDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileCustomResourceDefinitionDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileCustomResourceDefinitionDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileCustomResourceDefinitionDeletion indicates an expected call of ReconcileCustomResourceDefinitionDeletion.

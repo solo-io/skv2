@@ -31,12 +31,12 @@ type {{ $resource.Kind }}Reconciler interface {
 // before being deleted.
 // implemented by the user
 type {{ $resource.Kind }}DeletionReconciler interface {
-    Reconcile{{ $resource.Kind }}Deletion(req reconcile.Request)
+    Reconcile{{ $resource.Kind }}Deletion(req reconcile.Request) error
 }
 
 type {{ $resource.Kind }}ReconcilerFuncs struct {
     OnReconcile{{ $resource.Kind }} func(obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error)
-    OnReconcile{{ $resource.Kind }}Deletion func(req reconcile.Request)
+    OnReconcile{{ $resource.Kind }}Deletion func(req reconcile.Request) error
 }
 
 func (f *{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}(obj *{{ $import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
@@ -46,11 +46,11 @@ func (f *{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}(obj 
     return f.OnReconcile{{ $resource.Kind }}(obj)
 }
 
-func (f *{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}Deletion(req reconcile.Request) {
+func (f *{{ $resource.Kind }}ReconcilerFuncs) Reconcile{{ $resource.Kind }}Deletion(req reconcile.Request) error {
     if f.OnReconcile{{ $resource.Kind }}Deletion == nil {
-        return
+        return nil
     }
-    f.OnReconcile{{ $resource.Kind }}Deletion(req)
+    return f.OnReconcile{{ $resource.Kind }}Deletion(req)
 }
 
 // Reconcile and finalize the {{ $resource.Kind }} Resource
@@ -111,10 +111,11 @@ func (r generic{{ $resource.Kind }}Reconciler) Reconcile(object ezkube.Object) (
     return r.reconciler.Reconcile{{ $resource.Kind }}(obj)
 }
 
-func (r generic{{ $resource.Kind }}Reconciler) ReconcileDeletion(request reconcile.Request) {
+func (r generic{{ $resource.Kind }}Reconciler) ReconcileDeletion(request reconcile.Request) error {
     if deletionReconciler, ok := r.reconciler.({{ $resource.Kind }}DeletionReconciler); ok {
-        deletionReconciler.Reconcile{{ $resource.Kind }}Deletion(request)
+        return deletionReconciler.Reconcile{{ $resource.Kind }}Deletion(request)
     }
+    return nil
 }
 
 // generic{{ $resource.Kind }}Finalizer implements a generic reconcile.FinalizingReconciler
