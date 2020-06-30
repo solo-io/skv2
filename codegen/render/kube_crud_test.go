@@ -156,9 +156,9 @@ var _ = Describe("Generated Code", func() {
 					reconciled = obj
 					return
 				},
-				OnReconcilePaintDeletion: func(req reconcile.Request) {
+				OnReconcilePaintDeletion: func(req reconcile.Request) error {
 					deleted = req
-					return
+					return nil
 				},
 			}
 			err = loop.RunPaintReconciler(ctx, reconciler)

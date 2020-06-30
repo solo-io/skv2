@@ -29,12 +29,12 @@ type MulticlusterCertificateSigningRequestReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterCertificateSigningRequestDeletionReconciler interface {
-	ReconcileCertificateSigningRequestDeletion(clusterName string, req reconcile.Request)
+	ReconcileCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterCertificateSigningRequestReconcilerFuncs struct {
 	OnReconcileCertificateSigningRequest         func(clusterName string, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) (reconcile.Result, error)
-	OnReconcileCertificateSigningRequestDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileCertificateSigningRequestDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterCertificateSigningRequestReconcilerFuncs) ReconcileCertificateSigningRequest(clusterName string, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) (reconcile.Result, error) {
@@ -44,11 +44,11 @@ func (f *MulticlusterCertificateSigningRequestReconcilerFuncs) ReconcileCertific
 	return f.OnReconcileCertificateSigningRequest(clusterName, obj)
 }
 
-func (f *MulticlusterCertificateSigningRequestReconcilerFuncs) ReconcileCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterCertificateSigningRequestReconcilerFuncs) ReconcileCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileCertificateSigningRequestDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileCertificateSigningRequestDeletion(clusterName, req)
+	return f.OnReconcileCertificateSigningRequestDeletion(clusterName, req)
 }
 
 type MulticlusterCertificateSigningRequestReconcileLoop interface {
@@ -74,10 +74,11 @@ type genericCertificateSigningRequestMulticlusterReconciler struct {
 	reconciler MulticlusterCertificateSigningRequestReconciler
 }
 
-func (g genericCertificateSigningRequestMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericCertificateSigningRequestMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterCertificateSigningRequestDeletionReconciler); ok {
-		deletionReconciler.ReconcileCertificateSigningRequestDeletion(cluster, req)
+		return deletionReconciler.ReconcileCertificateSigningRequestDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericCertificateSigningRequestMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {

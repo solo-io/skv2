@@ -77,9 +77,11 @@ func (m *MockRoleDeletionReconciler) EXPECT() *MockRoleDeletionReconcilerMockRec
 }
 
 // ReconcileRoleDeletion mocks base method.
-func (m *MockRoleDeletionReconciler) ReconcileRoleDeletion(req reconcile.Request) {
+func (m *MockRoleDeletionReconciler) ReconcileRoleDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileRoleDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileRoleDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileRoleDeletion indicates an expected call of ReconcileRoleDeletion.
@@ -258,9 +260,11 @@ func (m *MockRoleBindingDeletionReconciler) EXPECT() *MockRoleBindingDeletionRec
 }
 
 // ReconcileRoleBindingDeletion mocks base method.
-func (m *MockRoleBindingDeletionReconciler) ReconcileRoleBindingDeletion(req reconcile.Request) {
+func (m *MockRoleBindingDeletionReconciler) ReconcileRoleBindingDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileRoleBindingDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileRoleBindingDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileRoleBindingDeletion indicates an expected call of ReconcileRoleBindingDeletion.
@@ -439,9 +443,11 @@ func (m *MockClusterRoleDeletionReconciler) EXPECT() *MockClusterRoleDeletionRec
 }
 
 // ReconcileClusterRoleDeletion mocks base method.
-func (m *MockClusterRoleDeletionReconciler) ReconcileClusterRoleDeletion(req reconcile.Request) {
+func (m *MockClusterRoleDeletionReconciler) ReconcileClusterRoleDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileClusterRoleDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileClusterRoleDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileClusterRoleDeletion indicates an expected call of ReconcileClusterRoleDeletion.
@@ -620,9 +626,11 @@ func (m *MockClusterRoleBindingDeletionReconciler) EXPECT() *MockClusterRoleBind
 }
 
 // ReconcileClusterRoleBindingDeletion mocks base method.
-func (m *MockClusterRoleBindingDeletionReconciler) ReconcileClusterRoleBindingDeletion(req reconcile.Request) {
+func (m *MockClusterRoleBindingDeletionReconciler) ReconcileClusterRoleBindingDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileClusterRoleBindingDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileClusterRoleBindingDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileClusterRoleBindingDeletion indicates an expected call of ReconcileClusterRoleBindingDeletion.

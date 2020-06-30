@@ -28,12 +28,12 @@ type ValidatingWebhookConfigurationReconciler interface {
 // before being deleted.
 // implemented by the user
 type ValidatingWebhookConfigurationDeletionReconciler interface {
-	ReconcileValidatingWebhookConfigurationDeletion(req reconcile.Request)
+	ReconcileValidatingWebhookConfigurationDeletion(req reconcile.Request) error
 }
 
 type ValidatingWebhookConfigurationReconcilerFuncs struct {
 	OnReconcileValidatingWebhookConfiguration         func(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) (reconcile.Result, error)
-	OnReconcileValidatingWebhookConfigurationDeletion func(req reconcile.Request)
+	OnReconcileValidatingWebhookConfigurationDeletion func(req reconcile.Request) error
 }
 
 func (f *ValidatingWebhookConfigurationReconcilerFuncs) ReconcileValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *ValidatingWebhookConfigurationReconcilerFuncs) ReconcileValidatingWebho
 	return f.OnReconcileValidatingWebhookConfiguration(obj)
 }
 
-func (f *ValidatingWebhookConfigurationReconcilerFuncs) ReconcileValidatingWebhookConfigurationDeletion(req reconcile.Request) {
+func (f *ValidatingWebhookConfigurationReconcilerFuncs) ReconcileValidatingWebhookConfigurationDeletion(req reconcile.Request) error {
 	if f.OnReconcileValidatingWebhookConfigurationDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileValidatingWebhookConfigurationDeletion(req)
+	return f.OnReconcileValidatingWebhookConfigurationDeletion(req)
 }
 
 // Reconcile and finalize the ValidatingWebhookConfiguration Resource
@@ -108,10 +108,11 @@ func (r genericValidatingWebhookConfigurationReconciler) Reconcile(object ezkube
 	return r.reconciler.ReconcileValidatingWebhookConfiguration(obj)
 }
 
-func (r genericValidatingWebhookConfigurationReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericValidatingWebhookConfigurationReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(ValidatingWebhookConfigurationDeletionReconciler); ok {
-		deletionReconciler.ReconcileValidatingWebhookConfigurationDeletion(request)
+		return deletionReconciler.ReconcileValidatingWebhookConfigurationDeletion(request)
 	}
+	return nil
 }
 
 // genericValidatingWebhookConfigurationFinalizer implements a generic reconcile.FinalizingReconciler

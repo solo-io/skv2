@@ -28,12 +28,12 @@ type RoleReconciler interface {
 // before being deleted.
 // implemented by the user
 type RoleDeletionReconciler interface {
-	ReconcileRoleDeletion(req reconcile.Request)
+	ReconcileRoleDeletion(req reconcile.Request) error
 }
 
 type RoleReconcilerFuncs struct {
 	OnReconcileRole         func(obj *rbac_authorization_k8s_io_v1.Role) (reconcile.Result, error)
-	OnReconcileRoleDeletion func(req reconcile.Request)
+	OnReconcileRoleDeletion func(req reconcile.Request) error
 }
 
 func (f *RoleReconcilerFuncs) ReconcileRole(obj *rbac_authorization_k8s_io_v1.Role) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *RoleReconcilerFuncs) ReconcileRole(obj *rbac_authorization_k8s_io_v1.Ro
 	return f.OnReconcileRole(obj)
 }
 
-func (f *RoleReconcilerFuncs) ReconcileRoleDeletion(req reconcile.Request) {
+func (f *RoleReconcilerFuncs) ReconcileRoleDeletion(req reconcile.Request) error {
 	if f.OnReconcileRoleDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileRoleDeletion(req)
+	return f.OnReconcileRoleDeletion(req)
 }
 
 // Reconcile and finalize the Role Resource
@@ -108,10 +108,11 @@ func (r genericRoleReconciler) Reconcile(object ezkube.Object) (reconcile.Result
 	return r.reconciler.ReconcileRole(obj)
 }
 
-func (r genericRoleReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericRoleReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(RoleDeletionReconciler); ok {
-		deletionReconciler.ReconcileRoleDeletion(request)
+		return deletionReconciler.ReconcileRoleDeletion(request)
 	}
+	return nil
 }
 
 // genericRoleFinalizer implements a generic reconcile.FinalizingReconciler
@@ -143,12 +144,12 @@ type RoleBindingReconciler interface {
 // before being deleted.
 // implemented by the user
 type RoleBindingDeletionReconciler interface {
-	ReconcileRoleBindingDeletion(req reconcile.Request)
+	ReconcileRoleBindingDeletion(req reconcile.Request) error
 }
 
 type RoleBindingReconcilerFuncs struct {
 	OnReconcileRoleBinding         func(obj *rbac_authorization_k8s_io_v1.RoleBinding) (reconcile.Result, error)
-	OnReconcileRoleBindingDeletion func(req reconcile.Request)
+	OnReconcileRoleBindingDeletion func(req reconcile.Request) error
 }
 
 func (f *RoleBindingReconcilerFuncs) ReconcileRoleBinding(obj *rbac_authorization_k8s_io_v1.RoleBinding) (reconcile.Result, error) {
@@ -158,11 +159,11 @@ func (f *RoleBindingReconcilerFuncs) ReconcileRoleBinding(obj *rbac_authorizatio
 	return f.OnReconcileRoleBinding(obj)
 }
 
-func (f *RoleBindingReconcilerFuncs) ReconcileRoleBindingDeletion(req reconcile.Request) {
+func (f *RoleBindingReconcilerFuncs) ReconcileRoleBindingDeletion(req reconcile.Request) error {
 	if f.OnReconcileRoleBindingDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileRoleBindingDeletion(req)
+	return f.OnReconcileRoleBindingDeletion(req)
 }
 
 // Reconcile and finalize the RoleBinding Resource
@@ -223,10 +224,11 @@ func (r genericRoleBindingReconciler) Reconcile(object ezkube.Object) (reconcile
 	return r.reconciler.ReconcileRoleBinding(obj)
 }
 
-func (r genericRoleBindingReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericRoleBindingReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(RoleBindingDeletionReconciler); ok {
-		deletionReconciler.ReconcileRoleBindingDeletion(request)
+		return deletionReconciler.ReconcileRoleBindingDeletion(request)
 	}
+	return nil
 }
 
 // genericRoleBindingFinalizer implements a generic reconcile.FinalizingReconciler
@@ -258,12 +260,12 @@ type ClusterRoleReconciler interface {
 // before being deleted.
 // implemented by the user
 type ClusterRoleDeletionReconciler interface {
-	ReconcileClusterRoleDeletion(req reconcile.Request)
+	ReconcileClusterRoleDeletion(req reconcile.Request) error
 }
 
 type ClusterRoleReconcilerFuncs struct {
 	OnReconcileClusterRole         func(obj *rbac_authorization_k8s_io_v1.ClusterRole) (reconcile.Result, error)
-	OnReconcileClusterRoleDeletion func(req reconcile.Request)
+	OnReconcileClusterRoleDeletion func(req reconcile.Request) error
 }
 
 func (f *ClusterRoleReconcilerFuncs) ReconcileClusterRole(obj *rbac_authorization_k8s_io_v1.ClusterRole) (reconcile.Result, error) {
@@ -273,11 +275,11 @@ func (f *ClusterRoleReconcilerFuncs) ReconcileClusterRole(obj *rbac_authorizatio
 	return f.OnReconcileClusterRole(obj)
 }
 
-func (f *ClusterRoleReconcilerFuncs) ReconcileClusterRoleDeletion(req reconcile.Request) {
+func (f *ClusterRoleReconcilerFuncs) ReconcileClusterRoleDeletion(req reconcile.Request) error {
 	if f.OnReconcileClusterRoleDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileClusterRoleDeletion(req)
+	return f.OnReconcileClusterRoleDeletion(req)
 }
 
 // Reconcile and finalize the ClusterRole Resource
@@ -338,10 +340,11 @@ func (r genericClusterRoleReconciler) Reconcile(object ezkube.Object) (reconcile
 	return r.reconciler.ReconcileClusterRole(obj)
 }
 
-func (r genericClusterRoleReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericClusterRoleReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(ClusterRoleDeletionReconciler); ok {
-		deletionReconciler.ReconcileClusterRoleDeletion(request)
+		return deletionReconciler.ReconcileClusterRoleDeletion(request)
 	}
+	return nil
 }
 
 // genericClusterRoleFinalizer implements a generic reconcile.FinalizingReconciler
@@ -373,12 +376,12 @@ type ClusterRoleBindingReconciler interface {
 // before being deleted.
 // implemented by the user
 type ClusterRoleBindingDeletionReconciler interface {
-	ReconcileClusterRoleBindingDeletion(req reconcile.Request)
+	ReconcileClusterRoleBindingDeletion(req reconcile.Request) error
 }
 
 type ClusterRoleBindingReconcilerFuncs struct {
 	OnReconcileClusterRoleBinding         func(obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding) (reconcile.Result, error)
-	OnReconcileClusterRoleBindingDeletion func(req reconcile.Request)
+	OnReconcileClusterRoleBindingDeletion func(req reconcile.Request) error
 }
 
 func (f *ClusterRoleBindingReconcilerFuncs) ReconcileClusterRoleBinding(obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding) (reconcile.Result, error) {
@@ -388,11 +391,11 @@ func (f *ClusterRoleBindingReconcilerFuncs) ReconcileClusterRoleBinding(obj *rba
 	return f.OnReconcileClusterRoleBinding(obj)
 }
 
-func (f *ClusterRoleBindingReconcilerFuncs) ReconcileClusterRoleBindingDeletion(req reconcile.Request) {
+func (f *ClusterRoleBindingReconcilerFuncs) ReconcileClusterRoleBindingDeletion(req reconcile.Request) error {
 	if f.OnReconcileClusterRoleBindingDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileClusterRoleBindingDeletion(req)
+	return f.OnReconcileClusterRoleBindingDeletion(req)
 }
 
 // Reconcile and finalize the ClusterRoleBinding Resource
@@ -453,10 +456,11 @@ func (r genericClusterRoleBindingReconciler) Reconcile(object ezkube.Object) (re
 	return r.reconciler.ReconcileClusterRoleBinding(obj)
 }
 
-func (r genericClusterRoleBindingReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericClusterRoleBindingReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(ClusterRoleBindingDeletionReconciler); ok {
-		deletionReconciler.ReconcileClusterRoleBindingDeletion(request)
+		return deletionReconciler.ReconcileClusterRoleBindingDeletion(request)
 	}
+	return nil
 }
 
 // genericClusterRoleBindingFinalizer implements a generic reconcile.FinalizingReconciler

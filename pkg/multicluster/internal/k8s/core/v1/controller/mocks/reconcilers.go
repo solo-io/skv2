@@ -77,9 +77,11 @@ func (m *MockSecretDeletionReconciler) EXPECT() *MockSecretDeletionReconcilerMoc
 }
 
 // ReconcileSecretDeletion mocks base method.
-func (m *MockSecretDeletionReconciler) ReconcileSecretDeletion(req reconcile.Request) {
+func (m *MockSecretDeletionReconciler) ReconcileSecretDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileSecretDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileSecretDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileSecretDeletion indicates an expected call of ReconcileSecretDeletion.
@@ -258,9 +260,11 @@ func (m *MockServiceAccountDeletionReconciler) EXPECT() *MockServiceAccountDelet
 }
 
 // ReconcileServiceAccountDeletion mocks base method.
-func (m *MockServiceAccountDeletionReconciler) ReconcileServiceAccountDeletion(req reconcile.Request) {
+func (m *MockServiceAccountDeletionReconciler) ReconcileServiceAccountDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileServiceAccountDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileServiceAccountDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileServiceAccountDeletion indicates an expected call of ReconcileServiceAccountDeletion.
@@ -439,9 +443,11 @@ func (m *MockNamespaceDeletionReconciler) EXPECT() *MockNamespaceDeletionReconci
 }
 
 // ReconcileNamespaceDeletion mocks base method.
-func (m *MockNamespaceDeletionReconciler) ReconcileNamespaceDeletion(req reconcile.Request) {
+func (m *MockNamespaceDeletionReconciler) ReconcileNamespaceDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileNamespaceDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileNamespaceDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileNamespaceDeletion indicates an expected call of ReconcileNamespaceDeletion.

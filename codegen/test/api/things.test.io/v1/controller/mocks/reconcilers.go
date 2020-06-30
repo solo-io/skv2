@@ -77,9 +77,11 @@ func (m *MockPaintDeletionReconciler) EXPECT() *MockPaintDeletionReconcilerMockR
 }
 
 // ReconcilePaintDeletion mocks base method.
-func (m *MockPaintDeletionReconciler) ReconcilePaintDeletion(req reconcile.Request) {
+func (m *MockPaintDeletionReconciler) ReconcilePaintDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcilePaintDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcilePaintDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcilePaintDeletion indicates an expected call of ReconcilePaintDeletion.
@@ -258,9 +260,11 @@ func (m *MockClusterResourceDeletionReconciler) EXPECT() *MockClusterResourceDel
 }
 
 // ReconcileClusterResourceDeletion mocks base method.
-func (m *MockClusterResourceDeletionReconciler) ReconcileClusterResourceDeletion(req reconcile.Request) {
+func (m *MockClusterResourceDeletionReconciler) ReconcileClusterResourceDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileClusterResourceDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileClusterResourceDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileClusterResourceDeletion indicates an expected call of ReconcileClusterResourceDeletion.

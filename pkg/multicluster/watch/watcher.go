@@ -70,8 +70,9 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 	return reconcile.Result{}, nil
 }
 
-func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) {
+func (c *clusterWatcher) ReconcileSecretDeletion(req reconcile.Request) error {
 	c.removeCluster(req.Name)
+	return nil
 }
 
 func (c *clusterWatcher) RegisterClusterHandler(handler multicluster.ClusterHandler) {

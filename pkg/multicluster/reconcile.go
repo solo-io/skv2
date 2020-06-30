@@ -16,7 +16,8 @@ type Reconciler interface {
 
 type DeletionReconciler interface {
 	// we received a reconcile request for an object that was removed from the cache
-	ReconcileDeletion(cluster string, request reconcile.Request)
+	// requeue the object if returning an error,
+	ReconcileDeletion(cluster string, request reconcile.Request) error
 }
 
 // Loop runs resource reconcilers until the context gets cancelled
