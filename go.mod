@@ -33,9 +33,8 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/go-utils v0.15.2
 	github.com/solo-io/protoc-gen-ext v0.0.9
-	github.com/solo-io/solo-kit v0.12.2
+	github.com/solo-io/solo-kit v0.13.8
 	go.uber.org/zap v1.13.0
-	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
@@ -44,14 +43,14 @@ require (
 	google.golang.org/api v0.6.0
 	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
 	k8s.io/api v0.17.2
-	k8s.io/apiextensions-apiserver v0.17.2
-	k8s.io/apimachinery v0.17.2
-	k8s.io/client-go v8.0.0+incompatible
+	k8s.io/apiextensions-apiserver v0.18.1
+	k8s.io/apimachinery v0.18.1
+	k8s.io/client-go v0.17.2
 	k8s.io/code-generator v0.17.2
 	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66 // indirect
 	sigs.k8s.io/aws-iam-authenticator v0.5.0
-	sigs.k8s.io/controller-runtime v0.5.1
-	sigs.k8s.io/yaml v1.1.0
+	sigs.k8s.io/controller-runtime v0.5.6
+	sigs.k8s.io/yaml v1.2.0
 )
 
 // Pinned to kubernetes-1.14.1
@@ -61,7 +60,11 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 
+	k8s.io/api => k8s.io/api v0.17.1
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.1
+	k8s.io/apimachinery => k8s.io/apimachinery v0.17.1
 	k8s.io/client-go => k8s.io/client-go v0.17.1
+	k8s.io/code-generator => k8s.io/code-generator v0.17.1
 )
 
 replace (

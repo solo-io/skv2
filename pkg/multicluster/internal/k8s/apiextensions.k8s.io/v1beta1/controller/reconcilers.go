@@ -28,12 +28,12 @@ type CustomResourceDefinitionReconciler interface {
 // before being deleted.
 // implemented by the user
 type CustomResourceDefinitionDeletionReconciler interface {
-	ReconcileCustomResourceDefinitionDeletion(req reconcile.Request)
+	ReconcileCustomResourceDefinitionDeletion(req reconcile.Request) error
 }
 
 type CustomResourceDefinitionReconcilerFuncs struct {
 	OnReconcileCustomResourceDefinition         func(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error)
-	OnReconcileCustomResourceDefinitionDeletion func(req reconcile.Request)
+	OnReconcileCustomResourceDefinitionDeletion func(req reconcile.Request) error
 }
 
 func (f *CustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *CustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinit
 	return f.OnReconcileCustomResourceDefinition(obj)
 }
 
-func (f *CustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinitionDeletion(req reconcile.Request) {
+func (f *CustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinitionDeletion(req reconcile.Request) error {
 	if f.OnReconcileCustomResourceDefinitionDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileCustomResourceDefinitionDeletion(req)
+	return f.OnReconcileCustomResourceDefinitionDeletion(req)
 }
 
 // Reconcile and finalize the CustomResourceDefinition Resource
@@ -108,10 +108,11 @@ func (r genericCustomResourceDefinitionReconciler) Reconcile(object ezkube.Objec
 	return r.reconciler.ReconcileCustomResourceDefinition(obj)
 }
 
-func (r genericCustomResourceDefinitionReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericCustomResourceDefinitionReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(CustomResourceDefinitionDeletionReconciler); ok {
-		deletionReconciler.ReconcileCustomResourceDefinitionDeletion(request)
+		return deletionReconciler.ReconcileCustomResourceDefinitionDeletion(request)
 	}
+	return nil
 }
 
 // genericCustomResourceDefinitionFinalizer implements a generic reconcile.FinalizingReconciler

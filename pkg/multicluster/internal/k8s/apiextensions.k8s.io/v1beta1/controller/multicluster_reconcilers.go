@@ -29,12 +29,12 @@ type MulticlusterCustomResourceDefinitionReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterCustomResourceDefinitionDeletionReconciler interface {
-	ReconcileCustomResourceDefinitionDeletion(clusterName string, req reconcile.Request)
+	ReconcileCustomResourceDefinitionDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterCustomResourceDefinitionReconcilerFuncs struct {
 	OnReconcileCustomResourceDefinition         func(clusterName string, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error)
-	OnReconcileCustomResourceDefinitionDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileCustomResourceDefinitionDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterCustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinition(clusterName string, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error) {
@@ -44,11 +44,11 @@ func (f *MulticlusterCustomResourceDefinitionReconcilerFuncs) ReconcileCustomRes
 	return f.OnReconcileCustomResourceDefinition(clusterName, obj)
 }
 
-func (f *MulticlusterCustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinitionDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterCustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinitionDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileCustomResourceDefinitionDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileCustomResourceDefinitionDeletion(clusterName, req)
+	return f.OnReconcileCustomResourceDefinitionDeletion(clusterName, req)
 }
 
 type MulticlusterCustomResourceDefinitionReconcileLoop interface {
@@ -74,10 +74,11 @@ type genericCustomResourceDefinitionMulticlusterReconciler struct {
 	reconciler MulticlusterCustomResourceDefinitionReconciler
 }
 
-func (g genericCustomResourceDefinitionMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericCustomResourceDefinitionMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterCustomResourceDefinitionDeletionReconciler); ok {
-		deletionReconciler.ReconcileCustomResourceDefinitionDeletion(cluster, req)
+		return deletionReconciler.ReconcileCustomResourceDefinitionDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericCustomResourceDefinitionMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {

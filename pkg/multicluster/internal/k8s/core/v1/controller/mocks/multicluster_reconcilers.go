@@ -77,9 +77,11 @@ func (m *MockMulticlusterSecretDeletionReconciler) EXPECT() *MockMulticlusterSec
 }
 
 // ReconcileSecretDeletion mocks base method.
-func (m *MockMulticlusterSecretDeletionReconciler) ReconcileSecretDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterSecretDeletionReconciler) ReconcileSecretDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileSecretDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileSecretDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileSecretDeletion indicates an expected call of ReconcileSecretDeletion.
@@ -190,9 +192,11 @@ func (m *MockMulticlusterServiceAccountDeletionReconciler) EXPECT() *MockMulticl
 }
 
 // ReconcileServiceAccountDeletion mocks base method.
-func (m *MockMulticlusterServiceAccountDeletionReconciler) ReconcileServiceAccountDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterServiceAccountDeletionReconciler) ReconcileServiceAccountDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileServiceAccountDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileServiceAccountDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileServiceAccountDeletion indicates an expected call of ReconcileServiceAccountDeletion.
@@ -303,9 +307,11 @@ func (m *MockMulticlusterNamespaceDeletionReconciler) EXPECT() *MockMulticluster
 }
 
 // ReconcileNamespaceDeletion mocks base method.
-func (m *MockMulticlusterNamespaceDeletionReconciler) ReconcileNamespaceDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterNamespaceDeletionReconciler) ReconcileNamespaceDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileNamespaceDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileNamespaceDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileNamespaceDeletion indicates an expected call of ReconcileNamespaceDeletion.
