@@ -31,6 +31,9 @@ type RegistrationOptions struct {
 	// if unset, use current context
 	KubeContext string
 
+	// override the url of the k8s server for the remote cluster
+	RemoteURL string
+
 	// override the path of the remote kubeconfig
 	RemoteKubeCfgPath string
 
@@ -98,7 +101,7 @@ func (opts RegistrationOptions) RegisterCluster(
 		return err
 	}
 
-	remoteCfg, err := getClientConfigWithContext(opts.MasterURL, opts.RemoteKubeCfgPath, opts.RemoteKubeContext)
+	remoteCfg, err := getClientConfigWithContext(opts.RemoteURL, opts.RemoteKubeCfgPath, opts.RemoteKubeContext)
 	if err != nil {
 		return err
 	}
@@ -188,7 +191,7 @@ func defaultRegistrant(cfg *rest.Config, clusterDomainOverride string) (ClusterR
 }
 
 // Attempts to load a Client KubeConfig from a default list of sources.
-func getClientConfigWithContext(masterURL, kubeCfgPath, context string) (clientcmd.ClientConfig, error) {
+func getClientConfigWithContext(serverURL, kubeCfgPath, context string) (clientcmd.ClientConfig, error) {
 	verifiedKubeConfigPath := clientcmd.RecommendedHomeFile
 	if kubeCfgPath != "" {
 		verifiedKubeConfigPath = kubeCfgPath
@@ -200,7 +203,7 @@ func getClientConfigWithContext(masterURL, kubeCfgPath, context string) (clientc
 
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	loadingRules.ExplicitPath = verifiedKubeConfigPath
-	configOverrides := &clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: masterURL}}
+	configOverrides := &clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: serverURL}}
 
 	if context != "" {
 		configOverrides.CurrentContext = context
