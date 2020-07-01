@@ -31,6 +31,13 @@ type RegistrationOptions struct {
 	// if unset, use current context
 	KubeContext string
 
+	// override the path of the remote kubeconfig
+	RemoteKubeCfgPath string
+
+	// override the context to use from the remote kubeconfig
+	// if unset, use current context
+	RemoteKubeContext string
+
 	// localClusterDomainOverride is optional. When passed in, it will overwrite the Api Server endpoint in
 	//	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
 	//	on a mac as  the local IP needs to be re-written to `host.docker.internal` so that the local instance
@@ -76,17 +83,22 @@ type RegistrationOptions struct {
 func (opts RegistrationOptions) RegisterCluster(
 	ctx context.Context,
 ) error {
-	cfg, err := getClientConfigWithContext(opts.MasterURL, opts.KubeCfgPath, opts.KubeContext)
+	masterCfg, err := getClientConfigWithContext(opts.MasterURL, opts.KubeCfgPath, opts.KubeContext)
 	if err != nil {
 		return err
 	}
 
-	restCfg, err := cfg.ClientConfig()
+	masterRestCfg, err := masterCfg.ClientConfig()
 	if err != nil {
 		return err
 	}
 
-	registrant, err := defaultRegistrant(restCfg, opts.ClusterDomainOverride)
+	registrant, err := defaultRegistrant(masterRestCfg, opts.ClusterDomainOverride)
+	if err != nil {
+		return err
+	}
+
+	remoteCfg, err := getClientConfigWithContext(opts.MasterURL, opts.RemoteKubeCfgPath, opts.RemoteKubeContext)
 	if err != nil {
 		return err
 	}
@@ -94,7 +106,7 @@ func (opts RegistrationOptions) RegisterCluster(
 	rbacOpts := RbacOptions{
 		Options: Options{
 			ClusterName:     opts.ClusterName,
-			RemoteCtx:       opts.KubeContext,
+			RemoteCtx:       opts.RemoteKubeContext,
 			Namespace:       opts.Namespace,
 			RemoteNamespace: opts.RemoteNamespace,
 		},
@@ -104,7 +116,7 @@ func (opts RegistrationOptions) RegisterCluster(
 		ClusterRoleBindings: opts.ClusterRoleBindings,
 	}
 
-	return RegisterClusterFromConfig(ctx, cfg, rbacOpts, registrant)
+	return RegisterClusterFromConfig(ctx, remoteCfg, rbacOpts, registrant)
 }
 
 func RegisterClusterFromConfig(
