@@ -14,7 +14,10 @@ var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) err
 
 // k8s resources are uniquely identified by their name and namespace
 func Key(id ezkube.ResourceId) string {
-	return id.GetName() + "." + id.GetNamespace() + "." + id.GetClusterName()
+	if clusterId, ok := id.(ezkube.ClusterResourceId); ok {
+		return clusterId.GetName() + "." + clusterId.GetNamespace() + "." + clusterId.GetClusterName()
+	}
+	return id.GetName() + "." + id.GetNamespace() + "."
 }
 
 type ResourceSet interface {
