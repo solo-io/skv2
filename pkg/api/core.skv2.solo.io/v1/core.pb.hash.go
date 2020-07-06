@@ -38,34 +38,6 @@ func (m *ObjectRef) Hash(hasher hash.Hash64) (uint64, error) {
 		return 0, err
 	}
 
-	if h, ok := interface{}(m.GetApiGroup()).(safe_hasher.SafeHasher); ok {
-		if _, err = h.Hash(hasher); err != nil {
-			return 0, err
-		}
-	} else {
-		if val, err := hashstructure.Hash(m.GetApiGroup(), nil); err != nil {
-			return 0, err
-		} else {
-			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
-				return 0, err
-			}
-		}
-	}
-
-	if h, ok := interface{}(m.GetKind()).(safe_hasher.SafeHasher); ok {
-		if _, err = h.Hash(hasher); err != nil {
-			return 0, err
-		}
-	} else {
-		if val, err := hashstructure.Hash(m.GetKind(), nil); err != nil {
-			return 0, err
-		} else {
-			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	if _, err = hasher.Write([]byte(m.GetName())); err != nil {
 		return 0, err
 	}
