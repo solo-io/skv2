@@ -15,17 +15,11 @@ option (extproto.hash_all) = true;
 // Resource reference for an object
 message ObjectRef {
 
-    // (optional) api group of the resource being referenced
-    google.protobuf.StringValue api_group = 1;
-
-    // (optional) kind of the resource being referenced
-    google.protobuf.StringValue kind = 2;
-
     // name of the resource being referenced
-    string name = 3;
+    string name = 1;
 
     // namespace of the resource being referenced
-    string namespace = 4;
+    string namespace = 2;
 }
 
 // Resource reference for an object
