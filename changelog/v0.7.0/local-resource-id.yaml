@@ -5,6 +5,6 @@ changelog:
   - type: NON_USER_FACING
     description: remove deprecated fields from ObjectRef.
   - type: NEW_FEATURE
-    description: Added `pkg/utils/refutils` package for easily constructing ObjectRefs.
+    description: Added `ezkube` functions for easily constructing ObjectRefs.
     issueLink: https://github.com/solo-io/skv2/issues/91
 
