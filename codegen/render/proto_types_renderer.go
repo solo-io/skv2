@@ -33,7 +33,7 @@ func RenderProtoTypes(grp Group) ([]OutFile, error) {
 func (r ProtoCodeRenderer) RenderProtoHelpers(grp Group) ([]OutFile, error) {
 
 	// only render proto helpers for proto groups in the current module
-	if !grp.HasProtos() || grp.Module != r.GoModule {
+	if !grp.HasProtos() {
 		return nil, nil
 	}
 

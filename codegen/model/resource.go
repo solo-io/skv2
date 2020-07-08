@@ -142,4 +142,10 @@ type Type struct {
 		If unset, SKv2 uses the default types package for the type.
 	*/
 	GoPackage string
+
+	/*
+		The proto package containing the type, if different than the Group name of the Resource.
+		If unset, SKv2 uses the Group name of the Resource that specifies this Type.
+	*/
+	ProtoPackage string
 }
