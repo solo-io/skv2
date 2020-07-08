@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/skv2/pkg/multicluster"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/solo-io/go-utils/contextutils"
@@ -88,6 +90,23 @@ type ResourceList struct {
 	ListFunc func(ctx context.Context, cli client.Client) ([]ezkube.Object, error)
 }
 
+// partition the resource list by the ClusterName of each object.
+func (l ResourceList) SplitByClusterName() map[string]ResourceList {
+	listsByCluster := map[string]ResourceList{}
+	for _, resource := range l.Resources {
+		clusterName := resource.GetClusterName()
+		listForCluster := listsByCluster[clusterName]
+
+		// list func (i.e. garbage collection labels) shared across clusters
+		listForCluster.ListFunc = l.ListFunc
+
+		listForCluster.Resources = append(listForCluster.Resources, resource)
+
+		listsByCluster[clusterName] = listForCluster
+	}
+	return listsByCluster
+}
+
 // an Output Snapshot defines a list of desired resources
 // to apply to Kubernetes.
 // Stale resources (resources with no parents) will be garbage collected.
@@ -108,6 +127,27 @@ func (s Snapshot) Sync(ctx context.Context, cli client.Client) error {
 	for _, list := range s.ListsToSync {
 		if err := s.syncList(ctx, cli, list); err != nil {
 			errs = multierror.Append(errs, err)
+		}
+	}
+
+	return errs
+}
+
+// sync the output snapshot to storage across multiple clusters.
+// uses the object's ClusterName to determine the correct destination cluster.
+func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+	var errs error
+
+	for _, list := range s.ListsToSync {
+		for cluster, listForCluster := range list.SplitByClusterName() {
+			cli, err := mcClient.Cluster(cluster)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if err := s.syncList(ctx, cli, listForCluster); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
 
