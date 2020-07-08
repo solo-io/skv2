@@ -144,11 +144,8 @@ type Type struct {
 	GoPackage string
 
 	/*
-
-		The proto package containing the type, if different than group root api directory (where the resource itself lives).
-		Will be set automatically for proto-based types.
-
-		If unset, SKv2 uses the (Kubernetes) API Group for the Type.
+		The proto package containing the type, if different than the Group name of the Resource.
+		If unset, SKv2 uses the Group name of the Resource that specifies this Type.
 	*/
 	ProtoPackage string
 }

@@ -1,0 +1,9 @@
+changelog:
+- type: NEW_FEATURE
+  description: >
+    When using proto-based types for the `Spec` and `Status` fields of a resource, we currently require that the
+    messages for these types are defined in a proto package that matches the group name of the resource.
+    This change adds a new `ProtoPackage` option that can be used to override the name of the proto packages we inspect
+    when looking for the messages. If the options in unspecified, it defaults to the group name of the resource.
+  issueLink: https://github.com/solo-io/skv2/issues/98
+
