@@ -276,7 +276,9 @@ func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*skmodel
 			}
 
 			// find message for spec
-			foundSpec = findFieldMessage(resource.Spec.Type)
+			if !foundSpec {
+				foundSpec = findFieldMessage(resource.Spec.Type)
+			}
 
 			if resource.Status != nil {
 				findFieldMessage(resource.Status.Type)
