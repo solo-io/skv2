@@ -65,3 +65,30 @@ func transition(existing, desired runtime.Object, transitionFuncs []TransitionFu
 
 	return nil
 }
+
+// Easily Update the Status of a desired object in the cluster.
+// Requires that the object already exists (will only attempt to update).
+//
+// If the desired object status is semantically equal
+// to the existing object status, the update is skipped.
+func UpdateStatus(ctx context.Context, c client.Client, obj runtime.Object) (controllerutil.OperationResult, error) {
+	key, err := client.ObjectKeyFromObject(obj)
+	if err != nil {
+		return controllerutil.OperationResultNone, err
+	}
+
+	existing := obj.DeepCopyObject()
+
+	if err := c.Get(ctx, key, existing); err != nil {
+		return controllerutil.OperationResultNone, err
+	}
+
+	if ObjectStatusesEqual(existing, obj) {
+		return controllerutil.OperationResultNone, nil
+	}
+
+	if err := c.Status().Update(ctx, obj); err != nil {
+		return controllerutil.OperationResultNone, err
+	}
+	return controllerutil.OperationResultUpdated, nil
+}
