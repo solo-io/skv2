@@ -142,4 +142,13 @@ type Type struct {
 		If unset, SKv2 uses the default types package for the type.
 	*/
 	GoPackage string
+
+	/*
+
+		The proto package containing the type, if different than group root api directory (where the resource itself lives).
+		Will be set automatically for proto-based types.
+
+		If unset, SKv2 uses the (Kubernetes) API Group for the Type.
+	*/
+	ProtoPackage string
 }
