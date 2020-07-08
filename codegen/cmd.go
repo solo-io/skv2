@@ -257,15 +257,16 @@ func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*skmodel
 		// attach the proto messages for spec and status to each resource
 		// these are processed by renderers at later stages
 		for _, fileDescriptor := range descriptors {
-			findFieldMessage := func(fieldType model.Type) bool {
+
+			findFieldMessageFunc := func(fieldType *model.Type) bool {
 				matchingProtoPackage := fieldType.ProtoPackage
 				if matchingProtoPackage == "" {
 					// default to the resource API Group name
 					matchingProtoPackage = resource.Group.Group
 				}
 				if fileDescriptor.GetPackage() == matchingProtoPackage {
-					if specMessage := fileDescriptor.GetMessage(fieldType.Name); specMessage != nil {
-						fieldType.Message = specMessage
+					if message := fileDescriptor.GetMessage(fieldType.Name); message != nil {
+						fieldType.Message = message
 						fieldType.GoPackage = fileDescriptor.GetOptions().GetGoPackage()
 						descriptorMap[fileDescriptor.GetName()+fileDescriptor.GetPackage()] = fileDescriptor
 						return true
@@ -277,15 +278,11 @@ func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*skmodel
 
 			// find message for spec
 			if !foundSpec {
-				foundSpec = findFieldMessage(resource.Spec.Type)
+				foundSpec = findFieldMessageFunc(&resource.Spec.Type)
 			}
 
 			if resource.Status != nil {
-				findFieldMessage(resource.Status.Type)
-				if statusMessage := fileDescriptor.GetMessage(resource.Status.Type.Name); statusMessage != nil {
-					resource.Status.Type.Message = statusMessage
-					descriptorMap[fileDescriptor.GetName()+fileDescriptor.GetPackage()] = fileDescriptor
-				}
+				findFieldMessageFunc(&resource.Status.Type)
 			}
 
 		}
