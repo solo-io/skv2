@@ -17,11 +17,14 @@ package {{ package }}
 import (
     "context"
 
+    "github.com/solo-io/skv2/contrib/pkg/input"
+    v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+    "github.com/solo-io/skv2/pkg/multicluster"
+    "github.com/solo-io/skv2/pkg/reconcile"
+
     "go.uber.org/zap"
     metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
     "github.com/hashicorp/go-multierror"
-    "github.com/solo-io/skv2/pkg/multicluster"
-    "github.com/solo-io/skv2/pkg/reconcile"
     "sigs.k8s.io/controller-runtime/pkg/client"
     "sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -46,22 +49,27 @@ type multiClusterReconciler interface {
 {{- end }}
 {{- end }}
 }
+
 var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
 
 type multiClusterReconcilerImpl struct {
-    ctx       context.Context
-    reconcileFunc func(cluster string) error
+    base input.MultiClusterReconciler
 }
 
 // register the reconcile func with the cluster watcher
 func RegisterMultiClusterReconciler(
         ctx context.Context,
         clusters multicluster.ClusterWatcher,
-        reconcileFunc func(cluster string) error,
+        reconcileFunc input.MultiClusterReconcileFunc,
 ) {
+
+	base := input.NewMultiClusterReconcilerImpl(
+		ctx,
+		reconcileFunc,
+    )
+
     r := &multiClusterReconcilerImpl{
-        ctx:       ctx,
-        reconcileFunc: reconcileFunc,
+    	base: base,
     }
 
 // initialize reconcile loops
@@ -74,6 +82,7 @@ func RegisterMultiClusterReconciler(
     {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, r)
 {{- end }}
 {{- end }}
+
 }
 
 {{- range $group := $groups }}
@@ -85,13 +94,18 @@ func RegisterMultiClusterReconciler(
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
 func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
-    contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-    return reconcile.Result{}, r.reconcileFunc(clusterName)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
-    contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-    return r.reconcileFunc(clusterName)
+    ref := &v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileClusterGeneric(ref)
+    return err
 }
 {{- end }}
 {{- end }}
@@ -113,19 +127,23 @@ type singleClusterReconciler interface {
 var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
 
 type singleClusterReconcilerImpl struct {
-    ctx       context.Context
-    reconcileFunc func() error
+    base input.SingleClusterReconciler
 }
 
 // register the reconcile func with the manager
 func RegisterSingleClusterReconciler(
         ctx context.Context,
         mgr manager.Manager,
-        reconcileFunc func() error,
+        reconcileFunc input.SingleClusterReconcileFunc,
 ) error {
+
+    base := input.NewSingleClusterReconciler(
+        ctx,
+        reconcileFunc,
+    )
+
     r := &singleClusterReconcilerImpl{
-        ctx:       ctx,
-        reconcileFunc: reconcileFunc,
+        base: base,
     }
 
 // initialize reconcile loops
@@ -153,13 +171,16 @@ func RegisterSingleClusterReconciler(
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
 func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
-    contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-    return reconcile.Result{}, r.reconcileFunc()
+    return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
-    contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-    return r.reconcileFunc()
+    ref := &v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileGeneric(ref)
+    return err
 }
 {{- end }}
 {{- end }}

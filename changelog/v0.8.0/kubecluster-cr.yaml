@@ -1,4 +1,10 @@
 changelog:
+  - type: FIX
+    description: Call reconcileFunc synchronously in input reconciler.
+    issueLink: https://github.com/solo-io/skv2/issues/102
+  - type: BREAKING_CHANGE
+    description: Call reconcileFunc synchronously in input reconciler.
+    issueLink: https://github.com/solo-io/skv2/issues/102
   - type: BREAKING_CHANGE
     description: Introduce ClusterDomain parameter for cluster registrant. Rename "LocalClusterDomainOverride" to "APIServerAddress".
     issueLink: https://github.com/solo-io/skv2/issues/99
