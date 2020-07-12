@@ -91,16 +91,15 @@ type ResourceList struct {
 }
 
 // partition the resource list by the ClusterName of each object.
-func (l ResourceList) SplitByClusterName() map[string]ResourceList {
-	listsByCluster := map[string]ResourceList{}
+func (l ResourceList) SplitByClusterName() map[string][]ezkube.Object {
+	listsByCluster := map[string][]ezkube.Object{}
 	for _, resource := range l.Resources {
 		clusterName := resource.GetClusterName()
 		listForCluster := listsByCluster[clusterName]
 
 		// list func (i.e. garbage collection labels) shared across clusters
-		listForCluster.ListFunc = l.ListFunc
 
-		listForCluster.Resources = append(listForCluster.Resources, resource)
+		listForCluster = append(listForCluster, resource)
 
 		listsByCluster[clusterName] = listForCluster
 	}
@@ -138,14 +137,22 @@ func (s Snapshot) Sync(ctx context.Context, cli client.Client) error {
 func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
 	var errs error
 
+	clusters := mcClient.ListClusters()
 	for _, list := range s.ListsToSync {
-		for cluster, listForCluster := range list.SplitByClusterName() {
+		listsByCluster := list.SplitByClusterName()
+		for _, cluster := range clusters {
+			listForCluster :=  listsByCluster[cluster]
+
 			cli, err := mcClient.Cluster(cluster)
 			if err != nil {
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if err := s.syncList(ctx, cli, listForCluster); err != nil {
+
+			if err := s.syncList(ctx, cli, ResourceList{
+				Resources: listForCluster,
+				ListFunc:  list.ListFunc,
+			}); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}

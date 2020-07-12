@@ -7,8 +7,12 @@ import (
 
 // Client exposes client.Client for multiple clusters.
 type Client interface {
+	// List available clusters
+	ClusterSet
+
 	// Cluster returns a client.Client for the given cluster.
 	Cluster(name string) (client.Client, error)
+
 }
 
 type mcClient struct {
@@ -27,4 +31,8 @@ func (c *mcClient) Cluster(name string) (client.Client, error) {
 		return nil, eris.Wrapf(err, "failed to get client for cluster %v", name)
 	}
 	return mgr.GetClient(), nil
+}
+
+func (c *mcClient) 	ListClusters() []string {
+	return c.managers.ListClusters()
 }

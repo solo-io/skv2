@@ -18,7 +18,7 @@ import (
     "context"
 
     "github.com/solo-io/skv2/contrib/pkg/input"
-    v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+    sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
     "github.com/solo-io/skv2/pkg/multicluster"
     "github.com/solo-io/skv2/pkg/reconcile"
 
@@ -99,7 +99,7 @@ func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName s
 }
 
 func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
-    ref := &v1.ClusterObjectRef{
+    ref := &sk_core_v1.ClusterObjectRef{
         Name:                 obj.Name,
         Namespace:            obj.Namespace,
         ClusterName:          clusterName,
@@ -175,7 +175,7 @@ func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $typ
 }
 
 func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
-    ref := &v1.ObjectRef{
+    ref := &sk_core_v1.ObjectRef{
         Name:                 obj.Name,
         Namespace:            obj.Namespace,
     }

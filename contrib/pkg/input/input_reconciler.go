@@ -5,6 +5,8 @@ package input
 
 import (
 	"context"
+	"github.com/rotisserie/eris"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/client-go/util/workqueue"
 
@@ -76,9 +78,9 @@ func NewSingleClusterReconciler(
 
 func (r *inputReconciler) ReconcileGeneric(id ezkube.ResourceId) (reconcile.Result, error) {
 	if r.ctx == nil {
-
+		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
 	}
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "id", id)
+	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "id", sets.Key(id))
 	r.queue.AddRateLimited(id)
 
 	return reconcile.Result{}, nil
@@ -86,9 +88,9 @@ func (r *inputReconciler) ReconcileGeneric(id ezkube.ResourceId) (reconcile.Resu
 
 func (r *inputReconciler) ReconcileClusterGeneric(id ezkube.ClusterResourceId) (reconcile.Result, error) {
 	if r.ctx == nil {
-
+		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
 	}
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", id.GetClusterName(), "id", id)
+	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", id.GetClusterName(), "id", sets.Key(id))
 	r.queue.AddRateLimited(id)
 
 	return reconcile.Result{}, nil
