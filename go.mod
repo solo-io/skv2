@@ -29,6 +29,7 @@ require (
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.2.1
+	github.com/pseudomuto/protoc-gen-doc v1.3.2 // indirect
 	github.com/rogpeppe/go-internal v1.5.2
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
@@ -45,9 +46,10 @@ require (
 	google.golang.org/api v0.6.0
 	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
 	gopkg.in/yaml.v2 v2.3.0 // indirect
+	istio.io/tools v0.0.0-20200710235625-990356af16f2 // indirect
 	k8s.io/api v0.17.2
-	k8s.io/apiextensions-apiserver v0.18.1
-	k8s.io/apimachinery v0.18.1
+	k8s.io/apiextensions-apiserver v0.18.2
+	k8s.io/apimachinery v0.18.2
 	k8s.io/client-go v0.17.2
 	k8s.io/code-generator v0.17.2
 	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66 // indirect

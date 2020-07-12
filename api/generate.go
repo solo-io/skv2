@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
+	"github.com/solo-io/skv2/api/multicluster/v1alpha1"
+
 	"github.com/solo-io/skv2/api/k8s"
 
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/contrib"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate go run generate.go
@@ -22,34 +22,7 @@ func main() {
 	})
 
 	groups := []model.Group{
-		{
-			GroupVersion: schema.GroupVersion{
-				Group:   "multicluster.solo.io",
-				Version: "v1alpha1",
-			},
-			Module: "github.com/solo-io/skv2",
-			Resources: []model.Resource{
-				{
-					Kind: "KubernetesCluster",
-					Spec: model.Field{
-						Type: model.Type{
-							Name: "KubernetesClusterSpec",
-						},
-					},
-					Status: &model.Field{
-						Type: model.Type{
-							Name: "KubernetesClusterStatus",
-						},
-					},
-				},
-			},
-			RenderManifests:  true,
-			RenderController: true,
-			RenderClients:    true,
-			RenderTypes:      true,
-			ApiRoot:          "pkg/api",
-			CustomTemplates:  contrib.AllGroupCustomTemplates,
-		},
+		v1alpha1.Group,
 	}
 
 	// add internal k8s groups we depend on

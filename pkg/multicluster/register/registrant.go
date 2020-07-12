@@ -8,6 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
+
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
@@ -28,6 +31,8 @@ import (
 const (
 	// visible for testing
 	SecretTokenKey = "token"
+
+	DefaultClusterDomain = "cluster.local"
 )
 
 var (
@@ -47,13 +52,13 @@ var (
 /*
 	NewClusterRegistrant returns an implementation of ClusterRegistrant.
 
-	localClusterDomainOverride is optional. When passed in, it will overwrite the Api Server endpoint in
+	localAPIServerAddress is optional. When passed in, it will overwrite the Api Server endpoint in
 	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
 	on a mac as  the local IP needs to be re-written to `host.docker.internal` so that the local instance
 	knows to hit localhost.
 */
 func NewClusterRegistrant(
-	localClusterDomainOverride string,
+	localAPIServerAddress string,
 	clusterRBAC internal.ClusterRBACBinderFactory,
 	secretClient k8s_core_v1.SecretClient,
 	secretClientFactory k8s_core_v1_providers.SecretClientFromConfigFactory,
@@ -61,16 +66,18 @@ func NewClusterRegistrant(
 	saClientFactory k8s_core_v1_providers.ServiceAccountClientFromConfigFactory,
 	clusterRoleClientFactory rbac_v1_providers.ClusterRoleClientFromConfigFactory,
 	roleClientFactory rbac_v1_providers.RoleClientFromConfigFactory,
+	kubeClusterFactory v1alpha1_providers.KubernetesClusterClientFromConfigFactory,
 ) ClusterRegistrant {
 	return &clusterRegistrant{
-		localClusterDomainOverride: localClusterDomainOverride,
-		clusterRBACBinderFactory:   clusterRBAC,
-		secretClient:               secretClient,
-		nsClientFactory:            nsClientFactory,
-		secretClientFactory:        secretClientFactory,
-		saClientFactory:            saClientFactory,
-		clusterRoleClientFactory:   clusterRoleClientFactory,
-		roleClientFactory:          roleClientFactory,
+		localAPIServerAddress:    localAPIServerAddress,
+		clusterRBACBinderFactory: clusterRBAC,
+		secretClient:             secretClient,
+		nsClientFactory:          nsClientFactory,
+		secretClientFactory:      secretClientFactory,
+		saClientFactory:          saClientFactory,
+		clusterRoleClientFactory: clusterRoleClientFactory,
+		roleClientFactory:        roleClientFactory,
+		kubeClusterFactory:       kubeClusterFactory,
 	}
 }
 
@@ -82,8 +89,9 @@ type clusterRegistrant struct {
 	saClientFactory          k8s_core_v1_providers.ServiceAccountClientFromConfigFactory
 	clusterRoleClientFactory rbac_v1_providers.ClusterRoleClientFromConfigFactory
 	roleClientFactory        rbac_v1_providers.RoleClientFromConfigFactory
+	kubeClusterFactory       v1alpha1_providers.KubernetesClusterClientFromConfigFactory
 
-	localClusterDomainOverride string
+	localAPIServerAddress string
 }
 
 func (c *clusterRegistrant) EnsureRemoteServiceAccount(
@@ -192,6 +200,7 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 
 func (c *clusterRegistrant) RegisterClusterWithToken(
 	ctx context.Context,
+	masterClusterCfg *rest.Config,
 	remoteClientCfg clientcmd.ClientConfig,
 	token string,
 	opts Options,
@@ -240,7 +249,27 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 		return err
 	}
 
-	return nil
+	kubeCluster := buildKubeClusterResource(kcSecret, opts.ClusterDomain)
+
+	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
+	if err != nil {
+		return err
+	}
+
+	return kubeClusterClient.UpsertKubernetesCluster(ctx, kubeCluster)
+}
+
+func buildKubeClusterResource(secret *k8s_core_types.Secret, clusterDomain string) *v1alpha1.KubernetesCluster {
+	if clusterDomain == "" {
+		clusterDomain = DefaultClusterDomain
+	}
+	return &v1alpha1.KubernetesCluster{
+		ObjectMeta: secret.ObjectMeta,
+		Spec: v1alpha1.KubernetesClusterSpec{
+			SecretName:    secret.Name,
+			ClusterDomain: clusterDomain,
+		},
+	}
 }
 
 func (c *clusterRegistrant) ensureRemoteNamespace(ctx context.Context, writeNamespace string, cfg *rest.Config) error {
@@ -409,14 +438,14 @@ func (c *clusterRegistrant) hackClusterConfigForLocalTestingInKIND(
 
 	if strings.HasPrefix(remoteContextName, "kind-") &&
 		(serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") &&
-		c.localClusterDomainOverride != "" {
+		c.localAPIServerAddress != "" {
 
 		port := serverUrl.Port()
-		if host, newPort, err := net.SplitHostPort(c.localClusterDomainOverride); err == nil {
-			c.localClusterDomainOverride = host
+		if host, newPort, err := net.SplitHostPort(c.localAPIServerAddress); err == nil {
+			c.localAPIServerAddress = host
 			port = newPort
 		}
-		remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localClusterDomainOverride, port)
+		remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localAPIServerAddress, port)
 		remoteCluster.InsecureSkipTLSVerify = true
 		remoteCluster.CertificateAuthority = ""
 		remoteCluster.CertificateAuthorityData = []byte("")

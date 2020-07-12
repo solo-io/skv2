@@ -3,7 +3,9 @@ package register_test
 import (
 	"context"
 	"fmt"
-
+	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	mock_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/mocks"
+	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
 	"time"
 
 	mock_k8s_core_clients "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/mocks"
@@ -52,6 +54,8 @@ var _ = Describe("Registrant", func() {
 		clusterRoleClientFactory rbac_v1_providers.ClusterRoleClientFromConfigFactory
 		roleClient               *mock_k8s_rbac_clients.MockRoleClient
 		roleClientFactory        rbac_v1_providers.RoleClientFromConfigFactory
+		kubeClusterClient        *mock_v1alpha1.MockKubernetesClusterClient
+		kubeClusterClientFactory v1alpha1_providers.KubernetesClusterClientFromConfigFactory
 		clientConfig             *mock_clientcmd.MockClientConfig
 
 		_, remoteCtx, clusterName, namespace = "cfg-path", "context", "cluster-name", "namespace"
@@ -91,6 +95,11 @@ var _ = Describe("Registrant", func() {
 			return roleClient, nil
 		}
 
+		kubeClusterClient = mock_v1alpha1.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClientFactory = func(_ *rest.Config) (v1alpha1.KubernetesClusterClient, error) {
+			return kubeClusterClient, nil
+		}
+
 		clusterRBACBinder = mock_internal.NewMockClusterRBACBinder(ctrl)
 		clusterRbacBinderFactory = func(_ clientcmd.ClientConfig) (internal.ClusterRBACBinder, error) {
 			return clusterRBACBinder, nil
@@ -114,6 +123,7 @@ var _ = Describe("Registrant", func() {
 				saClientFactory,
 				clusterRoleClientFactory,
 				roleClientFactory,
+				kubeClusterClientFactory,
 			)
 
 			clientConfig.EXPECT().
@@ -164,6 +174,7 @@ var _ = Describe("Registrant", func() {
 				saClientFactory,
 				clusterRoleClientFactory,
 				roleClientFactory,
+				kubeClusterClientFactory,
 			)
 
 			// Set secret lookup opts to reduce testing time
@@ -299,6 +310,7 @@ var _ = Describe("Registrant", func() {
 				saClientFactory,
 				clusterRoleClientFactory,
 				roleClientFactory,
+				kubeClusterClientFactory,
 			)
 
 			opts := register.Options{
@@ -377,16 +389,25 @@ var _ = Describe("Registrant", func() {
 				CreateSecret(ctx, secret).
 				Return(nil)
 
-			err = clusterRegistrant.RegisterClusterWithToken(ctx, clientConfig, token, opts)
+			kubeClusterClient.EXPECT().
+				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
+					ObjectMeta: secret.ObjectMeta,
+					Spec: v1alpha1.KubernetesClusterSpec{
+						SecretName:    secret.Name,
+						ClusterDomain: "cluster.local",
+					},
+				}).Return(nil)
+
+			err = clusterRegistrant.RegisterClusterWithToken(ctx, restCfg, clientConfig, token, opts)
 
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("can override local cluster domain", func() {
-			clusterDomainOverride := "test-override"
+			apiServerAddress := "test-override"
 
 			clusterRegistrant := register.NewClusterRegistrant(
-				clusterDomainOverride,
+				apiServerAddress,
 				clusterRbacBinderFactory,
 				secretClient,
 				secretClientFactory,
@@ -394,6 +415,7 @@ var _ = Describe("Registrant", func() {
 				saClientFactory,
 				clusterRoleClientFactory,
 				roleClientFactory,
+				kubeClusterClientFactory,
 			)
 
 			opts := register.Options{
@@ -447,7 +469,7 @@ var _ = Describe("Registrant", func() {
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 
 			overwrittenApiConfig := apiCfg.DeepCopy()
-			overwrittenApiConfig.Clusters[clusterName].Server = fmt.Sprintf("https://%s:9080", clusterDomainOverride)
+			overwrittenApiConfig.Clusters[clusterName].Server = fmt.Sprintf("https://%s:9080", apiServerAddress)
 			overwrittenApiConfig.Clusters[clusterName].InsecureSkipTLSVerify = true
 			overwrittenApiConfig.Clusters[clusterName].CertificateAuthority = ""
 			overwrittenApiConfig.Clusters[clusterName].CertificateAuthorityData = []byte("")
@@ -477,7 +499,17 @@ var _ = Describe("Registrant", func() {
 			secretClient.EXPECT().
 				CreateSecret(ctx, secret).
 				Return(nil)
-			err = clusterRegistrant.RegisterClusterWithToken(ctx, clientConfig, token, opts)
+
+			kubeClusterClient.EXPECT().
+				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
+					ObjectMeta: secret.ObjectMeta,
+					Spec: v1alpha1.KubernetesClusterSpec{
+						SecretName:    secret.Name,
+						ClusterDomain: "cluster.local",
+					},
+				}).Return(nil)
+
+			err = clusterRegistrant.RegisterClusterWithToken(ctx, restCfg, clientConfig, token, opts)
 
 			Expect(err).NotTo(HaveOccurred())
 		})

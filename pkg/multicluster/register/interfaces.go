@@ -3,6 +3,8 @@ package register
 import (
 	"context"
 
+	"k8s.io/client-go/rest"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/pkg/multicluster/register/internal"
 	corev1 "k8s.io/api/core/v1"
@@ -37,6 +39,11 @@ type Options struct {
 	// Namespace to write namespaced resources to in the "master" and "remote" clusters
 	// If left empty will return error
 	RemoteNamespace string
+
+	// The Cluster Domain used by the Kubernetes DNS Service.
+	// Defaults to 'cluster.local'
+	// Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+	ClusterDomain string
 }
 
 type RbacOptions struct {
@@ -113,6 +120,7 @@ type ClusterRegistrant interface {
 	*/
 	RegisterClusterWithToken(
 		ctx context.Context,
+		masterClusterCfg *rest.Config,
 		remoteClientCfg clientcmd.ClientConfig,
 		token string,
 		opts Options,
