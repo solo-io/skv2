@@ -46,8 +46,8 @@ require (
 	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	k8s.io/api v0.17.2
-	k8s.io/apiextensions-apiserver v0.18.1
-	k8s.io/apimachinery v0.18.1
+	k8s.io/apiextensions-apiserver v0.18.2
+	k8s.io/apimachinery v0.18.2
 	k8s.io/client-go v0.17.2
 	k8s.io/code-generator v0.17.2
 	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66 // indirect

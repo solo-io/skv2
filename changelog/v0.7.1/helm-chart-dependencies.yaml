@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
-      description: Add dependencies to model.Chart for declaring Helm chart dependencies.
-      issueLink: https://github.com/solo-io/skv2/issues/105
+    description: Add dependencies to model.Chart for declaring Helm chart dependencies.
+    issueLink: https://github.com/solo-io/skv2/issues/105
