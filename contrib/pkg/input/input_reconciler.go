@@ -16,7 +16,7 @@ import (
 
 // reconcile a resource in a single cluster.
 // the passed resource can either be a ref to a resource (caused by a deletion), or an actual resource itself.
-type SingleClusterReconcileFunc func(id ezkube.ResourceId) error
+type SingleClusterReconcileFunc func(id ezkube.ResourceId) (bool, error)
 
 // the SingleClusterReconciler reconciles events for input resources in a single cluster
 type SingleClusterReconciler interface {
@@ -27,7 +27,7 @@ type SingleClusterReconciler interface {
 
 // reconcile a resource across multiple clusters.
 // the passed resource can either be a ref to a resource (caused by a deletion), or an actual resource itself. ClusterName will always be set on the object.
-type MultiClusterReconcileFunc func(id ezkube.ClusterResourceId) error
+type MultiClusterReconcileFunc func(id ezkube.ClusterResourceId) (bool, error)
 
 // the MultiClusterReconciler reconciles events for input resources across clusters
 type MultiClusterReconciler interface {
@@ -116,19 +116,25 @@ func (r *inputReconciler) processNextWorkItem() bool {
 	}
 	defer r.queue.Done(key)
 
-	var err error
+	var (
+		requeue bool
+		err     error
+	)
 	switch {
 	case r.singleClusterReconcileFunc != nil:
-		err = r.singleClusterReconcileFunc(key.(ezkube.ResourceId))
+		requeue, err = r.singleClusterReconcileFunc(key.(ezkube.ResourceId))
 	case r.multiClusterReconcileFunc != nil:
-		err = r.multiClusterReconcileFunc(key.(ezkube.ClusterResourceId))
+		requeue, err = r.multiClusterReconcileFunc(key.(ezkube.ClusterResourceId))
 	}
 
-	if err == nil {
-		r.queue.Forget(key)
-	} else {
+	switch {
+	case err != nil:
 		contextutils.LoggerFrom(r.ctx).Errorw("encountered error reconciling state; retrying", "error", err)
+		fallthrough
+	case requeue:
 		r.queue.AddRateLimited(key)
+	default:
+		r.queue.Forget(key)
 	}
 
 	return true
