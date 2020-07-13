@@ -128,6 +128,50 @@ func NewLabelPartitionedSnapshot(
     ), nil
 }
 
+// simplified constructor for a snapshot
+// with a single label partition (i.e. all resources share a single set of labels).
+func NewSinglePartitionedSnapshot(
+	name string,
+    snapshotLabels map[string]string, // a single set of labels shared by all resources
+{{/* generate partitioned constructor params here */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set,
+{{- end }}
+{{- end }}
+
+) (Snapshot, error) {
+
+{{/* convert input sets to partioned output sets */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    labeled{{ $kindPlural }}, err := NewLabeled{{ $resource.Kind }}Set({{ $kindLowerCamelPlural }}, snapshotLabels)
+    if err != nil {
+    	return nil, err
+    }
+{{- end }}
+{{- end }}
+
+    return NewSnapshot(
+    	name,
+{{/* args for NewSnapshot */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        Labeled{{ $resource.Kind }}Set{labeled{{ $kindPlural }}},
+{{- end }}
+{{- end }}
+    ), nil
+}
+
 
 // apply the desired resources to the cluster state; remove stale resources where necessary
 func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
