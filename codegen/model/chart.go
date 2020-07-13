@@ -73,12 +73,20 @@ type Image struct {
 	PullSecret string        `json:"pullSecret,omitempty" desc:"image pull policy for the container "`
 }
 
+// Helm chart dependency
+type Dependency struct {
+	Name       string `json:"name,omitempty"`
+	Version    string `json:"version,omitempty"`
+	Repository string `json:"repository,omitempty"`
+}
+
 type Data struct {
-	ApiVersion  string   `json:"apiVersion,omitempty"`
-	Description string   `json:"description,omitempty"`
-	Name        string   `json:"name,omitempty"`
-	Version     string   `json:"version,omitempty"`
-	Home        string   `json:"home,omitempty"`
-	Icon        string   `json:"icon,omitempty"`
-	Sources     []string `json:"sources,omitempty"`
+	ApiVersion   string       `json:"apiVersion,omitempty"`
+	Description  string       `json:"description,omitempty"`
+	Name         string       `json:"name,omitempty"`
+	Version      string       `json:"version,omitempty"`
+	Home         string       `json:"home,omitempty"`
+	Icon         string       `json:"icon,omitempty"`
+	Sources      []string     `json:"sources,omitempty"`
+	Dependencies []Dependency `json:"dependencies,omitempty"`
 }
