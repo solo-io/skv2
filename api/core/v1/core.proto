@@ -22,7 +22,7 @@ message ObjectRef {
     string namespace = 2;
 }
 
-// Resource reference for a cluster-scoped object
+// Resource reference for a cross-cluster-scoped object
 message ClusterObjectRef {
 
     // name of the resource being referenced
@@ -51,7 +51,7 @@ message TypedObjectRef {
     string namespace = 4;
 }
 
-// Resource reference for a typed, cluster-scoped object
+// Resource reference for a typed, cross-cluster-scoped object
 message TypedClusterObjectRef {
 
     // API group of the resource being referenced

@@ -114,7 +114,7 @@ func (m *ObjectRef) GetNamespace() string {
 	return ""
 }
 
-// Resource reference for a cluster-scoped object
+// Resource reference for a cross-cluster-scoped object
 type ClusterObjectRef struct {
 	// name of the resource being referenced
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -239,7 +239,7 @@ func (m *TypedObjectRef) GetNamespace() string {
 	return ""
 }
 
-// Resource reference for a typed, cluster-scoped object
+// Resource reference for a typed, cross-cluster-scoped object
 type TypedClusterObjectRef struct {
 	// API group of the resource being referenced
 	ApiGroup *types.StringValue `protobuf:"bytes,1,opt,name=api_group,json=apiGroup,proto3" json:"api_group,omitempty"`
