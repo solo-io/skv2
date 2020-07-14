@@ -42,6 +42,28 @@ func (this *ClusterObjectRef) UnmarshalJSON(b []byte) error {
 	return CoreUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for TypedObjectRef
+func (this *TypedObjectRef) MarshalJSON() ([]byte, error) {
+	str, err := CoreMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for TypedObjectRef
+func (this *TypedObjectRef) UnmarshalJSON(b []byte) error {
+	return CoreUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for TypedClusterObjectRef
+func (this *TypedClusterObjectRef) MarshalJSON() ([]byte, error) {
+	str, err := CoreMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for TypedClusterObjectRef
+func (this *TypedClusterObjectRef) UnmarshalJSON(b []byte) error {
+	return CoreUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for Status
 func (this *Status) MarshalJSON() ([]byte, error) {
 	str, err := CoreMarshaler.MarshalToString(this)
