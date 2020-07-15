@@ -32,8 +32,10 @@ type Operator struct {
 	Volumes []v1.Volume
 	// mount these volumes to the operator container
 	VolumeMounts []v1.VolumeMount
-	// set these environment variables on the operator container
-	Env []v1.EnvVar
+	// set these environment variables on the operator container and expose them in the user values.yaml file.
+	PublicEnv []v1.EnvVar
+	// set these environment variables on the operator container (hard-coded in the helm chart)
+	PrivateEnv []v1.EnvVar
 	// add a manifest for each configmap
 	ConfigMaps []v1.ConfigMap
 

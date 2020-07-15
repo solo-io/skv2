@@ -48,10 +48,16 @@ spec:
         args:
 [[ toYaml $operator.Args | indent 8 ]]
 [[- end ]]
-{{- if $[[ $operatorVar ]].env }}
+
+[[- if (or $operator.PrivateEnv $operator.PublicEnv ) ]]
         env:
+[[ toYaml $operator.PrivateEnv | indent 10 ]]
 {{ toYaml $[[ $operatorVar ]].env | indent 10 }}
 {{- end }}
+{{- if $[[ $operatorVar ]].env }}
+{{ toYaml $[[ $operatorVar ]].env | indent 10 }}
+[[- end ]]
+
 [[- if $operator.VolumeMounts ]]
         volumeMounts:
 [[ toYaml $operator.VolumeMounts | indent 8 ]]
