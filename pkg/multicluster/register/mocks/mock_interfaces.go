@@ -11,6 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	register "github.com/solo-io/skv2/pkg/multicluster/register"
 	v1 "k8s.io/api/core/v1"
+	rest "k8s.io/client-go/rest"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -69,15 +70,15 @@ func (mr *MockClusterRegistrantMockRecorder) CreateRemoteAccessToken(ctx, remote
 }
 
 // RegisterClusterWithToken mocks base method.
-func (m *MockClusterRegistrant) RegisterClusterWithToken(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options) error {
+func (m *MockClusterRegistrant) RegisterClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterClusterWithToken", ctx, remoteClientCfg, token, opts)
+	ret := m.ctrl.Call(m, "RegisterClusterWithToken", ctx, masterClusterCfg, remoteClientCfg, token, opts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterClusterWithToken indicates an expected call of RegisterClusterWithToken.
-func (mr *MockClusterRegistrantMockRecorder) RegisterClusterWithToken(ctx, remoteClientCfg, token, opts interface{}) *gomock.Call {
+func (mr *MockClusterRegistrantMockRecorder) RegisterClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterClusterWithToken), ctx, remoteClientCfg, token, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts)
 }

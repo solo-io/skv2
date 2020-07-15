@@ -3,6 +3,8 @@ package register
 import (
 	"context"
 
+	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
+
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/rest"
 
@@ -38,11 +40,11 @@ type RegistrationOptions struct {
 	// if unset, use current context
 	RemoteKubeContext string
 
-	// localClusterDomainOverride is optional. When passed in, it will overwrite the Api Server endpoint in
+	// localAPIServerAddress is optional. When passed in, it will overwrite the Api Server endpoint in
 	//	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
 	//	on a mac as  the local IP needs to be re-written to `host.docker.internal` so that the local instance
 	//	knows to hit localhost.
-	ClusterDomainOverride string
+	APIServerAddress string
 
 	// Name by which the cluster will be identified
 	// If left empty will return error
@@ -55,6 +57,11 @@ type RegistrationOptions struct {
 	// Namespace to write namespaced resources to in the "master" and "remote" clusters
 	// If left empty will return error
 	RemoteNamespace string
+
+	// The Cluster Domain used by the Kubernetes DNS Service in the registered cluster.
+	// Defaults to 'cluster.local'
+	// Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+	ClusterDomain string
 
 	// A list of roles to bind the New kubeconfig token to
 	// Any Roles in this list will be Upserted by the registrant, prior to binding
@@ -93,7 +100,7 @@ func (opts RegistrationOptions) RegisterCluster(
 		return err
 	}
 
-	registrant, err := defaultRegistrant(masterRestCfg, opts.ClusterDomainOverride)
+	registrant, err := defaultRegistrant(masterRestCfg, opts.APIServerAddress)
 	if err != nil {
 		return err
 	}
@@ -109,6 +116,7 @@ func (opts RegistrationOptions) RegisterCluster(
 			RemoteCtx:       opts.RemoteKubeContext,
 			Namespace:       opts.Namespace,
 			RemoteNamespace: opts.RemoteNamespace,
+			ClusterDomain:   opts.ClusterDomain,
 		},
 		Roles:               opts.Roles,
 		ClusterRoles:        opts.ClusterRoles,
@@ -116,11 +124,12 @@ func (opts RegistrationOptions) RegisterCluster(
 		ClusterRoleBindings: opts.ClusterRoleBindings,
 	}
 
-	return RegisterClusterFromConfig(ctx, remoteCfg, rbacOpts, registrant)
+	return RegisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant)
 }
 
 func RegisterClusterFromConfig(
 	ctx context.Context,
+	masterClusterCfg *rest.Config,
 	remoteCfg clientcmd.ClientConfig,
 	opts RbacOptions,
 	registrant ClusterRegistrant,
@@ -138,7 +147,7 @@ func RegisterClusterFromConfig(
 		return err
 	}
 
-	return registrant.RegisterClusterWithToken(ctx, remoteCfg, token, opts.Options)
+	return registrant.RegisterClusterWithToken(ctx, masterClusterCfg, remoteCfg, token, opts.Options)
 }
 
 /*
@@ -146,7 +155,7 @@ func RegisterClusterFromConfig(
 	current kubeconfig, and the specified context. It will build all of the dependencies from the
 	available `ClientConfig`.
 
-	The clusterDomainOverride parameter is optional. When passed in, it will overwrite the Api Server
+	The apiServerAddress parameter is optional. When passed in, it will overwrite the Api Server
 	endpoint in the kubeconfig before it is written. This is primarily useful when running multi cluster
 	KinD environments on a mac as  the local IP needs to be re-written to `host.docker.internal` so
 	that the local instance knows to hit localhost.
@@ -154,16 +163,16 @@ func RegisterClusterFromConfig(
 	Meant to be used in tandem with RegisterClusterFromConfig above.
 	They are exposed separately so the `Registrant` may be mocked for the function above.
 */
-func DefaultRegistrant(context, clusterDomainOverride string) (ClusterRegistrant, error) {
+func DefaultRegistrant(context, apiServerAddress string) (ClusterRegistrant, error) {
 	cfg, err := config.GetConfigWithContext(context)
 	if err != nil {
 		return nil, err
 	}
 
-	return defaultRegistrant(cfg, clusterDomainOverride)
+	return defaultRegistrant(cfg, apiServerAddress)
 }
 
-func defaultRegistrant(cfg *rest.Config, clusterDomainOverride string) (ClusterRegistrant, error) {
+func defaultRegistrant(cfg *rest.Config, apiServerAddress string) (ClusterRegistrant, error) {
 	clientset, err := k8s_core_v1.NewClientsetFromConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -173,9 +182,10 @@ func defaultRegistrant(cfg *rest.Config, clusterDomainOverride string) (ClusterR
 	saClientFactory := k8s_core_v1_providers.ServiceAccountClientFromConfigFactoryProvider()
 	roleClientFactory := rbac_v1_providers.RoleClientFromConfigFactoryProvider()
 	clusterRoleClientFactory := rbac_v1_providers.ClusterRoleClientFromConfigFactoryProvider()
+	kubeClusterClientFactory := v1alpha1_providers.KubernetesClusterClientFromConfigFactoryProvider()
 	clusterRBACBinderFactory := NewClusterRBACBinderFactory()
 	registrant := NewClusterRegistrant(
-		clusterDomainOverride,
+		apiServerAddress,
 		clusterRBACBinderFactory,
 		clientset.Secrets(),
 		secretClientFactory,
@@ -183,6 +193,7 @@ func defaultRegistrant(cfg *rest.Config, clusterDomainOverride string) (ClusterR
 		saClientFactory,
 		clusterRoleClientFactory,
 		roleClientFactory,
+		kubeClusterClientFactory,
 	)
 	return registrant, nil
 }
