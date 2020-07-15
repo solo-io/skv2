@@ -3,10 +3,11 @@ package register_test
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	mock_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/mocks"
 	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
-	"time"
 
 	mock_k8s_core_clients "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/mocks"
 	rbac_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1"

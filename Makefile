@@ -21,6 +21,8 @@ install-deps: mod-download
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
 generated-code: clean install-deps
+	go run api/generate.go
+	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
 	go generate -v ./...
 	goimports -w .
 	go mod tidy

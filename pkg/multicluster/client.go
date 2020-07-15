@@ -12,7 +12,6 @@ type Client interface {
 
 	// Cluster returns a client.Client for the given cluster.
 	Cluster(name string) (client.Client, error)
-
 }
 
 type mcClient struct {
@@ -33,6 +32,6 @@ func (c *mcClient) Cluster(name string) (client.Client, error) {
 	return mgr.GetClient(), nil
 }
 
-func (c *mcClient) 	ListClusters() []string {
+func (c *mcClient) ListClusters() []string {
 	return c.managers.ListClusters()
 }

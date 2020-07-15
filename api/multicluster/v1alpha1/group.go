@@ -6,8 +6,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-//go:generate go run generate.go
-
 // export group
 var Group = model.Group{
 	GroupVersion: schema.GroupVersion{

@@ -18,7 +18,6 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/gophercloud/gophercloud v0.2.0 // indirect
-	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/mattn/go-colorable v0.1.7 // indirect
@@ -29,7 +28,6 @@ require (
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.2.1
-	github.com/pseudomuto/protoc-gen-doc v1.3.2 // indirect
 	github.com/rogpeppe/go-internal v1.5.2
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
@@ -46,7 +44,6 @@ require (
 	google.golang.org/api v0.6.0
 	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
 	gopkg.in/yaml.v2 v2.3.0 // indirect
-	istio.io/tools v0.0.0-20200710235625-990356af16f2 // indirect
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.18.2
 	k8s.io/apimachinery v0.18.2

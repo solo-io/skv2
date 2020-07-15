@@ -12,8 +12,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 )
 
-//go:generate go run generate.go
-
 func main() {
 	log.Println("starting kube client generation")
 
