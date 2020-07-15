@@ -22,7 +22,7 @@ message ObjectRef {
     string namespace = 2;
 }
 
-// Resource reference for an object
+// Resource reference for a cross-cluster-scoped object
 message ClusterObjectRef {
 
     // name of the resource being referenced
@@ -33,6 +33,41 @@ message ClusterObjectRef {
 
     // name of the cluster in which the resource exists
     string cluster_name = 3;
+}
+
+// Resource reference for a typed object
+message TypedObjectRef {
+
+    // API group of the resource being referenced
+    google.protobuf.StringValue api_group = 1;
+
+    // Kind of the resource being referenced
+    google.protobuf.StringValue kind = 2;
+
+    // name of the resource being referenced
+    string name = 3;
+
+    // namespace of the resource being referenced
+    string namespace = 4;
+}
+
+// Resource reference for a typed, cross-cluster-scoped object
+message TypedClusterObjectRef {
+
+    // API group of the resource being referenced
+    google.protobuf.StringValue api_group = 1;
+
+    // Kind of the resource being referenced
+    google.protobuf.StringValue kind = 2;
+
+    // name of the resource being referenced
+    string name = 3;
+
+    // namespace of the resource being referenced
+    string namespace = 4;
+
+    // name of the cluster in which the resource exists
+    string cluster_name = 5;
 }
 
 // A generic status
@@ -67,7 +102,7 @@ message Status {
     int64 observed_generation = 3;
 
     // The time at which this status was recorded
-    google.protobuf.Timestamp processing_time  = 4;
+    google.protobuf.Timestamp processing_time = 4;
 
     // (optional) The owner of the status, this value can be used to identify the entity which wrote this status.
     // This is useful in situations where a given resource may have multiple owners.
