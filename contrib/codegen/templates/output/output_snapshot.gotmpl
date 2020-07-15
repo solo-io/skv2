@@ -43,7 +43,7 @@ type Snapshot interface {
     Apply(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
 
     // apply resources from the snapshot across multiple clusters, garbage collecting stale resources
-    ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, , errHandler output.ErrorHandler)
+    ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler)
 }
 
 type snapshot struct {

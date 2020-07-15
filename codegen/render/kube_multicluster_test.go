@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/solo-io/skv2/codegen/util"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/kubeutils"
@@ -58,16 +60,20 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			zaputil.Level(&logLevel),
 		))
 		ns = randutils.RandString(4)
-		var err error
+		err := util.Kubectl(nil, "apply", "-f", util.GetModuleRoot()+"/crds")
+		Expect(err).NotTo(HaveOccurred())
+
 		for _, kubeContext := range []string{"", remoteContext} {
 			err = applyFile("things.test.io_v1_crds.yaml", "--context", kubeContext)
+
 			Expect(err).NotTo(HaveOccurred())
 			cfg := test.MustConfig(kubeContext)
 			kube := kubernetes.NewForConfigOrDie(cfg)
 			err = kubeutils.CreateNamespacesInParallel(kube, ns)
 			Expect(err).NotTo(HaveOccurred())
 		}
-		masterClientSet, err = NewClientsetFromConfig(test.MustConfig(""))
+		masterConfig := test.MustConfig("")
+		masterClientSet, err = NewClientsetFromConfig(masterConfig)
 		Expect(err).NotTo(HaveOccurred())
 		remoteClientSet, err = NewClientsetFromConfig(test.MustConfig(remoteContext))
 		Expect(err).NotTo(HaveOccurred())
@@ -77,7 +83,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		remoteCfg := test.ClientConfigWithContext(remoteContext)
 		registrant, err := register.DefaultRegistrant("", "")
 		Expect(err).NotTo(HaveOccurred())
-		err = register.RegisterClusterFromConfig(ctx, remoteCfg, register.RbacOptions{
+		err = register.RegisterClusterFromConfig(ctx, masterConfig, remoteCfg, register.RbacOptions{
 			Options: register.Options{
 				ClusterName: cluster2,
 				Namespace:   ns,
@@ -87,7 +93,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		}, registrant)
 		Expect(err).NotTo(HaveOccurred())
 		cfg := test.ClientConfigWithContext("")
-		err = register.RegisterClusterFromConfig(ctx, cfg, register.RbacOptions{
+		err = register.RegisterClusterFromConfig(ctx, masterConfig, cfg, register.RbacOptions{
 			Options: register.Options{
 				ClusterName: cluster1,
 				Namespace:   ns,
