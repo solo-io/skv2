@@ -18,3 +18,14 @@ func MakeClusterObjectRef(resource ClusterResourceId) *v1.ClusterObjectRef {
 		ClusterName: resource.GetClusterName(),
 	}
 }
+
+func RefsMatch(ref1, ref2 ResourceId) bool {
+	return ref1.GetNamespace() == ref2.GetNamespace() &&
+		ref1.GetName() == ref2.GetName()
+}
+
+func ClusterRefsMatch(ref1, ref2 ClusterResourceId) bool {
+	return ref1.GetNamespace() == ref2.GetNamespace() &&
+		ref1.GetName() == ref2.GetName() &&
+		ref1.GetClusterName() == ref2.GetClusterName()
+}

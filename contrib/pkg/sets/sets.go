@@ -25,7 +25,7 @@ type ResourceSet interface {
 	List() []ezkube.ResourceId
 	Map() map[string]ezkube.ResourceId
 	Insert(resource ...ezkube.ResourceId)
-	Equal(resourceSet ResourceSet) bool
+	Equal(set ResourceSet) bool
 	Has(resource ezkube.ResourceId) bool
 	Delete(resource ezkube.ResourceId)
 	Union(set ResourceSet) ResourceSet
@@ -59,11 +59,11 @@ func (s *resourceSet) Keys() sets.String {
 func (s *resourceSet) List() []ezkube.ResourceId {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	var Resources []ezkube.ResourceId
+	var resources []ezkube.ResourceId
 	for _, key := range s.set.List() {
-		Resources = append(Resources, s.mapping[key])
+		resources = append(resources, s.mapping[key])
 	}
-	return Resources
+	return resources
 }
 
 func (s *resourceSet) Map() map[string]ezkube.ResourceId {
@@ -77,13 +77,13 @@ func (s *resourceSet) Map() map[string]ezkube.ResourceId {
 }
 
 func (s *resourceSet) Insert(
-	Resources ...ezkube.ResourceId,
+	resources ...ezkube.ResourceId,
 ) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	for _, Resource := range Resources {
-		key := Key(Resource)
-		s.mapping[key] = Resource
+	for _, resource := range resources {
+		key := Key(resource)
+		s.mapping[key] = resource
 		s.set.Insert(key)
 	}
 }
@@ -95,11 +95,11 @@ func (s *resourceSet) Has(resource ezkube.ResourceId) bool {
 }
 
 func (s *resourceSet) Equal(
-	ResourceSet ResourceSet,
+	set ResourceSet,
 ) bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	return s.set.Equal(ResourceSet.Keys())
+	return s.set.Equal(set.Keys())
 }
 
 func (s *resourceSet) Delete(resource ezkube.ResourceId) {
