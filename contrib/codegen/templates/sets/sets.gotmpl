@@ -15,17 +15,29 @@ import (
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 
 type {{ $resource.Kind }}Set interface {
+	// Get the set stored keys
     Keys() sets.String
-    List() []*{{ $import_prefix }}.{{ $resource.Kind }}
+    // List of resources stored in the set. Pass an optional filter function to filter on the list.
+    List(filterResource ... func(*{{ $import_prefix }}.{{ $resource.Kind }}) bool) []*{{ $import_prefix }}.{{ $resource.Kind }}
+    // Return the Set as a map of key to resource.
     Map() map[string]*{{ $import_prefix }}.{{ $resource.Kind }}
+    // Insert a resource into the set.
     Insert({{ $kindLowerCamel }} ...*{{ $import_prefix }}.{{ $resource.Kind }})
+    // Compare the equality of the keys in two sets (not the resources themselves)
     Equal({{ $kindLowerCamel }}Set {{ $resource.Kind }}Set) bool
-    Has({{ $kindLowerCamel }} *{{ $import_prefix }}.{{ $resource.Kind }}) bool
-    Delete({{ $kindLowerCamel }} *{{ $import_prefix }}.{{ $resource.Kind }})
+    // Check if the set contains a key matching the resource (not the resource itself)
+    Has({{ $kindLowerCamel }} ezkube.ResourceId) bool
+    // Delete the key matching the resource
+    Delete({{ $kindLowerCamel }}  ezkube.ResourceId)
+    // Return the union with the provided set
     Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
+    // Return the difference with the provided set
     Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
+    // Return the intersection with the provided set
     Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set
+    // Find the resource with the given ID
     Find(id ezkube.ResourceId) (*{{ $import_prefix }}.{{ $resource.Kind }}, error)
+    // Get the length of the set
     Length() int
 }
 
@@ -57,9 +69,17 @@ func (s *{{ $kindLowerCamel }}Set) Keys() sets.String {
     return s.set.Keys()
 }
 
-func (s *{{ $kindLowerCamel }}Set) List() []*{{ $import_prefix }}.{{ $resource.Kind }} {
+func (s *{{ $kindLowerCamel }}Set) List(filterResource ... func(*{{ $import_prefix }}.{{ $resource.Kind }}) bool) []*{{ $import_prefix }}.{{ $resource.Kind }} {
+
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
+        })
+    }
+
     var {{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}
-    for _, obj := range s.set.List() {
+    for _, obj := range s.set.List(genericFilters...) {
         {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
     }
     return {{ $kindLowerCamel }}List
@@ -81,7 +101,7 @@ func (s *{{ $kindLowerCamel }}Set) Insert(
     }
 }
 
-func (s *{{ $kindLowerCamel }}Set) Has({{ $kindLowerCamel }} *{{ $import_prefix }}.{{ $resource.Kind }}) bool {
+func (s *{{ $kindLowerCamel }}Set) Has({{ $kindLowerCamel }} ezkube.ResourceId) bool {
     return s.set.Has({{ $kindLowerCamel }})
 }
 
@@ -91,7 +111,7 @@ func (s *{{ $kindLowerCamel }}Set) Equal(
     return s.set.Equal(makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}Set.List()))
 }
 
-func (s *{{ $kindLowerCamel }}Set) Delete({{ $resource.Kind }} *{{ $import_prefix }}.{{ $resource.Kind }}) {
+func (s *{{ $kindLowerCamel }}Set) Delete({{ $resource.Kind }} ezkube.ResourceId) {
     s.set.Delete({{ $resource.Kind }})
 }
 
