@@ -166,7 +166,7 @@ func NewSinglePartitionedSnapshot(
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-        Labeled{{ $resource.Kind }}Set{labeled{{ $kindPlural }}},
+        []Labeled{{ $resource.Kind }}Set{labeled{{ $kindPlural }}},
 {{- end }}
 {{- end }}
     ), nil
