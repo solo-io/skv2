@@ -52,17 +52,21 @@ func (mr *MockCertificateSigningRequestSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockCertificateSigningRequestSet) List() []*v1beta1.CertificateSigningRequest {
+func (m *MockCertificateSigningRequestSet) List(filterResource ...func(*v1beta1.CertificateSigningRequest) bool) []*v1beta1.CertificateSigningRequest {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1beta1.CertificateSigningRequest)
 	return ret0
 }
 
 // List indicates an expected call of List.
-func (mr *MockCertificateSigningRequestSetMockRecorder) List() *gomock.Call {
+func (mr *MockCertificateSigningRequestSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method.
@@ -110,7 +114,7 @@ func (mr *MockCertificateSigningRequestSetMockRecorder) Equal(certificateSigning
 }
 
 // Has mocks base method.
-func (m *MockCertificateSigningRequestSet) Has(certificateSigningRequest *v1beta1.CertificateSigningRequest) bool {
+func (m *MockCertificateSigningRequestSet) Has(certificateSigningRequest ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", certificateSigningRequest)
 	ret0, _ := ret[0].(bool)
@@ -124,7 +128,7 @@ func (mr *MockCertificateSigningRequestSetMockRecorder) Has(certificateSigningRe
 }
 
 // Delete mocks base method.
-func (m *MockCertificateSigningRequestSet) Delete(certificateSigningRequest *v1beta1.CertificateSigningRequest) {
+func (m *MockCertificateSigningRequestSet) Delete(certificateSigningRequest ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", certificateSigningRequest)
 }

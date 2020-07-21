@@ -52,17 +52,21 @@ func (mr *MockCustomResourceDefinitionSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockCustomResourceDefinitionSet) List() []*v1beta1.CustomResourceDefinition {
+func (m *MockCustomResourceDefinitionSet) List(filterResource ...func(*v1beta1.CustomResourceDefinition) bool) []*v1beta1.CustomResourceDefinition {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1beta1.CustomResourceDefinition)
 	return ret0
 }
 
 // List indicates an expected call of List.
-func (mr *MockCustomResourceDefinitionSetMockRecorder) List() *gomock.Call {
+func (mr *MockCustomResourceDefinitionSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCustomResourceDefinitionSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCustomResourceDefinitionSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method.
@@ -110,7 +114,7 @@ func (mr *MockCustomResourceDefinitionSetMockRecorder) Equal(customResourceDefin
 }
 
 // Has mocks base method.
-func (m *MockCustomResourceDefinitionSet) Has(customResourceDefinition *v1beta1.CustomResourceDefinition) bool {
+func (m *MockCustomResourceDefinitionSet) Has(customResourceDefinition ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", customResourceDefinition)
 	ret0, _ := ret[0].(bool)
@@ -124,7 +128,7 @@ func (mr *MockCustomResourceDefinitionSetMockRecorder) Has(customResourceDefinit
 }
 
 // Delete mocks base method.
-func (m *MockCustomResourceDefinitionSet) Delete(customResourceDefinition *v1beta1.CustomResourceDefinition) {
+func (m *MockCustomResourceDefinitionSet) Delete(customResourceDefinition ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", customResourceDefinition)
 }

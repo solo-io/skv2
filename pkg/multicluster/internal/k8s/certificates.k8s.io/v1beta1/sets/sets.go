@@ -13,17 +13,29 @@ import (
 )
 
 type CertificateSigningRequestSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*certificates_k8s_io_v1beta1.CertificateSigningRequest
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest
+	// Return the Set as a map of key to resource.
 	Map() map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest
+	// Insert a resource into the set.
 	Insert(certificateSigningRequest ...*certificates_k8s_io_v1beta1.CertificateSigningRequest)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(certificateSigningRequestSet CertificateSigningRequestSet) bool
-	Has(certificateSigningRequest *certificates_k8s_io_v1beta1.CertificateSigningRequest) bool
-	Delete(certificateSigningRequest *certificates_k8s_io_v1beta1.CertificateSigningRequest)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(certificateSigningRequest ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(certificateSigningRequest ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set CertificateSigningRequestSet) CertificateSigningRequestSet
+	// Return the difference with the provided set
 	Difference(set CertificateSigningRequestSet) CertificateSigningRequestSet
+	// Return the intersection with the provided set
 	Intersection(set CertificateSigningRequestSet) CertificateSigningRequestSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -55,9 +67,17 @@ func (s *certificateSigningRequestSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *certificateSigningRequestSet) List() []*certificates_k8s_io_v1beta1.CertificateSigningRequest {
+func (s *certificateSigningRequestSet) List(filterResource ...func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
+		})
+	}
+
 	var certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 	}
 	return certificateSigningRequestList
@@ -79,7 +99,7 @@ func (s *certificateSigningRequestSet) Insert(
 	}
 }
 
-func (s *certificateSigningRequestSet) Has(certificateSigningRequest *certificates_k8s_io_v1beta1.CertificateSigningRequest) bool {
+func (s *certificateSigningRequestSet) Has(certificateSigningRequest ezkube.ResourceId) bool {
 	return s.set.Has(certificateSigningRequest)
 }
 
@@ -89,7 +109,7 @@ func (s *certificateSigningRequestSet) Equal(
 	return s.set.Equal(makeGenericCertificateSigningRequestSet(certificateSigningRequestSet.List()))
 }
 
-func (s *certificateSigningRequestSet) Delete(CertificateSigningRequest *certificates_k8s_io_v1beta1.CertificateSigningRequest) {
+func (s *certificateSigningRequestSet) Delete(CertificateSigningRequest ezkube.ResourceId) {
 	s.set.Delete(CertificateSigningRequest)
 }
 
