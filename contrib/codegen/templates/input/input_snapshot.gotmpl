@@ -19,6 +19,8 @@ package {{ package }}
 
 import (
     "context"
+    "encoding/json"
+
     "github.com/hashicorp/go-multierror"
     "github.com/solo-io/skv2/pkg/controllerutils"
     "github.com/solo-io/skv2/pkg/multicluster"
@@ -60,6 +62,8 @@ type Snapshot interface {
     // the Status subresource
     SyncStatuses(ctx context.Context, c client.Client) error
 {{- end }}
+    // serialize the entire snapshot as JSON
+    MarshalJSON() ([]byte, error)
 }
 
 type snapshot struct {
@@ -137,6 +141,19 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
     return nil
 }
 {{- end }}
+
+func (s snapshot) MarshalJSON() ([]byte, error) {
+    snapshotMap := map[string]interface{}{"name": s.name}
+{{/* add map contents here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    snapshotMap["{{ $kindLowerCamelPlural }}"] = s.{{ $kindLowerCamelPlural }}.List()
+{{- end }}
+{{- end }}
+	return json.Marshal(snapshotMap)
+}
 
 // builds the input snapshot from API Clients.
 // Two types of builders are available:

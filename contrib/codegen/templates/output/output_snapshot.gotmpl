@@ -5,6 +5,7 @@ package {{ package }}
 
 import (
 	"context"
+    "encoding/json"
 
     "github.com/rotisserie/eris"
     "github.com/solo-io/skv2/contrib/pkg/sets"
@@ -44,6 +45,9 @@ type Snapshot interface {
 
     // apply resources from the snapshot across multiple clusters, garbage collecting stale resources
     ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler)
+
+    // serialize the entire snapshot as JSON
+    MarshalJSON() ([]byte, error)
 }
 
 type snapshot struct {
@@ -283,6 +287,24 @@ func (s snapshot) {{ $kindPlural }}() []Labeled{{ $resource.Kind }}Set {
 {{- end }}
 {{- end }}
 
+func (s snapshot) MarshalJSON() ([]byte, error) {
+    snapshotMap := map[string]interface{}{"name": s.name}
+{{/* add map contents here */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    for _, set := range s.{{ $kindLowerCamelPlural }} {
+        {{ $kindLowerCamel }}Set = {{ $kindLowerCamel }}Set.Union(set.Set() )
+    }
+    snapshotMap["{{ $kindLowerCamelPlural }}"] = {{ $kindLowerCamel }}Set.List()
+{{- end }}
+{{- end }}
+
+    return json.Marshal(snapshotMap)
+}
 
 {{/* generate labeled sets here */}}
 {{- range $group := $groups }}
