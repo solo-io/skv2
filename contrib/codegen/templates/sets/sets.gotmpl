@@ -5,6 +5,7 @@ package {{.Version}}sets
 import (
     {{ $import_prefix }} "{{ group_import_path $ }}"
 
+    "github.com/rotisserie/eris"
     sksets "github.com/solo-io/skv2/contrib/pkg/sets"
     "github.com/solo-io/skv2/pkg/ezkube"
     "k8s.io/apimachinery/pkg/util/sets"
@@ -66,11 +67,16 @@ func New{{ $resource.Kind }}SetFromList({{ $kindLowerCamel }}List *{{ $import_pr
 }
 
 func (s *{{ $kindLowerCamel }}Set) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+    }
     return s.set.Keys()
 }
 
 func (s *{{ $kindLowerCamel }}Set) List(filterResource ... func(*{{ $import_prefix }}.{{ $resource.Kind }}) bool) []*{{ $import_prefix }}.{{ $resource.Kind }} {
-
+    if s == nil {
+        return nil
+    }
     var genericFilters []func(ezkube.ResourceId) bool
     for _, filter := range filterResource {
         genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -86,6 +92,10 @@ func (s *{{ $kindLowerCamel }}Set) List(filterResource ... func(*{{ $import_pref
 }
 
 func (s *{{ $kindLowerCamel }}Set) Map() map[string]*{{ $import_prefix }}.{{ $resource.Kind }} {
+    if s == nil {
+        return nil
+    }
+
     newMap := map[string]*{{ $import_prefix }}.{{ $resource.Kind }}{}
     for k, v := range s.set.Map() {
         newMap[k] = v.(*{{ $import_prefix }}.{{ $resource.Kind }})
@@ -96,35 +106,57 @@ func (s *{{ $kindLowerCamel }}Set) Map() map[string]*{{ $import_prefix }}.{{ $re
 func (s *{{ $kindLowerCamel }}Set) Insert(
         {{ $kindLowerCamel }}List ...*{{ $import_prefix }}.{{ $resource.Kind }},
 ) {
+    if s == nil {
+        panic("cannot insert into nil set")
+    }
+
     for _, obj := range {{ $kindLowerCamel }}List {
         s.set.Insert(obj)
     }
 }
 
 func (s *{{ $kindLowerCamel }}Set) Has({{ $kindLowerCamel }} ezkube.ResourceId) bool {
+    if s == nil {
+        return false
+    }
     return s.set.Has({{ $kindLowerCamel }})
 }
 
 func (s *{{ $kindLowerCamel }}Set) Equal(
         {{ $kindLowerCamel }}Set {{ $resource.Kind }}Set,
 ) bool {
+    if s == nil {
+        return {{ $kindLowerCamel }}Set == nil
+    }
     return s.set.Equal(makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}Set.List()))
 }
 
 func (s *{{ $kindLowerCamel }}Set) Delete({{ $resource.Kind }} ezkube.ResourceId) {
+    if s == nil {
+        return
+    }
     s.set.Delete({{ $resource.Kind }})
 }
 
 func (s *{{ $kindLowerCamel }}Set) Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
+    if s == nil {
+        return set
+    }
     return New{{ $resource.Kind }}Set(append(s.List(), set.List()...)...)
 }
 
 func (s *{{ $kindLowerCamel }}Set) Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
+    if s == nil {
+        return set
+    }
     newSet := s.set.Difference(makeGeneric{{ $resource.Kind }}Set(set.List()))
     return &{{ $kindLowerCamel }}Set{set: newSet}
 }
 
 func (s *{{ $kindLowerCamel }}Set) Intersection(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
+    if s == nil {
+        return nil
+    }
     newSet := s.set.Intersection(makeGeneric{{ $resource.Kind }}Set(set.List()))
     var {{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}
     for _, obj := range newSet.List() {
@@ -135,6 +167,9 @@ func (s *{{ $kindLowerCamel }}Set) Intersection(set {{ $resource.Kind }}Set) {{ 
 
 
 func (s *{{ $kindLowerCamel }}Set) Find(id ezkube.ResourceId) (*{{ $import_prefix }}.{{ $resource.Kind }}, error) {
+    if s == nil {
+        return nil, eris.Errorf("empty set, cannot find {{ $resource.Kind }} %v", sksets.Key(id))
+    }
 	obj, err := s.set.Find(&{{ $import_prefix }}.{{ $resource.Kind }}{}, id)
 	if err != nil {
 		return nil, err
@@ -144,6 +179,9 @@ func (s *{{ $kindLowerCamel }}Set) Find(id ezkube.ResourceId) (*{{ $import_prefi
 }
 
 func (s *{{ $kindLowerCamel }}Set) Length() int {
+    if s == nil {
+        return 0
+    }
     return s.set.Length()
 }
 
