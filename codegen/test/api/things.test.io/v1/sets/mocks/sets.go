@@ -52,17 +52,21 @@ func (mr *MockPaintSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockPaintSet) List() []*v1.Paint {
+func (m *MockPaintSet) List(filterResource ...func(*v1.Paint) bool) []*v1.Paint {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1.Paint)
 	return ret0
 }
 
 // List indicates an expected call of List.
-func (mr *MockPaintSetMockRecorder) List() *gomock.Call {
+func (mr *MockPaintSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPaintSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPaintSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method.
@@ -110,7 +114,7 @@ func (mr *MockPaintSetMockRecorder) Equal(paintSet interface{}) *gomock.Call {
 }
 
 // Has mocks base method.
-func (m *MockPaintSet) Has(paint *v1.Paint) bool {
+func (m *MockPaintSet) Has(paint ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", paint)
 	ret0, _ := ret[0].(bool)
@@ -124,7 +128,7 @@ func (mr *MockPaintSetMockRecorder) Has(paint interface{}) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockPaintSet) Delete(paint *v1.Paint) {
+func (m *MockPaintSet) Delete(paint ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", paint)
 }
@@ -244,17 +248,21 @@ func (mr *MockClusterResourceSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockClusterResourceSet) List() []*v1.ClusterResource {
+func (m *MockClusterResourceSet) List(filterResource ...func(*v1.ClusterResource) bool) []*v1.ClusterResource {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1.ClusterResource)
 	return ret0
 }
 
 // List indicates an expected call of List.
-func (mr *MockClusterResourceSetMockRecorder) List() *gomock.Call {
+func (mr *MockClusterResourceSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterResourceSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterResourceSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method.
@@ -302,7 +310,7 @@ func (mr *MockClusterResourceSetMockRecorder) Equal(clusterResourceSet interface
 }
 
 // Has mocks base method.
-func (m *MockClusterResourceSet) Has(clusterResource *v1.ClusterResource) bool {
+func (m *MockClusterResourceSet) Has(clusterResource ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", clusterResource)
 	ret0, _ := ret[0].(bool)
@@ -316,7 +324,7 @@ func (mr *MockClusterResourceSetMockRecorder) Has(clusterResource interface{}) *
 }
 
 // Delete mocks base method.
-func (m *MockClusterResourceSet) Delete(clusterResource *v1.ClusterResource) {
+func (m *MockClusterResourceSet) Delete(clusterResource ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", clusterResource)
 }

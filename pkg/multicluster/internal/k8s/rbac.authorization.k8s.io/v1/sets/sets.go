@@ -7,6 +7,7 @@ package v1sets
 import (
 	rbac_authorization_k8s_io_v1 "k8s.io/api/rbac/v1"
 
+	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -64,11 +65,16 @@ func NewRoleSetFromList(roleList *rbac_authorization_k8s_io_v1.RoleList) RoleSet
 }
 
 func (s *roleSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *roleSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.Role) bool) []*rbac_authorization_k8s_io_v1.Role {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -84,6 +90,10 @@ func (s *roleSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.Role
 }
 
 func (s *roleSet) Map() map[string]*rbac_authorization_k8s_io_v1.Role {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*rbac_authorization_k8s_io_v1.Role{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*rbac_authorization_k8s_io_v1.Role)
@@ -94,35 +104,57 @@ func (s *roleSet) Map() map[string]*rbac_authorization_k8s_io_v1.Role {
 func (s *roleSet) Insert(
 	roleList ...*rbac_authorization_k8s_io_v1.Role,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range roleList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *roleSet) Has(role ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(role)
 }
 
 func (s *roleSet) Equal(
 	roleSet RoleSet,
 ) bool {
+	if s == nil {
+		return roleSet == nil
+	}
 	return s.set.Equal(makeGenericRoleSet(roleSet.List()))
 }
 
 func (s *roleSet) Delete(Role ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(Role)
 }
 
 func (s *roleSet) Union(set RoleSet) RoleSet {
+	if s == nil {
+		return set
+	}
 	return NewRoleSet(append(s.List(), set.List()...)...)
 }
 
 func (s *roleSet) Difference(set RoleSet) RoleSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericRoleSet(set.List()))
 	return &roleSet{set: newSet}
 }
 
 func (s *roleSet) Intersection(set RoleSet) RoleSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericRoleSet(set.List()))
 	var roleList []*rbac_authorization_k8s_io_v1.Role
 	for _, obj := range newSet.List() {
@@ -132,6 +164,9 @@ func (s *roleSet) Intersection(set RoleSet) RoleSet {
 }
 
 func (s *roleSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.Role, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find Role %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&rbac_authorization_k8s_io_v1.Role{}, id)
 	if err != nil {
 		return nil, err
@@ -141,6 +176,9 @@ func (s *roleSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.Role
 }
 
 func (s *roleSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
@@ -196,11 +234,16 @@ func NewRoleBindingSetFromList(roleBindingList *rbac_authorization_k8s_io_v1.Rol
 }
 
 func (s *roleBindingSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *roleBindingSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.RoleBinding) bool) []*rbac_authorization_k8s_io_v1.RoleBinding {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -216,6 +259,10 @@ func (s *roleBindingSet) List(filterResource ...func(*rbac_authorization_k8s_io_
 }
 
 func (s *roleBindingSet) Map() map[string]*rbac_authorization_k8s_io_v1.RoleBinding {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*rbac_authorization_k8s_io_v1.RoleBinding{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*rbac_authorization_k8s_io_v1.RoleBinding)
@@ -226,35 +273,57 @@ func (s *roleBindingSet) Map() map[string]*rbac_authorization_k8s_io_v1.RoleBind
 func (s *roleBindingSet) Insert(
 	roleBindingList ...*rbac_authorization_k8s_io_v1.RoleBinding,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range roleBindingList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *roleBindingSet) Has(roleBinding ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(roleBinding)
 }
 
 func (s *roleBindingSet) Equal(
 	roleBindingSet RoleBindingSet,
 ) bool {
+	if s == nil {
+		return roleBindingSet == nil
+	}
 	return s.set.Equal(makeGenericRoleBindingSet(roleBindingSet.List()))
 }
 
 func (s *roleBindingSet) Delete(RoleBinding ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(RoleBinding)
 }
 
 func (s *roleBindingSet) Union(set RoleBindingSet) RoleBindingSet {
+	if s == nil {
+		return set
+	}
 	return NewRoleBindingSet(append(s.List(), set.List()...)...)
 }
 
 func (s *roleBindingSet) Difference(set RoleBindingSet) RoleBindingSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericRoleBindingSet(set.List()))
 	return &roleBindingSet{set: newSet}
 }
 
 func (s *roleBindingSet) Intersection(set RoleBindingSet) RoleBindingSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericRoleBindingSet(set.List()))
 	var roleBindingList []*rbac_authorization_k8s_io_v1.RoleBinding
 	for _, obj := range newSet.List() {
@@ -264,6 +333,9 @@ func (s *roleBindingSet) Intersection(set RoleBindingSet) RoleBindingSet {
 }
 
 func (s *roleBindingSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.RoleBinding, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find RoleBinding %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&rbac_authorization_k8s_io_v1.RoleBinding{}, id)
 	if err != nil {
 		return nil, err
@@ -273,6 +345,9 @@ func (s *roleBindingSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_
 }
 
 func (s *roleBindingSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
@@ -328,11 +403,16 @@ func NewClusterRoleSetFromList(clusterRoleList *rbac_authorization_k8s_io_v1.Clu
 }
 
 func (s *clusterRoleSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *clusterRoleSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.ClusterRole) bool) []*rbac_authorization_k8s_io_v1.ClusterRole {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -348,6 +428,10 @@ func (s *clusterRoleSet) List(filterResource ...func(*rbac_authorization_k8s_io_
 }
 
 func (s *clusterRoleSet) Map() map[string]*rbac_authorization_k8s_io_v1.ClusterRole {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*rbac_authorization_k8s_io_v1.ClusterRole{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*rbac_authorization_k8s_io_v1.ClusterRole)
@@ -358,35 +442,57 @@ func (s *clusterRoleSet) Map() map[string]*rbac_authorization_k8s_io_v1.ClusterR
 func (s *clusterRoleSet) Insert(
 	clusterRoleList ...*rbac_authorization_k8s_io_v1.ClusterRole,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range clusterRoleList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *clusterRoleSet) Has(clusterRole ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(clusterRole)
 }
 
 func (s *clusterRoleSet) Equal(
 	clusterRoleSet ClusterRoleSet,
 ) bool {
+	if s == nil {
+		return clusterRoleSet == nil
+	}
 	return s.set.Equal(makeGenericClusterRoleSet(clusterRoleSet.List()))
 }
 
 func (s *clusterRoleSet) Delete(ClusterRole ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(ClusterRole)
 }
 
 func (s *clusterRoleSet) Union(set ClusterRoleSet) ClusterRoleSet {
+	if s == nil {
+		return set
+	}
 	return NewClusterRoleSet(append(s.List(), set.List()...)...)
 }
 
 func (s *clusterRoleSet) Difference(set ClusterRoleSet) ClusterRoleSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericClusterRoleSet(set.List()))
 	return &clusterRoleSet{set: newSet}
 }
 
 func (s *clusterRoleSet) Intersection(set ClusterRoleSet) ClusterRoleSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericClusterRoleSet(set.List()))
 	var clusterRoleList []*rbac_authorization_k8s_io_v1.ClusterRole
 	for _, obj := range newSet.List() {
@@ -396,6 +502,9 @@ func (s *clusterRoleSet) Intersection(set ClusterRoleSet) ClusterRoleSet {
 }
 
 func (s *clusterRoleSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.ClusterRole, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find ClusterRole %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&rbac_authorization_k8s_io_v1.ClusterRole{}, id)
 	if err != nil {
 		return nil, err
@@ -405,6 +514,9 @@ func (s *clusterRoleSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_
 }
 
 func (s *clusterRoleSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
@@ -460,11 +572,16 @@ func NewClusterRoleBindingSetFromList(clusterRoleBindingList *rbac_authorization
 }
 
 func (s *clusterRoleBindingSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *clusterRoleBindingSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.ClusterRoleBinding) bool) []*rbac_authorization_k8s_io_v1.ClusterRoleBinding {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -480,6 +597,10 @@ func (s *clusterRoleBindingSet) List(filterResource ...func(*rbac_authorization_
 }
 
 func (s *clusterRoleBindingSet) Map() map[string]*rbac_authorization_k8s_io_v1.ClusterRoleBinding {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding)
@@ -490,35 +611,57 @@ func (s *clusterRoleBindingSet) Map() map[string]*rbac_authorization_k8s_io_v1.C
 func (s *clusterRoleBindingSet) Insert(
 	clusterRoleBindingList ...*rbac_authorization_k8s_io_v1.ClusterRoleBinding,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range clusterRoleBindingList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *clusterRoleBindingSet) Has(clusterRoleBinding ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(clusterRoleBinding)
 }
 
 func (s *clusterRoleBindingSet) Equal(
 	clusterRoleBindingSet ClusterRoleBindingSet,
 ) bool {
+	if s == nil {
+		return clusterRoleBindingSet == nil
+	}
 	return s.set.Equal(makeGenericClusterRoleBindingSet(clusterRoleBindingSet.List()))
 }
 
 func (s *clusterRoleBindingSet) Delete(ClusterRoleBinding ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(ClusterRoleBinding)
 }
 
 func (s *clusterRoleBindingSet) Union(set ClusterRoleBindingSet) ClusterRoleBindingSet {
+	if s == nil {
+		return set
+	}
 	return NewClusterRoleBindingSet(append(s.List(), set.List()...)...)
 }
 
 func (s *clusterRoleBindingSet) Difference(set ClusterRoleBindingSet) ClusterRoleBindingSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericClusterRoleBindingSet(set.List()))
 	return &clusterRoleBindingSet{set: newSet}
 }
 
 func (s *clusterRoleBindingSet) Intersection(set ClusterRoleBindingSet) ClusterRoleBindingSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericClusterRoleBindingSet(set.List()))
 	var clusterRoleBindingList []*rbac_authorization_k8s_io_v1.ClusterRoleBinding
 	for _, obj := range newSet.List() {
@@ -528,6 +671,9 @@ func (s *clusterRoleBindingSet) Intersection(set ClusterRoleBindingSet) ClusterR
 }
 
 func (s *clusterRoleBindingSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.ClusterRoleBinding, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find ClusterRoleBinding %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&rbac_authorization_k8s_io_v1.ClusterRoleBinding{}, id)
 	if err != nil {
 		return nil, err
@@ -537,5 +683,8 @@ func (s *clusterRoleBindingSet) Find(id ezkube.ResourceId) (*rbac_authorization_
 }
 
 func (s *clusterRoleBindingSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
