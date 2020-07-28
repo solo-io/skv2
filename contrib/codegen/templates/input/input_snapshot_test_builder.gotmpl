@@ -1,0 +1,77 @@
+{{ $groups := imported_groups }}
+
+/*
+	Utility for building input snapshots for testing purposes.
+*/
+package {{ package }}
+
+import (
+	multiclusterv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	multiclusterv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+
+{{- range $group := $groups }}
+	{{ $client_import_prefix := group_import_name $group }}
+	{{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
+	{{ $client_import_prefix }} "{{ client_import_path $group }}"
+	{{ $set_import_prefix }} "{{ set_import_path $group }}"
+{{- end }}
+
+)
+
+type InputSnapshotBuilder struct {
+	name string
+{{/* generate fields of the real snapshot impl here */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+	{{- $kindLowerCamel := lower_camel $resource.Kind }}
+	{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+	{{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+{{- end }}
+{{- end }}
+
+}
+
+func NewInputSnapshotBuilder(name string) *InputSnapshotBuilder {
+	return &InputSnapshotBuilder{
+		name:               name,
+{{- range $group := $groups }}
+	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+	{{- range $resource := $group.Resources }}
+		{{- $kindPlural := pluralize $resource.Kind }}
+		{{- $kindLowerCamel := lower_camel $resource.Kind }}
+		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+		{{ $kindLowerCamelPlural }}: {{ $set_import_prefix }}.New{{ $resource.Kind }}Set(),
+	{{- end }}
+{{- end }}
+	}
+}
+
+func (i *InputSnapshotBuilder) Build() input.Snapshot {
+	return input.NewSnapshot(
+		i.name,
+{{- range $group := $groups }}
+	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+	{{- range $resource := $group.Resources }}
+		{{- $kindPlural := pluralize $resource.Kind }}
+		{{- $kindLowerCamel := lower_camel $resource.Kind }}
+		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+		i.{{ $kindLowerCamelPlural }},
+	{{- end }}
+{{- end }}
+	)
+}
+
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+	{{- $kindPlural := pluralize $resource.Kind }}
+	{{- $kindLowerCamel := lower_camel $resource.Kind }}
+	{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+func (i *InputSnapshotBuilder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *InputSnapshotBuilder {
+	i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
+	return i
+}
+{{- end }}
+{{- end }}
