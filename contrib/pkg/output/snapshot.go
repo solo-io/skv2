@@ -164,11 +164,20 @@ type Snapshot struct {
 	ListsToSync []ResourceList
 }
 
-// sync the output snapshot to storage
+// sync the output snapshot to local cluster storage.
+// only writes resources intended for the local cluster (with ClusterName == "")
 func (s Snapshot) Sync(ctx context.Context, cli client.Client, errHandler ErrorHandler) {
 
 	for _, list := range s.ListsToSync {
-		s.syncList(ctx, cli, list, errHandler)
+		listForLocalCluster := list.SplitByClusterName()[""]
+
+		resourcesForLocalCluster := ResourceList{
+			Resources:    listForLocalCluster,
+			ListFunc:     list.ListFunc,
+			ResourceKind: list.ResourceKind,
+		}
+
+		s.syncList(ctx, cli, resourcesForLocalCluster, errHandler)
 	}
 
 }
