@@ -15,7 +15,7 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.3.5
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/gophercloud/gophercloud v0.2.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -43,6 +43,7 @@ require (
 	gonum.org/v1/netlib v0.0.0-20191031114514-eccb95939662 // indirect
 	google.golang.org/api v0.6.0
 	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
+	google.golang.org/grpc v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.18.2
