@@ -166,7 +166,7 @@ type Snapshot struct {
 
 // sync the output snapshot to local cluster storage.
 // only writes resources intended for the local cluster (with ClusterName == "")
-func (s Snapshot) Sync(ctx context.Context, cli client.Client, errHandler ErrorHandler) {
+func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHandler ErrorHandler) {
 
 	for _, list := range s.ListsToSync {
 		listForLocalCluster := list.SplitByClusterName()[""]
@@ -189,6 +189,9 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 	clusters := mcClient.ListClusters()
 	for _, list := range s.ListsToSync {
 		listsByCluster := list.SplitByClusterName()
+		// TODO(ilackarms): possible error case that we're ignoring here;
+		// we only write resources to clusters that are available to the multicluster client
+		// if the cluster is not available, we will not error (simply skip writing the resources here)
 		for _, cluster := range clusters {
 			listForCluster := listsByCluster[cluster]
 
