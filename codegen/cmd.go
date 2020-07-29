@@ -238,6 +238,10 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 		return err
 	}
 
+	if templates.MockgenDirective {
+		render.PrependMockgenDirective(customCode)
+	}
+
 	if err := fileWriter.WriteFiles(customCode); err != nil {
 		return err
 	}
