@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Stop generating service for Operators that have no service ports defined.
+    issueLink: https://github.com/solo-io/skv2/issues/111
