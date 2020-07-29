@@ -13,30 +13,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockMulticlusterClientset is a mock of MulticlusterClientset interface.
+// MockMulticlusterClientset is a mock of MulticlusterClientset interface
 type MockMulticlusterClientset struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterClientsetMockRecorder
 }
 
-// MockMulticlusterClientsetMockRecorder is the mock recorder for MockMulticlusterClientset.
+// MockMulticlusterClientsetMockRecorder is the mock recorder for MockMulticlusterClientset
 type MockMulticlusterClientsetMockRecorder struct {
 	mock *MockMulticlusterClientset
 }
 
-// NewMockMulticlusterClientset creates a new mock instance.
+// NewMockMulticlusterClientset creates a new mock instance
 func NewMockMulticlusterClientset(ctrl *gomock.Controller) *MockMulticlusterClientset {
 	mock := &MockMulticlusterClientset{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterClientsetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterClientset) EXPECT() *MockMulticlusterClientsetMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method.
+// Cluster mocks base method
 func (m *MockMulticlusterClientset) Cluster(cluster string) (v1.Clientset, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -45,36 +45,36 @@ func (m *MockMulticlusterClientset) Cluster(cluster string) (v1.Clientset, error
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster.
+// Cluster indicates an expected call of Cluster
 func (mr *MockMulticlusterClientsetMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterClientset)(nil).Cluster), cluster)
 }
 
-// MockClientset is a mock of Clientset interface.
+// MockClientset is a mock of Clientset interface
 type MockClientset struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientsetMockRecorder
 }
 
-// MockClientsetMockRecorder is the mock recorder for MockClientset.
+// MockClientsetMockRecorder is the mock recorder for MockClientset
 type MockClientsetMockRecorder struct {
 	mock *MockClientset
 }
 
-// NewMockClientset creates a new mock instance.
+// NewMockClientset creates a new mock instance
 func NewMockClientset(ctrl *gomock.Controller) *MockClientset {
 	mock := &MockClientset{ctrl: ctrl}
 	mock.recorder = &MockClientsetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
-// Paints mocks base method.
+// Paints mocks base method
 func (m *MockClientset) Paints() v1.PaintClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Paints")
@@ -82,13 +82,13 @@ func (m *MockClientset) Paints() v1.PaintClient {
 	return ret0
 }
 
-// Paints indicates an expected call of Paints.
+// Paints indicates an expected call of Paints
 func (mr *MockClientsetMockRecorder) Paints() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Paints", reflect.TypeOf((*MockClientset)(nil).Paints))
 }
 
-// ClusterResources mocks base method.
+// ClusterResources mocks base method
 func (m *MockClientset) ClusterResources() v1.ClusterResourceClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClusterResources")
@@ -96,36 +96,36 @@ func (m *MockClientset) ClusterResources() v1.ClusterResourceClient {
 	return ret0
 }
 
-// ClusterResources indicates an expected call of ClusterResources.
+// ClusterResources indicates an expected call of ClusterResources
 func (mr *MockClientsetMockRecorder) ClusterResources() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterResources", reflect.TypeOf((*MockClientset)(nil).ClusterResources))
 }
 
-// MockPaintReader is a mock of PaintReader interface.
+// MockPaintReader is a mock of PaintReader interface
 type MockPaintReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockPaintReaderMockRecorder
 }
 
-// MockPaintReaderMockRecorder is the mock recorder for MockPaintReader.
+// MockPaintReaderMockRecorder is the mock recorder for MockPaintReader
 type MockPaintReaderMockRecorder struct {
 	mock *MockPaintReader
 }
 
-// NewMockPaintReader creates a new mock instance.
+// NewMockPaintReader creates a new mock instance
 func NewMockPaintReader(ctrl *gomock.Controller) *MockPaintReader {
 	mock := &MockPaintReader{ctrl: ctrl}
 	mock.recorder = &MockPaintReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockPaintReader) EXPECT() *MockPaintReaderMockRecorder {
 	return m.recorder
 }
 
-// GetPaint mocks base method.
+// GetPaint mocks base method
 func (m *MockPaintReader) GetPaint(ctx context.Context, key client.ObjectKey) (*v1.Paint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPaint", ctx, key)
@@ -134,13 +134,13 @@ func (m *MockPaintReader) GetPaint(ctx context.Context, key client.ObjectKey) (*
 	return ret0, ret1
 }
 
-// GetPaint indicates an expected call of GetPaint.
+// GetPaint indicates an expected call of GetPaint
 func (mr *MockPaintReaderMockRecorder) GetPaint(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaint", reflect.TypeOf((*MockPaintReader)(nil).GetPaint), ctx, key)
 }
 
-// ListPaint mocks base method.
+// ListPaint mocks base method
 func (m *MockPaintReader) ListPaint(ctx context.Context, opts ...client.ListOption) (*v1.PaintList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -153,37 +153,37 @@ func (m *MockPaintReader) ListPaint(ctx context.Context, opts ...client.ListOpti
 	return ret0, ret1
 }
 
-// ListPaint indicates an expected call of ListPaint.
+// ListPaint indicates an expected call of ListPaint
 func (mr *MockPaintReaderMockRecorder) ListPaint(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPaint", reflect.TypeOf((*MockPaintReader)(nil).ListPaint), varargs...)
 }
 
-// MockPaintWriter is a mock of PaintWriter interface.
+// MockPaintWriter is a mock of PaintWriter interface
 type MockPaintWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockPaintWriterMockRecorder
 }
 
-// MockPaintWriterMockRecorder is the mock recorder for MockPaintWriter.
+// MockPaintWriterMockRecorder is the mock recorder for MockPaintWriter
 type MockPaintWriterMockRecorder struct {
 	mock *MockPaintWriter
 }
 
-// NewMockPaintWriter creates a new mock instance.
+// NewMockPaintWriter creates a new mock instance
 func NewMockPaintWriter(ctrl *gomock.Controller) *MockPaintWriter {
 	mock := &MockPaintWriter{ctrl: ctrl}
 	mock.recorder = &MockPaintWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockPaintWriter) EXPECT() *MockPaintWriterMockRecorder {
 	return m.recorder
 }
 
-// CreatePaint mocks base method.
+// CreatePaint mocks base method
 func (m *MockPaintWriter) CreatePaint(ctx context.Context, obj *v1.Paint, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -195,14 +195,14 @@ func (m *MockPaintWriter) CreatePaint(ctx context.Context, obj *v1.Paint, opts .
 	return ret0
 }
 
-// CreatePaint indicates an expected call of CreatePaint.
+// CreatePaint indicates an expected call of CreatePaint
 func (mr *MockPaintWriterMockRecorder) CreatePaint(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePaint", reflect.TypeOf((*MockPaintWriter)(nil).CreatePaint), varargs...)
 }
 
-// DeletePaint mocks base method.
+// DeletePaint mocks base method
 func (m *MockPaintWriter) DeletePaint(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
@@ -214,14 +214,14 @@ func (m *MockPaintWriter) DeletePaint(ctx context.Context, key client.ObjectKey,
 	return ret0
 }
 
-// DeletePaint indicates an expected call of DeletePaint.
+// DeletePaint indicates an expected call of DeletePaint
 func (mr *MockPaintWriterMockRecorder) DeletePaint(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePaint", reflect.TypeOf((*MockPaintWriter)(nil).DeletePaint), varargs...)
 }
 
-// UpdatePaint mocks base method.
+// UpdatePaint mocks base method
 func (m *MockPaintWriter) UpdatePaint(ctx context.Context, obj *v1.Paint, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -233,14 +233,14 @@ func (m *MockPaintWriter) UpdatePaint(ctx context.Context, obj *v1.Paint, opts .
 	return ret0
 }
 
-// UpdatePaint indicates an expected call of UpdatePaint.
+// UpdatePaint indicates an expected call of UpdatePaint
 func (mr *MockPaintWriterMockRecorder) UpdatePaint(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePaint", reflect.TypeOf((*MockPaintWriter)(nil).UpdatePaint), varargs...)
 }
 
-// PatchPaint mocks base method.
+// PatchPaint mocks base method
 func (m *MockPaintWriter) PatchPaint(ctx context.Context, obj *v1.Paint, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -252,14 +252,14 @@ func (m *MockPaintWriter) PatchPaint(ctx context.Context, obj *v1.Paint, patch c
 	return ret0
 }
 
-// PatchPaint indicates an expected call of PatchPaint.
+// PatchPaint indicates an expected call of PatchPaint
 func (mr *MockPaintWriterMockRecorder) PatchPaint(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPaint", reflect.TypeOf((*MockPaintWriter)(nil).PatchPaint), varargs...)
 }
 
-// DeleteAllOfPaint mocks base method.
+// DeleteAllOfPaint mocks base method
 func (m *MockPaintWriter) DeleteAllOfPaint(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -271,14 +271,14 @@ func (m *MockPaintWriter) DeleteAllOfPaint(ctx context.Context, opts ...client.D
 	return ret0
 }
 
-// DeleteAllOfPaint indicates an expected call of DeleteAllOfPaint.
+// DeleteAllOfPaint indicates an expected call of DeleteAllOfPaint
 func (mr *MockPaintWriterMockRecorder) DeleteAllOfPaint(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfPaint", reflect.TypeOf((*MockPaintWriter)(nil).DeleteAllOfPaint), varargs...)
 }
 
-// UpsertPaint mocks base method.
+// UpsertPaint mocks base method
 func (m *MockPaintWriter) UpsertPaint(ctx context.Context, obj *v1.Paint, transitionFuncs ...v1.PaintTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -290,37 +290,37 @@ func (m *MockPaintWriter) UpsertPaint(ctx context.Context, obj *v1.Paint, transi
 	return ret0
 }
 
-// UpsertPaint indicates an expected call of UpsertPaint.
+// UpsertPaint indicates an expected call of UpsertPaint
 func (mr *MockPaintWriterMockRecorder) UpsertPaint(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertPaint", reflect.TypeOf((*MockPaintWriter)(nil).UpsertPaint), varargs...)
 }
 
-// MockPaintStatusWriter is a mock of PaintStatusWriter interface.
+// MockPaintStatusWriter is a mock of PaintStatusWriter interface
 type MockPaintStatusWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockPaintStatusWriterMockRecorder
 }
 
-// MockPaintStatusWriterMockRecorder is the mock recorder for MockPaintStatusWriter.
+// MockPaintStatusWriterMockRecorder is the mock recorder for MockPaintStatusWriter
 type MockPaintStatusWriterMockRecorder struct {
 	mock *MockPaintStatusWriter
 }
 
-// NewMockPaintStatusWriter creates a new mock instance.
+// NewMockPaintStatusWriter creates a new mock instance
 func NewMockPaintStatusWriter(ctrl *gomock.Controller) *MockPaintStatusWriter {
 	mock := &MockPaintStatusWriter{ctrl: ctrl}
 	mock.recorder = &MockPaintStatusWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockPaintStatusWriter) EXPECT() *MockPaintStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdatePaintStatus mocks base method.
+// UpdatePaintStatus mocks base method
 func (m *MockPaintStatusWriter) UpdatePaintStatus(ctx context.Context, obj *v1.Paint, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -332,14 +332,14 @@ func (m *MockPaintStatusWriter) UpdatePaintStatus(ctx context.Context, obj *v1.P
 	return ret0
 }
 
-// UpdatePaintStatus indicates an expected call of UpdatePaintStatus.
+// UpdatePaintStatus indicates an expected call of UpdatePaintStatus
 func (mr *MockPaintStatusWriterMockRecorder) UpdatePaintStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePaintStatus", reflect.TypeOf((*MockPaintStatusWriter)(nil).UpdatePaintStatus), varargs...)
 }
 
-// PatchPaintStatus mocks base method.
+// PatchPaintStatus mocks base method
 func (m *MockPaintStatusWriter) PatchPaintStatus(ctx context.Context, obj *v1.Paint, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -351,37 +351,37 @@ func (m *MockPaintStatusWriter) PatchPaintStatus(ctx context.Context, obj *v1.Pa
 	return ret0
 }
 
-// PatchPaintStatus indicates an expected call of PatchPaintStatus.
+// PatchPaintStatus indicates an expected call of PatchPaintStatus
 func (mr *MockPaintStatusWriterMockRecorder) PatchPaintStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPaintStatus", reflect.TypeOf((*MockPaintStatusWriter)(nil).PatchPaintStatus), varargs...)
 }
 
-// MockPaintClient is a mock of PaintClient interface.
+// MockPaintClient is a mock of PaintClient interface
 type MockPaintClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPaintClientMockRecorder
 }
 
-// MockPaintClientMockRecorder is the mock recorder for MockPaintClient.
+// MockPaintClientMockRecorder is the mock recorder for MockPaintClient
 type MockPaintClientMockRecorder struct {
 	mock *MockPaintClient
 }
 
-// NewMockPaintClient creates a new mock instance.
+// NewMockPaintClient creates a new mock instance
 func NewMockPaintClient(ctrl *gomock.Controller) *MockPaintClient {
 	mock := &MockPaintClient{ctrl: ctrl}
 	mock.recorder = &MockPaintClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockPaintClient) EXPECT() *MockPaintClientMockRecorder {
 	return m.recorder
 }
 
-// GetPaint mocks base method.
+// GetPaint mocks base method
 func (m *MockPaintClient) GetPaint(ctx context.Context, key client.ObjectKey) (*v1.Paint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPaint", ctx, key)
@@ -390,13 +390,13 @@ func (m *MockPaintClient) GetPaint(ctx context.Context, key client.ObjectKey) (*
 	return ret0, ret1
 }
 
-// GetPaint indicates an expected call of GetPaint.
+// GetPaint indicates an expected call of GetPaint
 func (mr *MockPaintClientMockRecorder) GetPaint(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaint", reflect.TypeOf((*MockPaintClient)(nil).GetPaint), ctx, key)
 }
 
-// ListPaint mocks base method.
+// ListPaint mocks base method
 func (m *MockPaintClient) ListPaint(ctx context.Context, opts ...client.ListOption) (*v1.PaintList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -409,14 +409,14 @@ func (m *MockPaintClient) ListPaint(ctx context.Context, opts ...client.ListOpti
 	return ret0, ret1
 }
 
-// ListPaint indicates an expected call of ListPaint.
+// ListPaint indicates an expected call of ListPaint
 func (mr *MockPaintClientMockRecorder) ListPaint(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPaint", reflect.TypeOf((*MockPaintClient)(nil).ListPaint), varargs...)
 }
 
-// CreatePaint mocks base method.
+// CreatePaint mocks base method
 func (m *MockPaintClient) CreatePaint(ctx context.Context, obj *v1.Paint, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -428,14 +428,14 @@ func (m *MockPaintClient) CreatePaint(ctx context.Context, obj *v1.Paint, opts .
 	return ret0
 }
 
-// CreatePaint indicates an expected call of CreatePaint.
+// CreatePaint indicates an expected call of CreatePaint
 func (mr *MockPaintClientMockRecorder) CreatePaint(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePaint", reflect.TypeOf((*MockPaintClient)(nil).CreatePaint), varargs...)
 }
 
-// DeletePaint mocks base method.
+// DeletePaint mocks base method
 func (m *MockPaintClient) DeletePaint(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
@@ -447,14 +447,14 @@ func (m *MockPaintClient) DeletePaint(ctx context.Context, key client.ObjectKey,
 	return ret0
 }
 
-// DeletePaint indicates an expected call of DeletePaint.
+// DeletePaint indicates an expected call of DeletePaint
 func (mr *MockPaintClientMockRecorder) DeletePaint(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePaint", reflect.TypeOf((*MockPaintClient)(nil).DeletePaint), varargs...)
 }
 
-// UpdatePaint mocks base method.
+// UpdatePaint mocks base method
 func (m *MockPaintClient) UpdatePaint(ctx context.Context, obj *v1.Paint, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -466,14 +466,14 @@ func (m *MockPaintClient) UpdatePaint(ctx context.Context, obj *v1.Paint, opts .
 	return ret0
 }
 
-// UpdatePaint indicates an expected call of UpdatePaint.
+// UpdatePaint indicates an expected call of UpdatePaint
 func (mr *MockPaintClientMockRecorder) UpdatePaint(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePaint", reflect.TypeOf((*MockPaintClient)(nil).UpdatePaint), varargs...)
 }
 
-// PatchPaint mocks base method.
+// PatchPaint mocks base method
 func (m *MockPaintClient) PatchPaint(ctx context.Context, obj *v1.Paint, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -485,14 +485,14 @@ func (m *MockPaintClient) PatchPaint(ctx context.Context, obj *v1.Paint, patch c
 	return ret0
 }
 
-// PatchPaint indicates an expected call of PatchPaint.
+// PatchPaint indicates an expected call of PatchPaint
 func (mr *MockPaintClientMockRecorder) PatchPaint(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPaint", reflect.TypeOf((*MockPaintClient)(nil).PatchPaint), varargs...)
 }
 
-// DeleteAllOfPaint mocks base method.
+// DeleteAllOfPaint mocks base method
 func (m *MockPaintClient) DeleteAllOfPaint(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -504,14 +504,14 @@ func (m *MockPaintClient) DeleteAllOfPaint(ctx context.Context, opts ...client.D
 	return ret0
 }
 
-// DeleteAllOfPaint indicates an expected call of DeleteAllOfPaint.
+// DeleteAllOfPaint indicates an expected call of DeleteAllOfPaint
 func (mr *MockPaintClientMockRecorder) DeleteAllOfPaint(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfPaint", reflect.TypeOf((*MockPaintClient)(nil).DeleteAllOfPaint), varargs...)
 }
 
-// UpsertPaint mocks base method.
+// UpsertPaint mocks base method
 func (m *MockPaintClient) UpsertPaint(ctx context.Context, obj *v1.Paint, transitionFuncs ...v1.PaintTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -523,14 +523,14 @@ func (m *MockPaintClient) UpsertPaint(ctx context.Context, obj *v1.Paint, transi
 	return ret0
 }
 
-// UpsertPaint indicates an expected call of UpsertPaint.
+// UpsertPaint indicates an expected call of UpsertPaint
 func (mr *MockPaintClientMockRecorder) UpsertPaint(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertPaint", reflect.TypeOf((*MockPaintClient)(nil).UpsertPaint), varargs...)
 }
 
-// UpdatePaintStatus mocks base method.
+// UpdatePaintStatus mocks base method
 func (m *MockPaintClient) UpdatePaintStatus(ctx context.Context, obj *v1.Paint, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -542,14 +542,14 @@ func (m *MockPaintClient) UpdatePaintStatus(ctx context.Context, obj *v1.Paint, 
 	return ret0
 }
 
-// UpdatePaintStatus indicates an expected call of UpdatePaintStatus.
+// UpdatePaintStatus indicates an expected call of UpdatePaintStatus
 func (mr *MockPaintClientMockRecorder) UpdatePaintStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePaintStatus", reflect.TypeOf((*MockPaintClient)(nil).UpdatePaintStatus), varargs...)
 }
 
-// PatchPaintStatus mocks base method.
+// PatchPaintStatus mocks base method
 func (m *MockPaintClient) PatchPaintStatus(ctx context.Context, obj *v1.Paint, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -561,37 +561,37 @@ func (m *MockPaintClient) PatchPaintStatus(ctx context.Context, obj *v1.Paint, p
 	return ret0
 }
 
-// PatchPaintStatus indicates an expected call of PatchPaintStatus.
+// PatchPaintStatus indicates an expected call of PatchPaintStatus
 func (mr *MockPaintClientMockRecorder) PatchPaintStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPaintStatus", reflect.TypeOf((*MockPaintClient)(nil).PatchPaintStatus), varargs...)
 }
 
-// MockMulticlusterPaintClient is a mock of MulticlusterPaintClient interface.
+// MockMulticlusterPaintClient is a mock of MulticlusterPaintClient interface
 type MockMulticlusterPaintClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterPaintClientMockRecorder
 }
 
-// MockMulticlusterPaintClientMockRecorder is the mock recorder for MockMulticlusterPaintClient.
+// MockMulticlusterPaintClientMockRecorder is the mock recorder for MockMulticlusterPaintClient
 type MockMulticlusterPaintClientMockRecorder struct {
 	mock *MockMulticlusterPaintClient
 }
 
-// NewMockMulticlusterPaintClient creates a new mock instance.
+// NewMockMulticlusterPaintClient creates a new mock instance
 func NewMockMulticlusterPaintClient(ctrl *gomock.Controller) *MockMulticlusterPaintClient {
 	mock := &MockMulticlusterPaintClient{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterPaintClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterPaintClient) EXPECT() *MockMulticlusterPaintClientMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method.
+// Cluster mocks base method
 func (m *MockMulticlusterPaintClient) Cluster(cluster string) (v1.PaintClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -600,36 +600,36 @@ func (m *MockMulticlusterPaintClient) Cluster(cluster string) (v1.PaintClient, e
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster.
+// Cluster indicates an expected call of Cluster
 func (mr *MockMulticlusterPaintClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterPaintClient)(nil).Cluster), cluster)
 }
 
-// MockClusterResourceReader is a mock of ClusterResourceReader interface.
+// MockClusterResourceReader is a mock of ClusterResourceReader interface
 type MockClusterResourceReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterResourceReaderMockRecorder
 }
 
-// MockClusterResourceReaderMockRecorder is the mock recorder for MockClusterResourceReader.
+// MockClusterResourceReaderMockRecorder is the mock recorder for MockClusterResourceReader
 type MockClusterResourceReaderMockRecorder struct {
 	mock *MockClusterResourceReader
 }
 
-// NewMockClusterResourceReader creates a new mock instance.
+// NewMockClusterResourceReader creates a new mock instance
 func NewMockClusterResourceReader(ctrl *gomock.Controller) *MockClusterResourceReader {
 	mock := &MockClusterResourceReader{ctrl: ctrl}
 	mock.recorder = &MockClusterResourceReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterResourceReader) EXPECT() *MockClusterResourceReaderMockRecorder {
 	return m.recorder
 }
 
-// GetClusterResource mocks base method.
+// GetClusterResource mocks base method
 func (m *MockClusterResourceReader) GetClusterResource(ctx context.Context, name string) (*v1.ClusterResource, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterResource", ctx, name)
@@ -638,13 +638,13 @@ func (m *MockClusterResourceReader) GetClusterResource(ctx context.Context, name
 	return ret0, ret1
 }
 
-// GetClusterResource indicates an expected call of GetClusterResource.
+// GetClusterResource indicates an expected call of GetClusterResource
 func (mr *MockClusterResourceReaderMockRecorder) GetClusterResource(ctx, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterResource", reflect.TypeOf((*MockClusterResourceReader)(nil).GetClusterResource), ctx, name)
 }
 
-// ListClusterResource mocks base method.
+// ListClusterResource mocks base method
 func (m *MockClusterResourceReader) ListClusterResource(ctx context.Context, opts ...client.ListOption) (*v1.ClusterResourceList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -657,37 +657,37 @@ func (m *MockClusterResourceReader) ListClusterResource(ctx context.Context, opt
 	return ret0, ret1
 }
 
-// ListClusterResource indicates an expected call of ListClusterResource.
+// ListClusterResource indicates an expected call of ListClusterResource
 func (mr *MockClusterResourceReaderMockRecorder) ListClusterResource(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListClusterResource", reflect.TypeOf((*MockClusterResourceReader)(nil).ListClusterResource), varargs...)
 }
 
-// MockClusterResourceWriter is a mock of ClusterResourceWriter interface.
+// MockClusterResourceWriter is a mock of ClusterResourceWriter interface
 type MockClusterResourceWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterResourceWriterMockRecorder
 }
 
-// MockClusterResourceWriterMockRecorder is the mock recorder for MockClusterResourceWriter.
+// MockClusterResourceWriterMockRecorder is the mock recorder for MockClusterResourceWriter
 type MockClusterResourceWriterMockRecorder struct {
 	mock *MockClusterResourceWriter
 }
 
-// NewMockClusterResourceWriter creates a new mock instance.
+// NewMockClusterResourceWriter creates a new mock instance
 func NewMockClusterResourceWriter(ctrl *gomock.Controller) *MockClusterResourceWriter {
 	mock := &MockClusterResourceWriter{ctrl: ctrl}
 	mock.recorder = &MockClusterResourceWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterResourceWriter) EXPECT() *MockClusterResourceWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateClusterResource mocks base method.
+// CreateClusterResource mocks base method
 func (m *MockClusterResourceWriter) CreateClusterResource(ctx context.Context, obj *v1.ClusterResource, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -699,14 +699,14 @@ func (m *MockClusterResourceWriter) CreateClusterResource(ctx context.Context, o
 	return ret0
 }
 
-// CreateClusterResource indicates an expected call of CreateClusterResource.
+// CreateClusterResource indicates an expected call of CreateClusterResource
 func (mr *MockClusterResourceWriterMockRecorder) CreateClusterResource(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateClusterResource", reflect.TypeOf((*MockClusterResourceWriter)(nil).CreateClusterResource), varargs...)
 }
 
-// DeleteClusterResource mocks base method.
+// DeleteClusterResource mocks base method
 func (m *MockClusterResourceWriter) DeleteClusterResource(ctx context.Context, name string, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, name}
@@ -718,14 +718,14 @@ func (m *MockClusterResourceWriter) DeleteClusterResource(ctx context.Context, n
 	return ret0
 }
 
-// DeleteClusterResource indicates an expected call of DeleteClusterResource.
+// DeleteClusterResource indicates an expected call of DeleteClusterResource
 func (mr *MockClusterResourceWriterMockRecorder) DeleteClusterResource(ctx, name interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, name}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClusterResource", reflect.TypeOf((*MockClusterResourceWriter)(nil).DeleteClusterResource), varargs...)
 }
 
-// UpdateClusterResource mocks base method.
+// UpdateClusterResource mocks base method
 func (m *MockClusterResourceWriter) UpdateClusterResource(ctx context.Context, obj *v1.ClusterResource, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -737,14 +737,14 @@ func (m *MockClusterResourceWriter) UpdateClusterResource(ctx context.Context, o
 	return ret0
 }
 
-// UpdateClusterResource indicates an expected call of UpdateClusterResource.
+// UpdateClusterResource indicates an expected call of UpdateClusterResource
 func (mr *MockClusterResourceWriterMockRecorder) UpdateClusterResource(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClusterResource", reflect.TypeOf((*MockClusterResourceWriter)(nil).UpdateClusterResource), varargs...)
 }
 
-// PatchClusterResource mocks base method.
+// PatchClusterResource mocks base method
 func (m *MockClusterResourceWriter) PatchClusterResource(ctx context.Context, obj *v1.ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -756,14 +756,14 @@ func (m *MockClusterResourceWriter) PatchClusterResource(ctx context.Context, ob
 	return ret0
 }
 
-// PatchClusterResource indicates an expected call of PatchClusterResource.
+// PatchClusterResource indicates an expected call of PatchClusterResource
 func (mr *MockClusterResourceWriterMockRecorder) PatchClusterResource(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterResource", reflect.TypeOf((*MockClusterResourceWriter)(nil).PatchClusterResource), varargs...)
 }
 
-// DeleteAllOfClusterResource mocks base method.
+// DeleteAllOfClusterResource mocks base method
 func (m *MockClusterResourceWriter) DeleteAllOfClusterResource(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -775,14 +775,14 @@ func (m *MockClusterResourceWriter) DeleteAllOfClusterResource(ctx context.Conte
 	return ret0
 }
 
-// DeleteAllOfClusterResource indicates an expected call of DeleteAllOfClusterResource.
+// DeleteAllOfClusterResource indicates an expected call of DeleteAllOfClusterResource
 func (mr *MockClusterResourceWriterMockRecorder) DeleteAllOfClusterResource(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfClusterResource", reflect.TypeOf((*MockClusterResourceWriter)(nil).DeleteAllOfClusterResource), varargs...)
 }
 
-// UpsertClusterResource mocks base method.
+// UpsertClusterResource mocks base method
 func (m *MockClusterResourceWriter) UpsertClusterResource(ctx context.Context, obj *v1.ClusterResource, transitionFuncs ...v1.ClusterResourceTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -794,37 +794,37 @@ func (m *MockClusterResourceWriter) UpsertClusterResource(ctx context.Context, o
 	return ret0
 }
 
-// UpsertClusterResource indicates an expected call of UpsertClusterResource.
+// UpsertClusterResource indicates an expected call of UpsertClusterResource
 func (mr *MockClusterResourceWriterMockRecorder) UpsertClusterResource(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertClusterResource", reflect.TypeOf((*MockClusterResourceWriter)(nil).UpsertClusterResource), varargs...)
 }
 
-// MockClusterResourceStatusWriter is a mock of ClusterResourceStatusWriter interface.
+// MockClusterResourceStatusWriter is a mock of ClusterResourceStatusWriter interface
 type MockClusterResourceStatusWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterResourceStatusWriterMockRecorder
 }
 
-// MockClusterResourceStatusWriterMockRecorder is the mock recorder for MockClusterResourceStatusWriter.
+// MockClusterResourceStatusWriterMockRecorder is the mock recorder for MockClusterResourceStatusWriter
 type MockClusterResourceStatusWriterMockRecorder struct {
 	mock *MockClusterResourceStatusWriter
 }
 
-// NewMockClusterResourceStatusWriter creates a new mock instance.
+// NewMockClusterResourceStatusWriter creates a new mock instance
 func NewMockClusterResourceStatusWriter(ctrl *gomock.Controller) *MockClusterResourceStatusWriter {
 	mock := &MockClusterResourceStatusWriter{ctrl: ctrl}
 	mock.recorder = &MockClusterResourceStatusWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterResourceStatusWriter) EXPECT() *MockClusterResourceStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateClusterResourceStatus mocks base method.
+// UpdateClusterResourceStatus mocks base method
 func (m *MockClusterResourceStatusWriter) UpdateClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -836,14 +836,14 @@ func (m *MockClusterResourceStatusWriter) UpdateClusterResourceStatus(ctx contex
 	return ret0
 }
 
-// UpdateClusterResourceStatus indicates an expected call of UpdateClusterResourceStatus.
+// UpdateClusterResourceStatus indicates an expected call of UpdateClusterResourceStatus
 func (mr *MockClusterResourceStatusWriterMockRecorder) UpdateClusterResourceStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClusterResourceStatus", reflect.TypeOf((*MockClusterResourceStatusWriter)(nil).UpdateClusterResourceStatus), varargs...)
 }
 
-// PatchClusterResourceStatus mocks base method.
+// PatchClusterResourceStatus mocks base method
 func (m *MockClusterResourceStatusWriter) PatchClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -855,37 +855,37 @@ func (m *MockClusterResourceStatusWriter) PatchClusterResourceStatus(ctx context
 	return ret0
 }
 
-// PatchClusterResourceStatus indicates an expected call of PatchClusterResourceStatus.
+// PatchClusterResourceStatus indicates an expected call of PatchClusterResourceStatus
 func (mr *MockClusterResourceStatusWriterMockRecorder) PatchClusterResourceStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterResourceStatus", reflect.TypeOf((*MockClusterResourceStatusWriter)(nil).PatchClusterResourceStatus), varargs...)
 }
 
-// MockClusterResourceClient is a mock of ClusterResourceClient interface.
+// MockClusterResourceClient is a mock of ClusterResourceClient interface
 type MockClusterResourceClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterResourceClientMockRecorder
 }
 
-// MockClusterResourceClientMockRecorder is the mock recorder for MockClusterResourceClient.
+// MockClusterResourceClientMockRecorder is the mock recorder for MockClusterResourceClient
 type MockClusterResourceClientMockRecorder struct {
 	mock *MockClusterResourceClient
 }
 
-// NewMockClusterResourceClient creates a new mock instance.
+// NewMockClusterResourceClient creates a new mock instance
 func NewMockClusterResourceClient(ctrl *gomock.Controller) *MockClusterResourceClient {
 	mock := &MockClusterResourceClient{ctrl: ctrl}
 	mock.recorder = &MockClusterResourceClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterResourceClient) EXPECT() *MockClusterResourceClientMockRecorder {
 	return m.recorder
 }
 
-// GetClusterResource mocks base method.
+// GetClusterResource mocks base method
 func (m *MockClusterResourceClient) GetClusterResource(ctx context.Context, name string) (*v1.ClusterResource, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterResource", ctx, name)
@@ -894,13 +894,13 @@ func (m *MockClusterResourceClient) GetClusterResource(ctx context.Context, name
 	return ret0, ret1
 }
 
-// GetClusterResource indicates an expected call of GetClusterResource.
+// GetClusterResource indicates an expected call of GetClusterResource
 func (mr *MockClusterResourceClientMockRecorder) GetClusterResource(ctx, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterResource", reflect.TypeOf((*MockClusterResourceClient)(nil).GetClusterResource), ctx, name)
 }
 
-// ListClusterResource mocks base method.
+// ListClusterResource mocks base method
 func (m *MockClusterResourceClient) ListClusterResource(ctx context.Context, opts ...client.ListOption) (*v1.ClusterResourceList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -913,14 +913,14 @@ func (m *MockClusterResourceClient) ListClusterResource(ctx context.Context, opt
 	return ret0, ret1
 }
 
-// ListClusterResource indicates an expected call of ListClusterResource.
+// ListClusterResource indicates an expected call of ListClusterResource
 func (mr *MockClusterResourceClientMockRecorder) ListClusterResource(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListClusterResource", reflect.TypeOf((*MockClusterResourceClient)(nil).ListClusterResource), varargs...)
 }
 
-// CreateClusterResource mocks base method.
+// CreateClusterResource mocks base method
 func (m *MockClusterResourceClient) CreateClusterResource(ctx context.Context, obj *v1.ClusterResource, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -932,14 +932,14 @@ func (m *MockClusterResourceClient) CreateClusterResource(ctx context.Context, o
 	return ret0
 }
 
-// CreateClusterResource indicates an expected call of CreateClusterResource.
+// CreateClusterResource indicates an expected call of CreateClusterResource
 func (mr *MockClusterResourceClientMockRecorder) CreateClusterResource(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateClusterResource", reflect.TypeOf((*MockClusterResourceClient)(nil).CreateClusterResource), varargs...)
 }
 
-// DeleteClusterResource mocks base method.
+// DeleteClusterResource mocks base method
 func (m *MockClusterResourceClient) DeleteClusterResource(ctx context.Context, name string, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, name}
@@ -951,14 +951,14 @@ func (m *MockClusterResourceClient) DeleteClusterResource(ctx context.Context, n
 	return ret0
 }
 
-// DeleteClusterResource indicates an expected call of DeleteClusterResource.
+// DeleteClusterResource indicates an expected call of DeleteClusterResource
 func (mr *MockClusterResourceClientMockRecorder) DeleteClusterResource(ctx, name interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, name}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClusterResource", reflect.TypeOf((*MockClusterResourceClient)(nil).DeleteClusterResource), varargs...)
 }
 
-// UpdateClusterResource mocks base method.
+// UpdateClusterResource mocks base method
 func (m *MockClusterResourceClient) UpdateClusterResource(ctx context.Context, obj *v1.ClusterResource, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -970,14 +970,14 @@ func (m *MockClusterResourceClient) UpdateClusterResource(ctx context.Context, o
 	return ret0
 }
 
-// UpdateClusterResource indicates an expected call of UpdateClusterResource.
+// UpdateClusterResource indicates an expected call of UpdateClusterResource
 func (mr *MockClusterResourceClientMockRecorder) UpdateClusterResource(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClusterResource", reflect.TypeOf((*MockClusterResourceClient)(nil).UpdateClusterResource), varargs...)
 }
 
-// PatchClusterResource mocks base method.
+// PatchClusterResource mocks base method
 func (m *MockClusterResourceClient) PatchClusterResource(ctx context.Context, obj *v1.ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -989,14 +989,14 @@ func (m *MockClusterResourceClient) PatchClusterResource(ctx context.Context, ob
 	return ret0
 }
 
-// PatchClusterResource indicates an expected call of PatchClusterResource.
+// PatchClusterResource indicates an expected call of PatchClusterResource
 func (mr *MockClusterResourceClientMockRecorder) PatchClusterResource(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterResource", reflect.TypeOf((*MockClusterResourceClient)(nil).PatchClusterResource), varargs...)
 }
 
-// DeleteAllOfClusterResource mocks base method.
+// DeleteAllOfClusterResource mocks base method
 func (m *MockClusterResourceClient) DeleteAllOfClusterResource(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -1008,14 +1008,14 @@ func (m *MockClusterResourceClient) DeleteAllOfClusterResource(ctx context.Conte
 	return ret0
 }
 
-// DeleteAllOfClusterResource indicates an expected call of DeleteAllOfClusterResource.
+// DeleteAllOfClusterResource indicates an expected call of DeleteAllOfClusterResource
 func (mr *MockClusterResourceClientMockRecorder) DeleteAllOfClusterResource(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfClusterResource", reflect.TypeOf((*MockClusterResourceClient)(nil).DeleteAllOfClusterResource), varargs...)
 }
 
-// UpsertClusterResource mocks base method.
+// UpsertClusterResource mocks base method
 func (m *MockClusterResourceClient) UpsertClusterResource(ctx context.Context, obj *v1.ClusterResource, transitionFuncs ...v1.ClusterResourceTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -1027,14 +1027,14 @@ func (m *MockClusterResourceClient) UpsertClusterResource(ctx context.Context, o
 	return ret0
 }
 
-// UpsertClusterResource indicates an expected call of UpsertClusterResource.
+// UpsertClusterResource indicates an expected call of UpsertClusterResource
 func (mr *MockClusterResourceClientMockRecorder) UpsertClusterResource(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertClusterResource", reflect.TypeOf((*MockClusterResourceClient)(nil).UpsertClusterResource), varargs...)
 }
 
-// UpdateClusterResourceStatus mocks base method.
+// UpdateClusterResourceStatus mocks base method
 func (m *MockClusterResourceClient) UpdateClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -1046,14 +1046,14 @@ func (m *MockClusterResourceClient) UpdateClusterResourceStatus(ctx context.Cont
 	return ret0
 }
 
-// UpdateClusterResourceStatus indicates an expected call of UpdateClusterResourceStatus.
+// UpdateClusterResourceStatus indicates an expected call of UpdateClusterResourceStatus
 func (mr *MockClusterResourceClientMockRecorder) UpdateClusterResourceStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClusterResourceStatus", reflect.TypeOf((*MockClusterResourceClient)(nil).UpdateClusterResourceStatus), varargs...)
 }
 
-// PatchClusterResourceStatus mocks base method.
+// PatchClusterResourceStatus mocks base method
 func (m *MockClusterResourceClient) PatchClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1065,37 +1065,37 @@ func (m *MockClusterResourceClient) PatchClusterResourceStatus(ctx context.Conte
 	return ret0
 }
 
-// PatchClusterResourceStatus indicates an expected call of PatchClusterResourceStatus.
+// PatchClusterResourceStatus indicates an expected call of PatchClusterResourceStatus
 func (mr *MockClusterResourceClientMockRecorder) PatchClusterResourceStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterResourceStatus", reflect.TypeOf((*MockClusterResourceClient)(nil).PatchClusterResourceStatus), varargs...)
 }
 
-// MockMulticlusterClusterResourceClient is a mock of MulticlusterClusterResourceClient interface.
+// MockMulticlusterClusterResourceClient is a mock of MulticlusterClusterResourceClient interface
 type MockMulticlusterClusterResourceClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterClusterResourceClientMockRecorder
 }
 
-// MockMulticlusterClusterResourceClientMockRecorder is the mock recorder for MockMulticlusterClusterResourceClient.
+// MockMulticlusterClusterResourceClientMockRecorder is the mock recorder for MockMulticlusterClusterResourceClient
 type MockMulticlusterClusterResourceClientMockRecorder struct {
 	mock *MockMulticlusterClusterResourceClient
 }
 
-// NewMockMulticlusterClusterResourceClient creates a new mock instance.
+// NewMockMulticlusterClusterResourceClient creates a new mock instance
 func NewMockMulticlusterClusterResourceClient(ctrl *gomock.Controller) *MockMulticlusterClusterResourceClient {
 	mock := &MockMulticlusterClusterResourceClient{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterClusterResourceClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterClusterResourceClient) EXPECT() *MockMulticlusterClusterResourceClientMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method.
+// Cluster mocks base method
 func (m *MockMulticlusterClusterResourceClient) Cluster(cluster string) (v1.ClusterResourceClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -1104,7 +1104,7 @@ func (m *MockMulticlusterClusterResourceClient) Cluster(cluster string) (v1.Clus
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster.
+// Cluster indicates an expected call of Cluster
 func (mr *MockMulticlusterClusterResourceClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterClusterResourceClient)(nil).Cluster), cluster)

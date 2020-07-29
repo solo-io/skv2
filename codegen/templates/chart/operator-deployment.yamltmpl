@@ -92,7 +92,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
 
 
-[[ if gt (len $operator.Name) 0 ]]
+[[ if gt (len $operator.Service.Ports) 0 ]]
 ---
 # Service for [[ $operator.Name ]]
 
