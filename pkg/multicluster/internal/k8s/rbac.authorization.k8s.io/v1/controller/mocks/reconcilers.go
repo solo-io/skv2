@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockRoleReconciler is a mock of RoleReconciler interface.
+// MockRoleReconciler is a mock of RoleReconciler interface
 type MockRoleReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleReconcilerMockRecorder
 }
 
-// MockRoleReconcilerMockRecorder is the mock recorder for MockRoleReconciler.
+// MockRoleReconcilerMockRecorder is the mock recorder for MockRoleReconciler
 type MockRoleReconcilerMockRecorder struct {
 	mock *MockRoleReconciler
 }
 
-// NewMockRoleReconciler creates a new mock instance.
+// NewMockRoleReconciler creates a new mock instance
 func NewMockRoleReconciler(ctrl *gomock.Controller) *MockRoleReconciler {
 	mock := &MockRoleReconciler{ctrl: ctrl}
 	mock.recorder = &MockRoleReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRoleReconciler) EXPECT() *MockRoleReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileRole mocks base method.
+// ReconcileRole mocks base method
 func (m *MockRoleReconciler) ReconcileRole(obj *v1.Role) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileRole", obj)
@@ -47,36 +47,36 @@ func (m *MockRoleReconciler) ReconcileRole(obj *v1.Role) (reconcile.Result, erro
 	return ret0, ret1
 }
 
-// ReconcileRole indicates an expected call of ReconcileRole.
+// ReconcileRole indicates an expected call of ReconcileRole
 func (mr *MockRoleReconcilerMockRecorder) ReconcileRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRole", reflect.TypeOf((*MockRoleReconciler)(nil).ReconcileRole), obj)
 }
 
-// MockRoleDeletionReconciler is a mock of RoleDeletionReconciler interface.
+// MockRoleDeletionReconciler is a mock of RoleDeletionReconciler interface
 type MockRoleDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleDeletionReconcilerMockRecorder
 }
 
-// MockRoleDeletionReconcilerMockRecorder is the mock recorder for MockRoleDeletionReconciler.
+// MockRoleDeletionReconcilerMockRecorder is the mock recorder for MockRoleDeletionReconciler
 type MockRoleDeletionReconcilerMockRecorder struct {
 	mock *MockRoleDeletionReconciler
 }
 
-// NewMockRoleDeletionReconciler creates a new mock instance.
+// NewMockRoleDeletionReconciler creates a new mock instance
 func NewMockRoleDeletionReconciler(ctrl *gomock.Controller) *MockRoleDeletionReconciler {
 	mock := &MockRoleDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockRoleDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRoleDeletionReconciler) EXPECT() *MockRoleDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileRoleDeletion mocks base method.
+// ReconcileRoleDeletion mocks base method
 func (m *MockRoleDeletionReconciler) ReconcileRoleDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileRoleDeletion", req)
@@ -84,36 +84,36 @@ func (m *MockRoleDeletionReconciler) ReconcileRoleDeletion(req reconcile.Request
 	return ret0
 }
 
-// ReconcileRoleDeletion indicates an expected call of ReconcileRoleDeletion.
+// ReconcileRoleDeletion indicates an expected call of ReconcileRoleDeletion
 func (mr *MockRoleDeletionReconcilerMockRecorder) ReconcileRoleDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRoleDeletion", reflect.TypeOf((*MockRoleDeletionReconciler)(nil).ReconcileRoleDeletion), req)
 }
 
-// MockRoleFinalizer is a mock of RoleFinalizer interface.
+// MockRoleFinalizer is a mock of RoleFinalizer interface
 type MockRoleFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleFinalizerMockRecorder
 }
 
-// MockRoleFinalizerMockRecorder is the mock recorder for MockRoleFinalizer.
+// MockRoleFinalizerMockRecorder is the mock recorder for MockRoleFinalizer
 type MockRoleFinalizerMockRecorder struct {
 	mock *MockRoleFinalizer
 }
 
-// NewMockRoleFinalizer creates a new mock instance.
+// NewMockRoleFinalizer creates a new mock instance
 func NewMockRoleFinalizer(ctrl *gomock.Controller) *MockRoleFinalizer {
 	mock := &MockRoleFinalizer{ctrl: ctrl}
 	mock.recorder = &MockRoleFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRoleFinalizer) EXPECT() *MockRoleFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileRole mocks base method.
+// ReconcileRole mocks base method
 func (m *MockRoleFinalizer) ReconcileRole(obj *v1.Role) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileRole", obj)
@@ -122,13 +122,13 @@ func (m *MockRoleFinalizer) ReconcileRole(obj *v1.Role) (reconcile.Result, error
 	return ret0, ret1
 }
 
-// ReconcileRole indicates an expected call of ReconcileRole.
+// ReconcileRole indicates an expected call of ReconcileRole
 func (mr *MockRoleFinalizerMockRecorder) ReconcileRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRole", reflect.TypeOf((*MockRoleFinalizer)(nil).ReconcileRole), obj)
 }
 
-// RoleFinalizerName mocks base method.
+// RoleFinalizerName mocks base method
 func (m *MockRoleFinalizer) RoleFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RoleFinalizerName")
@@ -136,13 +136,13 @@ func (m *MockRoleFinalizer) RoleFinalizerName() string {
 	return ret0
 }
 
-// RoleFinalizerName indicates an expected call of RoleFinalizerName.
+// RoleFinalizerName indicates an expected call of RoleFinalizerName
 func (mr *MockRoleFinalizerMockRecorder) RoleFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RoleFinalizerName", reflect.TypeOf((*MockRoleFinalizer)(nil).RoleFinalizerName))
 }
 
-// FinalizeRole mocks base method.
+// FinalizeRole mocks base method
 func (m *MockRoleFinalizer) FinalizeRole(obj *v1.Role) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FinalizeRole", obj)
@@ -150,36 +150,36 @@ func (m *MockRoleFinalizer) FinalizeRole(obj *v1.Role) error {
 	return ret0
 }
 
-// FinalizeRole indicates an expected call of FinalizeRole.
+// FinalizeRole indicates an expected call of FinalizeRole
 func (mr *MockRoleFinalizerMockRecorder) FinalizeRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeRole", reflect.TypeOf((*MockRoleFinalizer)(nil).FinalizeRole), obj)
 }
 
-// MockRoleReconcileLoop is a mock of RoleReconcileLoop interface.
+// MockRoleReconcileLoop is a mock of RoleReconcileLoop interface
 type MockRoleReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleReconcileLoopMockRecorder
 }
 
-// MockRoleReconcileLoopMockRecorder is the mock recorder for MockRoleReconcileLoop.
+// MockRoleReconcileLoopMockRecorder is the mock recorder for MockRoleReconcileLoop
 type MockRoleReconcileLoopMockRecorder struct {
 	mock *MockRoleReconcileLoop
 }
 
-// NewMockRoleReconcileLoop creates a new mock instance.
+// NewMockRoleReconcileLoop creates a new mock instance
 func NewMockRoleReconcileLoop(ctrl *gomock.Controller) *MockRoleReconcileLoop {
 	mock := &MockRoleReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockRoleReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRoleReconcileLoop) EXPECT() *MockRoleReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunRoleReconciler mocks base method.
+// RunRoleReconciler mocks base method
 func (m *MockRoleReconcileLoop) RunRoleReconciler(ctx context.Context, rec controller.RoleReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -191,37 +191,37 @@ func (m *MockRoleReconcileLoop) RunRoleReconciler(ctx context.Context, rec contr
 	return ret0
 }
 
-// RunRoleReconciler indicates an expected call of RunRoleReconciler.
+// RunRoleReconciler indicates an expected call of RunRoleReconciler
 func (mr *MockRoleReconcileLoopMockRecorder) RunRoleReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunRoleReconciler", reflect.TypeOf((*MockRoleReconcileLoop)(nil).RunRoleReconciler), varargs...)
 }
 
-// MockRoleBindingReconciler is a mock of RoleBindingReconciler interface.
+// MockRoleBindingReconciler is a mock of RoleBindingReconciler interface
 type MockRoleBindingReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleBindingReconcilerMockRecorder
 }
 
-// MockRoleBindingReconcilerMockRecorder is the mock recorder for MockRoleBindingReconciler.
+// MockRoleBindingReconcilerMockRecorder is the mock recorder for MockRoleBindingReconciler
 type MockRoleBindingReconcilerMockRecorder struct {
 	mock *MockRoleBindingReconciler
 }
 
-// NewMockRoleBindingReconciler creates a new mock instance.
+// NewMockRoleBindingReconciler creates a new mock instance
 func NewMockRoleBindingReconciler(ctrl *gomock.Controller) *MockRoleBindingReconciler {
 	mock := &MockRoleBindingReconciler{ctrl: ctrl}
 	mock.recorder = &MockRoleBindingReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRoleBindingReconciler) EXPECT() *MockRoleBindingReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileRoleBinding mocks base method.
+// ReconcileRoleBinding mocks base method
 func (m *MockRoleBindingReconciler) ReconcileRoleBinding(obj *v1.RoleBinding) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileRoleBinding", obj)
@@ -230,36 +230,36 @@ func (m *MockRoleBindingReconciler) ReconcileRoleBinding(obj *v1.RoleBinding) (r
 	return ret0, ret1
 }
 
-// ReconcileRoleBinding indicates an expected call of ReconcileRoleBinding.
+// ReconcileRoleBinding indicates an expected call of ReconcileRoleBinding
 func (mr *MockRoleBindingReconcilerMockRecorder) ReconcileRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRoleBinding", reflect.TypeOf((*MockRoleBindingReconciler)(nil).ReconcileRoleBinding), obj)
 }
 
-// MockRoleBindingDeletionReconciler is a mock of RoleBindingDeletionReconciler interface.
+// MockRoleBindingDeletionReconciler is a mock of RoleBindingDeletionReconciler interface
 type MockRoleBindingDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleBindingDeletionReconcilerMockRecorder
 }
 
-// MockRoleBindingDeletionReconcilerMockRecorder is the mock recorder for MockRoleBindingDeletionReconciler.
+// MockRoleBindingDeletionReconcilerMockRecorder is the mock recorder for MockRoleBindingDeletionReconciler
 type MockRoleBindingDeletionReconcilerMockRecorder struct {
 	mock *MockRoleBindingDeletionReconciler
 }
 
-// NewMockRoleBindingDeletionReconciler creates a new mock instance.
+// NewMockRoleBindingDeletionReconciler creates a new mock instance
 func NewMockRoleBindingDeletionReconciler(ctrl *gomock.Controller) *MockRoleBindingDeletionReconciler {
 	mock := &MockRoleBindingDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockRoleBindingDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRoleBindingDeletionReconciler) EXPECT() *MockRoleBindingDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileRoleBindingDeletion mocks base method.
+// ReconcileRoleBindingDeletion mocks base method
 func (m *MockRoleBindingDeletionReconciler) ReconcileRoleBindingDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileRoleBindingDeletion", req)
@@ -267,36 +267,36 @@ func (m *MockRoleBindingDeletionReconciler) ReconcileRoleBindingDeletion(req rec
 	return ret0
 }
 
-// ReconcileRoleBindingDeletion indicates an expected call of ReconcileRoleBindingDeletion.
+// ReconcileRoleBindingDeletion indicates an expected call of ReconcileRoleBindingDeletion
 func (mr *MockRoleBindingDeletionReconcilerMockRecorder) ReconcileRoleBindingDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRoleBindingDeletion", reflect.TypeOf((*MockRoleBindingDeletionReconciler)(nil).ReconcileRoleBindingDeletion), req)
 }
 
-// MockRoleBindingFinalizer is a mock of RoleBindingFinalizer interface.
+// MockRoleBindingFinalizer is a mock of RoleBindingFinalizer interface
 type MockRoleBindingFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleBindingFinalizerMockRecorder
 }
 
-// MockRoleBindingFinalizerMockRecorder is the mock recorder for MockRoleBindingFinalizer.
+// MockRoleBindingFinalizerMockRecorder is the mock recorder for MockRoleBindingFinalizer
 type MockRoleBindingFinalizerMockRecorder struct {
 	mock *MockRoleBindingFinalizer
 }
 
-// NewMockRoleBindingFinalizer creates a new mock instance.
+// NewMockRoleBindingFinalizer creates a new mock instance
 func NewMockRoleBindingFinalizer(ctrl *gomock.Controller) *MockRoleBindingFinalizer {
 	mock := &MockRoleBindingFinalizer{ctrl: ctrl}
 	mock.recorder = &MockRoleBindingFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRoleBindingFinalizer) EXPECT() *MockRoleBindingFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileRoleBinding mocks base method.
+// ReconcileRoleBinding mocks base method
 func (m *MockRoleBindingFinalizer) ReconcileRoleBinding(obj *v1.RoleBinding) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileRoleBinding", obj)
@@ -305,13 +305,13 @@ func (m *MockRoleBindingFinalizer) ReconcileRoleBinding(obj *v1.RoleBinding) (re
 	return ret0, ret1
 }
 
-// ReconcileRoleBinding indicates an expected call of ReconcileRoleBinding.
+// ReconcileRoleBinding indicates an expected call of ReconcileRoleBinding
 func (mr *MockRoleBindingFinalizerMockRecorder) ReconcileRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRoleBinding", reflect.TypeOf((*MockRoleBindingFinalizer)(nil).ReconcileRoleBinding), obj)
 }
 
-// RoleBindingFinalizerName mocks base method.
+// RoleBindingFinalizerName mocks base method
 func (m *MockRoleBindingFinalizer) RoleBindingFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RoleBindingFinalizerName")
@@ -319,13 +319,13 @@ func (m *MockRoleBindingFinalizer) RoleBindingFinalizerName() string {
 	return ret0
 }
 
-// RoleBindingFinalizerName indicates an expected call of RoleBindingFinalizerName.
+// RoleBindingFinalizerName indicates an expected call of RoleBindingFinalizerName
 func (mr *MockRoleBindingFinalizerMockRecorder) RoleBindingFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RoleBindingFinalizerName", reflect.TypeOf((*MockRoleBindingFinalizer)(nil).RoleBindingFinalizerName))
 }
 
-// FinalizeRoleBinding mocks base method.
+// FinalizeRoleBinding mocks base method
 func (m *MockRoleBindingFinalizer) FinalizeRoleBinding(obj *v1.RoleBinding) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FinalizeRoleBinding", obj)
@@ -333,36 +333,36 @@ func (m *MockRoleBindingFinalizer) FinalizeRoleBinding(obj *v1.RoleBinding) erro
 	return ret0
 }
 
-// FinalizeRoleBinding indicates an expected call of FinalizeRoleBinding.
+// FinalizeRoleBinding indicates an expected call of FinalizeRoleBinding
 func (mr *MockRoleBindingFinalizerMockRecorder) FinalizeRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeRoleBinding", reflect.TypeOf((*MockRoleBindingFinalizer)(nil).FinalizeRoleBinding), obj)
 }
 
-// MockRoleBindingReconcileLoop is a mock of RoleBindingReconcileLoop interface.
+// MockRoleBindingReconcileLoop is a mock of RoleBindingReconcileLoop interface
 type MockRoleBindingReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleBindingReconcileLoopMockRecorder
 }
 
-// MockRoleBindingReconcileLoopMockRecorder is the mock recorder for MockRoleBindingReconcileLoop.
+// MockRoleBindingReconcileLoopMockRecorder is the mock recorder for MockRoleBindingReconcileLoop
 type MockRoleBindingReconcileLoopMockRecorder struct {
 	mock *MockRoleBindingReconcileLoop
 }
 
-// NewMockRoleBindingReconcileLoop creates a new mock instance.
+// NewMockRoleBindingReconcileLoop creates a new mock instance
 func NewMockRoleBindingReconcileLoop(ctrl *gomock.Controller) *MockRoleBindingReconcileLoop {
 	mock := &MockRoleBindingReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockRoleBindingReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockRoleBindingReconcileLoop) EXPECT() *MockRoleBindingReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunRoleBindingReconciler mocks base method.
+// RunRoleBindingReconciler mocks base method
 func (m *MockRoleBindingReconcileLoop) RunRoleBindingReconciler(ctx context.Context, rec controller.RoleBindingReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -374,37 +374,37 @@ func (m *MockRoleBindingReconcileLoop) RunRoleBindingReconciler(ctx context.Cont
 	return ret0
 }
 
-// RunRoleBindingReconciler indicates an expected call of RunRoleBindingReconciler.
+// RunRoleBindingReconciler indicates an expected call of RunRoleBindingReconciler
 func (mr *MockRoleBindingReconcileLoopMockRecorder) RunRoleBindingReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunRoleBindingReconciler", reflect.TypeOf((*MockRoleBindingReconcileLoop)(nil).RunRoleBindingReconciler), varargs...)
 }
 
-// MockClusterRoleReconciler is a mock of ClusterRoleReconciler interface.
+// MockClusterRoleReconciler is a mock of ClusterRoleReconciler interface
 type MockClusterRoleReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleReconcilerMockRecorder
 }
 
-// MockClusterRoleReconcilerMockRecorder is the mock recorder for MockClusterRoleReconciler.
+// MockClusterRoleReconcilerMockRecorder is the mock recorder for MockClusterRoleReconciler
 type MockClusterRoleReconcilerMockRecorder struct {
 	mock *MockClusterRoleReconciler
 }
 
-// NewMockClusterRoleReconciler creates a new mock instance.
+// NewMockClusterRoleReconciler creates a new mock instance
 func NewMockClusterRoleReconciler(ctrl *gomock.Controller) *MockClusterRoleReconciler {
 	mock := &MockClusterRoleReconciler{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRoleReconciler) EXPECT() *MockClusterRoleReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileClusterRole mocks base method.
+// ReconcileClusterRole mocks base method
 func (m *MockClusterRoleReconciler) ReconcileClusterRole(obj *v1.ClusterRole) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileClusterRole", obj)
@@ -413,36 +413,36 @@ func (m *MockClusterRoleReconciler) ReconcileClusterRole(obj *v1.ClusterRole) (r
 	return ret0, ret1
 }
 
-// ReconcileClusterRole indicates an expected call of ReconcileClusterRole.
+// ReconcileClusterRole indicates an expected call of ReconcileClusterRole
 func (mr *MockClusterRoleReconcilerMockRecorder) ReconcileClusterRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileClusterRole", reflect.TypeOf((*MockClusterRoleReconciler)(nil).ReconcileClusterRole), obj)
 }
 
-// MockClusterRoleDeletionReconciler is a mock of ClusterRoleDeletionReconciler interface.
+// MockClusterRoleDeletionReconciler is a mock of ClusterRoleDeletionReconciler interface
 type MockClusterRoleDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleDeletionReconcilerMockRecorder
 }
 
-// MockClusterRoleDeletionReconcilerMockRecorder is the mock recorder for MockClusterRoleDeletionReconciler.
+// MockClusterRoleDeletionReconcilerMockRecorder is the mock recorder for MockClusterRoleDeletionReconciler
 type MockClusterRoleDeletionReconcilerMockRecorder struct {
 	mock *MockClusterRoleDeletionReconciler
 }
 
-// NewMockClusterRoleDeletionReconciler creates a new mock instance.
+// NewMockClusterRoleDeletionReconciler creates a new mock instance
 func NewMockClusterRoleDeletionReconciler(ctrl *gomock.Controller) *MockClusterRoleDeletionReconciler {
 	mock := &MockClusterRoleDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRoleDeletionReconciler) EXPECT() *MockClusterRoleDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileClusterRoleDeletion mocks base method.
+// ReconcileClusterRoleDeletion mocks base method
 func (m *MockClusterRoleDeletionReconciler) ReconcileClusterRoleDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileClusterRoleDeletion", req)
@@ -450,36 +450,36 @@ func (m *MockClusterRoleDeletionReconciler) ReconcileClusterRoleDeletion(req rec
 	return ret0
 }
 
-// ReconcileClusterRoleDeletion indicates an expected call of ReconcileClusterRoleDeletion.
+// ReconcileClusterRoleDeletion indicates an expected call of ReconcileClusterRoleDeletion
 func (mr *MockClusterRoleDeletionReconcilerMockRecorder) ReconcileClusterRoleDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileClusterRoleDeletion", reflect.TypeOf((*MockClusterRoleDeletionReconciler)(nil).ReconcileClusterRoleDeletion), req)
 }
 
-// MockClusterRoleFinalizer is a mock of ClusterRoleFinalizer interface.
+// MockClusterRoleFinalizer is a mock of ClusterRoleFinalizer interface
 type MockClusterRoleFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleFinalizerMockRecorder
 }
 
-// MockClusterRoleFinalizerMockRecorder is the mock recorder for MockClusterRoleFinalizer.
+// MockClusterRoleFinalizerMockRecorder is the mock recorder for MockClusterRoleFinalizer
 type MockClusterRoleFinalizerMockRecorder struct {
 	mock *MockClusterRoleFinalizer
 }
 
-// NewMockClusterRoleFinalizer creates a new mock instance.
+// NewMockClusterRoleFinalizer creates a new mock instance
 func NewMockClusterRoleFinalizer(ctrl *gomock.Controller) *MockClusterRoleFinalizer {
 	mock := &MockClusterRoleFinalizer{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRoleFinalizer) EXPECT() *MockClusterRoleFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileClusterRole mocks base method.
+// ReconcileClusterRole mocks base method
 func (m *MockClusterRoleFinalizer) ReconcileClusterRole(obj *v1.ClusterRole) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileClusterRole", obj)
@@ -488,13 +488,13 @@ func (m *MockClusterRoleFinalizer) ReconcileClusterRole(obj *v1.ClusterRole) (re
 	return ret0, ret1
 }
 
-// ReconcileClusterRole indicates an expected call of ReconcileClusterRole.
+// ReconcileClusterRole indicates an expected call of ReconcileClusterRole
 func (mr *MockClusterRoleFinalizerMockRecorder) ReconcileClusterRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileClusterRole", reflect.TypeOf((*MockClusterRoleFinalizer)(nil).ReconcileClusterRole), obj)
 }
 
-// ClusterRoleFinalizerName mocks base method.
+// ClusterRoleFinalizerName mocks base method
 func (m *MockClusterRoleFinalizer) ClusterRoleFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClusterRoleFinalizerName")
@@ -502,13 +502,13 @@ func (m *MockClusterRoleFinalizer) ClusterRoleFinalizerName() string {
 	return ret0
 }
 
-// ClusterRoleFinalizerName indicates an expected call of ClusterRoleFinalizerName.
+// ClusterRoleFinalizerName indicates an expected call of ClusterRoleFinalizerName
 func (mr *MockClusterRoleFinalizerMockRecorder) ClusterRoleFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRoleFinalizerName", reflect.TypeOf((*MockClusterRoleFinalizer)(nil).ClusterRoleFinalizerName))
 }
 
-// FinalizeClusterRole mocks base method.
+// FinalizeClusterRole mocks base method
 func (m *MockClusterRoleFinalizer) FinalizeClusterRole(obj *v1.ClusterRole) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FinalizeClusterRole", obj)
@@ -516,36 +516,36 @@ func (m *MockClusterRoleFinalizer) FinalizeClusterRole(obj *v1.ClusterRole) erro
 	return ret0
 }
 
-// FinalizeClusterRole indicates an expected call of FinalizeClusterRole.
+// FinalizeClusterRole indicates an expected call of FinalizeClusterRole
 func (mr *MockClusterRoleFinalizerMockRecorder) FinalizeClusterRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeClusterRole", reflect.TypeOf((*MockClusterRoleFinalizer)(nil).FinalizeClusterRole), obj)
 }
 
-// MockClusterRoleReconcileLoop is a mock of ClusterRoleReconcileLoop interface.
+// MockClusterRoleReconcileLoop is a mock of ClusterRoleReconcileLoop interface
 type MockClusterRoleReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleReconcileLoopMockRecorder
 }
 
-// MockClusterRoleReconcileLoopMockRecorder is the mock recorder for MockClusterRoleReconcileLoop.
+// MockClusterRoleReconcileLoopMockRecorder is the mock recorder for MockClusterRoleReconcileLoop
 type MockClusterRoleReconcileLoopMockRecorder struct {
 	mock *MockClusterRoleReconcileLoop
 }
 
-// NewMockClusterRoleReconcileLoop creates a new mock instance.
+// NewMockClusterRoleReconcileLoop creates a new mock instance
 func NewMockClusterRoleReconcileLoop(ctrl *gomock.Controller) *MockClusterRoleReconcileLoop {
 	mock := &MockClusterRoleReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRoleReconcileLoop) EXPECT() *MockClusterRoleReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunClusterRoleReconciler mocks base method.
+// RunClusterRoleReconciler mocks base method
 func (m *MockClusterRoleReconcileLoop) RunClusterRoleReconciler(ctx context.Context, rec controller.ClusterRoleReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -557,37 +557,37 @@ func (m *MockClusterRoleReconcileLoop) RunClusterRoleReconciler(ctx context.Cont
 	return ret0
 }
 
-// RunClusterRoleReconciler indicates an expected call of RunClusterRoleReconciler.
+// RunClusterRoleReconciler indicates an expected call of RunClusterRoleReconciler
 func (mr *MockClusterRoleReconcileLoopMockRecorder) RunClusterRoleReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunClusterRoleReconciler", reflect.TypeOf((*MockClusterRoleReconcileLoop)(nil).RunClusterRoleReconciler), varargs...)
 }
 
-// MockClusterRoleBindingReconciler is a mock of ClusterRoleBindingReconciler interface.
+// MockClusterRoleBindingReconciler is a mock of ClusterRoleBindingReconciler interface
 type MockClusterRoleBindingReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleBindingReconcilerMockRecorder
 }
 
-// MockClusterRoleBindingReconcilerMockRecorder is the mock recorder for MockClusterRoleBindingReconciler.
+// MockClusterRoleBindingReconcilerMockRecorder is the mock recorder for MockClusterRoleBindingReconciler
 type MockClusterRoleBindingReconcilerMockRecorder struct {
 	mock *MockClusterRoleBindingReconciler
 }
 
-// NewMockClusterRoleBindingReconciler creates a new mock instance.
+// NewMockClusterRoleBindingReconciler creates a new mock instance
 func NewMockClusterRoleBindingReconciler(ctrl *gomock.Controller) *MockClusterRoleBindingReconciler {
 	mock := &MockClusterRoleBindingReconciler{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleBindingReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRoleBindingReconciler) EXPECT() *MockClusterRoleBindingReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileClusterRoleBinding mocks base method.
+// ReconcileClusterRoleBinding mocks base method
 func (m *MockClusterRoleBindingReconciler) ReconcileClusterRoleBinding(obj *v1.ClusterRoleBinding) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileClusterRoleBinding", obj)
@@ -596,36 +596,36 @@ func (m *MockClusterRoleBindingReconciler) ReconcileClusterRoleBinding(obj *v1.C
 	return ret0, ret1
 }
 
-// ReconcileClusterRoleBinding indicates an expected call of ReconcileClusterRoleBinding.
+// ReconcileClusterRoleBinding indicates an expected call of ReconcileClusterRoleBinding
 func (mr *MockClusterRoleBindingReconcilerMockRecorder) ReconcileClusterRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingReconciler)(nil).ReconcileClusterRoleBinding), obj)
 }
 
-// MockClusterRoleBindingDeletionReconciler is a mock of ClusterRoleBindingDeletionReconciler interface.
+// MockClusterRoleBindingDeletionReconciler is a mock of ClusterRoleBindingDeletionReconciler interface
 type MockClusterRoleBindingDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleBindingDeletionReconcilerMockRecorder
 }
 
-// MockClusterRoleBindingDeletionReconcilerMockRecorder is the mock recorder for MockClusterRoleBindingDeletionReconciler.
+// MockClusterRoleBindingDeletionReconcilerMockRecorder is the mock recorder for MockClusterRoleBindingDeletionReconciler
 type MockClusterRoleBindingDeletionReconcilerMockRecorder struct {
 	mock *MockClusterRoleBindingDeletionReconciler
 }
 
-// NewMockClusterRoleBindingDeletionReconciler creates a new mock instance.
+// NewMockClusterRoleBindingDeletionReconciler creates a new mock instance
 func NewMockClusterRoleBindingDeletionReconciler(ctrl *gomock.Controller) *MockClusterRoleBindingDeletionReconciler {
 	mock := &MockClusterRoleBindingDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleBindingDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRoleBindingDeletionReconciler) EXPECT() *MockClusterRoleBindingDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileClusterRoleBindingDeletion mocks base method.
+// ReconcileClusterRoleBindingDeletion mocks base method
 func (m *MockClusterRoleBindingDeletionReconciler) ReconcileClusterRoleBindingDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileClusterRoleBindingDeletion", req)
@@ -633,36 +633,36 @@ func (m *MockClusterRoleBindingDeletionReconciler) ReconcileClusterRoleBindingDe
 	return ret0
 }
 
-// ReconcileClusterRoleBindingDeletion indicates an expected call of ReconcileClusterRoleBindingDeletion.
+// ReconcileClusterRoleBindingDeletion indicates an expected call of ReconcileClusterRoleBindingDeletion
 func (mr *MockClusterRoleBindingDeletionReconcilerMockRecorder) ReconcileClusterRoleBindingDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileClusterRoleBindingDeletion", reflect.TypeOf((*MockClusterRoleBindingDeletionReconciler)(nil).ReconcileClusterRoleBindingDeletion), req)
 }
 
-// MockClusterRoleBindingFinalizer is a mock of ClusterRoleBindingFinalizer interface.
+// MockClusterRoleBindingFinalizer is a mock of ClusterRoleBindingFinalizer interface
 type MockClusterRoleBindingFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleBindingFinalizerMockRecorder
 }
 
-// MockClusterRoleBindingFinalizerMockRecorder is the mock recorder for MockClusterRoleBindingFinalizer.
+// MockClusterRoleBindingFinalizerMockRecorder is the mock recorder for MockClusterRoleBindingFinalizer
 type MockClusterRoleBindingFinalizerMockRecorder struct {
 	mock *MockClusterRoleBindingFinalizer
 }
 
-// NewMockClusterRoleBindingFinalizer creates a new mock instance.
+// NewMockClusterRoleBindingFinalizer creates a new mock instance
 func NewMockClusterRoleBindingFinalizer(ctrl *gomock.Controller) *MockClusterRoleBindingFinalizer {
 	mock := &MockClusterRoleBindingFinalizer{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleBindingFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRoleBindingFinalizer) EXPECT() *MockClusterRoleBindingFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileClusterRoleBinding mocks base method.
+// ReconcileClusterRoleBinding mocks base method
 func (m *MockClusterRoleBindingFinalizer) ReconcileClusterRoleBinding(obj *v1.ClusterRoleBinding) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileClusterRoleBinding", obj)
@@ -671,13 +671,13 @@ func (m *MockClusterRoleBindingFinalizer) ReconcileClusterRoleBinding(obj *v1.Cl
 	return ret0, ret1
 }
 
-// ReconcileClusterRoleBinding indicates an expected call of ReconcileClusterRoleBinding.
+// ReconcileClusterRoleBinding indicates an expected call of ReconcileClusterRoleBinding
 func (mr *MockClusterRoleBindingFinalizerMockRecorder) ReconcileClusterRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingFinalizer)(nil).ReconcileClusterRoleBinding), obj)
 }
 
-// ClusterRoleBindingFinalizerName mocks base method.
+// ClusterRoleBindingFinalizerName mocks base method
 func (m *MockClusterRoleBindingFinalizer) ClusterRoleBindingFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClusterRoleBindingFinalizerName")
@@ -685,13 +685,13 @@ func (m *MockClusterRoleBindingFinalizer) ClusterRoleBindingFinalizerName() stri
 	return ret0
 }
 
-// ClusterRoleBindingFinalizerName indicates an expected call of ClusterRoleBindingFinalizerName.
+// ClusterRoleBindingFinalizerName indicates an expected call of ClusterRoleBindingFinalizerName
 func (mr *MockClusterRoleBindingFinalizerMockRecorder) ClusterRoleBindingFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRoleBindingFinalizerName", reflect.TypeOf((*MockClusterRoleBindingFinalizer)(nil).ClusterRoleBindingFinalizerName))
 }
 
-// FinalizeClusterRoleBinding mocks base method.
+// FinalizeClusterRoleBinding mocks base method
 func (m *MockClusterRoleBindingFinalizer) FinalizeClusterRoleBinding(obj *v1.ClusterRoleBinding) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FinalizeClusterRoleBinding", obj)
@@ -699,36 +699,36 @@ func (m *MockClusterRoleBindingFinalizer) FinalizeClusterRoleBinding(obj *v1.Clu
 	return ret0
 }
 
-// FinalizeClusterRoleBinding indicates an expected call of FinalizeClusterRoleBinding.
+// FinalizeClusterRoleBinding indicates an expected call of FinalizeClusterRoleBinding
 func (mr *MockClusterRoleBindingFinalizerMockRecorder) FinalizeClusterRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeClusterRoleBinding", reflect.TypeOf((*MockClusterRoleBindingFinalizer)(nil).FinalizeClusterRoleBinding), obj)
 }
 
-// MockClusterRoleBindingReconcileLoop is a mock of ClusterRoleBindingReconcileLoop interface.
+// MockClusterRoleBindingReconcileLoop is a mock of ClusterRoleBindingReconcileLoop interface
 type MockClusterRoleBindingReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRoleBindingReconcileLoopMockRecorder
 }
 
-// MockClusterRoleBindingReconcileLoopMockRecorder is the mock recorder for MockClusterRoleBindingReconcileLoop.
+// MockClusterRoleBindingReconcileLoopMockRecorder is the mock recorder for MockClusterRoleBindingReconcileLoop
 type MockClusterRoleBindingReconcileLoopMockRecorder struct {
 	mock *MockClusterRoleBindingReconcileLoop
 }
 
-// NewMockClusterRoleBindingReconcileLoop creates a new mock instance.
+// NewMockClusterRoleBindingReconcileLoop creates a new mock instance
 func NewMockClusterRoleBindingReconcileLoop(ctrl *gomock.Controller) *MockClusterRoleBindingReconcileLoop {
 	mock := &MockClusterRoleBindingReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockClusterRoleBindingReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRoleBindingReconcileLoop) EXPECT() *MockClusterRoleBindingReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunClusterRoleBindingReconciler mocks base method.
+// RunClusterRoleBindingReconciler mocks base method
 func (m *MockClusterRoleBindingReconcileLoop) RunClusterRoleBindingReconciler(ctx context.Context, rec controller.ClusterRoleBindingReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -740,7 +740,7 @@ func (m *MockClusterRoleBindingReconcileLoop) RunClusterRoleBindingReconciler(ct
 	return ret0
 }
 
-// RunClusterRoleBindingReconciler indicates an expected call of RunClusterRoleBindingReconciler.
+// RunClusterRoleBindingReconciler indicates an expected call of RunClusterRoleBindingReconciler
 func (mr *MockClusterRoleBindingReconcileLoopMockRecorder) RunClusterRoleBindingReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)

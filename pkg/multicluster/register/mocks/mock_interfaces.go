@@ -16,30 +16,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockClusterRegistrant is a mock of ClusterRegistrant interface.
+// MockClusterRegistrant is a mock of ClusterRegistrant interface
 type MockClusterRegistrant struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRegistrantMockRecorder
 }
 
-// MockClusterRegistrantMockRecorder is the mock recorder for MockClusterRegistrant.
+// MockClusterRegistrantMockRecorder is the mock recorder for MockClusterRegistrant
 type MockClusterRegistrantMockRecorder struct {
 	mock *MockClusterRegistrant
 }
 
-// NewMockClusterRegistrant creates a new mock instance.
+// NewMockClusterRegistrant creates a new mock instance
 func NewMockClusterRegistrant(ctrl *gomock.Controller) *MockClusterRegistrant {
 	mock := &MockClusterRegistrant{ctrl: ctrl}
 	mock.recorder = &MockClusterRegistrantMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRegistrant) EXPECT() *MockClusterRegistrantMockRecorder {
 	return m.recorder
 }
 
-// EnsureRemoteServiceAccount mocks base method.
+// EnsureRemoteServiceAccount mocks base method
 func (m *MockClusterRegistrant) EnsureRemoteServiceAccount(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, opts register.Options) (*v1.ServiceAccount, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EnsureRemoteServiceAccount", ctx, remoteClientCfg, opts)
@@ -48,13 +48,13 @@ func (m *MockClusterRegistrant) EnsureRemoteServiceAccount(ctx context.Context, 
 	return ret0, ret1
 }
 
-// EnsureRemoteServiceAccount indicates an expected call of EnsureRemoteServiceAccount.
+// EnsureRemoteServiceAccount indicates an expected call of EnsureRemoteServiceAccount
 func (mr *MockClusterRegistrantMockRecorder) EnsureRemoteServiceAccount(ctx, remoteClientCfg, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureRemoteServiceAccount", reflect.TypeOf((*MockClusterRegistrant)(nil).EnsureRemoteServiceAccount), ctx, remoteClientCfg, opts)
 }
 
-// CreateRemoteAccessToken mocks base method.
+// CreateRemoteAccessToken mocks base method
 func (m *MockClusterRegistrant) CreateRemoteAccessToken(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, sa client.ObjectKey, opts register.RbacOptions) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRemoteAccessToken", ctx, remoteClientCfg, sa, opts)
@@ -63,13 +63,13 @@ func (m *MockClusterRegistrant) CreateRemoteAccessToken(ctx context.Context, rem
 	return ret0, ret1
 }
 
-// CreateRemoteAccessToken indicates an expected call of CreateRemoteAccessToken.
+// CreateRemoteAccessToken indicates an expected call of CreateRemoteAccessToken
 func (mr *MockClusterRegistrantMockRecorder) CreateRemoteAccessToken(ctx, remoteClientCfg, sa, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRemoteAccessToken", reflect.TypeOf((*MockClusterRegistrant)(nil).CreateRemoteAccessToken), ctx, remoteClientCfg, sa, opts)
 }
 
-// RegisterClusterWithToken mocks base method.
+// RegisterClusterWithToken mocks base method
 func (m *MockClusterRegistrant) RegisterClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterClusterWithToken", ctx, masterClusterCfg, remoteClientCfg, token, opts)
@@ -77,7 +77,7 @@ func (m *MockClusterRegistrant) RegisterClusterWithToken(ctx context.Context, ma
 	return ret0
 }
 
-// RegisterClusterWithToken indicates an expected call of RegisterClusterWithToken.
+// RegisterClusterWithToken indicates an expected call of RegisterClusterWithToken
 func (mr *MockClusterRegistrantMockRecorder) RegisterClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts)
