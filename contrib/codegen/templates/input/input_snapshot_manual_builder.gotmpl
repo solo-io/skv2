@@ -1,7 +1,7 @@
 {{ $groups := imported_groups }}
 
 /*
-Utility for building input snapshots for testing purposes.
+	Utility for manually building input snapshots. Used primarily in tests.
 */
 package {{ package }}
 
@@ -9,11 +9,11 @@ import (
 multiclusterv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 multiclusterv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 
-"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-
 {{- range $group := $groups }}
-	{{ $client_import_prefix := group_import_name $group }}
+	{{ $import_prefix := group_import_name $group }}
+	{{ $client_import_prefix := (printf "%v_clients" (group_import_name $group)) }}
 	{{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
+	{{ $import_prefix }} "{{ group_import_path $group }}"
 	{{ $client_import_prefix }} "{{ client_import_path $group }}"
 	{{ $set_import_prefix }} "{{ set_import_path $group }}"
 {{- end }}
@@ -48,8 +48,8 @@ name:               name,
 }
 }
 
-func (i *InputSnapshotManualBuilder) Build() input.Snapshot {
-return input.NewSnapshot(
+func (i *InputSnapshotManualBuilder) Build() Snapshot {
+return NewSnapshot(
 i.name,
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
