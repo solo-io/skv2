@@ -232,7 +232,7 @@ func (s Snapshot) syncList(ctx context.Context, cli client.Client, list Resource
 	existingList, err := list.ListFunc(ctx, cli)
 	if err != nil {
 		// cache read should never error
-		contextutils.LoggerFrom(ctx).Errorf("failed to read from cache for kind %v", list.ResourceKind)
+		contextutils.LoggerFrom(ctx).Errorf("failed to read from cache for kind %v: %v", list.ResourceKind, err)
 		return
 	}
 
