@@ -60,8 +60,12 @@ type Snapshot interface {
 {{- end }}
 {{- if $needs_sync_status }}
     // update the status of all input objects which support
-    // the Status subresource
+    // the Status subresource (in the local cluster)
     SyncStatuses(ctx context.Context, c client.Client) error
+
+    // update the status of all input objects which support
+    // the Status subresource (across multiple clusters)
+    SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
 {{- end }}
     // serialize the entire snapshot as JSON
     MarshalJSON() ([]byte, error)
@@ -134,6 +138,30 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
     for _, obj := range s.{{ $kindPlural }}().List() {
     	if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
     		return err
+        }
+    }
+{{- end }}
+{{- end }}
+{{- end }}
+    return nil
+}
+
+func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+    {{/* generate calls to update status here */}}
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{- if $resource.Status }}
+    for _, obj := range s.{{ $kindPlural }}().List() {
+        clusterClient, err := mcClient.Cluster(obj.ClusterName)
+        if err != nil {
+            return err
+        }
+        if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+            return err
         }
     }
 {{- end }}
