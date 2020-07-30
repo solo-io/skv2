@@ -54,12 +54,12 @@ func InputSnapshot(params CrossGroupTemplateParameters) model.CustomTemplates {
 InputSnapshot test builder custom template
 */
 const (
-	InputSnapshotTestBuilderCustomTemplatePath = "input/input_snapshot_test_builder.gotmpl"
+	InputSnapshotManualBuilderCustomTemplatePath = "input/input_snapshot_manual_builder.gotmpl"
 )
 
 // Returns the template for generating input snapshots.
-func InputSnapshotTestBuilder(params CrossGroupTemplateParameters) model.CustomTemplates {
-	return params.constructTemplate(params, InputSnapshotTestBuilderCustomTemplatePath)
+func InputSnapshotManualBuilder(params CrossGroupTemplateParameters) model.CustomTemplates {
+	return params.constructTemplate(params, InputSnapshotManualBuilderCustomTemplatePath)
 }
 
 /*
