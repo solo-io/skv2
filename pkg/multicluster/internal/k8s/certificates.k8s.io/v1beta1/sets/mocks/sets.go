@@ -14,30 +14,30 @@ import (
 	sets "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockCertificateSigningRequestSet is a mock of CertificateSigningRequestSet interface.
+// MockCertificateSigningRequestSet is a mock of CertificateSigningRequestSet interface
 type MockCertificateSigningRequestSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateSigningRequestSetMockRecorder
 }
 
-// MockCertificateSigningRequestSetMockRecorder is the mock recorder for MockCertificateSigningRequestSet.
+// MockCertificateSigningRequestSetMockRecorder is the mock recorder for MockCertificateSigningRequestSet
 type MockCertificateSigningRequestSetMockRecorder struct {
 	mock *MockCertificateSigningRequestSet
 }
 
-// NewMockCertificateSigningRequestSet creates a new mock instance.
+// NewMockCertificateSigningRequestSet creates a new mock instance
 func NewMockCertificateSigningRequestSet(ctrl *gomock.Controller) *MockCertificateSigningRequestSet {
 	mock := &MockCertificateSigningRequestSet{ctrl: ctrl}
 	mock.recorder = &MockCertificateSigningRequestSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCertificateSigningRequestSet) EXPECT() *MockCertificateSigningRequestSetMockRecorder {
 	return m.recorder
 }
 
-// Keys mocks base method.
+// Keys mocks base method
 func (m *MockCertificateSigningRequestSet) Keys() sets.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -45,13 +45,13 @@ func (m *MockCertificateSigningRequestSet) Keys() sets.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys.
+// Keys indicates an expected call of Keys
 func (mr *MockCertificateSigningRequestSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Keys))
 }
 
-// List mocks base method.
+// List mocks base method
 func (m *MockCertificateSigningRequestSet) List(filterResource ...func(*v1beta1.CertificateSigningRequest) bool) []*v1beta1.CertificateSigningRequest {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -63,13 +63,13 @@ func (m *MockCertificateSigningRequestSet) List(filterResource ...func(*v1beta1.
 	return ret0
 }
 
-// List indicates an expected call of List.
+// List indicates an expected call of List
 func (mr *MockCertificateSigningRequestSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).List), filterResource...)
 }
 
-// Map mocks base method.
+// Map mocks base method
 func (m *MockCertificateSigningRequestSet) Map() map[string]*v1beta1.CertificateSigningRequest {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
@@ -77,13 +77,13 @@ func (m *MockCertificateSigningRequestSet) Map() map[string]*v1beta1.Certificate
 	return ret0
 }
 
-// Map indicates an expected call of Map.
+// Map indicates an expected call of Map
 func (mr *MockCertificateSigningRequestSetMockRecorder) Map() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Map))
 }
 
-// Insert mocks base method.
+// Insert mocks base method
 func (m *MockCertificateSigningRequestSet) Insert(certificateSigningRequest ...*v1beta1.CertificateSigningRequest) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -93,13 +93,13 @@ func (m *MockCertificateSigningRequestSet) Insert(certificateSigningRequest ...*
 	m.ctrl.Call(m, "Insert", varargs...)
 }
 
-// Insert indicates an expected call of Insert.
+// Insert indicates an expected call of Insert
 func (mr *MockCertificateSigningRequestSetMockRecorder) Insert(certificateSigningRequest ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Insert), certificateSigningRequest...)
 }
 
-// Equal mocks base method.
+// Equal mocks base method
 func (m *MockCertificateSigningRequestSet) Equal(certificateSigningRequestSet v1beta1sets.CertificateSigningRequestSet) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Equal", certificateSigningRequestSet)
@@ -107,13 +107,13 @@ func (m *MockCertificateSigningRequestSet) Equal(certificateSigningRequestSet v1
 	return ret0
 }
 
-// Equal indicates an expected call of Equal.
+// Equal indicates an expected call of Equal
 func (mr *MockCertificateSigningRequestSetMockRecorder) Equal(certificateSigningRequestSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Equal), certificateSigningRequestSet)
 }
 
-// Has mocks base method.
+// Has mocks base method
 func (m *MockCertificateSigningRequestSet) Has(certificateSigningRequest ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", certificateSigningRequest)
@@ -121,25 +121,25 @@ func (m *MockCertificateSigningRequestSet) Has(certificateSigningRequest ezkube.
 	return ret0
 }
 
-// Has indicates an expected call of Has.
+// Has indicates an expected call of Has
 func (mr *MockCertificateSigningRequestSetMockRecorder) Has(certificateSigningRequest interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Has), certificateSigningRequest)
 }
 
-// Delete mocks base method.
+// Delete mocks base method
 func (m *MockCertificateSigningRequestSet) Delete(certificateSigningRequest ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", certificateSigningRequest)
 }
 
-// Delete indicates an expected call of Delete.
+// Delete indicates an expected call of Delete
 func (mr *MockCertificateSigningRequestSetMockRecorder) Delete(certificateSigningRequest interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Delete), certificateSigningRequest)
 }
 
-// Union mocks base method.
+// Union mocks base method
 func (m *MockCertificateSigningRequestSet) Union(set v1beta1sets.CertificateSigningRequestSet) v1beta1sets.CertificateSigningRequestSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Union", set)
@@ -147,13 +147,13 @@ func (m *MockCertificateSigningRequestSet) Union(set v1beta1sets.CertificateSign
 	return ret0
 }
 
-// Union indicates an expected call of Union.
+// Union indicates an expected call of Union
 func (mr *MockCertificateSigningRequestSetMockRecorder) Union(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Union), set)
 }
 
-// Difference mocks base method.
+// Difference mocks base method
 func (m *MockCertificateSigningRequestSet) Difference(set v1beta1sets.CertificateSigningRequestSet) v1beta1sets.CertificateSigningRequestSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Difference", set)
@@ -161,13 +161,13 @@ func (m *MockCertificateSigningRequestSet) Difference(set v1beta1sets.Certificat
 	return ret0
 }
 
-// Difference indicates an expected call of Difference.
+// Difference indicates an expected call of Difference
 func (mr *MockCertificateSigningRequestSetMockRecorder) Difference(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Difference), set)
 }
 
-// Intersection mocks base method.
+// Intersection mocks base method
 func (m *MockCertificateSigningRequestSet) Intersection(set v1beta1sets.CertificateSigningRequestSet) v1beta1sets.CertificateSigningRequestSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Intersection", set)
@@ -175,13 +175,13 @@ func (m *MockCertificateSigningRequestSet) Intersection(set v1beta1sets.Certific
 	return ret0
 }
 
-// Intersection indicates an expected call of Intersection.
+// Intersection indicates an expected call of Intersection
 func (mr *MockCertificateSigningRequestSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Intersection), set)
 }
 
-// Find mocks base method.
+// Find mocks base method
 func (m *MockCertificateSigningRequestSet) Find(id ezkube.ResourceId) (*v1beta1.CertificateSigningRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", id)
@@ -190,13 +190,13 @@ func (m *MockCertificateSigningRequestSet) Find(id ezkube.ResourceId) (*v1beta1.
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find.
+// Find indicates an expected call of Find
 func (mr *MockCertificateSigningRequestSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Find), id)
 }
 
-// Length mocks base method.
+// Length mocks base method
 func (m *MockCertificateSigningRequestSet) Length() int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Length")
@@ -204,7 +204,7 @@ func (m *MockCertificateSigningRequestSet) Length() int {
 	return ret0
 }
 
-// Length indicates an expected call of Length.
+// Length indicates an expected call of Length
 func (mr *MockCertificateSigningRequestSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Length))

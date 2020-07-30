@@ -14,7 +14,7 @@ require (
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
+	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.3.5
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/gophercloud/gophercloud v0.2.0 // indirect

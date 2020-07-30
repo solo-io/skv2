@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockCustomResourceDefinitionReconciler is a mock of CustomResourceDefinitionReconciler interface.
+// MockCustomResourceDefinitionReconciler is a mock of CustomResourceDefinitionReconciler interface
 type MockCustomResourceDefinitionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockCustomResourceDefinitionReconcilerMockRecorder
 }
 
-// MockCustomResourceDefinitionReconcilerMockRecorder is the mock recorder for MockCustomResourceDefinitionReconciler.
+// MockCustomResourceDefinitionReconcilerMockRecorder is the mock recorder for MockCustomResourceDefinitionReconciler
 type MockCustomResourceDefinitionReconcilerMockRecorder struct {
 	mock *MockCustomResourceDefinitionReconciler
 }
 
-// NewMockCustomResourceDefinitionReconciler creates a new mock instance.
+// NewMockCustomResourceDefinitionReconciler creates a new mock instance
 func NewMockCustomResourceDefinitionReconciler(ctrl *gomock.Controller) *MockCustomResourceDefinitionReconciler {
 	mock := &MockCustomResourceDefinitionReconciler{ctrl: ctrl}
 	mock.recorder = &MockCustomResourceDefinitionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCustomResourceDefinitionReconciler) EXPECT() *MockCustomResourceDefinitionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileCustomResourceDefinition mocks base method.
+// ReconcileCustomResourceDefinition mocks base method
 func (m *MockCustomResourceDefinitionReconciler) ReconcileCustomResourceDefinition(obj *v1beta1.CustomResourceDefinition) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCustomResourceDefinition", obj)
@@ -47,36 +47,36 @@ func (m *MockCustomResourceDefinitionReconciler) ReconcileCustomResourceDefiniti
 	return ret0, ret1
 }
 
-// ReconcileCustomResourceDefinition indicates an expected call of ReconcileCustomResourceDefinition.
+// ReconcileCustomResourceDefinition indicates an expected call of ReconcileCustomResourceDefinition
 func (mr *MockCustomResourceDefinitionReconcilerMockRecorder) ReconcileCustomResourceDefinition(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionReconciler)(nil).ReconcileCustomResourceDefinition), obj)
 }
 
-// MockCustomResourceDefinitionDeletionReconciler is a mock of CustomResourceDefinitionDeletionReconciler interface.
+// MockCustomResourceDefinitionDeletionReconciler is a mock of CustomResourceDefinitionDeletionReconciler interface
 type MockCustomResourceDefinitionDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockCustomResourceDefinitionDeletionReconcilerMockRecorder
 }
 
-// MockCustomResourceDefinitionDeletionReconcilerMockRecorder is the mock recorder for MockCustomResourceDefinitionDeletionReconciler.
+// MockCustomResourceDefinitionDeletionReconcilerMockRecorder is the mock recorder for MockCustomResourceDefinitionDeletionReconciler
 type MockCustomResourceDefinitionDeletionReconcilerMockRecorder struct {
 	mock *MockCustomResourceDefinitionDeletionReconciler
 }
 
-// NewMockCustomResourceDefinitionDeletionReconciler creates a new mock instance.
+// NewMockCustomResourceDefinitionDeletionReconciler creates a new mock instance
 func NewMockCustomResourceDefinitionDeletionReconciler(ctrl *gomock.Controller) *MockCustomResourceDefinitionDeletionReconciler {
 	mock := &MockCustomResourceDefinitionDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockCustomResourceDefinitionDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCustomResourceDefinitionDeletionReconciler) EXPECT() *MockCustomResourceDefinitionDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileCustomResourceDefinitionDeletion mocks base method.
+// ReconcileCustomResourceDefinitionDeletion mocks base method
 func (m *MockCustomResourceDefinitionDeletionReconciler) ReconcileCustomResourceDefinitionDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCustomResourceDefinitionDeletion", req)
@@ -84,36 +84,36 @@ func (m *MockCustomResourceDefinitionDeletionReconciler) ReconcileCustomResource
 	return ret0
 }
 
-// ReconcileCustomResourceDefinitionDeletion indicates an expected call of ReconcileCustomResourceDefinitionDeletion.
+// ReconcileCustomResourceDefinitionDeletion indicates an expected call of ReconcileCustomResourceDefinitionDeletion
 func (mr *MockCustomResourceDefinitionDeletionReconcilerMockRecorder) ReconcileCustomResourceDefinitionDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCustomResourceDefinitionDeletion", reflect.TypeOf((*MockCustomResourceDefinitionDeletionReconciler)(nil).ReconcileCustomResourceDefinitionDeletion), req)
 }
 
-// MockCustomResourceDefinitionFinalizer is a mock of CustomResourceDefinitionFinalizer interface.
+// MockCustomResourceDefinitionFinalizer is a mock of CustomResourceDefinitionFinalizer interface
 type MockCustomResourceDefinitionFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockCustomResourceDefinitionFinalizerMockRecorder
 }
 
-// MockCustomResourceDefinitionFinalizerMockRecorder is the mock recorder for MockCustomResourceDefinitionFinalizer.
+// MockCustomResourceDefinitionFinalizerMockRecorder is the mock recorder for MockCustomResourceDefinitionFinalizer
 type MockCustomResourceDefinitionFinalizerMockRecorder struct {
 	mock *MockCustomResourceDefinitionFinalizer
 }
 
-// NewMockCustomResourceDefinitionFinalizer creates a new mock instance.
+// NewMockCustomResourceDefinitionFinalizer creates a new mock instance
 func NewMockCustomResourceDefinitionFinalizer(ctrl *gomock.Controller) *MockCustomResourceDefinitionFinalizer {
 	mock := &MockCustomResourceDefinitionFinalizer{ctrl: ctrl}
 	mock.recorder = &MockCustomResourceDefinitionFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCustomResourceDefinitionFinalizer) EXPECT() *MockCustomResourceDefinitionFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileCustomResourceDefinition mocks base method.
+// ReconcileCustomResourceDefinition mocks base method
 func (m *MockCustomResourceDefinitionFinalizer) ReconcileCustomResourceDefinition(obj *v1beta1.CustomResourceDefinition) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCustomResourceDefinition", obj)
@@ -122,13 +122,13 @@ func (m *MockCustomResourceDefinitionFinalizer) ReconcileCustomResourceDefinitio
 	return ret0, ret1
 }
 
-// ReconcileCustomResourceDefinition indicates an expected call of ReconcileCustomResourceDefinition.
+// ReconcileCustomResourceDefinition indicates an expected call of ReconcileCustomResourceDefinition
 func (mr *MockCustomResourceDefinitionFinalizerMockRecorder) ReconcileCustomResourceDefinition(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionFinalizer)(nil).ReconcileCustomResourceDefinition), obj)
 }
 
-// CustomResourceDefinitionFinalizerName mocks base method.
+// CustomResourceDefinitionFinalizerName mocks base method
 func (m *MockCustomResourceDefinitionFinalizer) CustomResourceDefinitionFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomResourceDefinitionFinalizerName")
@@ -136,13 +136,13 @@ func (m *MockCustomResourceDefinitionFinalizer) CustomResourceDefinitionFinalize
 	return ret0
 }
 
-// CustomResourceDefinitionFinalizerName indicates an expected call of CustomResourceDefinitionFinalizerName.
+// CustomResourceDefinitionFinalizerName indicates an expected call of CustomResourceDefinitionFinalizerName
 func (mr *MockCustomResourceDefinitionFinalizerMockRecorder) CustomResourceDefinitionFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomResourceDefinitionFinalizerName", reflect.TypeOf((*MockCustomResourceDefinitionFinalizer)(nil).CustomResourceDefinitionFinalizerName))
 }
 
-// FinalizeCustomResourceDefinition mocks base method.
+// FinalizeCustomResourceDefinition mocks base method
 func (m *MockCustomResourceDefinitionFinalizer) FinalizeCustomResourceDefinition(obj *v1beta1.CustomResourceDefinition) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FinalizeCustomResourceDefinition", obj)
@@ -150,36 +150,36 @@ func (m *MockCustomResourceDefinitionFinalizer) FinalizeCustomResourceDefinition
 	return ret0
 }
 
-// FinalizeCustomResourceDefinition indicates an expected call of FinalizeCustomResourceDefinition.
+// FinalizeCustomResourceDefinition indicates an expected call of FinalizeCustomResourceDefinition
 func (mr *MockCustomResourceDefinitionFinalizerMockRecorder) FinalizeCustomResourceDefinition(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionFinalizer)(nil).FinalizeCustomResourceDefinition), obj)
 }
 
-// MockCustomResourceDefinitionReconcileLoop is a mock of CustomResourceDefinitionReconcileLoop interface.
+// MockCustomResourceDefinitionReconcileLoop is a mock of CustomResourceDefinitionReconcileLoop interface
 type MockCustomResourceDefinitionReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockCustomResourceDefinitionReconcileLoopMockRecorder
 }
 
-// MockCustomResourceDefinitionReconcileLoopMockRecorder is the mock recorder for MockCustomResourceDefinitionReconcileLoop.
+// MockCustomResourceDefinitionReconcileLoopMockRecorder is the mock recorder for MockCustomResourceDefinitionReconcileLoop
 type MockCustomResourceDefinitionReconcileLoopMockRecorder struct {
 	mock *MockCustomResourceDefinitionReconcileLoop
 }
 
-// NewMockCustomResourceDefinitionReconcileLoop creates a new mock instance.
+// NewMockCustomResourceDefinitionReconcileLoop creates a new mock instance
 func NewMockCustomResourceDefinitionReconcileLoop(ctrl *gomock.Controller) *MockCustomResourceDefinitionReconcileLoop {
 	mock := &MockCustomResourceDefinitionReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockCustomResourceDefinitionReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCustomResourceDefinitionReconcileLoop) EXPECT() *MockCustomResourceDefinitionReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunCustomResourceDefinitionReconciler mocks base method.
+// RunCustomResourceDefinitionReconciler mocks base method
 func (m *MockCustomResourceDefinitionReconcileLoop) RunCustomResourceDefinitionReconciler(ctx context.Context, rec controller.CustomResourceDefinitionReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -191,7 +191,7 @@ func (m *MockCustomResourceDefinitionReconcileLoop) RunCustomResourceDefinitionR
 	return ret0
 }
 
-// RunCustomResourceDefinitionReconciler indicates an expected call of RunCustomResourceDefinitionReconciler.
+// RunCustomResourceDefinitionReconciler indicates an expected call of RunCustomResourceDefinitionReconciler
 func (mr *MockCustomResourceDefinitionReconcileLoopMockRecorder) RunCustomResourceDefinitionReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
