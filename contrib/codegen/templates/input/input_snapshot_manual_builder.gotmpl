@@ -20,7 +20,7 @@ multiclusterv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v
 
 )
 
-type InputSnapshotBuilder struct {
+type InputSnapshotManualBuilder struct {
 name string
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -33,8 +33,8 @@ name string
 
 }
 
-func NewInputSnapshotBuilder(name string) *InputSnapshotBuilder {
-return &InputSnapshotBuilder{
+func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
+return &InputSnapshotManualBuilder{
 name:               name,
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -48,7 +48,7 @@ name:               name,
 }
 }
 
-func (i *InputSnapshotBuilder) Build() input.Snapshot {
+func (i *InputSnapshotManualBuilder) Build() input.Snapshot {
 return input.NewSnapshot(
 i.name,
 {{- range $group := $groups }}
@@ -68,7 +68,7 @@ i.name,
 		{{- $kindPlural := pluralize $resource.Kind }}
 		{{- $kindLowerCamel := lower_camel $resource.Kind }}
 		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-		func (i *InputSnapshotBuilder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *InputSnapshotBuilder {
+		func (i *InputSnapshotManualBuilder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *InputSnapshotManualBuilder {
 		i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
 		return i
 		}
