@@ -27,9 +27,8 @@ import (
     "sigs.k8s.io/controller-runtime/pkg/client"
 
 {{- range $group := $groups }}
-{{ $client_import_prefix := (printf "%v_client" (group_import_name $group)) }}
+{{ $client_import_prefix := group_import_name $group }}
 {{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
-    {{ group_import_name $group }} "{{ group_import_path $group }}"
     {{ $client_import_prefix }} "{{ client_import_path $group }}"
     {{ $set_import_prefix }} "{{ set_import_path $group }}"
 {{- end }}
@@ -196,7 +195,7 @@ type Builder interface {
 type BuildOptions struct {
 {{/* generate build options here */}}
 {{- range $group := $groups }}
-{{ $client_import_prefix := (printf "%v_client" (group_import_name $group)) }}
+{{ $client_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -212,7 +211,7 @@ type multiClusterBuilder struct {
     clusters     multicluster.ClusterSet
 {{/* generate client fields here */}}
 {{- range $group := $groups }}
-{{ $client_import_prefix := (printf "%v_client" (group_import_name $group)) }}
+{{ $client_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -231,7 +230,7 @@ func NewMultiClusterBuilder(
         clusters:     clusters,
 {{/* generate constructor fields here */}}
 {{- range $group := $groups }}
-{{ $client_import_prefix := (printf "%v_client" (group_import_name $group)) }}
+{{ $client_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -323,7 +322,7 @@ func (b *multiClusterBuilder) insert{{ $kindPlural }}FromCluster(ctx context.Con
 type singleClusterBuilder struct {
 {{/* generate client fields here */}}
 {{- range $group := $groups }}
-{{ $client_import_prefix := (printf "%v_client" (group_import_name $group)) }}
+{{ $client_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -340,7 +339,7 @@ func NewSingleClusterBuilder(
     return &singleClusterBuilder{
 {{/* generate constructor fields here */}}
 {{- range $group := $groups }}
-{{ $client_import_prefix := (printf "%v_client" (group_import_name $group)) }}
+{{ $client_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -414,62 +413,5 @@ func (b *singleClusterBuilder) insert{{ $kindPlural }}(ctx context.Context, {{ $
     return nil
 }
 
-{{- end }}
-{{- end }}
-
-// Utility for manually building input snapshots.
-type InputSnapshotBuilder struct {
-name string
-{{/* generate fields of the real snapshot impl here */}}
-{{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
-    {{- range $resource := $group.Resources }}
-        {{- $kindLowerCamel := lower_camel $resource.Kind }}
-        {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-        {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
-    {{- end }}
-{{- end }}
-
-}
-
-func NewInputSnapshotBuilder(name string) *InputSnapshotBuilder {
-return &InputSnapshotBuilder{
-        name: name,
-{{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
-    {{- range $resource := $group.Resources }}
-        {{- $kindPlural := pluralize $resource.Kind }}
-        {{- $kindLowerCamel := lower_camel $resource.Kind }}
-        {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-        {{ $kindLowerCamelPlural }}: {{ $set_import_prefix }}.New{{ $resource.Kind }}Set(),
-    {{- end }}
-{{- end }}
-}
-}
-
-func (i *InputSnapshotBuilder) Build() Snapshot {
-return NewSnapshot(
-    i.name,
-{{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
-    {{- range $resource := $group.Resources }}
-        {{- $kindPlural := pluralize $resource.Kind }}
-        {{- $kindLowerCamel := lower_camel $resource.Kind }}
-        {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-        i.{{ $kindLowerCamelPlural }},
-    {{- end }}
-{{- end }}
-)
-}
-
-{{- range $group := $groups }}
-{{- range $resource := $group.Resources }}
-    {{- $kindPlural := pluralize $resource.Kind }}
-    {{- $kindLowerCamel := lower_camel $resource.Kind }}
-    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    func (i *InputSnapshotBuilder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *InputSnapshotBuilder {
-        i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
-        return i
-    }
 {{- end }}
 {{- end }}

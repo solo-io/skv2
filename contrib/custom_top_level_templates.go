@@ -28,8 +28,9 @@ func (p CrossGroupTemplateParameters) constructTemplate(params CrossGroupTemplat
 		panic(err)
 	}
 	inputSnapshotTemplate := model.CustomTemplates{
-		Templates: map[string]string{params.OutputFilename: templateContents},
-		Funcs:     funcs.MakeTopLevelFuncs(params.OutputFilename, params.SelectFromGroups, params.ResourcesToSelect),
+		Templates:        map[string]string{params.OutputFilename: templateContents},
+		MockgenDirective: true,
+		Funcs:            funcs.MakeTopLevelFuncs(params.OutputFilename, params.SelectFromGroups, params.ResourcesToSelect),
 	}
 
 	return inputSnapshotTemplate

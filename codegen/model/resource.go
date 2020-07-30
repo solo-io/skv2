@@ -96,6 +96,9 @@ type CustomTemplates struct {
 	// maps output filename to template text
 	Templates map[string]string
 
+	// Enable to add //go:generate mockgen directive to the top of generated Go files.
+	MockgenDirective bool
+
 	// custom template funcs which will be inserted into the
 	// default template funcmap at rendering time
 	Funcs template.FuncMap

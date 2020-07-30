@@ -385,3 +385,74 @@ func (l labeled{{ $resource.Kind }}Set) Generic() output.ResourceList {
 
 {{- end }}
 {{- end }}
+
+type Builder struct {
+    name string
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+{{- end }}
+{{- end }}
+}
+
+func NewBuilder(name string) *Builder {
+return &Builder{
+    name: name,
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }}: {{ $set_import_prefix }}.New{{ $resource.Kind }}Set(),
+{{- end }}
+{{- end }}
+}
+}
+
+func (i *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
+    return NewLabelPartitionedSnapshot(
+        i.name,
+        labelKey,
+{{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+        {{- $kindPlural := pluralize $resource.Kind }}
+        {{- $kindLowerCamel := lower_camel $resource.Kind }}
+        {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        i.{{ $kindLowerCamelPlural }},
+    {{- end }}
+{{- end }}
+    )
+}
+
+func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
+    return NewSinglePartitionedSnapshot(
+        i.name,
+        snapshotLabels,
+{{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+        {{- $kindPlural := pluralize $resource.Kind }}
+        {{- $kindLowerCamel := lower_camel $resource.Kind }}
+        {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        i.{{ $kindLowerCamelPlural }},
+    {{- end }}
+{{- end }}
+    )
+}
+
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    func (i *Builder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *Builder {
+        i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
+        return i
+    }
+{{- end }}
+{{- end }}
