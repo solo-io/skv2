@@ -450,7 +450,7 @@ func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
     {{- $kindPlural := pluralize $resource.Kind }}
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    func (i *Builder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *Builder {
+    func (i *Builder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} ...*{{ group_import_name $group }}.{{ $resource.Kind }}) *Builder {
         i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
         return i
     }
