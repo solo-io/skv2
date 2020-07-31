@@ -6,6 +6,7 @@ package {{ package }}
 import (
 	"context"
     "encoding/json"
+    "github.com/solo-io/go-utils/contextutils"
 
     "github.com/rotisserie/eris"
     "github.com/solo-io/skv2/contrib/pkg/sets"
@@ -387,6 +388,7 @@ func (l labeled{{ $resource.Kind }}Set) Generic() output.ResourceList {
 {{- end }}
 
 type Builder struct {
+    ctx context.Context
     name string
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -398,8 +400,9 @@ type Builder struct {
 {{- end }}
 }
 
-func NewBuilder(name string) *Builder {
+func NewBuilder(ctx context.Context, name string) *Builder {
 return &Builder{
+	ctx: ctx,
     name: name,
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -413,9 +416,9 @@ return &Builder{
 }
 }
 
-func (i *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
+func (b *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
     return NewLabelPartitionedSnapshot(
-        i.name,
+        b.name,
         labelKey,
 {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -423,15 +426,15 @@ func (i *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
         {{- $kindPlural := pluralize $resource.Kind }}
         {{- $kindLowerCamel := lower_camel $resource.Kind }}
         {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-        i.{{ $kindLowerCamelPlural }},
+        b.{{ $kindLowerCamelPlural }},
     {{- end }}
 {{- end }}
     )
 }
 
-func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
+func (b *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
     return NewSinglePartitionedSnapshot(
-        i.name,
+        b.name,
         snapshotLabels,
 {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -439,7 +442,7 @@ func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
         {{- $kindPlural := pluralize $resource.Kind }}
         {{- $kindLowerCamel := lower_camel $resource.Kind }}
         {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-        i.{{ $kindLowerCamelPlural }},
+        b.{{ $kindLowerCamelPlural }},
     {{- end }}
 {{- end }}
     )
@@ -450,9 +453,13 @@ func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
     {{- $kindPlural := pluralize $resource.Kind }}
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    func (i *Builder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} ...*{{ group_import_name $group }}.{{ $resource.Kind }}) *Builder {
-        i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
-        return i
+    func (b *Builder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} ...*{{ group_import_name $group }}.{{ $resource.Kind }}) *Builder {
+    	for _, obj := range {{ $kindLowerCamelPlural }} {
+    	    contextutils.LoggerFrom(b.ctx).Debugf("added output {{ $resource.Kind }} %v", sets.Key(obj))
+        }
+
+        b.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
+        return b
     }
 {{- end }}
 {{- end }}
