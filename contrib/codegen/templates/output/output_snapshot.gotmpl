@@ -450,10 +450,12 @@ type Builder interface {
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 func (b *builder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} ...*{{ group_import_name $group }}.{{ $resource.Kind }}) {
     for _, obj := range {{ $kindLowerCamelPlural }} {
+    	if obj == nil {
+    		continue
+        }
         contextutils.LoggerFrom(b.ctx).Debugf("added output {{ $resource.Kind }} %v", sets.Key(obj))
+        b.{{ $kindLowerCamelPlural }}.Insert(obj)
     }
-
-    b.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
 }
 {{- end }}
 {{- end }}
