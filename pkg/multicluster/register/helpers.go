@@ -2,13 +2,13 @@ package register
 
 import (
 	"context"
+	"os"
 
+	"github.com/hashicorp/go-multierror"
 	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
 
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/rest"
-
-	"os"
 
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
@@ -90,27 +90,53 @@ type RegistrationOptions struct {
 func (opts RegistrationOptions) RegisterCluster(
 	ctx context.Context,
 ) error {
+	masterRestCfg, remoteCfg, rbacOpts, registrant, err := opts.initialize()
+	if err != nil {
+		return err
+	}
+	return RegisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant)
+}
+
+/*
+	DeregisterCluster deregisters a cluster by cleaning up the resources created when RegisterCluster is invoked.
+	This entails:
+		1. Deleting the ServiceAccount on the remote cluster.
+		2. Deleting the remote Roles, RoleBindings, ClusterRoles, and ClusterRoleBindings associated with the ServiceAccount.
+		3. Deletes the secret containing the kubeconfig for the remote cluster.
+*/
+func (opts RegistrationOptions) DeregisterCluster(
+	ctx context.Context,
+) error {
+	masterRestCfg, remoteCfg, rbacOpts, registrant, err := opts.initialize()
+	if err != nil {
+		return err
+	}
+	return DeregisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant)
+}
+
+// Initialize registration dependencies
+func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, rbacOpts RbacOptions, registrant ClusterRegistrant, err error) {
 	masterCfg, err := getClientConfigWithContext(opts.MasterURL, opts.KubeCfgPath, opts.KubeContext)
 	if err != nil {
-		return err
+		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 	}
 
-	masterRestCfg, err := masterCfg.ClientConfig()
+	masterRestCfg, err = masterCfg.ClientConfig()
 	if err != nil {
-		return err
+		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 	}
 
-	registrant, err := defaultRegistrant(masterRestCfg, opts.APIServerAddress)
+	registrant, err = defaultRegistrant(masterRestCfg, opts.APIServerAddress)
 	if err != nil {
-		return err
+		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 	}
 
-	remoteCfg, err := getClientConfigWithContext(opts.MasterURL, opts.RemoteKubeCfgPath, opts.RemoteKubeContext)
+	remoteCfg, err = getClientConfigWithContext(opts.MasterURL, opts.RemoteKubeCfgPath, opts.RemoteKubeContext)
 	if err != nil {
-		return err
+		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 	}
 
-	rbacOpts := RbacOptions{
+	rbacOpts = RbacOptions{
 		Options: Options{
 			ClusterName:     opts.ClusterName,
 			RemoteCtx:       opts.RemoteKubeContext,
@@ -124,7 +150,7 @@ func (opts RegistrationOptions) RegisterCluster(
 		ClusterRoleBindings: opts.ClusterRoleBindings,
 	}
 
-	return RegisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant)
+	return masterRestCfg, remoteCfg, rbacOpts, registrant, nil
 }
 
 func RegisterClusterFromConfig(
@@ -148,6 +174,30 @@ func RegisterClusterFromConfig(
 	}
 
 	return registrant.RegisterClusterWithToken(ctx, masterClusterCfg, remoteCfg, token, opts.Options)
+}
+
+func DeregisterClusterFromConfig(
+	ctx context.Context,
+	masterClusterCfg *rest.Config,
+	remoteCfg clientcmd.ClientConfig,
+	opts RbacOptions,
+	registrant ClusterRegistrant,
+) error {
+	var multierr *multierror.Error
+
+	if err := registrant.DeregisterCluster(ctx, masterClusterCfg, remoteCfg, opts.Options); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+
+	if err := registrant.DeleteRemoteServiceAccount(ctx, remoteCfg, opts.Options); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+
+	if err := registrant.DeleteRemoteAccessResources(ctx, remoteCfg, opts); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+
+	return multierr.ErrorOrNil()
 }
 
 /*

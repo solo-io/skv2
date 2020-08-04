@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/avast/retry-go"
+	"github.com/hashicorp/go-multierror"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
-
-	"github.com/avast/retry-go"
-	"github.com/rotisserie/eris"
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
 	k8s_core_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/providers"
 	rbac_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/providers"
@@ -105,10 +105,7 @@ func (c *clusterRegistrant) EnsureRemoteServiceAccount(
 	}
 
 	saToCreate := &corev1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      opts.ClusterName,
-			Namespace: opts.RemoteNamespace,
-		},
+		ObjectMeta: serviceAccountObjMeta(opts),
 	}
 
 	restCfg, err := remoteClientCfg.ClientConfig()
@@ -135,6 +132,39 @@ func (c *clusterRegistrant) EnsureRemoteServiceAccount(
 		return nil, err
 	}
 	return existing, nil
+}
+
+func (c *clusterRegistrant) DeleteRemoteServiceAccount(
+	ctx context.Context,
+	remoteClientCfg clientcmd.ClientConfig,
+	opts Options,
+) error {
+	if err := (&opts).validate(); err != nil {
+		return err
+	}
+
+	saToDelete := &corev1.ServiceAccount{
+		ObjectMeta: serviceAccountObjMeta(opts),
+	}
+
+	restCfg, err := remoteClientCfg.ClientConfig()
+	if err != nil {
+		return err
+	}
+
+	saClient, err := c.saClientFactory(restCfg)
+	if err != nil {
+		return err
+	}
+
+	err = saClient.DeleteServiceAccount(ctx, client.ObjectKey{
+		Namespace: saToDelete.Namespace,
+		Name:      saToDelete.Name,
+	})
+	if err != nil && !k8s_errs.IsNotFound(err) {
+		return err
+	}
+	return nil
 }
 
 func (c *clusterRegistrant) CreateRemoteAccessToken(
@@ -198,6 +228,60 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 	return c.getTokenForSa(ctx, remoteCfg, sa)
 }
 
+func (c *clusterRegistrant) DeleteRemoteAccessResources(ctx context.Context,
+	remoteClientCfg clientcmd.ClientConfig,
+	opts RbacOptions,
+) error {
+	saObjMeta := serviceAccountObjMeta(opts.Options)
+	sa := client.ObjectKey{Name: saObjMeta.Name, Namespace: saObjMeta.Namespace}
+
+	remoteCfg, err := remoteClientCfg.ClientConfig()
+	if err != nil {
+		return err
+	}
+	var multierr *multierror.Error
+	// Delete Roles
+	if err := c.deleteRoles(ctx, remoteCfg, opts.Roles); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+	// Delete ClusterRoles
+	if err := c.deleteClusterRoles(ctx, remoteCfg, opts.ClusterRoles); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+
+	rbacBinder, err := c.clusterRBACBinderFactory(remoteClientCfg)
+	if err != nil {
+		return err
+	}
+
+	// Delete RoleBindings
+	roleBindings := make([]client.ObjectKey, 0, len(opts.Roles)+len(opts.RoleBindings))
+	roleBindings = append(roleBindings, opts.RoleBindings...)
+	for _, v := range opts.Roles {
+		roleBindings = append(roleBindings, client.ObjectKey{
+			Name:      v.GetName(),
+			Namespace: v.GetNamespace(),
+		})
+	}
+	if err = rbacBinder.DeleteRoleBindings(ctx, sa, roleBindings); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+
+	// Delete ClusterRoleBindings
+	clusterRoleBindings := make([]client.ObjectKey, 0, len(opts.ClusterRoles)+len(opts.ClusterRoleBindings))
+	clusterRoleBindings = append(clusterRoleBindings, opts.ClusterRoleBindings...)
+	for _, v := range opts.ClusterRoles {
+		clusterRoleBindings = append(clusterRoleBindings, client.ObjectKey{
+			Name: v.GetName(),
+		})
+	}
+	if err = rbacBinder.DeleteClusterRoleBindings(ctx, sa, clusterRoleBindings); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+
+	return multierr.ErrorOrNil()
+}
+
 func (c *clusterRegistrant) RegisterClusterWithToken(
 	ctx context.Context,
 	masterClusterCfg *rest.Config,
@@ -259,19 +343,61 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	return kubeClusterClient.UpsertKubernetesCluster(ctx, kubeCluster)
 }
 
+func (c *clusterRegistrant) DeregisterCluster(
+	ctx context.Context,
+	masterClusterCfg *rest.Config,
+	remoteClientCfg clientcmd.ClientConfig,
+	opts Options,
+) error {
+	if err := (&opts).validate(); err != nil {
+		return err
+	}
+
+	remoteCfg, err := remoteClientCfg.ClientConfig()
+	if err != nil {
+		return err
+	}
+
+	kcSecretObjMeta := kubeconfig.SecretObjMeta(opts.Namespace, opts.ClusterName)
+	kubeClusterObjMeta := kubeClusterObjMeta(kcSecretObjMeta.Name, kcSecretObjMeta.Namespace)
+	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
+	if err != nil {
+		return err
+	}
+
+	var multierr *multierror.Error
+	// Delete local KubernetesCluster
+	if err = kubeClusterClient.DeleteKubernetesCluster(ctx, client.ObjectKey{Name: kubeClusterObjMeta.Name, Namespace: kubeClusterObjMeta.Namespace}); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+	// Delete remote secret
+	if err = c.deleteSecret(ctx, client.ObjectKey{Name: kcSecretObjMeta.Name, Namespace: kcSecretObjMeta.Namespace}); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+	// Delete remote namespace
+	if err = c.deleteRemoteNamespace(ctx, opts.Namespace, remoteCfg); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+	return multierr.ErrorOrNil()
+}
+
 func buildKubeClusterResource(secret *corev1.Secret, clusterDomain string) *v1alpha1.KubernetesCluster {
 	if clusterDomain == "" {
 		clusterDomain = DefaultClusterDomain
 	}
 	return &v1alpha1.KubernetesCluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      secret.Name,
-			Namespace: secret.Namespace,
-		},
+		ObjectMeta: kubeClusterObjMeta(secret.Name, secret.Namespace),
 		Spec: v1alpha1.KubernetesClusterSpec{
 			SecretName:    secret.Name,
 			ClusterDomain: clusterDomain,
 		},
+	}
+}
+
+func kubeClusterObjMeta(secretName, secretNamespace string) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:      secretName,
+		Namespace: secretNamespace,
 	}
 }
 
@@ -288,6 +414,18 @@ func (c *clusterRegistrant) ensureRemoteNamespace(ctx context.Context, writeName
 			},
 		})
 	} else if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *clusterRegistrant) deleteRemoteNamespace(ctx context.Context, writeNamespace string, cfg *rest.Config) error {
+	nsClient, err := c.nsClientFactory(cfg)
+	if err != nil {
+		return err
+	}
+	err = nsClient.DeleteNamespace(ctx, writeNamespace)
+	if err != nil && !k8s_errs.IsNotFound(err) {
 		return err
 	}
 	return nil
@@ -339,6 +477,17 @@ func (c *clusterRegistrant) upsertSecretData(
 	return c.secretClient.UpdateSecret(ctx, existing)
 }
 
+func (c *clusterRegistrant) deleteSecret(
+	ctx context.Context,
+	secretObjKey client.ObjectKey,
+) error {
+	err := c.secretClient.DeleteSecret(ctx, secretObjKey)
+	if err != nil && !k8s_errs.IsNotFound(err) {
+		return err
+	}
+	return nil
+}
+
 func (c *clusterRegistrant) upsertRoles(
 	ctx context.Context,
 	cfg *rest.Config,
@@ -356,6 +505,22 @@ func (c *clusterRegistrant) upsertRoles(
 	return nil
 }
 
+func (c *clusterRegistrant) deleteRoles(ctx context.Context,
+	cfg *rest.Config,
+	roles []*rbacv1.Role,
+) error {
+	roleClient, err := c.roleClientFactory(cfg)
+	if err != nil {
+		return err
+	}
+	for _, v := range roles {
+		if err = roleClient.DeleteRole(ctx, client.ObjectKey{Name: v.Name, Namespace: v.Namespace}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (c *clusterRegistrant) upsertClusterRoles(
 	ctx context.Context,
 	cfg *rest.Config,
@@ -367,6 +532,23 @@ func (c *clusterRegistrant) upsertClusterRoles(
 	}
 	for _, v := range roles {
 		if err = clusterRoleClient.UpsertClusterRole(ctx, v); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *clusterRegistrant) deleteClusterRoles(
+	ctx context.Context,
+	cfg *rest.Config,
+	roles []*rbacv1.ClusterRole,
+) error {
+	clusterRoleClient, err := c.clusterRoleClientFactory(cfg)
+	if err != nil {
+		return err
+	}
+	for _, v := range roles {
+		if err = clusterRoleClient.DeleteClusterRole(ctx, v.Name); err != nil {
 			return err
 		}
 	}
@@ -455,4 +637,11 @@ func (c *clusterRegistrant) hackClusterConfigForLocalTestingInKIND(
 	}
 
 	return nil
+}
+
+func serviceAccountObjMeta(opts Options) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:      opts.ClusterName,
+		Namespace: opts.RemoteNamespace,
+	}
 }
