@@ -3,7 +3,8 @@ package output
 import (
 	"context"
 	"fmt"
-
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -14,6 +15,35 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
+
+// the key used to differentiate discovery resources by
+// the cluster in which they were discovered
+var ClusterLabelKey = fmt.Sprintf("cluster.%s", v1alpha1.SchemeGroupVersion.Group)
+
+// adds cluster labels to the given set of labels and returns them
+func AddClusterLabels(clusterName string, objLabels map[string]string) map[string]string {
+	// add cluster label to object
+	if objLabels == nil {
+		objLabels = map[string]string{}
+	}
+	for k, v := range ClusterLabels(clusterName) {
+		objLabels[k] = v
+	}
+	return objLabels
+}
+
+// Create a label that identifies the cluster used to discover a resource.
+func ClusterLabels(cluster string) map[string]string {
+	clusterK, clusterV := ClusterLabel(cluster)
+	return map[string]string{
+		clusterK: clusterV,
+	}
+}
+
+func ClusterLabel(cluster string) (string, string) {
+	return ClusterLabelKey,
+		fmt.Sprintf("%s", cluster)
+}
 
 // User-defined error-handling functions.
 // Used to invoke custom error-handling code when a resource write fails.
@@ -166,10 +196,11 @@ type Snapshot struct {
 
 // sync the output snapshot to local cluster storage.
 // only writes resources intended for the local cluster (with ClusterName == "")
+// Note that Syncing snapshots in this way adds the label
 func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHandler ErrorHandler) {
 
 	for _, list := range s.ListsToSync {
-		listForLocalCluster := list.SplitByClusterName()[""]
+		listForLocalCluster := list.SplitByClusterName()[multicluster.LocalCluster]
 
 		resourcesForLocalCluster := ResourceList{
 			Resources:    listForLocalCluster,
@@ -177,7 +208,7 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHa
 			ResourceKind: list.ResourceKind,
 		}
 
-		s.syncList(ctx, cli, resourcesForLocalCluster, errHandler)
+		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, errHandler)
 	}
 
 }
@@ -210,12 +241,16 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 				ResourceKind: list.ResourceKind,
 			}
 
-			s.syncList(ctx, cli, resourcesForCluster, errHandler)
+			s.syncList(ctx, cluster, cli, resourcesForCluster, errHandler)
 		}
 	}
 }
 
-func (s Snapshot) syncList(ctx context.Context, cli client.Client, list ResourceList, errHandler ErrorHandler) {
+// sync the list to the cluster.
+// clientCluster represents the cluster to which the resources are being written.
+// garbage collects every resource turned by the list.ListFunc which is no longer desired.
+// any resources written for a different clientCluster will not be garbage collected.
+func (s Snapshot) syncList(ctx context.Context, clientCluster string, cli client.Client, list ResourceList, errHandler ErrorHandler) {
 	for _, obj := range list.Resources {
 
 		// upsert all desired resources
@@ -237,6 +272,15 @@ func (s Snapshot) syncList(ctx context.Context, cli client.Client, list Resource
 	}
 
 	isStale := func(res metav1.Object) bool {
+		// only process resources with the cluster label
+		// matching the resources written for this cluster.
+		// this is used to distinguish between resources written to
+		// a local cluster which is also registered as a managed cluster.
+		for k, v := range ClusterLabels(clientCluster) {
+			if res.GetLabels()[k] != v {
+				return false
+			}
+		}
 		for _, desired := range list.Resources {
 			if res.GetName() == desired.GetName() && res.GetNamespace() == desired.GetNamespace() {
 				return false
@@ -261,6 +305,11 @@ func (s Snapshot) syncList(ctx context.Context, cli client.Client, list Resource
 }
 
 func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Object) error {
+	// add cluster label to object
+	obj.SetLabels(
+		AddClusterLabels(obj.GetClusterName(), obj.GetLabels()),
+	)
+
 	result, err := controllerutils.Upsert(ctx, cli, obj)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Errorw("failed upserting resource", "resource", obj, "err", err)
@@ -269,6 +318,7 @@ func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Obje
 
 		return err
 	}
+	contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", fmt.Sprintf("%v.%T", sets.Key(obj), obj))
 
 	incrementResourcesSyncedTotal(
 		s.Name,
@@ -287,6 +337,7 @@ func (s Snapshot) delete(ctx context.Context, cli client.Client, obj ezkube.Obje
 
 		return err
 	}
+	contextutils.LoggerFrom(ctx).Debugw("deleted resource", "resource", fmt.Sprintf("%v.%T", sets.Key(obj), obj))
 
 	incrementResourcesDeletedTotal(s.Name, obj)
 	return nil
