@@ -123,6 +123,27 @@ var _ = Describe("Cluster authorization", func() {
 			Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")
 		})
 
+		It("will delete ClusterRoleBindings", func() {
+			clusterRbacBinder := internal.NewClusterRBACBinder(crbClient, rbClient)
+
+			sa := saObjectKey()
+			clusterRoleObjKeys := []client.ObjectKey{
+				{Name: "cluster-role-1"},
+				{Name: "cluster-role-2"},
+				{Name: "cluster-role-3"},
+			}
+
+			for _, clusterRoleObjKey := range clusterRoleObjKeys {
+				crbClient.
+					EXPECT().
+					DeleteClusterRoleBinding(ctx, fmt.Sprintf("%s-%s-clusterrole-binding", sa.Name, clusterRoleObjKey.Name)).
+					Return(nil)
+			}
+
+			err := clusterRbacBinder.DeleteClusterRoleBindings(ctx, sa, clusterRoleObjKeys)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 	})
 
 	Context("RoleBinding", func() {
@@ -211,5 +232,28 @@ var _ = Describe("Cluster authorization", func() {
 			Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")
 		})
 
+		It("will delete RoleBindings", func() {
+			clusterRbacBinder := internal.NewClusterRBACBinder(crbClient, rbClient)
+
+			sa := saObjectKey()
+			roleObjKeys := []client.ObjectKey{
+				{Name: "role-1", Namespace: "role-namespace-1"},
+				{Name: "role-2", Namespace: "role-namespace-2"},
+				{Name: "role-3", Namespace: "role-namespace-3"},
+			}
+
+			for _, roleObjKey := range roleObjKeys {
+				rbClient.
+					EXPECT().
+					DeleteRoleBinding(ctx, client.ObjectKey{
+						Name:      fmt.Sprintf("%s-%s-role-binding", sa.Name, roleObjKey.Name),
+						Namespace: roleObjKey.Namespace,
+					}).
+					Return(nil)
+			}
+
+			err := clusterRbacBinder.DeleteRoleBindings(ctx, sa, roleObjKeys)
+			Expect(err).ToNot(HaveOccurred())
+		})
 	})
 })
