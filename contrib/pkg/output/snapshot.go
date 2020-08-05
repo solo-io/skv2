@@ -3,6 +3,7 @@ package output
 import (
 	"context"
 	"fmt"
+
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -312,13 +313,13 @@ func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Obje
 
 	result, err := controllerutils.Upsert(ctx, cli, obj)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Errorw("failed upserting resource", "resource", obj, "err", err)
+		contextutils.LoggerFrom(ctx).Errorw("failed upserting resource", "resource", sets.TypedKey(obj), "err", err)
 
 		incrementResourcesWriteFailsTotal(s.Name, "upsert", obj)
 
 		return err
 	}
-	contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", fmt.Sprintf("%v.%T", sets.Key(obj), obj))
+	contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", sets.TypedKey(obj))
 
 	incrementResourcesSyncedTotal(
 		s.Name,
@@ -331,13 +332,13 @@ func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Obje
 
 func (s Snapshot) delete(ctx context.Context, cli client.Client, obj ezkube.Object) error {
 	if err := cli.Delete(ctx, obj); err != nil {
-		contextutils.LoggerFrom(ctx).Errorw("failed deleting stale resource", "resource", obj, "err", err)
+		contextutils.LoggerFrom(ctx).Errorw("failed deleting stale resource", "resource", sets.TypedKey(obj), "err", err)
 
 		incrementResourcesWriteFailsTotal(s.Name, "delete", obj)
 
 		return err
 	}
-	contextutils.LoggerFrom(ctx).Debugw("deleted resource", "resource", fmt.Sprintf("%v.%T", sets.Key(obj), obj))
+	contextutils.LoggerFrom(ctx).Debugw("deleted resource", "resource", sets.TypedKey(obj))
 
 	incrementResourcesDeletedTotal(s.Name, obj)
 	return nil

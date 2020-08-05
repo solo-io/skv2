@@ -1,6 +1,7 @@
 package sets
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/rotisserie/eris"
@@ -18,6 +19,11 @@ func Key(id ezkube.ResourceId) string {
 		return clusterId.GetName() + "." + clusterId.GetNamespace() + "." + clusterId.GetClusterName()
 	}
 	return id.GetName() + "." + id.GetNamespace() + "."
+}
+
+// typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
+func TypedKey(id ezkube.ResourceId) string {
+	return fmt.Sprintf("%v.%T", Key(id), id)
 }
 
 type ResourceSet interface {
