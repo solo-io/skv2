@@ -185,7 +185,7 @@ func DeregisterClusterFromConfig(
 ) error {
 	var multierr *multierror.Error
 
-	if err := registrant.DeregisterCluster(ctx, masterClusterCfg, remoteCfg, opts.Options); err != nil {
+	if err := registrant.DeregisterCluster(ctx, masterClusterCfg, opts.Options); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 

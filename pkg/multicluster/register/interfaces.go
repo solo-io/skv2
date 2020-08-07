@@ -151,7 +151,6 @@ type ClusterRegistrant interface {
 	DeregisterCluster(
 		ctx context.Context,
 		masterClusterCfg *rest.Config,
-		remoteClientCfg clientcmd.ClientConfig,
 		opts Options,
 	) error
 }

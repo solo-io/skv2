@@ -346,15 +346,9 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 func (c *clusterRegistrant) DeregisterCluster(
 	ctx context.Context,
 	masterClusterCfg *rest.Config,
-	remoteClientCfg clientcmd.ClientConfig,
 	opts Options,
 ) error {
 	if err := (&opts).validate(); err != nil {
-		return err
-	}
-
-	remoteCfg, err := remoteClientCfg.ClientConfig()
-	if err != nil {
 		return err
 	}
 
@@ -372,10 +366,6 @@ func (c *clusterRegistrant) DeregisterCluster(
 	}
 	// Delete remote secret
 	if err = c.deleteSecret(ctx, client.ObjectKey{Name: kcSecretObjMeta.Name, Namespace: kcSecretObjMeta.Namespace}); err != nil {
-		multierr = multierror.Append(multierr, err)
-	}
-	// Delete remote namespace
-	if err = c.deleteRemoteNamespace(ctx, opts.Namespace, remoteCfg); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	return multierr.ErrorOrNil()
@@ -414,18 +404,6 @@ func (c *clusterRegistrant) ensureRemoteNamespace(ctx context.Context, writeName
 			},
 		})
 	} else if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *clusterRegistrant) deleteRemoteNamespace(ctx context.Context, writeNamespace string, cfg *rest.Config) error {
-	nsClient, err := c.nsClientFactory(cfg)
-	if err != nil {
-		return err
-	}
-	err = nsClient.DeleteNamespace(ctx, writeNamespace)
-	if err != nil && !k8s_errs.IsNotFound(err) {
 		return err
 	}
 	return nil

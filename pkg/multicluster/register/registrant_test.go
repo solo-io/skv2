@@ -650,13 +650,6 @@ var _ = Describe("Registrant", func() {
 				Host: "mock-host",
 			}
 
-			clientConfig.EXPECT().
-				ClientConfig().
-				Return(restCfg, nil)
-
-			nsClient.EXPECT().
-				DeleteNamespace(ctx, namespace).Return(nil)
-
 			secretClient.EXPECT().
 				DeleteSecret(ctx, client.ObjectKey{Name: clusterName, Namespace: namespace}).
 				Return(nil)
@@ -664,7 +657,7 @@ var _ = Describe("Registrant", func() {
 			kubeClusterClient.EXPECT().
 				DeleteKubernetesCluster(ctx, client.ObjectKey{Name: clusterName, Namespace: namespace}).Return(nil)
 
-			err := clusterRegistrant.DeregisterCluster(ctx, restCfg, clientConfig, opts)
+			err := clusterRegistrant.DeregisterCluster(ctx, restCfg, opts)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
