@@ -102,6 +102,15 @@ type ClusterRegistrant interface {
 	) (*corev1.ServiceAccount, error)
 
 	/*
+		DeleteRemoteServiceAccount deletes the ServiceAccount created by EnsureRemoteServiceAccount, if it exists.
+	*/
+	DeleteRemoteServiceAccount(
+		ctx context.Context,
+		remoteClientCfg clientcmd.ClientConfig,
+		opts Options,
+	) error
+
+	/*
 		CreateRemoteAccessToken takes an instance of a remote config, and a reference to an existing `ServiceAccount`,
 		and attempts to bind the given `RBAC` objects to said `ServiceAccount`, in the specified cluster.
 
@@ -115,6 +124,16 @@ type ClusterRegistrant interface {
 	) (token string, err error)
 
 	/*
+		DeleteRemoteAccessResources deletes the Roles, RoleBindings, ClusterRoles, and ClusterRoleBindings created from
+		CreateRemoteAccessToken.
+	*/
+	DeleteRemoteAccessResources(
+		ctx context.Context,
+		remoteClientCfg clientcmd.ClientConfig,
+		opts RbacOptions,
+	) error
+
+	/*
 		RegisterClusterWithToken takes an instance of the remote config, as well as a `BearerToken` and creates a
 		kubeconfig secret on the local cluster, in the specified namespace.
 	*/
@@ -123,6 +142,15 @@ type ClusterRegistrant interface {
 		masterClusterCfg *rest.Config,
 		remoteClientCfg clientcmd.ClientConfig,
 		token string,
+		opts Options,
+	) error
+
+	/*
+		DeregisterClusterWithToken deletes all resources created by RegisterClusterWithToken.
+	*/
+	DeregisterCluster(
+		ctx context.Context,
+		masterClusterCfg *rest.Config,
 		opts Options,
 	) error
 }

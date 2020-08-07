@@ -161,6 +161,40 @@ var _ = Describe("Registrant", func() {
 			Expect(sa).To(Equal(expected))
 		})
 
+		It("will delete remote service account", func() {
+			clusterRegistrant := register.NewClusterRegistrant(
+				"",
+				clusterRbacBinderFactory,
+				secretClient,
+				secretClientFactory,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
+				kubeClusterClientFactory,
+			)
+
+			clientConfig.EXPECT().
+				ClientConfig().
+				Return(nil, nil)
+
+			opts := register.Options{
+				ClusterName:     clusterName,
+				Namespace:       namespace,
+				RemoteNamespace: "remote",
+				RemoteCtx:       remoteCtx,
+			}
+
+			saClient.EXPECT().
+				DeleteServiceAccount(ctx, client.ObjectKey{
+					Namespace: opts.RemoteNamespace,
+					Name:      opts.ClusterName,
+				}).
+				Return(nil)
+
+			err := clusterRegistrant.DeleteRemoteServiceAccount(ctx, clientConfig, opts)
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 
 	Context("CreateRemoteAccessToken", func() {
@@ -292,6 +326,84 @@ var _ = Describe("Registrant", func() {
 			Expect(returnedToken).To(Equal(token))
 		})
 
+		It("will delete remote access resources", func() {
+			clusterRegistrant := register.NewClusterRegistrant(
+				"",
+				clusterRbacBinderFactory,
+				secretClient,
+				secretClientFactory,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
+				kubeClusterClientFactory,
+			)
+
+			sa := client.ObjectKey{Name: clusterName, Namespace: "remote-namespace"}
+
+			clientConfig.EXPECT().
+				ClientConfig().
+				Return(nil, nil)
+
+			opts := register.RbacOptions{
+				Options: register.Options{
+					ClusterName:     clusterName,
+					Namespace:       namespace,
+					RemoteCtx:       remoteCtx,
+					RemoteNamespace: "remote-namespace",
+				},
+				Roles: []*rbacv1.Role{
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "r-1",
+							Namespace: namespace,
+						},
+					},
+				},
+				ClusterRoles: []*rbacv1.ClusterRole{
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "cr-1",
+						},
+					},
+				},
+				RoleBindings: []client.ObjectKey{
+					{
+						Namespace: "namespace",
+						Name:      "rb-1",
+					},
+				},
+				ClusterRoleBindings: []client.ObjectKey{
+					{
+						Namespace: "",
+						Name:      "crb-1",
+					},
+				},
+			}
+
+			roleClient.EXPECT().
+				DeleteRole(ctx, client.ObjectKey{Name: opts.Roles[0].Name, Namespace: opts.Roles[0].Namespace}).
+				Return(nil)
+
+			clusterRBACBinder.EXPECT().
+				DeleteRoleBindings(ctx, sa, append(opts.RoleBindings, client.ObjectKey{
+					Name:      opts.Roles[0].GetName(),
+					Namespace: opts.Roles[0].GetNamespace(),
+				})).
+				Return(nil)
+
+			clusterRoleClient.EXPECT().
+				DeleteClusterRole(ctx, opts.ClusterRoles[0].Name).
+				Return(nil)
+
+			clusterRBACBinder.EXPECT().
+				DeleteClusterRoleBindings(ctx, sa, append(opts.ClusterRoleBindings, client.ObjectKey{
+					Name: opts.ClusterRoles[0].GetName(),
+				})).Return(nil)
+
+			err := clusterRegistrant.DeleteRemoteAccessResources(ctx, clientConfig, opts)
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 
 	Context("RegisterClusterWithToken", func() {
@@ -515,6 +627,39 @@ var _ = Describe("Registrant", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
+		It("should deregister cluster", func() {
+			clusterRegistrant := register.NewClusterRegistrant(
+				"",
+				clusterRbacBinderFactory,
+				secretClient,
+				secretClientFactory,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
+				kubeClusterClientFactory,
+			)
+
+			opts := register.Options{
+				ClusterName: clusterName,
+				Namespace:   namespace,
+				RemoteCtx:   remoteCtx,
+			}
+
+			restCfg := &rest.Config{
+				Host: "mock-host",
+			}
+
+			secretClient.EXPECT().
+				DeleteSecret(ctx, client.ObjectKey{Name: clusterName, Namespace: namespace}).
+				Return(nil)
+
+			kubeClusterClient.EXPECT().
+				DeleteKubernetesCluster(ctx, client.ObjectKey{Name: clusterName, Namespace: namespace}).Return(nil)
+
+			err := clusterRegistrant.DeregisterCluster(ctx, restCfg, opts)
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 
 })

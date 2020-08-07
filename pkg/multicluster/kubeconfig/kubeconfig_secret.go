@@ -39,13 +39,17 @@ func ToSecret(namespace string, cluster string, kc api.Config) (*kubev1.Secret, 
 	}
 
 	return &kubev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cluster,
-			Namespace: namespace,
-		},
-		Type: SecretType,
-		Data: map[string][]byte{Key: rawKubeConfig},
+		ObjectMeta: SecretObjMeta(namespace, cluster),
+		Type:       SecretType,
+		Data:       map[string][]byte{Key: rawKubeConfig},
 	}, nil
+}
+
+func SecretObjMeta(namespace string, cluster string) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:      cluster,
+		Namespace: namespace,
+	}
 }
 
 /*

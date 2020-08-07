@@ -54,6 +54,20 @@ func (mr *MockClusterRegistrantMockRecorder) EnsureRemoteServiceAccount(ctx, rem
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureRemoteServiceAccount", reflect.TypeOf((*MockClusterRegistrant)(nil).EnsureRemoteServiceAccount), ctx, remoteClientCfg, opts)
 }
 
+// DeleteRemoteServiceAccount mocks base method
+func (m *MockClusterRegistrant) DeleteRemoteServiceAccount(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, opts register.Options) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRemoteServiceAccount", ctx, remoteClientCfg, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRemoteServiceAccount indicates an expected call of DeleteRemoteServiceAccount
+func (mr *MockClusterRegistrantMockRecorder) DeleteRemoteServiceAccount(ctx, remoteClientCfg, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRemoteServiceAccount", reflect.TypeOf((*MockClusterRegistrant)(nil).DeleteRemoteServiceAccount), ctx, remoteClientCfg, opts)
+}
+
 // CreateRemoteAccessToken mocks base method
 func (m *MockClusterRegistrant) CreateRemoteAccessToken(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, sa client.ObjectKey, opts register.RbacOptions) (string, error) {
 	m.ctrl.T.Helper()
@@ -69,6 +83,20 @@ func (mr *MockClusterRegistrantMockRecorder) CreateRemoteAccessToken(ctx, remote
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRemoteAccessToken", reflect.TypeOf((*MockClusterRegistrant)(nil).CreateRemoteAccessToken), ctx, remoteClientCfg, sa, opts)
 }
 
+// DeleteRemoteAccessResources mocks base method
+func (m *MockClusterRegistrant) DeleteRemoteAccessResources(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, opts register.RbacOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRemoteAccessResources", ctx, remoteClientCfg, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRemoteAccessResources indicates an expected call of DeleteRemoteAccessResources
+func (mr *MockClusterRegistrantMockRecorder) DeleteRemoteAccessResources(ctx, remoteClientCfg, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRemoteAccessResources", reflect.TypeOf((*MockClusterRegistrant)(nil).DeleteRemoteAccessResources), ctx, remoteClientCfg, opts)
+}
+
 // RegisterClusterWithToken mocks base method
 func (m *MockClusterRegistrant) RegisterClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options) error {
 	m.ctrl.T.Helper()
@@ -81,4 +109,18 @@ func (m *MockClusterRegistrant) RegisterClusterWithToken(ctx context.Context, ma
 func (mr *MockClusterRegistrantMockRecorder) RegisterClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts)
+}
+
+// DeregisterCluster mocks base method
+func (m *MockClusterRegistrant) DeregisterCluster(ctx context.Context, masterClusterCfg *rest.Config, opts register.Options) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeregisterCluster", ctx, masterClusterCfg, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeregisterCluster indicates an expected call of DeregisterCluster
+func (mr *MockClusterRegistrantMockRecorder) DeregisterCluster(ctx, masterClusterCfg, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeregisterCluster", reflect.TypeOf((*MockClusterRegistrant)(nil).DeregisterCluster), ctx, masterClusterCfg, opts)
 }

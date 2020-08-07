@@ -72,21 +72,5 @@ metadata:
 
 
 
----
-# Service for painter
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: painter
-  name: painter
-  namespace: {{ $.Release.Namespace }}
-spec:
-  selector:
-    app: painter
-  type: 
-  ports:
-
 
 
