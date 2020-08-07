@@ -35,6 +35,18 @@ type ClusterRBACBinder interface {
 		serviceAccount client.ObjectKey,
 		roles []client.ObjectKey,
 	) error
+
+	DeleteClusterRoleBindings(
+		ctx context.Context,
+		serviceAccount client.ObjectKey,
+		clusterRoles []client.ObjectKey,
+	) error
+
+	DeleteRoleBindings(
+		ctx context.Context,
+		serviceAccount client.ObjectKey,
+		roles []client.ObjectKey,
+	) error
 }
 
 /*

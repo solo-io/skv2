@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	rbac_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -73,7 +75,7 @@ func (c *clusterRbacBinder) bindClusterRolesToServiceAccount(
 	for _, role := range roles {
 		crbToCreate := &k8s_rbac_types.ClusterRoleBinding{
 			ObjectMeta: k8s_meta.ObjectMeta{
-				Name: fmt.Sprintf("%s-%s-clusterrole-binding", targetServiceAccount.Name, role.Name),
+				Name: clusterRoleBindingName(targetServiceAccount.Name, role.Name),
 			},
 			Subjects: []k8s_rbac_types.Subject{{
 				Kind:      "ServiceAccount",
@@ -117,7 +119,8 @@ func (c *clusterRbacBinder) bindRolesToServiceAccount(
 	for _, role := range roles {
 		rbToCreate := &k8s_rbac_types.RoleBinding{
 			ObjectMeta: k8s_meta.ObjectMeta{
-				Name: fmt.Sprintf("%s-%s-role-binding", targetServiceAccount.Name, role.Name),
+				Name:      roleBindingName(targetServiceAccount.Name, role.Name),
+				Namespace: role.Namespace,
 			},
 			Subjects: []k8s_rbac_types.Subject{{
 				Kind:      "ServiceAccount",
@@ -137,4 +140,45 @@ func (c *clusterRbacBinder) bindRolesToServiceAccount(
 	}
 
 	return nil
+}
+
+func (c *clusterRbacBinder) DeleteClusterRoleBindings(
+	ctx context.Context,
+	serviceAccount client.ObjectKey,
+	clusterRoles []client.ObjectKey,
+) error {
+	var multierr *multierror.Error
+	for _, clusterRole := range clusterRoles {
+		err := c.clusterRoleBindingClient.DeleteClusterRoleBinding(ctx, clusterRoleBindingName(serviceAccount.Name, clusterRole.Name))
+		if err != nil && !errors.IsNotFound(err) {
+			multierr = multierror.Append(multierr, err)
+		}
+	}
+	return multierr.ErrorOrNil()
+}
+
+func (c *clusterRbacBinder) DeleteRoleBindings(
+	ctx context.Context,
+	serviceAccount client.ObjectKey,
+	roles []client.ObjectKey,
+) error {
+	var multierr *multierror.Error
+	for _, role := range roles {
+		err := c.roleBindingClient.DeleteRoleBinding(
+			ctx,
+			client.ObjectKey{Name: roleBindingName(serviceAccount.Name, role.Name), Namespace: role.Namespace},
+		)
+		if err != nil && !errors.IsNotFound(err) {
+			multierr = multierror.Append(multierr, err)
+		}
+	}
+	return multierr.ErrorOrNil()
+}
+
+func roleBindingName(serviceAccountName, roleName string) string {
+	return fmt.Sprintf("%s-%s-role-binding", serviceAccountName, roleName)
+}
+
+func clusterRoleBindingName(serviceAccountName, clusterRoleName string) string {
+	return fmt.Sprintf("%s-%s-clusterrole-binding", serviceAccountName, clusterRoleName)
 }
