@@ -15,17 +15,15 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
-	github.com/golang/protobuf v1.3.5
-	github.com/google/go-cmp v0.4.0 // indirect
+	github.com/golang/protobuf v1.4.2
 	github.com/gophercloud/gophercloud v0.2.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/hashstructure v1.0.0
-	github.com/onsi/ginkgo v1.12.0
-	github.com/onsi/gomega v1.8.1
+	github.com/onsi/ginkgo v1.12.1
+	github.com/onsi/gomega v1.10.1
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.2.1
@@ -41,19 +39,16 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
 	golang.org/x/tools v0.0.0-20200427205912-352a5409fae0
-	gonum.org/v1/netlib v0.0.0-20191031114514-eccb95939662 // indirect
 	google.golang.org/api v0.6.0
-	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24
+	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
 	google.golang.org/grpc v1.28.1 // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
-	k8s.io/api v0.17.2
-	k8s.io/apiextensions-apiserver v0.18.2
-	k8s.io/apimachinery v0.18.2
-	k8s.io/client-go v0.17.2
-	k8s.io/code-generator v0.17.2
-	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66 // indirect
+	k8s.io/api v0.18.6
+	k8s.io/apiextensions-apiserver v0.18.6
+	k8s.io/apimachinery v0.18.6
+	k8s.io/client-go v0.18.6
+	k8s.io/code-generator v0.18.6
 	sigs.k8s.io/aws-iam-authenticator v0.5.0
-	sigs.k8s.io/controller-runtime v0.5.6
+	sigs.k8s.io/controller-runtime v0.6.2
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -63,12 +58,6 @@ replace k8s.io/kubernetes => k8s.io/kubernetes v1.14.1
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
-
-	k8s.io/api => k8s.io/api v0.17.1
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.1
-	k8s.io/apimachinery => k8s.io/apimachinery v0.17.1
-	k8s.io/client-go => k8s.io/client-go v0.17.1
-	k8s.io/code-generator => k8s.io/code-generator v0.17.1
 )
 
 replace (
