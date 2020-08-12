@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -14,6 +16,35 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
+
+// the key used to differentiate discovery resources by
+// the cluster in which they were discovered
+var ClusterLabelKey = fmt.Sprintf("cluster.%s", v1alpha1.SchemeGroupVersion.Group)
+
+// adds cluster labels to the given set of labels and returns them
+func AddClusterLabels(clusterName string, objLabels map[string]string) map[string]string {
+	// add cluster label to object
+	if objLabels == nil {
+		objLabels = map[string]string{}
+	}
+	for k, v := range ClusterLabels(clusterName) {
+		objLabels[k] = v
+	}
+	return objLabels
+}
+
+// Create a label that identifies the cluster used to discover a resource.
+func ClusterLabels(cluster string) map[string]string {
+	clusterK, clusterV := ClusterLabel(cluster)
+	return map[string]string{
+		clusterK: clusterV,
+	}
+}
+
+func ClusterLabel(cluster string) (string, string) {
+	return ClusterLabelKey,
+		fmt.Sprintf("%s", cluster)
+}
 
 // User-defined error-handling functions.
 // Used to invoke custom error-handling code when a resource write fails.
@@ -164,11 +195,21 @@ type Snapshot struct {
 	ListsToSync []ResourceList
 }
 
-// sync the output snapshot to storage
-func (s Snapshot) Sync(ctx context.Context, cli client.Client, errHandler ErrorHandler) {
+// sync the output snapshot to local cluster storage.
+// only writes resources intended for the local cluster (with ClusterName == "")
+// Note that Syncing snapshots in this way adds the label
+func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHandler ErrorHandler) {
 
 	for _, list := range s.ListsToSync {
-		s.syncList(ctx, cli, list, errHandler)
+		listForLocalCluster := list.SplitByClusterName()[multicluster.LocalCluster]
+
+		resourcesForLocalCluster := ResourceList{
+			Resources:    listForLocalCluster,
+			ListFunc:     list.ListFunc,
+			ResourceKind: list.ResourceKind,
+		}
+
+		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, errHandler)
 	}
 
 }
@@ -180,6 +221,9 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 	clusters := mcClient.ListClusters()
 	for _, list := range s.ListsToSync {
 		listsByCluster := list.SplitByClusterName()
+		// TODO(ilackarms): possible error case that we're ignoring here;
+		// we only write resources to clusters that are available to the multicluster client
+		// if the cluster is not available, we will not error (simply skip writing the resources here)
 		for _, cluster := range clusters {
 			listForCluster := listsByCluster[cluster]
 
@@ -198,12 +242,16 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 				ResourceKind: list.ResourceKind,
 			}
 
-			s.syncList(ctx, cli, resourcesForCluster, errHandler)
+			s.syncList(ctx, cluster, cli, resourcesForCluster, errHandler)
 		}
 	}
 }
 
-func (s Snapshot) syncList(ctx context.Context, cli client.Client, list ResourceList, errHandler ErrorHandler) {
+// sync the list to the cluster.
+// clientCluster represents the cluster to which the resources are being written.
+// garbage collects every resource turned by the list.ListFunc which is no longer desired.
+// any resources written for a different clientCluster will not be garbage collected.
+func (s Snapshot) syncList(ctx context.Context, clientCluster string, cli client.Client, list ResourceList, errHandler ErrorHandler) {
 	for _, obj := range list.Resources {
 
 		// upsert all desired resources
@@ -220,11 +268,20 @@ func (s Snapshot) syncList(ctx context.Context, cli client.Client, list Resource
 	existingList, err := list.ListFunc(ctx, cli)
 	if err != nil {
 		// cache read should never error
-		contextutils.LoggerFrom(ctx).Errorf("failed to read from cache for kind %v", list.ResourceKind)
+		contextutils.LoggerFrom(ctx).Errorf("failed to read from cache for kind %v: %v", list.ResourceKind, err)
 		return
 	}
 
 	isStale := func(res metav1.Object) bool {
+		// only process resources with the cluster label
+		// matching the resources written for this cluster.
+		// this is used to distinguish between resources written to
+		// a local cluster which is also registered as a managed cluster.
+		for k, v := range ClusterLabels(clientCluster) {
+			if res.GetLabels()[k] != v {
+				return false
+			}
+		}
 		for _, desired := range list.Resources {
 			if res.GetName() == desired.GetName() && res.GetNamespace() == desired.GetNamespace() {
 				return false
@@ -249,14 +306,20 @@ func (s Snapshot) syncList(ctx context.Context, cli client.Client, list Resource
 }
 
 func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Object) error {
+	// add cluster label to object
+	obj.SetLabels(
+		AddClusterLabels(obj.GetClusterName(), obj.GetLabels()),
+	)
+
 	result, err := controllerutils.Upsert(ctx, cli, obj)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Errorw("failed upserting resource", "resource", obj, "err", err)
+		contextutils.LoggerFrom(ctx).Errorw("failed upserting resource", "resource", sets.TypedKey(obj), "err", err)
 
 		incrementResourcesWriteFailsTotal(s.Name, "upsert", obj)
 
 		return err
 	}
+	contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", sets.TypedKey(obj))
 
 	incrementResourcesSyncedTotal(
 		s.Name,
@@ -269,12 +332,13 @@ func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Obje
 
 func (s Snapshot) delete(ctx context.Context, cli client.Client, obj ezkube.Object) error {
 	if err := cli.Delete(ctx, obj); err != nil {
-		contextutils.LoggerFrom(ctx).Errorw("failed deleting stale resource", "resource", obj, "err", err)
+		contextutils.LoggerFrom(ctx).Errorw("failed deleting stale resource", "resource", sets.TypedKey(obj), "err", err)
 
 		incrementResourcesWriteFailsTotal(s.Name, "delete", obj)
 
 		return err
 	}
+	contextutils.LoggerFrom(ctx).Debugw("deleted resource", "resource", sets.TypedKey(obj))
 
 	incrementResourcesDeletedTotal(s.Name, obj)
 	return nil

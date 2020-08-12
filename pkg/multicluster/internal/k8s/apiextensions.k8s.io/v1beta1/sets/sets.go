@@ -7,23 +7,36 @@ package v1beta1sets
 import (
 	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
+	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type CustomResourceDefinitionSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
+	// Return the Set as a map of key to resource.
 	Map() map[string]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
+	// Insert a resource into the set.
 	Insert(customResourceDefinition ...*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(customResourceDefinitionSet CustomResourceDefinitionSet) bool
-	Has(customResourceDefinition *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) bool
-	Delete(customResourceDefinition *apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(customResourceDefinition ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(customResourceDefinition ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
+	// Return the difference with the provided set
 	Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
+	// Return the intersection with the provided set
 	Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -52,18 +65,35 @@ func NewCustomResourceDefinitionSetFromList(customResourceDefinitionList *apiext
 }
 
 func (s *customResourceDefinitionSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
-func (s *customResourceDefinitionSet) List() []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition {
+func (s *customResourceDefinitionSet) List(filterResource ...func(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
+		})
+	}
+
 	var customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
 	}
 	return customResourceDefinitionList
 }
 
 func (s *customResourceDefinitionSet) Map() map[string]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
@@ -74,35 +104,57 @@ func (s *customResourceDefinitionSet) Map() map[string]*apiextensions_k8s_io_v1b
 func (s *customResourceDefinitionSet) Insert(
 	customResourceDefinitionList ...*apiextensions_k8s_io_v1beta1.CustomResourceDefinition,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range customResourceDefinitionList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s *customResourceDefinitionSet) Has(customResourceDefinition *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) bool {
+func (s *customResourceDefinitionSet) Has(customResourceDefinition ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(customResourceDefinition)
 }
 
 func (s *customResourceDefinitionSet) Equal(
 	customResourceDefinitionSet CustomResourceDefinitionSet,
 ) bool {
+	if s == nil {
+		return customResourceDefinitionSet == nil
+	}
 	return s.set.Equal(makeGenericCustomResourceDefinitionSet(customResourceDefinitionSet.List()))
 }
 
-func (s *customResourceDefinitionSet) Delete(CustomResourceDefinition *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) {
+func (s *customResourceDefinitionSet) Delete(CustomResourceDefinition ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(CustomResourceDefinition)
 }
 
 func (s *customResourceDefinitionSet) Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
+	if s == nil {
+		return set
+	}
 	return NewCustomResourceDefinitionSet(append(s.List(), set.List()...)...)
 }
 
 func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericCustomResourceDefinitionSet(set.List()))
 	return &customResourceDefinitionSet{set: newSet}
 }
 
 func (s *customResourceDefinitionSet) Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericCustomResourceDefinitionSet(set.List()))
 	var customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
 	for _, obj := range newSet.List() {
@@ -112,6 +164,9 @@ func (s *customResourceDefinitionSet) Intersection(set CustomResourceDefinitionS
 }
 
 func (s *customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find CustomResourceDefinition %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, id)
 	if err != nil {
 		return nil, err
@@ -121,5 +176,8 @@ func (s *customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions
 }
 
 func (s *customResourceDefinitionSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }

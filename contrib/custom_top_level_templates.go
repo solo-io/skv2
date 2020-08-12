@@ -28,8 +28,9 @@ func (p CrossGroupTemplateParameters) constructTemplate(params CrossGroupTemplat
 		panic(err)
 	}
 	inputSnapshotTemplate := model.CustomTemplates{
-		Templates: map[string]string{params.OutputFilename: templateContents},
-		Funcs:     funcs.MakeTopLevelFuncs(params.OutputFilename, params.SelectFromGroups, params.ResourcesToSelect),
+		Templates:        map[string]string{params.OutputFilename: templateContents},
+		MockgenDirective: true,
+		Funcs:            funcs.MakeTopLevelFuncs(params.OutputFilename, params.SelectFromGroups, params.ResourcesToSelect),
 	}
 
 	return inputSnapshotTemplate
@@ -47,6 +48,18 @@ const (
 // Returns the template for generating input snapshots.
 func InputSnapshot(params CrossGroupTemplateParameters) model.CustomTemplates {
 	return params.constructTemplate(params, InputSnapshotCustomTemplatePath)
+}
+
+/*
+InputSnapshot test builder custom template
+*/
+const (
+	InputSnapshotManualBuilderCustomTemplatePath = "input/input_snapshot_manual_builder.gotmpl"
+)
+
+// Returns the template for generating input snapshots.
+func InputSnapshotManualBuilder(params CrossGroupTemplateParameters) model.CustomTemplates {
+	return params.constructTemplate(params, InputSnapshotManualBuilderCustomTemplatePath)
 }
 
 /*

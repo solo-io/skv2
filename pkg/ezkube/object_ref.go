@@ -2,6 +2,7 @@ package ezkube
 
 import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func MakeObjectRef(resource ResourceId) *v1.ObjectRef {
@@ -28,4 +29,11 @@ func ClusterRefsMatch(ref1, ref2 ClusterResourceId) bool {
 	return ref1.GetNamespace() == ref2.GetNamespace() &&
 		ref1.GetName() == ref2.GetName() &&
 		ref1.GetClusterName() == ref2.GetClusterName()
+}
+
+func MakeClientObjectKey(ref ResourceId) client.ObjectKey {
+	return client.ObjectKey{
+		Namespace: ref.GetNamespace(),
+		Name:      ref.GetName(),
+	}
 }

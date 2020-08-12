@@ -5,6 +5,7 @@ package input
 
 import (
 	"context"
+	"time"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -48,32 +49,36 @@ type inputReconciler struct {
 // Note(ilackarms): in the current implementation, the constructor
 // also starts the reconciler's event processor in a goroutine.
 // Make sure to cancel the parent context in order to ensure the goroutine started here is gc'ed.
+// only one event will be processed per reconcileInterval.
 func NewMultiClusterReconcilerImpl(
 	ctx context.Context,
 	reconcileFunc MultiClusterReconcileFunc,
+	reconcileInterval time.Duration,
 ) MultiClusterReconciler {
 	r := &inputReconciler{
 		ctx:                       ctx,
 		queue:                     workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
 		multiClusterReconcileFunc: reconcileFunc,
 	}
-	go r.reconcileEventsForever()
+	go r.reconcileEventsForever(reconcileInterval)
 	return r
 }
 
 // Note(ilackarms): in the current implementation, the constructor
 // also starts the reconciler's event processor in a goroutine.
 // Make sure to cancel the parent context in order to ensure the goroutine started here is gc'ed.
+// only one event will be processed per reconcileInterval.
 func NewSingleClusterReconciler(
 	ctx context.Context,
 	reconcileFunc SingleClusterReconcileFunc,
+	reconcileInterval time.Duration,
 ) SingleClusterReconciler {
 	r := &inputReconciler{
 		ctx:                        ctx,
 		queue:                      workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
 		singleClusterReconcileFunc: reconcileFunc,
 	}
-	go r.reconcileEventsForever()
+	go r.reconcileEventsForever(reconcileInterval)
 	return r
 }
 
@@ -81,8 +86,11 @@ func (r *inputReconciler) ReconcileGeneric(id ezkube.ResourceId) (reconcile.Resu
 	if r.ctx == nil {
 		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
 	}
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "id", sets.Key(id))
-	r.queue.AddRateLimited(id)
+	// never queue more than one event
+	if r.queue.Len() < 2 {
+		contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "id", sets.Key(id))
+		r.queue.AddRateLimited(id)
+	}
 
 	return reconcile.Result{}, nil
 }
@@ -91,20 +99,24 @@ func (r *inputReconciler) ReconcileClusterGeneric(id ezkube.ClusterResourceId) (
 	if r.ctx == nil {
 		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
 	}
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", id.GetClusterName(), "id", sets.Key(id))
-	r.queue.AddRateLimited(id)
+	// never queue more than one event
+	if r.queue.Len() < 2 {
+		contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", id.GetClusterName(), "id", sets.Key(id))
+		r.queue.AddRateLimited(id)
+	}
 
 	return reconcile.Result{}, nil
 }
 
 // reconcile queued events until context is cancelled.
 // blocking (runs from a goroutine)
-func (r *inputReconciler) reconcileEventsForever() {
+func (r *inputReconciler) reconcileEventsForever(reconcileInterval time.Duration) {
 	for r.processNextWorkItem() {
 		select {
 		case <-r.ctx.Done():
 			return
 		default:
+			time.Sleep(reconcileInterval)
 		}
 	}
 }
