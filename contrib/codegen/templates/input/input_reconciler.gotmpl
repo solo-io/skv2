@@ -27,6 +27,7 @@ import (
     "github.com/hashicorp/go-multierror"
     "sigs.k8s.io/controller-runtime/pkg/client"
     "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
 
 {{- range $group := $groups }}
 {{ $type_import_prefix := group_import_name $group }}
@@ -64,6 +65,7 @@ func RegisterMultiClusterReconciler(
         clusters multicluster.ClusterWatcher,
         reconcileFunc input.MultiClusterReconcileFunc,
         reconcileInterval time.Duration,
+        predicates ...predicate.Predicate,
 ) {
 
 	base := input.NewMultiClusterReconcilerImpl(
@@ -83,7 +85,7 @@ func RegisterMultiClusterReconciler(
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, r)
+    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, r, predicates...)
 {{- end }}
 {{- end }}
 
@@ -142,6 +144,7 @@ func RegisterSingleClusterReconciler(
         mgr manager.Manager,
         reconcileFunc input.SingleClusterReconcileFunc,
         reconcileInterval time.Duration,
+        predicates ...predicate.Predicate,
 ) error {
 
     base := input.NewSingleClusterReconciler(
@@ -161,7 +164,7 @@ func RegisterSingleClusterReconciler(
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, reconcile.Options{}).Run{{ $resource.Kind }}Reconciler(ctx, r); err != nil {
+    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, reconcile.Options{}).Run{{ $resource.Kind }}Reconciler(ctx, r, predicates...); err != nil {
     	return err
     }
 {{- end }}
