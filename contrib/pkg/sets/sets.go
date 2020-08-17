@@ -51,6 +51,9 @@ func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
 	set := sets.NewString()
 	mapping := map[string]ezkube.ResourceId{}
 	for _, resource := range resources {
+		if resource == nil {
+			continue
+		}
 		key := Key(resource)
 		set.Insert(key)
 		mapping[key] = resource
@@ -97,6 +100,9 @@ func (s *resourceSet) Insert(
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	for _, resource := range resources {
+		if resource == nil {
+			continue
+		}
 		key := Key(resource)
 		s.mapping[key] = resource
 		s.set.Insert(key)
