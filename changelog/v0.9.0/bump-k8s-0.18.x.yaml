@@ -1,4 +1,0 @@
-changelog:
-- type: BREAKING_CHANGE
-  description: Bump k8s 0.18.x
-  issueLink: https://github.com/solo-io/skv2/issues/118
