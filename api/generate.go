@@ -27,6 +27,7 @@ func main() {
 	groups = append(groups, k8s.Groups()...)
 
 	skv2Cmd := codegen.Command{
+		AppName:         "skv2",
 		Groups:          groups,
 		AnyVendorConfig: skv2Imports,
 		RenderProtos:    true,

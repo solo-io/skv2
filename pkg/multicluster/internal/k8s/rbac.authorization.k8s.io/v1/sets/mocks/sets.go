@@ -52,17 +52,21 @@ func (mr *MockRoleSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method
-func (m *MockRoleSet) List() []*v1.Role {
+func (m *MockRoleSet) List(filterResource ...func(*v1.Role) bool) []*v1.Role {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1.Role)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockRoleSetMockRecorder) List() *gomock.Call {
+func (mr *MockRoleSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method
@@ -110,7 +114,7 @@ func (mr *MockRoleSetMockRecorder) Equal(roleSet interface{}) *gomock.Call {
 }
 
 // Has mocks base method
-func (m *MockRoleSet) Has(role *v1.Role) bool {
+func (m *MockRoleSet) Has(role ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", role)
 	ret0, _ := ret[0].(bool)
@@ -124,7 +128,7 @@ func (mr *MockRoleSetMockRecorder) Has(role interface{}) *gomock.Call {
 }
 
 // Delete mocks base method
-func (m *MockRoleSet) Delete(role *v1.Role) {
+func (m *MockRoleSet) Delete(role ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", role)
 }
@@ -244,17 +248,21 @@ func (mr *MockRoleBindingSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method
-func (m *MockRoleBindingSet) List() []*v1.RoleBinding {
+func (m *MockRoleBindingSet) List(filterResource ...func(*v1.RoleBinding) bool) []*v1.RoleBinding {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1.RoleBinding)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockRoleBindingSetMockRecorder) List() *gomock.Call {
+func (mr *MockRoleBindingSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleBindingSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleBindingSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method
@@ -302,7 +310,7 @@ func (mr *MockRoleBindingSetMockRecorder) Equal(roleBindingSet interface{}) *gom
 }
 
 // Has mocks base method
-func (m *MockRoleBindingSet) Has(roleBinding *v1.RoleBinding) bool {
+func (m *MockRoleBindingSet) Has(roleBinding ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", roleBinding)
 	ret0, _ := ret[0].(bool)
@@ -316,7 +324,7 @@ func (mr *MockRoleBindingSetMockRecorder) Has(roleBinding interface{}) *gomock.C
 }
 
 // Delete mocks base method
-func (m *MockRoleBindingSet) Delete(roleBinding *v1.RoleBinding) {
+func (m *MockRoleBindingSet) Delete(roleBinding ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", roleBinding)
 }
@@ -436,17 +444,21 @@ func (mr *MockClusterRoleSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method
-func (m *MockClusterRoleSet) List() []*v1.ClusterRole {
+func (m *MockClusterRoleSet) List(filterResource ...func(*v1.ClusterRole) bool) []*v1.ClusterRole {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1.ClusterRole)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockClusterRoleSetMockRecorder) List() *gomock.Call {
+func (mr *MockClusterRoleSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterRoleSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterRoleSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method
@@ -494,7 +506,7 @@ func (mr *MockClusterRoleSetMockRecorder) Equal(clusterRoleSet interface{}) *gom
 }
 
 // Has mocks base method
-func (m *MockClusterRoleSet) Has(clusterRole *v1.ClusterRole) bool {
+func (m *MockClusterRoleSet) Has(clusterRole ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", clusterRole)
 	ret0, _ := ret[0].(bool)
@@ -508,7 +520,7 @@ func (mr *MockClusterRoleSetMockRecorder) Has(clusterRole interface{}) *gomock.C
 }
 
 // Delete mocks base method
-func (m *MockClusterRoleSet) Delete(clusterRole *v1.ClusterRole) {
+func (m *MockClusterRoleSet) Delete(clusterRole ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", clusterRole)
 }
@@ -628,17 +640,21 @@ func (mr *MockClusterRoleBindingSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method
-func (m *MockClusterRoleBindingSet) List() []*v1.ClusterRoleBinding {
+func (m *MockClusterRoleBindingSet) List(filterResource ...func(*v1.ClusterRoleBinding) bool) []*v1.ClusterRoleBinding {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1.ClusterRoleBinding)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockClusterRoleBindingSetMockRecorder) List() *gomock.Call {
+func (mr *MockClusterRoleBindingSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method
@@ -686,7 +702,7 @@ func (mr *MockClusterRoleBindingSetMockRecorder) Equal(clusterRoleBindingSet int
 }
 
 // Has mocks base method
-func (m *MockClusterRoleBindingSet) Has(clusterRoleBinding *v1.ClusterRoleBinding) bool {
+func (m *MockClusterRoleBindingSet) Has(clusterRoleBinding ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", clusterRoleBinding)
 	ret0, _ := ret[0].(bool)
@@ -700,7 +716,7 @@ func (mr *MockClusterRoleBindingSetMockRecorder) Has(clusterRoleBinding interfac
 }
 
 // Delete mocks base method
-func (m *MockClusterRoleBindingSet) Delete(clusterRoleBinding *v1.ClusterRoleBinding) {
+func (m *MockClusterRoleBindingSet) Delete(clusterRoleBinding ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", clusterRoleBinding)
 }

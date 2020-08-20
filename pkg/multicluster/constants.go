@@ -1,6 +1,7 @@
 package multicluster
 
 const (
-	// MasterCluster is the clusterName for the cluster ClusterWatcher watches.
-	MasterCluster = ""
+	// LocalCluster is the clusterName for the local cluster
+	// (the main cluster from which registered clusters are processed by the ClusterWatcher).
+	LocalCluster = ""
 )

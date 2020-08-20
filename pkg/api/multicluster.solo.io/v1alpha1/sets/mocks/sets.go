@@ -52,17 +52,21 @@ func (mr *MockKubernetesClusterSetMockRecorder) Keys() *gomock.Call {
 }
 
 // List mocks base method
-func (m *MockKubernetesClusterSet) List() []*v1alpha1.KubernetesCluster {
+func (m *MockKubernetesClusterSet) List(filterResource ...func(*v1alpha1.KubernetesCluster) bool) []*v1alpha1.KubernetesCluster {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1alpha1.KubernetesCluster)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockKubernetesClusterSetMockRecorder) List() *gomock.Call {
+func (mr *MockKubernetesClusterSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockKubernetesClusterSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockKubernetesClusterSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method
@@ -110,7 +114,7 @@ func (mr *MockKubernetesClusterSetMockRecorder) Equal(kubernetesClusterSet inter
 }
 
 // Has mocks base method
-func (m *MockKubernetesClusterSet) Has(kubernetesCluster *v1alpha1.KubernetesCluster) bool {
+func (m *MockKubernetesClusterSet) Has(kubernetesCluster ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", kubernetesCluster)
 	ret0, _ := ret[0].(bool)
@@ -124,7 +128,7 @@ func (mr *MockKubernetesClusterSetMockRecorder) Has(kubernetesCluster interface{
 }
 
 // Delete mocks base method
-func (m *MockKubernetesClusterSet) Delete(kubernetesCluster *v1alpha1.KubernetesCluster) {
+func (m *MockKubernetesClusterSet) Delete(kubernetesCluster ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", kubernetesCluster)
 }

@@ -19,6 +19,8 @@ package {{ package }}
 
 import (
     "context"
+    "encoding/json"
+
     "github.com/hashicorp/go-multierror"
     "github.com/solo-io/skv2/pkg/controllerutils"
     "github.com/solo-io/skv2/pkg/multicluster"
@@ -57,9 +59,15 @@ type Snapshot interface {
 {{- end }}
 {{- if $needs_sync_status }}
     // update the status of all input objects which support
-    // the Status subresource
+    // the Status subresource (in the local cluster)
     SyncStatuses(ctx context.Context, c client.Client) error
+
+    // update the status of all input objects which support
+    // the Status subresource (across multiple clusters)
+    SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
 {{- end }}
+    // serialize the entire snapshot as JSON
+    MarshalJSON() ([]byte, error)
 }
 
 type snapshot struct {
@@ -136,7 +144,44 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 {{- end }}
     return nil
 }
+
+func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+    {{/* generate calls to update status here */}}
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{- if $resource.Status }}
+    for _, obj := range s.{{ $kindPlural }}().List() {
+        clusterClient, err := mcClient.Cluster(obj.ClusterName)
+        if err != nil {
+            return err
+        }
+        if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+            return err
+        }
+    }
 {{- end }}
+{{- end }}
+{{- end }}
+    return nil
+}
+{{- end }}
+
+func (s snapshot) MarshalJSON() ([]byte, error) {
+    snapshotMap := map[string]interface{}{"name": s.name}
+{{/* add map contents here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    snapshotMap["{{ $kindLowerCamelPlural }}"] = s.{{ $kindLowerCamelPlural }}.List()
+{{- end }}
+{{- end }}
+	return json.Marshal(snapshotMap)
+}
 
 // builds the input snapshot from API Clients.
 // Two types of builders are available:

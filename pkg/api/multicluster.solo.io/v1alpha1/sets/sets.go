@@ -7,23 +7,36 @@ package v1alpha1sets
 import (
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
+	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type KubernetesClusterSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*multicluster_solo_io_v1alpha1.KubernetesCluster
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
+	// Return the Set as a map of key to resource.
 	Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster
+	// Insert a resource into the set.
 	Insert(kubernetesCluster ...*multicluster_solo_io_v1alpha1.KubernetesCluster)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(kubernetesClusterSet KubernetesClusterSet) bool
-	Has(kubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) bool
-	Delete(kubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(kubernetesCluster ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(kubernetesCluster ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set KubernetesClusterSet) KubernetesClusterSet
+	// Return the difference with the provided set
 	Difference(set KubernetesClusterSet) KubernetesClusterSet
+	// Return the intersection with the provided set
 	Intersection(set KubernetesClusterSet) KubernetesClusterSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -52,18 +65,35 @@ func NewKubernetesClusterSetFromList(kubernetesClusterList *multicluster_solo_io
 }
 
 func (s *kubernetesClusterSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
-func (s *kubernetesClusterSet) List() []*multicluster_solo_io_v1alpha1.KubernetesCluster {
+func (s *kubernetesClusterSet) List(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+		})
+	}
+
 	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 	}
 	return kubernetesClusterList
 }
 
 func (s *kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
@@ -74,35 +104,57 @@ func (s *kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.K
 func (s *kubernetesClusterSet) Insert(
 	kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range kubernetesClusterList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s *kubernetesClusterSet) Has(kubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) bool {
+func (s *kubernetesClusterSet) Has(kubernetesCluster ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(kubernetesCluster)
 }
 
 func (s *kubernetesClusterSet) Equal(
 	kubernetesClusterSet KubernetesClusterSet,
 ) bool {
+	if s == nil {
+		return kubernetesClusterSet == nil
+	}
 	return s.set.Equal(makeGenericKubernetesClusterSet(kubernetesClusterSet.List()))
 }
 
-func (s *kubernetesClusterSet) Delete(KubernetesCluster *multicluster_solo_io_v1alpha1.KubernetesCluster) {
+func (s *kubernetesClusterSet) Delete(KubernetesCluster ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(KubernetesCluster)
 }
 
 func (s *kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
+	if s == nil {
+		return set
+	}
 	return NewKubernetesClusterSet(append(s.List(), set.List()...)...)
 }
 
 func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericKubernetesClusterSet(set.List()))
 	return &kubernetesClusterSet{set: newSet}
 }
 
 func (s *kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesClusterSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericKubernetesClusterSet(set.List()))
 	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range newSet.List() {
@@ -112,6 +164,9 @@ func (s *kubernetesClusterSet) Intersection(set KubernetesClusterSet) Kubernetes
 }
 
 func (s *kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find KubernetesCluster %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&multicluster_solo_io_v1alpha1.KubernetesCluster{}, id)
 	if err != nil {
 		return nil, err
@@ -121,5 +176,8 @@ func (s *kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io
 }
 
 func (s *kubernetesClusterSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }

@@ -7,23 +7,36 @@ package v1sets
 import (
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
+	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type PaintSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*things_test_io_v1.Paint
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
+	// Return the Set as a map of key to resource.
 	Map() map[string]*things_test_io_v1.Paint
+	// Insert a resource into the set.
 	Insert(paint ...*things_test_io_v1.Paint)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(paintSet PaintSet) bool
-	Has(paint *things_test_io_v1.Paint) bool
-	Delete(paint *things_test_io_v1.Paint)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(paint ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(paint ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set PaintSet) PaintSet
+	// Return the difference with the provided set
 	Difference(set PaintSet) PaintSet
+	// Return the intersection with the provided set
 	Intersection(set PaintSet) PaintSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -52,18 +65,35 @@ func NewPaintSetFromList(paintList *things_test_io_v1.PaintList) PaintSet {
 }
 
 func (s *paintSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
-func (s *paintSet) List() []*things_test_io_v1.Paint {
+func (s *paintSet) List(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*things_test_io_v1.Paint))
+		})
+	}
+
 	var paintList []*things_test_io_v1.Paint
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
 	}
 	return paintList
 }
 
 func (s *paintSet) Map() map[string]*things_test_io_v1.Paint {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*things_test_io_v1.Paint{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*things_test_io_v1.Paint)
@@ -74,35 +104,57 @@ func (s *paintSet) Map() map[string]*things_test_io_v1.Paint {
 func (s *paintSet) Insert(
 	paintList ...*things_test_io_v1.Paint,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range paintList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s *paintSet) Has(paint *things_test_io_v1.Paint) bool {
+func (s *paintSet) Has(paint ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(paint)
 }
 
 func (s *paintSet) Equal(
 	paintSet PaintSet,
 ) bool {
+	if s == nil {
+		return paintSet == nil
+	}
 	return s.set.Equal(makeGenericPaintSet(paintSet.List()))
 }
 
-func (s *paintSet) Delete(Paint *things_test_io_v1.Paint) {
+func (s *paintSet) Delete(Paint ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(Paint)
 }
 
 func (s *paintSet) Union(set PaintSet) PaintSet {
+	if s == nil {
+		return set
+	}
 	return NewPaintSet(append(s.List(), set.List()...)...)
 }
 
 func (s *paintSet) Difference(set PaintSet) PaintSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericPaintSet(set.List()))
 	return &paintSet{set: newSet}
 }
 
 func (s *paintSet) Intersection(set PaintSet) PaintSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericPaintSet(set.List()))
 	var paintList []*things_test_io_v1.Paint
 	for _, obj := range newSet.List() {
@@ -112,6 +164,9 @@ func (s *paintSet) Intersection(set PaintSet) PaintSet {
 }
 
 func (s *paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find Paint %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&things_test_io_v1.Paint{}, id)
 	if err != nil {
 		return nil, err
@@ -121,21 +176,36 @@ func (s *paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) 
 }
 
 func (s *paintSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
 type ClusterResourceSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*things_test_io_v1.ClusterResource
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
+	// Return the Set as a map of key to resource.
 	Map() map[string]*things_test_io_v1.ClusterResource
+	// Insert a resource into the set.
 	Insert(clusterResource ...*things_test_io_v1.ClusterResource)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(clusterResourceSet ClusterResourceSet) bool
-	Has(clusterResource *things_test_io_v1.ClusterResource) bool
-	Delete(clusterResource *things_test_io_v1.ClusterResource)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(clusterResource ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(clusterResource ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set ClusterResourceSet) ClusterResourceSet
+	// Return the difference with the provided set
 	Difference(set ClusterResourceSet) ClusterResourceSet
+	// Return the intersection with the provided set
 	Intersection(set ClusterResourceSet) ClusterResourceSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -164,18 +234,35 @@ func NewClusterResourceSetFromList(clusterResourceList *things_test_io_v1.Cluste
 }
 
 func (s *clusterResourceSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
-func (s *clusterResourceSet) List() []*things_test_io_v1.ClusterResource {
+func (s *clusterResourceSet) List(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*things_test_io_v1.ClusterResource))
+		})
+	}
+
 	var clusterResourceList []*things_test_io_v1.ClusterResource
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
 	}
 	return clusterResourceList
 }
 
 func (s *clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*things_test_io_v1.ClusterResource{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*things_test_io_v1.ClusterResource)
@@ -186,35 +273,57 @@ func (s *clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource
 func (s *clusterResourceSet) Insert(
 	clusterResourceList ...*things_test_io_v1.ClusterResource,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range clusterResourceList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s *clusterResourceSet) Has(clusterResource *things_test_io_v1.ClusterResource) bool {
+func (s *clusterResourceSet) Has(clusterResource ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(clusterResource)
 }
 
 func (s *clusterResourceSet) Equal(
 	clusterResourceSet ClusterResourceSet,
 ) bool {
+	if s == nil {
+		return clusterResourceSet == nil
+	}
 	return s.set.Equal(makeGenericClusterResourceSet(clusterResourceSet.List()))
 }
 
-func (s *clusterResourceSet) Delete(ClusterResource *things_test_io_v1.ClusterResource) {
+func (s *clusterResourceSet) Delete(ClusterResource ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(ClusterResource)
 }
 
 func (s *clusterResourceSet) Union(set ClusterResourceSet) ClusterResourceSet {
+	if s == nil {
+		return set
+	}
 	return NewClusterResourceSet(append(s.List(), set.List()...)...)
 }
 
 func (s *clusterResourceSet) Difference(set ClusterResourceSet) ClusterResourceSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericClusterResourceSet(set.List()))
 	return &clusterResourceSet{set: newSet}
 }
 
 func (s *clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResourceSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericClusterResourceSet(set.List()))
 	var clusterResourceList []*things_test_io_v1.ClusterResource
 	for _, obj := range newSet.List() {
@@ -224,6 +333,9 @@ func (s *clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResourc
 }
 
 func (s *clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find ClusterResource %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&things_test_io_v1.ClusterResource{}, id)
 	if err != nil {
 		return nil, err
@@ -233,5 +345,8 @@ func (s *clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Clus
 }
 
 func (s *clusterResourceSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }

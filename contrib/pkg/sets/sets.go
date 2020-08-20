@@ -1,6 +1,7 @@
 package sets
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/rotisserie/eris"
@@ -20,9 +21,14 @@ func Key(id ezkube.ResourceId) string {
 	return id.GetName() + "." + id.GetNamespace() + "."
 }
 
+// typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
+func TypedKey(id ezkube.ResourceId) string {
+	return fmt.Sprintf("%v.%T", Key(id), id)
+}
+
 type ResourceSet interface {
 	Keys() sets.String
-	List() []ezkube.ResourceId
+	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	Map() map[string]ezkube.ResourceId
 	Insert(resource ...ezkube.ResourceId)
 	Equal(set ResourceSet) bool
@@ -45,6 +51,9 @@ func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
 	set := sets.NewString()
 	mapping := map[string]ezkube.ResourceId{}
 	for _, resource := range resources {
+		if resource == nil {
+			continue
+		}
 		key := Key(resource)
 		set.Insert(key)
 		mapping[key] = resource
@@ -56,12 +65,21 @@ func (s *resourceSet) Keys() sets.String {
 	return sets.NewString(s.set.List()...)
 }
 
-func (s *resourceSet) List() []ezkube.ResourceId {
+func (s *resourceSet) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	var resources []ezkube.ResourceId
 	for _, key := range s.set.List() {
-		resources = append(resources, s.mapping[key])
+		var filtered bool
+		for _, filter := range filterResource {
+			if filter(s.mapping[key]) {
+				filtered = true
+				break
+			}
+		}
+		if !filtered {
+			resources = append(resources, s.mapping[key])
+		}
 	}
 	return resources
 }
@@ -82,6 +100,9 @@ func (s *resourceSet) Insert(
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	for _, resource := range resources {
+		if resource == nil {
+			continue
+		}
 		key := Key(resource)
 		s.mapping[key] = resource
 		s.set.Insert(key)

@@ -238,6 +238,10 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 		return err
 	}
 
+	if templates.MockgenDirective {
+		render.PrependMockgenDirective(customCode)
+	}
+
 	if err := fileWriter.WriteFiles(customCode); err != nil {
 		return err
 	}
@@ -249,6 +253,10 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 // it is important to run this func before rendering as it attaches protos to the
 // group model
 func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*skmodel.DescriptorWithPath) {
+	if len(descriptors) == 0 {
+		logrus.Debugf("no descriptors generated")
+		return
+	}
 	descriptorMap := map[string]*skmodel.DescriptorWithPath{}
 
 	for i, resource := range grp.Resources {

@@ -52,17 +52,21 @@ func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Keys() *gomock.Call
 }
 
 // List mocks base method
-func (m *MockValidatingWebhookConfigurationSet) List() []*v1.ValidatingWebhookConfiguration {
+func (m *MockValidatingWebhookConfigurationSet) List(filterResource ...func(*v1.ValidatingWebhookConfiguration) bool) []*v1.ValidatingWebhookConfiguration {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].([]*v1.ValidatingWebhookConfiguration)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockValidatingWebhookConfigurationSetMockRecorder) List() *gomock.Call {
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method
@@ -110,7 +114,7 @@ func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Equal(validatingWeb
 }
 
 // Has mocks base method
-func (m *MockValidatingWebhookConfigurationSet) Has(validatingWebhookConfiguration *v1.ValidatingWebhookConfiguration) bool {
+func (m *MockValidatingWebhookConfigurationSet) Has(validatingWebhookConfiguration ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", validatingWebhookConfiguration)
 	ret0, _ := ret[0].(bool)
@@ -124,7 +128,7 @@ func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Has(validatingWebho
 }
 
 // Delete mocks base method
-func (m *MockValidatingWebhookConfigurationSet) Delete(validatingWebhookConfiguration *v1.ValidatingWebhookConfiguration) {
+func (m *MockValidatingWebhookConfigurationSet) Delete(validatingWebhookConfiguration ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", validatingWebhookConfiguration)
 }
