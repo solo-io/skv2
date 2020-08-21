@@ -45,7 +45,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		masterClientSet Clientset
 		remoteClientSet Clientset
 		logLevel        = zap.NewAtomicLevel()
-		ctx             = context.TODO()
+		ctx             = context.Background()
 		remoteContext   = os.Getenv("REMOTE_CLUSTER_CONTEXT")
 
 		cancel        context.CancelFunc
@@ -69,7 +69,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			Expect(err).NotTo(HaveOccurred())
 			cfg := test.MustConfig(kubeContext)
 			kube := kubernetes.NewForConfigOrDie(cfg)
-			err = kubeutils.CreateNamespacesInParallel(kube, ns)
+			err = kubeutils.CreateNamespacesInParallel(ctx, kube, ns)
 			Expect(err).NotTo(HaveOccurred())
 		}
 		masterConfig := test.MustConfig("")
@@ -110,7 +110,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		for _, kubeContext := range []string{"", remoteContext} {
 			cfg := test.MustConfig(kubeContext)
 			kube := kubernetes.NewForConfigOrDie(cfg)
-			err := kubeutils.DeleteNamespacesInParallelBlocking(kube, ns)
+			err := kubeutils.DeleteNamespacesInParallelBlocking(ctx, kube, ns)
 			Expect(err).NotTo(HaveOccurred())
 		}
 	})
@@ -239,9 +239,9 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				When a KubeConfig secret is deleted, paint is no longer reconciled for that cluster
 				Save that secret so it can be recreated later
 				*/
-				remoteKcSecret, err := kubehelp.MustKubeClient().CoreV1().Secrets(ns).Get(cluster2, metav1.GetOptions{})
+				remoteKcSecret, err := kubehelp.MustKubeClient().CoreV1().Secrets(ns).Get(ctx, cluster2, metav1.GetOptions{})
 				Expect(err).NotTo(HaveOccurred())
-				err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(remoteKcSecret.Name, &metav1.DeleteOptions{})
+				err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Delete(ctx, remoteKcSecret.Name, metav1.DeleteOptions{})
 				Expect(err).NotTo(HaveOccurred())
 
 				// Sleep to be sure that the secret deletion propagates.
@@ -280,7 +280,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 					Data: remoteKcSecret.DeepCopy().Data,
 					Type: kubeconfig.SecretType,
 				}
-				_, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(secretCopy)
+				_, err = kubehelp.MustKubeClient().CoreV1().Secrets(ns).Create(ctx, secretCopy, metav1.CreateOptions{})
 				Expect(err).NotTo(HaveOccurred())
 
 				mustReconcile(masterClientSet, cluster1, newPaint(ns, "paint-mc-reconciler-3"), paintMap, paintDeletes)

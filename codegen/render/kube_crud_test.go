@@ -105,13 +105,13 @@ var _ = Describe("Generated Code", func() {
 		Expect(err).NotTo(HaveOccurred())
 		ns = randutils.RandString(4)
 		kube = kubehelp.MustKubeClient()
-		err = kubeutils.CreateNamespacesInParallel(kube, ns)
+		err = kubeutils.CreateNamespacesInParallel(ctx, kube, ns)
 		Expect(err).NotTo(HaveOccurred())
 		clientSet, err = NewClientsetFromConfig(test.MustConfig(""))
 		Expect(err).NotTo(HaveOccurred())
 	})
 	AfterEach(func() {
-		err := kubeutils.DeleteNamespacesInParallelBlocking(kube, ns)
+		err := kubeutils.DeleteNamespacesInParallelBlocking(ctx, kube, ns)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
