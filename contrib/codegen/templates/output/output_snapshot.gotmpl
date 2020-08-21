@@ -61,7 +61,7 @@ type snapshot struct {
     {{ $kindLowerCamelPlural }} []Labeled{{ $resource.Kind }}Set
 {{- end }}
 {{- end }}
-
+    clusters []string
 }
 
 func NewSnapshot(
@@ -74,7 +74,7 @@ func NewSnapshot(
     {{ $kindLowerCamelPlural }} []Labeled{{ $resource.Kind }}Set,
 {{- end }}
 {{- end }}
-
+    clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
     return &snapshot{
     	name: name,
@@ -86,6 +86,7 @@ func NewSnapshot(
     {{ $kindLowerCamelPlural }}:  {{ $kindLowerCamelPlural }},
 {{- end }}
 {{- end }}
+        clusters: clusters,
     }
 }
 
@@ -103,7 +104,7 @@ func NewLabelPartitionedSnapshot(
     {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set,
 {{- end }}
 {{- end }}
-
+    clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 {{/* convert input sets to partioned output sets */}}
@@ -130,6 +131,7 @@ func NewLabelPartitionedSnapshot(
         partitioned{{ $kindPlural }},
 {{- end }}
 {{- end }}
+        clusters...,
     ), nil
 }
 
@@ -147,7 +149,7 @@ func NewSinglePartitionedSnapshot(
     {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set,
 {{- end }}
 {{- end }}
-
+    clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 {{/* convert input sets to partioned output sets */}}
@@ -174,6 +176,7 @@ func NewSinglePartitionedSnapshot(
         []Labeled{{ $resource.Kind }}Set{labeled{{ $kindPlural }}},
 {{- end }}
 {{- end }}
+        clusters...,
     ), nil
 }
 
@@ -216,6 +219,7 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 
     output.Snapshot{
         Name:        s.name,
+        Clusters:    s.clusters,
         ListsToSync: genericLists,
     }.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
@@ -390,6 +394,7 @@ func (l labeled{{ $resource.Kind }}Set) Generic() output.ResourceList {
 type builder struct {
     ctx context.Context
     name string
+    clusters []string
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
@@ -441,6 +446,11 @@ type Builder interface {
 
     // build the collected outputs into a snapshot with a single partition
     BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+
+    // add a cluster to the collected clusters.
+    // this can be used to collect clusters for use with MultiCluster snapshots.
+    AddCluster(cluster string)
+
 }
 
 {{- range $group := $groups }}
@@ -486,6 +496,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
         b.{{ $kindLowerCamelPlural }},
     {{- end }}
 {{- end }}
+        b.clusters...,
     )
 }
 
@@ -502,5 +513,10 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
         b.{{ $kindLowerCamelPlural }},
     {{- end }}
 {{- end }}
+        b.clusters...,
     )
+}
+
+func (b *builder) AddCluster(cluster string) {
+    b.clusters = append(b.clusters, cluster)
 }

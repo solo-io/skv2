@@ -192,6 +192,12 @@ type Snapshot struct {
 	// name of the snapshot, used for metrics
 	Name string
 
+	// the clusters across which the snapshot should be synced.
+	// only relevant for multicluster syncing.
+	Clusters []string
+
+	// the lists of resources to sync, partitioned by resource type
+	// and ListFunc (typically a set of labels)
 	ListsToSync []ResourceList
 }
 
@@ -218,13 +224,12 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHa
 // uses the object's ClusterName to determine the correct destination cluster.
 func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Client, errHandler ErrorHandler) {
 
-	clusters := mcClient.ListClusters()
 	for _, list := range s.ListsToSync {
 		listsByCluster := list.SplitByClusterName()
 		// TODO(ilackarms): possible error case that we're ignoring here;
 		// we only write resources to clusters that are available to the multicluster client
 		// if the cluster is not available, we will not error (simply skip writing the resources here)
-		for _, cluster := range clusters {
+		for _, cluster := range s.Clusters {
 			listForCluster := listsByCluster[cluster]
 
 			cli, err := mcClient.Cluster(cluster)
