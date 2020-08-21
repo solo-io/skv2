@@ -90,13 +90,15 @@ func mustCrud(ctx context.Context, clientSet Clientset, paint *Paint) {
 
 var _ = Describe("Generated Code", func() {
 	var (
+		ctx       context.Context
+		cancel    context.CancelFunc
 		ns        string
 		kube      kubernetes.Interface
 		clientSet Clientset
 		logLevel  = zap.NewAtomicLevel()
-		ctx       = context.TODO()
 	)
 	BeforeEach(func() {
+		ctx, cancel = context.WithCancel(context.Background())
 		logLevel.SetLevel(zap.DebugLevel)
 		log.SetLogger(zaputil.New(
 			zaputil.Level(&logLevel),
@@ -105,14 +107,15 @@ var _ = Describe("Generated Code", func() {
 		Expect(err).NotTo(HaveOccurred())
 		ns = randutils.RandString(4)
 		kube = kubehelp.MustKubeClient()
-		err = kubeutils.CreateNamespacesInParallel(kube, ns)
+		err = kubeutils.CreateNamespacesInParallel(ctx, kube, ns)
 		Expect(err).NotTo(HaveOccurred())
 		clientSet, err = NewClientsetFromConfig(test.MustConfig(""))
 		Expect(err).NotTo(HaveOccurred())
 	})
 	AfterEach(func() {
-		err := kubeutils.DeleteNamespacesInParallelBlocking(kube, ns)
+		err := kubeutils.DeleteNamespacesInParallelBlocking(ctx, kube, ns)
 		Expect(err).NotTo(HaveOccurred())
+		cancel()
 	})
 
 	Context("kube clientsets", func() {
@@ -126,16 +129,10 @@ var _ = Describe("Generated Code", func() {
 
 	Context("kube reconciler", func() {
 		var (
-			mgr    manager.Manager
-			ctx    context.Context
-			cancel context.CancelFunc
+			mgr manager.Manager
 		)
 		BeforeEach(func() {
-			ctx, cancel = context.WithCancel(context.Background())
 			mgr = test.MustManager(ctx, ns)
-		})
-		AfterEach(func() {
-			cancel()
 		})
 
 		It("uses the generated controller to reconcile", func() {
