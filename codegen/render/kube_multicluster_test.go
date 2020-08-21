@@ -41,20 +41,21 @@ func WithRemoteClusterContextDescribe(text string, body func()) bool {
 
 var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 	var (
+		ctx             context.Context
+		cancel          context.CancelFunc
 		ns              string
 		masterClientSet Clientset
 		remoteClientSet Clientset
 		logLevel        = zap.NewAtomicLevel()
-		ctx             = context.Background()
 		remoteContext   = os.Getenv("REMOTE_CLUSTER_CONTEXT")
 
-		cancel        context.CancelFunc
 		masterManager manager.Manager
 		cluster2      = "cluster-two"
 		cluster1      = "cluster-one"
 	)
 
 	BeforeEach(func() {
+		ctx, cancel = context.WithCancel(context.Background())
 		logLevel.SetLevel(zap.DebugLevel)
 		log.SetLogger(zaputil.New(
 			zaputil.Level(&logLevel),
@@ -78,7 +79,6 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		remoteClientSet, err = NewClientsetFromConfig(test.MustConfig(remoteContext))
 		Expect(err).NotTo(HaveOccurred())
 
-		ctx, cancel = context.WithCancel(context.Background())
 		masterManager = test.MustManager(ctx, ns)
 		remoteCfg := test.ClientConfigWithContext(remoteContext)
 		registrant, err := register.DefaultRegistrant("", "")
@@ -104,15 +104,13 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 	})
 
 	AfterEach(func() {
-		if cancel != nil {
-			cancel()
-		}
 		for _, kubeContext := range []string{"", remoteContext} {
 			cfg := test.MustConfig(kubeContext)
 			kube := kubernetes.NewForConfigOrDie(cfg)
 			err := kubeutils.DeleteNamespacesInParallelBlocking(ctx, kube, ns)
 			Expect(err).NotTo(HaveOccurred())
 		}
+		cancel()
 	})
 
 	Context("multicluster", func() {
