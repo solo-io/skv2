@@ -13,7 +13,7 @@ import (
 
 type EksClient interface {
 	DescribeCluster(ctx context.Context, name string) (*eks.Cluster, error)
-	ListClusters(ctx context.Context, input *eks.ListClustersInput) (*eks.ListClustersOutput, error)
+	ListClusters(ctx context.Context, fn func(*eks.ListClustersOutput)) error
 	Token(ctx context.Context, name string) (token.Token, error)
 }
 

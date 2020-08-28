@@ -40,7 +40,7 @@ func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
 // clienset for the discovery.multicluster.solo.io/v1alpha1 APIs
 type Clientset interface {
 	// clienset for the discovery.multicluster.solo.io/v1alpha1/v1alpha1 APIs
-	AwsDiscoveries() AwsDiscoveryClient
+	AwsDiscoveryDirectives() AwsDiscoveryDirectiveClient
 }
 
 type clientSet struct {
@@ -66,113 +66,113 @@ func NewClientset(client client.Client) Clientset {
 }
 
 // clienset for the discovery.multicluster.solo.io/v1alpha1/v1alpha1 APIs
-func (c *clientSet) AwsDiscoveries() AwsDiscoveryClient {
-	return NewAwsDiscoveryClient(c.client)
+func (c *clientSet) AwsDiscoveryDirectives() AwsDiscoveryDirectiveClient {
+	return NewAwsDiscoveryDirectiveClient(c.client)
 }
 
-// Reader knows how to read and list AwsDiscoverys.
-type AwsDiscoveryReader interface {
-	// Get retrieves a AwsDiscovery for the given object key
-	GetAwsDiscovery(ctx context.Context, key client.ObjectKey) (*AwsDiscovery, error)
+// Reader knows how to read and list AwsDiscoveryDirectives.
+type AwsDiscoveryDirectiveReader interface {
+	// Get retrieves a AwsDiscoveryDirective for the given object key
+	GetAwsDiscoveryDirective(ctx context.Context, key client.ObjectKey) (*AwsDiscoveryDirective, error)
 
-	// List retrieves list of AwsDiscoverys for a given namespace and list options.
-	ListAwsDiscovery(ctx context.Context, opts ...client.ListOption) (*AwsDiscoveryList, error)
+	// List retrieves list of AwsDiscoveryDirectives for a given namespace and list options.
+	ListAwsDiscoveryDirective(ctx context.Context, opts ...client.ListOption) (*AwsDiscoveryDirectiveList, error)
 }
 
-// AwsDiscoveryTransitionFunction instructs the AwsDiscoveryWriter how to transition between an existing
-// AwsDiscovery object and a desired on an Upsert
-type AwsDiscoveryTransitionFunction func(existing, desired *AwsDiscovery) error
+// AwsDiscoveryDirectiveTransitionFunction instructs the AwsDiscoveryDirectiveWriter how to transition between an existing
+// AwsDiscoveryDirective object and a desired on an Upsert
+type AwsDiscoveryDirectiveTransitionFunction func(existing, desired *AwsDiscoveryDirective) error
 
-// Writer knows how to create, delete, and update AwsDiscoverys.
-type AwsDiscoveryWriter interface {
-	// Create saves the AwsDiscovery object.
-	CreateAwsDiscovery(ctx context.Context, obj *AwsDiscovery, opts ...client.CreateOption) error
+// Writer knows how to create, delete, and update AwsDiscoveryDirectives.
+type AwsDiscoveryDirectiveWriter interface {
+	// Create saves the AwsDiscoveryDirective object.
+	CreateAwsDiscoveryDirective(ctx context.Context, obj *AwsDiscoveryDirective, opts ...client.CreateOption) error
 
-	// Delete deletes the AwsDiscovery object.
-	DeleteAwsDiscovery(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the AwsDiscoveryDirective object.
+	DeleteAwsDiscoveryDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given AwsDiscovery object.
-	UpdateAwsDiscovery(ctx context.Context, obj *AwsDiscovery, opts ...client.UpdateOption) error
+	// Update updates the given AwsDiscoveryDirective object.
+	UpdateAwsDiscoveryDirective(ctx context.Context, obj *AwsDiscoveryDirective, opts ...client.UpdateOption) error
 
-	// Patch patches the given AwsDiscovery object.
-	PatchAwsDiscovery(ctx context.Context, obj *AwsDiscovery, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given AwsDiscoveryDirective object.
+	PatchAwsDiscoveryDirective(ctx context.Context, obj *AwsDiscoveryDirective, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all AwsDiscovery objects matching the given options.
-	DeleteAllOfAwsDiscovery(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all AwsDiscoveryDirective objects matching the given options.
+	DeleteAllOfAwsDiscoveryDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the AwsDiscovery object.
-	UpsertAwsDiscovery(ctx context.Context, obj *AwsDiscovery, transitionFuncs ...AwsDiscoveryTransitionFunction) error
+	// Create or Update the AwsDiscoveryDirective object.
+	UpsertAwsDiscoveryDirective(ctx context.Context, obj *AwsDiscoveryDirective, transitionFuncs ...AwsDiscoveryDirectiveTransitionFunction) error
 }
 
-// StatusWriter knows how to update status subresource of a AwsDiscovery object.
-type AwsDiscoveryStatusWriter interface {
+// StatusWriter knows how to update status subresource of a AwsDiscoveryDirective object.
+type AwsDiscoveryDirectiveStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
-	// given AwsDiscovery object.
-	UpdateAwsDiscoveryStatus(ctx context.Context, obj *AwsDiscovery, opts ...client.UpdateOption) error
+	// given AwsDiscoveryDirective object.
+	UpdateAwsDiscoveryDirectiveStatus(ctx context.Context, obj *AwsDiscoveryDirective, opts ...client.UpdateOption) error
 
-	// Patch patches the given AwsDiscovery object's subresource.
-	PatchAwsDiscoveryStatus(ctx context.Context, obj *AwsDiscovery, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given AwsDiscoveryDirective object's subresource.
+	PatchAwsDiscoveryDirectiveStatus(ctx context.Context, obj *AwsDiscoveryDirective, patch client.Patch, opts ...client.PatchOption) error
 }
 
-// Client knows how to perform CRUD operations on AwsDiscoverys.
-type AwsDiscoveryClient interface {
-	AwsDiscoveryReader
-	AwsDiscoveryWriter
-	AwsDiscoveryStatusWriter
+// Client knows how to perform CRUD operations on AwsDiscoveryDirectives.
+type AwsDiscoveryDirectiveClient interface {
+	AwsDiscoveryDirectiveReader
+	AwsDiscoveryDirectiveWriter
+	AwsDiscoveryDirectiveStatusWriter
 }
 
-type awsDiscoveryClient struct {
+type awsDiscoveryDirectiveClient struct {
 	client client.Client
 }
 
-func NewAwsDiscoveryClient(client client.Client) *awsDiscoveryClient {
-	return &awsDiscoveryClient{client: client}
+func NewAwsDiscoveryDirectiveClient(client client.Client) *awsDiscoveryDirectiveClient {
+	return &awsDiscoveryDirectiveClient{client: client}
 }
 
-func (c *awsDiscoveryClient) GetAwsDiscovery(ctx context.Context, key client.ObjectKey) (*AwsDiscovery, error) {
-	obj := &AwsDiscovery{}
+func (c *awsDiscoveryDirectiveClient) GetAwsDiscoveryDirective(ctx context.Context, key client.ObjectKey) (*AwsDiscoveryDirective, error) {
+	obj := &AwsDiscoveryDirective{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *awsDiscoveryClient) ListAwsDiscovery(ctx context.Context, opts ...client.ListOption) (*AwsDiscoveryList, error) {
-	list := &AwsDiscoveryList{}
+func (c *awsDiscoveryDirectiveClient) ListAwsDiscoveryDirective(ctx context.Context, opts ...client.ListOption) (*AwsDiscoveryDirectiveList, error) {
+	list := &AwsDiscoveryDirectiveList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *awsDiscoveryClient) CreateAwsDiscovery(ctx context.Context, obj *AwsDiscovery, opts ...client.CreateOption) error {
+func (c *awsDiscoveryDirectiveClient) CreateAwsDiscoveryDirective(ctx context.Context, obj *AwsDiscoveryDirective, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *awsDiscoveryClient) DeleteAwsDiscovery(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &AwsDiscovery{}
+func (c *awsDiscoveryDirectiveClient) DeleteAwsDiscoveryDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &AwsDiscoveryDirective{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *awsDiscoveryClient) UpdateAwsDiscovery(ctx context.Context, obj *AwsDiscovery, opts ...client.UpdateOption) error {
+func (c *awsDiscoveryDirectiveClient) UpdateAwsDiscoveryDirective(ctx context.Context, obj *AwsDiscoveryDirective, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *awsDiscoveryClient) PatchAwsDiscovery(ctx context.Context, obj *AwsDiscovery, patch client.Patch, opts ...client.PatchOption) error {
+func (c *awsDiscoveryDirectiveClient) PatchAwsDiscoveryDirective(ctx context.Context, obj *AwsDiscoveryDirective, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *awsDiscoveryClient) DeleteAllOfAwsDiscovery(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &AwsDiscovery{}
+func (c *awsDiscoveryDirectiveClient) DeleteAllOfAwsDiscoveryDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &AwsDiscoveryDirective{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *awsDiscoveryClient) UpsertAwsDiscovery(ctx context.Context, obj *AwsDiscovery, transitionFuncs ...AwsDiscoveryTransitionFunction) error {
+func (c *awsDiscoveryDirectiveClient) UpsertAwsDiscoveryDirective(ctx context.Context, obj *AwsDiscoveryDirective, transitionFuncs ...AwsDiscoveryDirectiveTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*AwsDiscovery), desired.(*AwsDiscovery)); err != nil {
+			if err := txFunc(existing.(*AwsDiscoveryDirective), desired.(*AwsDiscoveryDirective)); err != nil {
 				return err
 			}
 		}
@@ -182,32 +182,32 @@ func (c *awsDiscoveryClient) UpsertAwsDiscovery(ctx context.Context, obj *AwsDis
 	return err
 }
 
-func (c *awsDiscoveryClient) UpdateAwsDiscoveryStatus(ctx context.Context, obj *AwsDiscovery, opts ...client.UpdateOption) error {
+func (c *awsDiscoveryDirectiveClient) UpdateAwsDiscoveryDirectiveStatus(ctx context.Context, obj *AwsDiscoveryDirective, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *awsDiscoveryClient) PatchAwsDiscoveryStatus(ctx context.Context, obj *AwsDiscovery, patch client.Patch, opts ...client.PatchOption) error {
+func (c *awsDiscoveryDirectiveClient) PatchAwsDiscoveryDirectiveStatus(ctx context.Context, obj *AwsDiscoveryDirective, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
-// Provides AwsDiscoveryClients for multiple clusters.
-type MulticlusterAwsDiscoveryClient interface {
-	// Cluster returns a AwsDiscoveryClient for the given cluster
-	Cluster(cluster string) (AwsDiscoveryClient, error)
+// Provides AwsDiscoveryDirectiveClients for multiple clusters.
+type MulticlusterAwsDiscoveryDirectiveClient interface {
+	// Cluster returns a AwsDiscoveryDirectiveClient for the given cluster
+	Cluster(cluster string) (AwsDiscoveryDirectiveClient, error)
 }
 
-type multiclusterAwsDiscoveryClient struct {
+type multiclusterAwsDiscoveryDirectiveClient struct {
 	client multicluster.Client
 }
 
-func NewMulticlusterAwsDiscoveryClient(client multicluster.Client) MulticlusterAwsDiscoveryClient {
-	return &multiclusterAwsDiscoveryClient{client: client}
+func NewMulticlusterAwsDiscoveryDirectiveClient(client multicluster.Client) MulticlusterAwsDiscoveryDirectiveClient {
+	return &multiclusterAwsDiscoveryDirectiveClient{client: client}
 }
 
-func (m *multiclusterAwsDiscoveryClient) Cluster(cluster string) (AwsDiscoveryClient, error) {
+func (m *multiclusterAwsDiscoveryDirectiveClient) Cluster(cluster string) (AwsDiscoveryDirectiveClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	return NewAwsDiscoveryClient(client), nil
+	return NewAwsDiscoveryDirectiveClient(client), nil
 }

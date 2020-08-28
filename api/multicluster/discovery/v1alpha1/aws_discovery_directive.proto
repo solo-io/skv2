@@ -14,7 +14,7 @@ option go_package = "github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo
 message AwsDiscoveryDirectiveSpec {
 
     // For a given resource_selector to apply to a resource, the resource must match all of the resource_selector's match criteria.
-    message AwsResourceSelector {
+    message ResourceSelector {
 
         // Selects all resources that exist in the specified AWS region and possess the specified tags.
         message Matcher {
@@ -37,8 +37,8 @@ message AwsDiscoveryDirectiveSpec {
         }
     }
 
-    // If unspecified, by default discovery will run for EKS clusters in all regions.
-    repeated AwsResourceSelector eks_selector = 2;
+    // If unspecified, discovery will be disabled.
+    repeated ResourceSelector eks_selectors = 2;
 }
 
 message AwsDiscoveryDirectiveStatus {

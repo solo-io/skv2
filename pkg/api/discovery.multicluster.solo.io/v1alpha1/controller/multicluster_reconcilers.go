@@ -18,73 +18,73 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Reconcile Upsert events for the AwsDiscovery Resource across clusters.
+// Reconcile Upsert events for the AwsDiscoveryDirective Resource across clusters.
 // implemented by the user
-type MulticlusterAwsDiscoveryReconciler interface {
-	ReconcileAwsDiscovery(clusterName string, obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) (reconcile.Result, error)
+type MulticlusterAwsDiscoveryDirectiveReconciler interface {
+	ReconcileAwsDiscoveryDirective(clusterName string, obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the AwsDiscovery Resource across clusters.
+// Reconcile deletion events for the AwsDiscoveryDirective Resource across clusters.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type MulticlusterAwsDiscoveryDeletionReconciler interface {
-	ReconcileAwsDiscoveryDeletion(clusterName string, req reconcile.Request) error
+type MulticlusterAwsDiscoveryDirectiveDeletionReconciler interface {
+	ReconcileAwsDiscoveryDirectiveDeletion(clusterName string, req reconcile.Request) error
 }
 
-type MulticlusterAwsDiscoveryReconcilerFuncs struct {
-	OnReconcileAwsDiscovery         func(clusterName string, obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) (reconcile.Result, error)
-	OnReconcileAwsDiscoveryDeletion func(clusterName string, req reconcile.Request) error
+type MulticlusterAwsDiscoveryDirectiveReconcilerFuncs struct {
+	OnReconcileAwsDiscoveryDirective         func(clusterName string, obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) (reconcile.Result, error)
+	OnReconcileAwsDiscoveryDirectiveDeletion func(clusterName string, req reconcile.Request) error
 }
 
-func (f *MulticlusterAwsDiscoveryReconcilerFuncs) ReconcileAwsDiscovery(clusterName string, obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) (reconcile.Result, error) {
-	if f.OnReconcileAwsDiscovery == nil {
+func (f *MulticlusterAwsDiscoveryDirectiveReconcilerFuncs) ReconcileAwsDiscoveryDirective(clusterName string, obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) (reconcile.Result, error) {
+	if f.OnReconcileAwsDiscoveryDirective == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileAwsDiscovery(clusterName, obj)
+	return f.OnReconcileAwsDiscoveryDirective(clusterName, obj)
 }
 
-func (f *MulticlusterAwsDiscoveryReconcilerFuncs) ReconcileAwsDiscoveryDeletion(clusterName string, req reconcile.Request) error {
-	if f.OnReconcileAwsDiscoveryDeletion == nil {
+func (f *MulticlusterAwsDiscoveryDirectiveReconcilerFuncs) ReconcileAwsDiscoveryDirectiveDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileAwsDiscoveryDirectiveDeletion == nil {
 		return nil
 	}
-	return f.OnReconcileAwsDiscoveryDeletion(clusterName, req)
+	return f.OnReconcileAwsDiscoveryDirectiveDeletion(clusterName, req)
 }
 
-type MulticlusterAwsDiscoveryReconcileLoop interface {
-	// AddMulticlusterAwsDiscoveryReconciler adds a MulticlusterAwsDiscoveryReconciler to the MulticlusterAwsDiscoveryReconcileLoop.
-	AddMulticlusterAwsDiscoveryReconciler(ctx context.Context, rec MulticlusterAwsDiscoveryReconciler, predicates ...predicate.Predicate)
+type MulticlusterAwsDiscoveryDirectiveReconcileLoop interface {
+	// AddMulticlusterAwsDiscoveryDirectiveReconciler adds a MulticlusterAwsDiscoveryDirectiveReconciler to the MulticlusterAwsDiscoveryDirectiveReconcileLoop.
+	AddMulticlusterAwsDiscoveryDirectiveReconciler(ctx context.Context, rec MulticlusterAwsDiscoveryDirectiveReconciler, predicates ...predicate.Predicate)
 }
 
-type multiclusterAwsDiscoveryReconcileLoop struct {
+type multiclusterAwsDiscoveryDirectiveReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterAwsDiscoveryReconcileLoop) AddMulticlusterAwsDiscoveryReconciler(ctx context.Context, rec MulticlusterAwsDiscoveryReconciler, predicates ...predicate.Predicate) {
-	genericReconciler := genericAwsDiscoveryMulticlusterReconciler{reconciler: rec}
+func (m *multiclusterAwsDiscoveryDirectiveReconcileLoop) AddMulticlusterAwsDiscoveryDirectiveReconciler(ctx context.Context, rec MulticlusterAwsDiscoveryDirectiveReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericAwsDiscoveryDirectiveMulticlusterReconciler{reconciler: rec}
 
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterAwsDiscoveryReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterAwsDiscoveryReconcileLoop {
-	return &multiclusterAwsDiscoveryReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_multicluster_solo_io_v1alpha1.AwsDiscovery{})}
+func NewMulticlusterAwsDiscoveryDirectiveReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterAwsDiscoveryDirectiveReconcileLoop {
+	return &multiclusterAwsDiscoveryDirectiveReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective{})}
 }
 
-type genericAwsDiscoveryMulticlusterReconciler struct {
-	reconciler MulticlusterAwsDiscoveryReconciler
+type genericAwsDiscoveryDirectiveMulticlusterReconciler struct {
+	reconciler MulticlusterAwsDiscoveryDirectiveReconciler
 }
 
-func (g genericAwsDiscoveryMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
-	if deletionReconciler, ok := g.reconciler.(MulticlusterAwsDiscoveryDeletionReconciler); ok {
-		return deletionReconciler.ReconcileAwsDiscoveryDeletion(cluster, req)
+func (g genericAwsDiscoveryDirectiveMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterAwsDiscoveryDirectiveDeletionReconciler); ok {
+		return deletionReconciler.ReconcileAwsDiscoveryDirectiveDeletion(cluster, req)
 	}
 	return nil
 }
 
-func (g genericAwsDiscoveryMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+func (g genericAwsDiscoveryDirectiveMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: AwsDiscovery handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: AwsDiscoveryDirective handler received event for %T", object)
 	}
-	return g.reconciler.ReconcileAwsDiscovery(cluster, obj)
+	return g.reconciler.ReconcileAwsDiscoveryDirective(cluster, obj)
 }

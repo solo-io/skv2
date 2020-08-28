@@ -17,109 +17,109 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Handle events for the AwsDiscovery Resource
+// Handle events for the AwsDiscoveryDirective Resource
 // DEPRECATED: Prefer reconciler pattern.
-type AwsDiscoveryEventHandler interface {
-	CreateAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
-	UpdateAwsDiscovery(old, new *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
-	DeleteAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
-	GenericAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
+type AwsDiscoveryDirectiveEventHandler interface {
+	CreateAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
+	UpdateAwsDiscoveryDirective(old, new *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
+	DeleteAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
+	GenericAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
 }
 
-type AwsDiscoveryEventHandlerFuncs struct {
-	OnCreate  func(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
-	OnUpdate  func(old, new *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
-	OnDelete  func(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
-	OnGeneric func(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
+type AwsDiscoveryDirectiveEventHandlerFuncs struct {
+	OnCreate  func(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
+	OnUpdate  func(old, new *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
+	OnDelete  func(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
+	OnGeneric func(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
 }
 
-func (f *AwsDiscoveryEventHandlerFuncs) CreateAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error {
+func (f *AwsDiscoveryDirectiveEventHandlerFuncs) CreateAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *AwsDiscoveryEventHandlerFuncs) DeleteAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error {
+func (f *AwsDiscoveryDirectiveEventHandlerFuncs) DeleteAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *AwsDiscoveryEventHandlerFuncs) UpdateAwsDiscovery(objOld, objNew *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error {
+func (f *AwsDiscoveryDirectiveEventHandlerFuncs) UpdateAwsDiscoveryDirective(objOld, objNew *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *AwsDiscoveryEventHandlerFuncs) GenericAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error {
+func (f *AwsDiscoveryDirectiveEventHandlerFuncs) GenericAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
 	return f.OnGeneric(obj)
 }
 
-type AwsDiscoveryEventWatcher interface {
-	AddEventHandler(ctx context.Context, h AwsDiscoveryEventHandler, predicates ...predicate.Predicate) error
+type AwsDiscoveryDirectiveEventWatcher interface {
+	AddEventHandler(ctx context.Context, h AwsDiscoveryDirectiveEventHandler, predicates ...predicate.Predicate) error
 }
 
-type awsDiscoveryEventWatcher struct {
+type awsDiscoveryDirectiveEventWatcher struct {
 	watcher events.EventWatcher
 }
 
-func NewAwsDiscoveryEventWatcher(name string, mgr manager.Manager) AwsDiscoveryEventWatcher {
-	return &awsDiscoveryEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &discovery_multicluster_solo_io_v1alpha1.AwsDiscovery{}),
+func NewAwsDiscoveryDirectiveEventWatcher(name string, mgr manager.Manager) AwsDiscoveryDirectiveEventWatcher {
+	return &awsDiscoveryDirectiveEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective{}),
 	}
 }
 
-func (c *awsDiscoveryEventWatcher) AddEventHandler(ctx context.Context, h AwsDiscoveryEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericAwsDiscoveryHandler{handler: h}
+func (c *awsDiscoveryDirectiveEventWatcher) AddEventHandler(ctx context.Context, h AwsDiscoveryDirectiveEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericAwsDiscoveryDirectiveHandler{handler: h}
 	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
 }
 
-// genericAwsDiscoveryHandler implements a generic events.EventHandler
-type genericAwsDiscoveryHandler struct {
-	handler AwsDiscoveryEventHandler
+// genericAwsDiscoveryDirectiveHandler implements a generic events.EventHandler
+type genericAwsDiscoveryDirectiveHandler struct {
+	handler AwsDiscoveryDirectiveEventHandler
 }
 
-func (h genericAwsDiscoveryHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+func (h genericAwsDiscoveryDirectiveHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	if !ok {
-		return errors.Errorf("internal error: AwsDiscovery handler received event for %T", object)
+		return errors.Errorf("internal error: AwsDiscoveryDirective handler received event for %T", object)
 	}
-	return h.handler.CreateAwsDiscovery(obj)
+	return h.handler.CreateAwsDiscoveryDirective(obj)
 }
 
-func (h genericAwsDiscoveryHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+func (h genericAwsDiscoveryDirectiveHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	if !ok {
-		return errors.Errorf("internal error: AwsDiscovery handler received event for %T", object)
+		return errors.Errorf("internal error: AwsDiscoveryDirective handler received event for %T", object)
 	}
-	return h.handler.DeleteAwsDiscovery(obj)
+	return h.handler.DeleteAwsDiscoveryDirective(obj)
 }
 
-func (h genericAwsDiscoveryHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+func (h genericAwsDiscoveryDirectiveHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	if !ok {
-		return errors.Errorf("internal error: AwsDiscovery handler received event for %T", old)
+		return errors.Errorf("internal error: AwsDiscoveryDirective handler received event for %T", old)
 	}
-	objNew, ok := new.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+	objNew, ok := new.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	if !ok {
-		return errors.Errorf("internal error: AwsDiscovery handler received event for %T", new)
+		return errors.Errorf("internal error: AwsDiscoveryDirective handler received event for %T", new)
 	}
-	return h.handler.UpdateAwsDiscovery(objOld, objNew)
+	return h.handler.UpdateAwsDiscoveryDirective(objOld, objNew)
 }
 
-func (h genericAwsDiscoveryHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+func (h genericAwsDiscoveryDirectiveHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	if !ok {
-		return errors.Errorf("internal error: AwsDiscovery handler received event for %T", object)
+		return errors.Errorf("internal error: AwsDiscoveryDirective handler received event for %T", object)
 	}
-	return h.handler.GenericAwsDiscovery(obj)
+	return h.handler.GenericAwsDiscoveryDirective(obj)
 }

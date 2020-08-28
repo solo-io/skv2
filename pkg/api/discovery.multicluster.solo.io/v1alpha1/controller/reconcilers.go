@@ -17,77 +17,77 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Reconcile Upsert events for the AwsDiscovery Resource.
+// Reconcile Upsert events for the AwsDiscoveryDirective Resource.
 // implemented by the user
-type AwsDiscoveryReconciler interface {
-	ReconcileAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) (reconcile.Result, error)
+type AwsDiscoveryDirectiveReconciler interface {
+	ReconcileAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the AwsDiscovery Resource.
+// Reconcile deletion events for the AwsDiscoveryDirective Resource.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type AwsDiscoveryDeletionReconciler interface {
-	ReconcileAwsDiscoveryDeletion(req reconcile.Request) error
+type AwsDiscoveryDirectiveDeletionReconciler interface {
+	ReconcileAwsDiscoveryDirectiveDeletion(req reconcile.Request) error
 }
 
-type AwsDiscoveryReconcilerFuncs struct {
-	OnReconcileAwsDiscovery         func(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) (reconcile.Result, error)
-	OnReconcileAwsDiscoveryDeletion func(req reconcile.Request) error
+type AwsDiscoveryDirectiveReconcilerFuncs struct {
+	OnReconcileAwsDiscoveryDirective         func(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) (reconcile.Result, error)
+	OnReconcileAwsDiscoveryDirectiveDeletion func(req reconcile.Request) error
 }
 
-func (f *AwsDiscoveryReconcilerFuncs) ReconcileAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) (reconcile.Result, error) {
-	if f.OnReconcileAwsDiscovery == nil {
+func (f *AwsDiscoveryDirectiveReconcilerFuncs) ReconcileAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) (reconcile.Result, error) {
+	if f.OnReconcileAwsDiscoveryDirective == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileAwsDiscovery(obj)
+	return f.OnReconcileAwsDiscoveryDirective(obj)
 }
 
-func (f *AwsDiscoveryReconcilerFuncs) ReconcileAwsDiscoveryDeletion(req reconcile.Request) error {
-	if f.OnReconcileAwsDiscoveryDeletion == nil {
+func (f *AwsDiscoveryDirectiveReconcilerFuncs) ReconcileAwsDiscoveryDirectiveDeletion(req reconcile.Request) error {
+	if f.OnReconcileAwsDiscoveryDirectiveDeletion == nil {
 		return nil
 	}
-	return f.OnReconcileAwsDiscoveryDeletion(req)
+	return f.OnReconcileAwsDiscoveryDirectiveDeletion(req)
 }
 
-// Reconcile and finalize the AwsDiscovery Resource
+// Reconcile and finalize the AwsDiscoveryDirective Resource
 // implemented by the user
-type AwsDiscoveryFinalizer interface {
-	AwsDiscoveryReconciler
+type AwsDiscoveryDirectiveFinalizer interface {
+	AwsDiscoveryDirectiveReconciler
 
 	// name of the finalizer used by this handler.
 	// finalizer names should be unique for a single task
-	AwsDiscoveryFinalizerName() string
+	AwsDiscoveryDirectiveFinalizerName() string
 
 	// finalize the object before it is deleted.
 	// Watchers created with a finalizing handler will a
-	FinalizeAwsDiscovery(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) error
+	FinalizeAwsDiscoveryDirective(obj *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) error
 }
 
-type AwsDiscoveryReconcileLoop interface {
-	RunAwsDiscoveryReconciler(ctx context.Context, rec AwsDiscoveryReconciler, predicates ...predicate.Predicate) error
+type AwsDiscoveryDirectiveReconcileLoop interface {
+	RunAwsDiscoveryDirectiveReconciler(ctx context.Context, rec AwsDiscoveryDirectiveReconciler, predicates ...predicate.Predicate) error
 }
 
-type awsDiscoveryReconcileLoop struct {
+type awsDiscoveryDirectiveReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewAwsDiscoveryReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) AwsDiscoveryReconcileLoop {
-	return &awsDiscoveryReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &discovery_multicluster_solo_io_v1alpha1.AwsDiscovery{}, options),
+func NewAwsDiscoveryDirectiveReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) AwsDiscoveryDirectiveReconcileLoop {
+	return &awsDiscoveryDirectiveReconcileLoop{
+		loop: reconcile.NewLoop(name, mgr, &discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective{}, options),
 	}
 }
 
-func (c *awsDiscoveryReconcileLoop) RunAwsDiscoveryReconciler(ctx context.Context, reconciler AwsDiscoveryReconciler, predicates ...predicate.Predicate) error {
-	genericReconciler := genericAwsDiscoveryReconciler{
+func (c *awsDiscoveryDirectiveReconcileLoop) RunAwsDiscoveryDirectiveReconciler(ctx context.Context, reconciler AwsDiscoveryDirectiveReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericAwsDiscoveryDirectiveReconciler{
 		reconciler: reconciler,
 	}
 
 	var reconcilerWrapper reconcile.Reconciler
-	if finalizingReconciler, ok := reconciler.(AwsDiscoveryFinalizer); ok {
-		reconcilerWrapper = genericAwsDiscoveryFinalizer{
-			genericAwsDiscoveryReconciler: genericReconciler,
-			finalizingReconciler:          finalizingReconciler,
+	if finalizingReconciler, ok := reconciler.(AwsDiscoveryDirectiveFinalizer); ok {
+		reconcilerWrapper = genericAwsDiscoveryDirectiveFinalizer{
+			genericAwsDiscoveryDirectiveReconciler: genericReconciler,
+			finalizingReconciler:                   finalizingReconciler,
 		}
 	} else {
 		reconcilerWrapper = genericReconciler
@@ -95,40 +95,40 @@ func (c *awsDiscoveryReconcileLoop) RunAwsDiscoveryReconciler(ctx context.Contex
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
-// genericAwsDiscoveryHandler implements a generic reconcile.Reconciler
-type genericAwsDiscoveryReconciler struct {
-	reconciler AwsDiscoveryReconciler
+// genericAwsDiscoveryDirectiveHandler implements a generic reconcile.Reconciler
+type genericAwsDiscoveryDirectiveReconciler struct {
+	reconciler AwsDiscoveryDirectiveReconciler
 }
 
-func (r genericAwsDiscoveryReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+func (r genericAwsDiscoveryDirectiveReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: AwsDiscovery handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: AwsDiscoveryDirective handler received event for %T", object)
 	}
-	return r.reconciler.ReconcileAwsDiscovery(obj)
+	return r.reconciler.ReconcileAwsDiscoveryDirective(obj)
 }
 
-func (r genericAwsDiscoveryReconciler) ReconcileDeletion(request reconcile.Request) error {
-	if deletionReconciler, ok := r.reconciler.(AwsDiscoveryDeletionReconciler); ok {
-		return deletionReconciler.ReconcileAwsDiscoveryDeletion(request)
+func (r genericAwsDiscoveryDirectiveReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(AwsDiscoveryDirectiveDeletionReconciler); ok {
+		return deletionReconciler.ReconcileAwsDiscoveryDirectiveDeletion(request)
 	}
 	return nil
 }
 
-// genericAwsDiscoveryFinalizer implements a generic reconcile.FinalizingReconciler
-type genericAwsDiscoveryFinalizer struct {
-	genericAwsDiscoveryReconciler
-	finalizingReconciler AwsDiscoveryFinalizer
+// genericAwsDiscoveryDirectiveFinalizer implements a generic reconcile.FinalizingReconciler
+type genericAwsDiscoveryDirectiveFinalizer struct {
+	genericAwsDiscoveryDirectiveReconciler
+	finalizingReconciler AwsDiscoveryDirectiveFinalizer
 }
 
-func (r genericAwsDiscoveryFinalizer) FinalizerName() string {
-	return r.finalizingReconciler.AwsDiscoveryFinalizerName()
+func (r genericAwsDiscoveryDirectiveFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.AwsDiscoveryDirectiveFinalizerName()
 }
 
-func (r genericAwsDiscoveryFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+func (r genericAwsDiscoveryDirectiveFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	if !ok {
-		return errors.Errorf("internal error: AwsDiscovery handler received event for %T", object)
+		return errors.Errorf("internal error: AwsDiscoveryDirective handler received event for %T", object)
 	}
-	return r.finalizingReconciler.FinalizeAwsDiscovery(obj)
+	return r.finalizingReconciler.FinalizeAwsDiscoveryDirective(obj)
 }

@@ -17,30 +17,30 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
-// Provider for AwsDiscoveryClient from Clientset
-func AwsDiscoveryClientFromClientsetProvider(clients discovery_multicluster_solo_io_v1alpha1.Clientset) discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryClient {
-	return clients.AwsDiscoveries()
+// Provider for AwsDiscoveryDirectiveClient from Clientset
+func AwsDiscoveryDirectiveClientFromClientsetProvider(clients discovery_multicluster_solo_io_v1alpha1.Clientset) discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirectiveClient {
+	return clients.AwsDiscoveryDirectives()
 }
 
-// Provider for AwsDiscovery Client from Client
-func AwsDiscoveryClientProvider(client client.Client) discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryClient {
-	return discovery_multicluster_solo_io_v1alpha1.NewAwsDiscoveryClient(client)
+// Provider for AwsDiscoveryDirective Client from Client
+func AwsDiscoveryDirectiveClientProvider(client client.Client) discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirectiveClient {
+	return discovery_multicluster_solo_io_v1alpha1.NewAwsDiscoveryDirectiveClient(client)
 }
 
-type AwsDiscoveryClientFactory func(client client.Client) discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryClient
+type AwsDiscoveryDirectiveClientFactory func(client client.Client) discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirectiveClient
 
-func AwsDiscoveryClientFactoryProvider() AwsDiscoveryClientFactory {
-	return AwsDiscoveryClientProvider
+func AwsDiscoveryDirectiveClientFactoryProvider() AwsDiscoveryDirectiveClientFactory {
+	return AwsDiscoveryDirectiveClientProvider
 }
 
-type AwsDiscoveryClientFromConfigFactory func(cfg *rest.Config) (discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryClient, error)
+type AwsDiscoveryDirectiveClientFromConfigFactory func(cfg *rest.Config) (discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirectiveClient, error)
 
-func AwsDiscoveryClientFromConfigFactoryProvider() AwsDiscoveryClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryClient, error) {
+func AwsDiscoveryDirectiveClientFromConfigFactoryProvider() AwsDiscoveryDirectiveClientFromConfigFactory {
+	return func(cfg *rest.Config) (discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirectiveClient, error) {
 		clients, err := discovery_multicluster_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.AwsDiscoveries(), nil
+		return clients.AwsDiscoveryDirectives(), nil
 	}
 }

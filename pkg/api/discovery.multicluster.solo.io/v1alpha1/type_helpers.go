@@ -3,5 +3,5 @@
 // Definitions for the Kubernetes types
 package v1alpha1
 
-// AwsDiscoverySlice represents a slice of *AwsDiscovery
-type AwsDiscoverySlice []*AwsDiscovery
+// AwsDiscoveryDirectiveSlice represents a slice of *AwsDiscoveryDirective
+type AwsDiscoveryDirectiveSlice []*AwsDiscoveryDirective

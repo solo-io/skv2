@@ -15,15 +15,15 @@ var Group = model.Group{
 	Module: "github.com/solo-io/skv2",
 	Resources: []model.Resource{
 		{
-			Kind: "AwsDiscovery",
+			Kind: "AwsDiscoveryDirective",
 			Spec: model.Field{
 				Type: model.Type{
-					Name: "AwsDiscoverySpec",
+					Name: "AwsDiscoveryDirectiveSpec",
 				},
 			},
 			Status: &model.Field{
 				Type: model.Type{
-					Name: "AwsDiscoveryStatus",
+					Name: "AwsDiscoveryDirectiveStatus",
 				},
 			},
 		},

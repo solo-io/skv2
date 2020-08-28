@@ -50,9 +50,15 @@ func (a *awsClient) DescribeCluster(ctx context.Context, name string) (*eks.Clus
 	return resp.Cluster, nil
 }
 
-func (a *awsClient) ListClusters(ctx context.Context, input *eks.ListClustersInput) (*eks.ListClustersOutput, error) {
+func (a *awsClient) ListClusters(ctx context.Context, fn func(*eks.ListClustersOutput)) error {
 	eksSvc := eks.New(a.sess)
-	return eksSvc.ListClustersWithContext(ctx, input)
+	return eksSvc.ListClustersPagesWithContext(ctx, &eks.ListClustersInput{}, func(page *eks.ListClustersOutput, isLast bool) bool {
+		if page == nil {
+			return !isLast
+		}
+		fn(page)
+		return !isLast
+	})
 }
 
 func (a *awsClient) Token(ctx context.Context, name string) (token.Token, error) {

@@ -6,14 +6,14 @@ metadata:
   labels:
     app: skv2
     app.kubernetes.io/name: skv2
-  name: awsdiscoveries.discovery.multicluster.solo.io
+  name: awsdiscoverydirectives.discovery.multicluster.solo.io
 spec:
   group: discovery.multicluster.solo.io
   names:
-    kind: AwsDiscovery
-    listKind: AwsDiscoveryList
-    plural: awsdiscoveries
-    singular: awsdiscovery
+    kind: AwsDiscoveryDirective
+    listKind: AwsDiscoveryDirectiveList
+    plural: awsdiscoverydirectives
+    singular: awsdiscoverydirective
   scope: Namespaced
   subresources:
     status: {}

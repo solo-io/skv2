@@ -8,14 +8,14 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 )
 
-// DeepCopyInto for the AwsDiscovery.Spec
-func (in *AwsDiscoverySpec) DeepCopyInto(out *AwsDiscoverySpec) {
-	p := proto.Clone(in).(*AwsDiscoverySpec)
+// DeepCopyInto for the AwsDiscoveryDirective.Spec
+func (in *AwsDiscoveryDirectiveSpec) DeepCopyInto(out *AwsDiscoveryDirectiveSpec) {
+	p := proto.Clone(in).(*AwsDiscoveryDirectiveSpec)
 	*out = *p
 }
 
-// DeepCopyInto for the AwsDiscovery.Status
-func (in *AwsDiscoveryStatus) DeepCopyInto(out *AwsDiscoveryStatus) {
-	p := proto.Clone(in).(*AwsDiscoveryStatus)
+// DeepCopyInto for the AwsDiscoveryDirective.Status
+func (in *AwsDiscoveryDirectiveStatus) DeepCopyInto(out *AwsDiscoveryDirectiveStatus) {
+	p := proto.Clone(in).(*AwsDiscoveryDirectiveStatus)
 	*out = *p
 }

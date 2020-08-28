@@ -8,9 +8,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// Generated Deepcopy methods for AwsDiscovery
+// Generated Deepcopy methods for AwsDiscoveryDirective
 
-func (in *AwsDiscovery) DeepCopyInto(out *AwsDiscovery) {
+func (in *AwsDiscoveryDirective) DeepCopyInto(out *AwsDiscoveryDirective) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
@@ -19,29 +19,29 @@ func (in *AwsDiscovery) DeepCopyInto(out *AwsDiscovery) {
 	return
 }
 
-func (in *AwsDiscovery) DeepCopy() *AwsDiscovery {
+func (in *AwsDiscoveryDirective) DeepCopy() *AwsDiscoveryDirective {
 	if in == nil {
 		return nil
 	}
-	out := new(AwsDiscovery)
+	out := new(AwsDiscoveryDirective)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *AwsDiscovery) DeepCopyObject() runtime.Object {
+func (in *AwsDiscoveryDirective) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
 }
 
-func (in *AwsDiscoveryList) DeepCopyInto(out *AwsDiscoveryList) {
+func (in *AwsDiscoveryDirectiveList) DeepCopyInto(out *AwsDiscoveryDirectiveList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
-		*out = make([]AwsDiscovery, len(*in))
+		*out = make([]AwsDiscoveryDirective, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -49,16 +49,16 @@ func (in *AwsDiscoveryList) DeepCopyInto(out *AwsDiscoveryList) {
 	return
 }
 
-func (in *AwsDiscoveryList) DeepCopy() *AwsDiscoveryList {
+func (in *AwsDiscoveryDirectiveList) DeepCopy() *AwsDiscoveryDirectiveList {
 	if in == nil {
 		return nil
 	}
-	out := new(AwsDiscoveryList)
+	out := new(AwsDiscoveryDirectiveList)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *AwsDiscoveryList) DeepCopyObject() runtime.Object {
+func (in *AwsDiscoveryDirectiveList) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}

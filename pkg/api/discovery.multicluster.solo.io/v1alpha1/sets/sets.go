@@ -13,169 +13,169 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type AwsDiscoverySet interface {
+type AwsDiscoveryDirectiveSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) bool) []*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery
+	List(filterResource ...func(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) bool) []*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective
 	// Return the Set as a map of key to resource.
-	Map() map[string]*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery
+	Map() map[string]*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective
 	// Insert a resource into the set.
-	Insert(awsDiscovery ...*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+	Insert(awsDiscoveryDirective ...*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(awsDiscoverySet AwsDiscoverySet) bool
+	Equal(awsDiscoveryDirectiveSet AwsDiscoveryDirectiveSet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(awsDiscovery ezkube.ResourceId) bool
+	Has(awsDiscoveryDirective ezkube.ResourceId) bool
 	// Delete the key matching the resource
-	Delete(awsDiscovery ezkube.ResourceId)
+	Delete(awsDiscoveryDirective ezkube.ResourceId)
 	// Return the union with the provided set
-	Union(set AwsDiscoverySet) AwsDiscoverySet
+	Union(set AwsDiscoveryDirectiveSet) AwsDiscoveryDirectiveSet
 	// Return the difference with the provided set
-	Difference(set AwsDiscoverySet) AwsDiscoverySet
+	Difference(set AwsDiscoveryDirectiveSet) AwsDiscoveryDirectiveSet
 	// Return the intersection with the provided set
-	Intersection(set AwsDiscoverySet) AwsDiscoverySet
+	Intersection(set AwsDiscoveryDirectiveSet) AwsDiscoveryDirectiveSet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery, error)
+	Find(id ezkube.ResourceId) (*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective, error)
 	// Get the length of the set
 	Length() int
 }
 
-func makeGenericAwsDiscoverySet(awsDiscoveryList []*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) sksets.ResourceSet {
+func makeGenericAwsDiscoveryDirectiveSet(awsDiscoveryDirectiveList []*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range awsDiscoveryList {
+	for _, obj := range awsDiscoveryDirectiveList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type awsDiscoverySet struct {
+type awsDiscoveryDirectiveSet struct {
 	set sksets.ResourceSet
 }
 
-func NewAwsDiscoverySet(awsDiscoveryList ...*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) AwsDiscoverySet {
-	return &awsDiscoverySet{set: makeGenericAwsDiscoverySet(awsDiscoveryList)}
+func NewAwsDiscoveryDirectiveSet(awsDiscoveryDirectiveList ...*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) AwsDiscoveryDirectiveSet {
+	return &awsDiscoveryDirectiveSet{set: makeGenericAwsDiscoveryDirectiveSet(awsDiscoveryDirectiveList)}
 }
 
-func NewAwsDiscoverySetFromList(awsDiscoveryList *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryList) AwsDiscoverySet {
-	list := make([]*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery, 0, len(awsDiscoveryList.Items))
-	for idx := range awsDiscoveryList.Items {
-		list = append(list, &awsDiscoveryList.Items[idx])
+func NewAwsDiscoveryDirectiveSetFromList(awsDiscoveryDirectiveList *discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirectiveList) AwsDiscoveryDirectiveSet {
+	list := make([]*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective, 0, len(awsDiscoveryDirectiveList.Items))
+	for idx := range awsDiscoveryDirectiveList.Items {
+		list = append(list, &awsDiscoveryDirectiveList.Items[idx])
 	}
-	return &awsDiscoverySet{set: makeGenericAwsDiscoverySet(list)}
+	return &awsDiscoveryDirectiveSet{set: makeGenericAwsDiscoveryDirectiveSet(list)}
 }
 
-func (s *awsDiscoverySet) Keys() sets.String {
+func (s *awsDiscoveryDirectiveSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
 	return s.set.Keys()
 }
 
-func (s *awsDiscoverySet) List(filterResource ...func(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery) bool) []*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery {
+func (s *awsDiscoveryDirectiveSet) List(filterResource ...func(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective) bool) []*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery))
+			return filter(obj.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective))
 		})
 	}
 
-	var awsDiscoveryList []*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery
+	var awsDiscoveryDirectiveList []*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective
 	for _, obj := range s.set.List(genericFilters...) {
-		awsDiscoveryList = append(awsDiscoveryList, obj.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery))
+		awsDiscoveryDirectiveList = append(awsDiscoveryDirectiveList, obj.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective))
 	}
-	return awsDiscoveryList
+	return awsDiscoveryDirectiveList
 }
 
-func (s *awsDiscoverySet) Map() map[string]*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery {
+func (s *awsDiscoveryDirectiveSet) Map() map[string]*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery{}
+	newMap := map[string]*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective{}
 	for k, v := range s.set.Map() {
-		newMap[k] = v.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery)
+		newMap[k] = v.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective)
 	}
 	return newMap
 }
 
-func (s *awsDiscoverySet) Insert(
-	awsDiscoveryList ...*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery,
+func (s *awsDiscoveryDirectiveSet) Insert(
+	awsDiscoveryDirectiveList ...*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
 	}
 
-	for _, obj := range awsDiscoveryList {
+	for _, obj := range awsDiscoveryDirectiveList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s *awsDiscoverySet) Has(awsDiscovery ezkube.ResourceId) bool {
+func (s *awsDiscoveryDirectiveSet) Has(awsDiscoveryDirective ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(awsDiscovery)
+	return s.set.Has(awsDiscoveryDirective)
 }
 
-func (s *awsDiscoverySet) Equal(
-	awsDiscoverySet AwsDiscoverySet,
+func (s *awsDiscoveryDirectiveSet) Equal(
+	awsDiscoveryDirectiveSet AwsDiscoveryDirectiveSet,
 ) bool {
 	if s == nil {
-		return awsDiscoverySet == nil
+		return awsDiscoveryDirectiveSet == nil
 	}
-	return s.set.Equal(makeGenericAwsDiscoverySet(awsDiscoverySet.List()))
+	return s.set.Equal(makeGenericAwsDiscoveryDirectiveSet(awsDiscoveryDirectiveSet.List()))
 }
 
-func (s *awsDiscoverySet) Delete(AwsDiscovery ezkube.ResourceId) {
+func (s *awsDiscoveryDirectiveSet) Delete(AwsDiscoveryDirective ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(AwsDiscovery)
+	s.set.Delete(AwsDiscoveryDirective)
 }
 
-func (s *awsDiscoverySet) Union(set AwsDiscoverySet) AwsDiscoverySet {
+func (s *awsDiscoveryDirectiveSet) Union(set AwsDiscoveryDirectiveSet) AwsDiscoveryDirectiveSet {
 	if s == nil {
 		return set
 	}
-	return NewAwsDiscoverySet(append(s.List(), set.List()...)...)
+	return NewAwsDiscoveryDirectiveSet(append(s.List(), set.List()...)...)
 }
 
-func (s *awsDiscoverySet) Difference(set AwsDiscoverySet) AwsDiscoverySet {
+func (s *awsDiscoveryDirectiveSet) Difference(set AwsDiscoveryDirectiveSet) AwsDiscoveryDirectiveSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericAwsDiscoverySet(set.List()))
-	return &awsDiscoverySet{set: newSet}
+	newSet := s.set.Difference(makeGenericAwsDiscoveryDirectiveSet(set.List()))
+	return &awsDiscoveryDirectiveSet{set: newSet}
 }
 
-func (s *awsDiscoverySet) Intersection(set AwsDiscoverySet) AwsDiscoverySet {
+func (s *awsDiscoveryDirectiveSet) Intersection(set AwsDiscoveryDirectiveSet) AwsDiscoveryDirectiveSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericAwsDiscoverySet(set.List()))
-	var awsDiscoveryList []*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery
+	newSet := s.set.Intersection(makeGenericAwsDiscoveryDirectiveSet(set.List()))
+	var awsDiscoveryDirectiveList []*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective
 	for _, obj := range newSet.List() {
-		awsDiscoveryList = append(awsDiscoveryList, obj.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery))
+		awsDiscoveryDirectiveList = append(awsDiscoveryDirectiveList, obj.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective))
 	}
-	return NewAwsDiscoverySet(awsDiscoveryList...)
+	return NewAwsDiscoveryDirectiveSet(awsDiscoveryDirectiveList...)
 }
 
-func (s *awsDiscoverySet) Find(id ezkube.ResourceId) (*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery, error) {
+func (s *awsDiscoveryDirectiveSet) Find(id ezkube.ResourceId) (*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective, error) {
 	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find AwsDiscovery %v", sksets.Key(id))
+		return nil, eris.Errorf("empty set, cannot find AwsDiscoveryDirective %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&discovery_multicluster_solo_io_v1alpha1.AwsDiscovery{}, id)
+	obj, err := s.set.Find(&discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscovery), nil
+	return obj.(*discovery_multicluster_solo_io_v1alpha1.AwsDiscoveryDirective), nil
 }
 
-func (s *awsDiscoverySet) Length() int {
+func (s *awsDiscoveryDirectiveSet) Length() int {
 	if s == nil {
 		return 0
 	}

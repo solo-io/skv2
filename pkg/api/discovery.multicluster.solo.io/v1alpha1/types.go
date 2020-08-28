@@ -12,24 +12,24 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// AwsDiscovery is the Schema for the awsDiscovery API
-type AwsDiscovery struct {
+// AwsDiscoveryDirective is the Schema for the awsDiscoveryDirective API
+type AwsDiscoveryDirective struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   AwsDiscoverySpec   `json:"spec,omitempty"`
-	Status AwsDiscoveryStatus `json:"status,omitempty"`
+	Spec   AwsDiscoveryDirectiveSpec   `json:"spec,omitempty"`
+	Status AwsDiscoveryDirectiveStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// AwsDiscoveryList contains a list of AwsDiscovery
-type AwsDiscoveryList struct {
+// AwsDiscoveryDirectiveList contains a list of AwsDiscoveryDirective
+type AwsDiscoveryDirectiveList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []AwsDiscovery `json:"items"`
+	Items           []AwsDiscoveryDirective `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&AwsDiscovery{}, &AwsDiscoveryList{})
+	SchemeBuilder.Register(&AwsDiscoveryDirective{}, &AwsDiscoveryDirectiveList{})
 }
