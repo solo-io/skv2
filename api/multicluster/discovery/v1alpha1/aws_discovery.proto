@@ -11,7 +11,7 @@ option go_package = "github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo
 /*
     Discovery configuration for AWS resources.
 */
-message AwsDiscoverySpec {
+message AwsDiscoveryDirectiveSpec {
 
     // For a given resource_selector to apply to a resource, the resource must match all of the resource_selector's match criteria.
     message AwsResourceSelector {
@@ -41,5 +41,5 @@ message AwsDiscoverySpec {
     repeated AwsResourceSelector eks_selector = 2;
 }
 
-message AwsDiscoveryStatus {
+message AwsDiscoveryDirectiveStatus {
 }

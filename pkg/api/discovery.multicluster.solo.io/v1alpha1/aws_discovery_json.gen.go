@@ -19,47 +19,47 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// MarshalJSON is a custom marshaler for AwsDiscoverySpec
-func (this *AwsDiscoverySpec) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for AwsDiscoveryDirectiveSpec
+func (this *AwsDiscoveryDirectiveSpec) MarshalJSON() ([]byte, error) {
 	str, err := AwsDiscoveryMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for AwsDiscoverySpec
-func (this *AwsDiscoverySpec) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for AwsDiscoveryDirectiveSpec
+func (this *AwsDiscoveryDirectiveSpec) UnmarshalJSON(b []byte) error {
 	return AwsDiscoveryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for AwsDiscoverySpec_AwsResourceSelector
-func (this *AwsDiscoverySpec_AwsResourceSelector) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for AwsDiscoveryDirectiveSpec_AwsResourceSelector
+func (this *AwsDiscoveryDirectiveSpec_AwsResourceSelector) MarshalJSON() ([]byte, error) {
 	str, err := AwsDiscoveryMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for AwsDiscoverySpec_AwsResourceSelector
-func (this *AwsDiscoverySpec_AwsResourceSelector) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for AwsDiscoveryDirectiveSpec_AwsResourceSelector
+func (this *AwsDiscoveryDirectiveSpec_AwsResourceSelector) UnmarshalJSON(b []byte) error {
 	return AwsDiscoveryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for AwsDiscoverySpec_AwsResourceSelector_Matcher
-func (this *AwsDiscoverySpec_AwsResourceSelector_Matcher) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher
+func (this *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) MarshalJSON() ([]byte, error) {
 	str, err := AwsDiscoveryMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for AwsDiscoverySpec_AwsResourceSelector_Matcher
-func (this *AwsDiscoverySpec_AwsResourceSelector_Matcher) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher
+func (this *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) UnmarshalJSON(b []byte) error {
 	return AwsDiscoveryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for AwsDiscoveryStatus
-func (this *AwsDiscoveryStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for AwsDiscoveryDirectiveStatus
+func (this *AwsDiscoveryDirectiveStatus) MarshalJSON() ([]byte, error) {
 	str, err := AwsDiscoveryMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for AwsDiscoveryStatus
-func (this *AwsDiscoveryStatus) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for AwsDiscoveryDirectiveStatus
+func (this *AwsDiscoveryDirectiveStatus) UnmarshalJSON(b []byte) error {
 	return AwsDiscoveryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

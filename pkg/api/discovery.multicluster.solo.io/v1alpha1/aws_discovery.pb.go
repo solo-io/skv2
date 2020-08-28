@@ -26,39 +26,39 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
 //Discovery configuration for AWS resources.
-type AwsDiscoverySpec struct {
+type AwsDiscoveryDirectiveSpec struct {
 	// If unspecified, by default discovery will run for EKS clusters in all regions.
-	EksSelector          []*AwsDiscoverySpec_AwsResourceSelector `protobuf:"bytes,2,rep,name=eks_selector,json=eksSelector,proto3" json:"eks_selector,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                                `json:"-"`
-	XXX_unrecognized     []byte                                  `json:"-"`
-	XXX_sizecache        int32                                   `json:"-"`
+	EksSelector          []*AwsDiscoveryDirectiveSpec_AwsResourceSelector `protobuf:"bytes,2,rep,name=eks_selector,json=eksSelector,proto3" json:"eks_selector,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                         `json:"-"`
+	XXX_unrecognized     []byte                                           `json:"-"`
+	XXX_sizecache        int32                                            `json:"-"`
 }
 
-func (m *AwsDiscoverySpec) Reset()         { *m = AwsDiscoverySpec{} }
-func (m *AwsDiscoverySpec) String() string { return proto.CompactTextString(m) }
-func (*AwsDiscoverySpec) ProtoMessage()    {}
-func (*AwsDiscoverySpec) Descriptor() ([]byte, []int) {
+func (m *AwsDiscoveryDirectiveSpec) Reset()         { *m = AwsDiscoveryDirectiveSpec{} }
+func (m *AwsDiscoveryDirectiveSpec) String() string { return proto.CompactTextString(m) }
+func (*AwsDiscoveryDirectiveSpec) ProtoMessage()    {}
+func (*AwsDiscoveryDirectiveSpec) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c0b8f6d4627dc227, []int{0}
 }
-func (m *AwsDiscoverySpec) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AwsDiscoverySpec.Unmarshal(m, b)
+func (m *AwsDiscoveryDirectiveSpec) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec.Unmarshal(m, b)
 }
-func (m *AwsDiscoverySpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AwsDiscoverySpec.Marshal(b, m, deterministic)
+func (m *AwsDiscoveryDirectiveSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec.Marshal(b, m, deterministic)
 }
-func (m *AwsDiscoverySpec) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AwsDiscoverySpec.Merge(m, src)
+func (m *AwsDiscoveryDirectiveSpec) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AwsDiscoveryDirectiveSpec.Merge(m, src)
 }
-func (m *AwsDiscoverySpec) XXX_Size() int {
-	return xxx_messageInfo_AwsDiscoverySpec.Size(m)
+func (m *AwsDiscoveryDirectiveSpec) XXX_Size() int {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec.Size(m)
 }
-func (m *AwsDiscoverySpec) XXX_DiscardUnknown() {
-	xxx_messageInfo_AwsDiscoverySpec.DiscardUnknown(m)
+func (m *AwsDiscoveryDirectiveSpec) XXX_DiscardUnknown() {
+	xxx_messageInfo_AwsDiscoveryDirectiveSpec.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AwsDiscoverySpec proto.InternalMessageInfo
+var xxx_messageInfo_AwsDiscoveryDirectiveSpec proto.InternalMessageInfo
 
-func (m *AwsDiscoverySpec) GetEksSelector() []*AwsDiscoverySpec_AwsResourceSelector {
+func (m *AwsDiscoveryDirectiveSpec) GetEksSelector() []*AwsDiscoveryDirectiveSpec_AwsResourceSelector {
 	if m != nil {
 		return m.EksSelector
 	}
@@ -66,88 +66,92 @@ func (m *AwsDiscoverySpec) GetEksSelector() []*AwsDiscoverySpec_AwsResourceSelec
 }
 
 // For a given resource_selector to apply to a resource, the resource must match all of the resource_selector's match criteria.
-type AwsDiscoverySpec_AwsResourceSelector struct {
+type AwsDiscoveryDirectiveSpec_AwsResourceSelector struct {
 	// Types that are valid to be assigned to SelectorType:
-	//	*AwsDiscoverySpec_AwsResourceSelector_Arn
-	//	*AwsDiscoverySpec_AwsResourceSelector_Matcher_
-	SelectorType         isAwsDiscoverySpec_AwsResourceSelector_SelectorType `protobuf_oneof:"selector_type"`
-	XXX_NoUnkeyedLiteral struct{}                                            `json:"-"`
-	XXX_unrecognized     []byte                                              `json:"-"`
-	XXX_sizecache        int32                                               `json:"-"`
+	//	*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn
+	//	*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_
+	SelectorType         isAwsDiscoveryDirectiveSpec_AwsResourceSelector_SelectorType `protobuf_oneof:"selector_type"`
+	XXX_NoUnkeyedLiteral struct{}                                                     `json:"-"`
+	XXX_unrecognized     []byte                                                       `json:"-"`
+	XXX_sizecache        int32                                                        `json:"-"`
 }
 
-func (m *AwsDiscoverySpec_AwsResourceSelector) Reset()         { *m = AwsDiscoverySpec_AwsResourceSelector{} }
-func (m *AwsDiscoverySpec_AwsResourceSelector) String() string { return proto.CompactTextString(m) }
-func (*AwsDiscoverySpec_AwsResourceSelector) ProtoMessage()    {}
-func (*AwsDiscoverySpec_AwsResourceSelector) Descriptor() ([]byte, []int) {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) Reset() {
+	*m = AwsDiscoveryDirectiveSpec_AwsResourceSelector{}
+}
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) String() string {
+	return proto.CompactTextString(m)
+}
+func (*AwsDiscoveryDirectiveSpec_AwsResourceSelector) ProtoMessage() {}
+func (*AwsDiscoveryDirectiveSpec_AwsResourceSelector) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c0b8f6d4627dc227, []int{0, 0}
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector.Unmarshal(m, b)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector.Unmarshal(m, b)
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector.Marshal(b, m, deterministic)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector.Marshal(b, m, deterministic)
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector.Merge(m, src)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector.Merge(m, src)
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector) XXX_Size() int {
-	return xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector.Size(m)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) XXX_Size() int {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector.Size(m)
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector) XXX_DiscardUnknown() {
-	xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector.DiscardUnknown(m)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) XXX_DiscardUnknown() {
+	xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector proto.InternalMessageInfo
+var xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector proto.InternalMessageInfo
 
-type isAwsDiscoverySpec_AwsResourceSelector_SelectorType interface {
-	isAwsDiscoverySpec_AwsResourceSelector_SelectorType()
+type isAwsDiscoveryDirectiveSpec_AwsResourceSelector_SelectorType interface {
+	isAwsDiscoveryDirectiveSpec_AwsResourceSelector_SelectorType()
 	Equal(interface{}) bool
 }
 
-type AwsDiscoverySpec_AwsResourceSelector_Arn struct {
+type AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn struct {
 	Arn string `protobuf:"bytes,1,opt,name=arn,proto3,oneof" json:"arn,omitempty"`
 }
-type AwsDiscoverySpec_AwsResourceSelector_Matcher_ struct {
-	Matcher *AwsDiscoverySpec_AwsResourceSelector_Matcher `protobuf:"bytes,2,opt,name=matcher,proto3,oneof" json:"matcher,omitempty"`
+type AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_ struct {
+	Matcher *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher `protobuf:"bytes,2,opt,name=matcher,proto3,oneof" json:"matcher,omitempty"`
 }
 
-func (*AwsDiscoverySpec_AwsResourceSelector_Arn) isAwsDiscoverySpec_AwsResourceSelector_SelectorType() {
+func (*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn) isAwsDiscoveryDirectiveSpec_AwsResourceSelector_SelectorType() {
 }
-func (*AwsDiscoverySpec_AwsResourceSelector_Matcher_) isAwsDiscoverySpec_AwsResourceSelector_SelectorType() {
+func (*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_) isAwsDiscoveryDirectiveSpec_AwsResourceSelector_SelectorType() {
 }
 
-func (m *AwsDiscoverySpec_AwsResourceSelector) GetSelectorType() isAwsDiscoverySpec_AwsResourceSelector_SelectorType {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) GetSelectorType() isAwsDiscoveryDirectiveSpec_AwsResourceSelector_SelectorType {
 	if m != nil {
 		return m.SelectorType
 	}
 	return nil
 }
 
-func (m *AwsDiscoverySpec_AwsResourceSelector) GetArn() string {
-	if x, ok := m.GetSelectorType().(*AwsDiscoverySpec_AwsResourceSelector_Arn); ok {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) GetArn() string {
+	if x, ok := m.GetSelectorType().(*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn); ok {
 		return x.Arn
 	}
 	return ""
 }
 
-func (m *AwsDiscoverySpec_AwsResourceSelector) GetMatcher() *AwsDiscoverySpec_AwsResourceSelector_Matcher {
-	if x, ok := m.GetSelectorType().(*AwsDiscoverySpec_AwsResourceSelector_Matcher_); ok {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) GetMatcher() *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher {
+	if x, ok := m.GetSelectorType().(*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_); ok {
 		return x.Matcher
 	}
 	return nil
 }
 
 // XXX_OneofWrappers is for the internal use of the proto package.
-func (*AwsDiscoverySpec_AwsResourceSelector) XXX_OneofWrappers() []interface{} {
+func (*AwsDiscoveryDirectiveSpec_AwsResourceSelector) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*AwsDiscoverySpec_AwsResourceSelector_Arn)(nil),
-		(*AwsDiscoverySpec_AwsResourceSelector_Matcher_)(nil),
+		(*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn)(nil),
+		(*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_)(nil),
 	}
 }
 
 // Selects all resources that exist in the specified AWS region and possess the specified tags.
-type AwsDiscoverySpec_AwsResourceSelector_Matcher struct {
+type AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher struct {
 	// AWS account IDs. If unspecified, select across any accessible AWS account.
 	AccountIds []string `protobuf:"bytes,1,rep,name=account_ids,json=accountIds,proto3" json:"account_ids,omitempty"`
 	// AWS regions, e.g. us-east-2. If unspecified, select across all regions.
@@ -159,91 +163,91 @@ type AwsDiscoverySpec_AwsResourceSelector_Matcher struct {
 	XXX_sizecache        int32             `json:"-"`
 }
 
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) Reset() {
-	*m = AwsDiscoverySpec_AwsResourceSelector_Matcher{}
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) Reset() {
+	*m = AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher{}
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) String() string {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) String() string {
 	return proto.CompactTextString(m)
 }
-func (*AwsDiscoverySpec_AwsResourceSelector_Matcher) ProtoMessage() {}
-func (*AwsDiscoverySpec_AwsResourceSelector_Matcher) Descriptor() ([]byte, []int) {
+func (*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) ProtoMessage() {}
+func (*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c0b8f6d4627dc227, []int{0, 0, 0}
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector_Matcher.Unmarshal(m, b)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher.Unmarshal(m, b)
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector_Matcher.Marshal(b, m, deterministic)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher.Marshal(b, m, deterministic)
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector_Matcher.Merge(m, src)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher.Merge(m, src)
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) XXX_Size() int {
-	return xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector_Matcher.Size(m)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) XXX_Size() int {
+	return xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher.Size(m)
 }
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) XXX_DiscardUnknown() {
-	xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector_Matcher.DiscardUnknown(m)
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) XXX_DiscardUnknown() {
+	xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AwsDiscoverySpec_AwsResourceSelector_Matcher proto.InternalMessageInfo
+var xxx_messageInfo_AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher proto.InternalMessageInfo
 
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) GetAccountIds() []string {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) GetAccountIds() []string {
 	if m != nil {
 		return m.AccountIds
 	}
 	return nil
 }
 
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) GetRegions() []string {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) GetRegions() []string {
 	if m != nil {
 		return m.Regions
 	}
 	return nil
 }
 
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) GetTags() map[string]string {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) GetTags() map[string]string {
 	if m != nil {
 		return m.Tags
 	}
 	return nil
 }
 
-type AwsDiscoveryStatus struct {
+type AwsDiscoveryDirectiveStatus struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *AwsDiscoveryStatus) Reset()         { *m = AwsDiscoveryStatus{} }
-func (m *AwsDiscoveryStatus) String() string { return proto.CompactTextString(m) }
-func (*AwsDiscoveryStatus) ProtoMessage()    {}
-func (*AwsDiscoveryStatus) Descriptor() ([]byte, []int) {
+func (m *AwsDiscoveryDirectiveStatus) Reset()         { *m = AwsDiscoveryDirectiveStatus{} }
+func (m *AwsDiscoveryDirectiveStatus) String() string { return proto.CompactTextString(m) }
+func (*AwsDiscoveryDirectiveStatus) ProtoMessage()    {}
+func (*AwsDiscoveryDirectiveStatus) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c0b8f6d4627dc227, []int{1}
 }
-func (m *AwsDiscoveryStatus) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AwsDiscoveryStatus.Unmarshal(m, b)
+func (m *AwsDiscoveryDirectiveStatus) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AwsDiscoveryDirectiveStatus.Unmarshal(m, b)
 }
-func (m *AwsDiscoveryStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AwsDiscoveryStatus.Marshal(b, m, deterministic)
+func (m *AwsDiscoveryDirectiveStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AwsDiscoveryDirectiveStatus.Marshal(b, m, deterministic)
 }
-func (m *AwsDiscoveryStatus) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AwsDiscoveryStatus.Merge(m, src)
+func (m *AwsDiscoveryDirectiveStatus) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AwsDiscoveryDirectiveStatus.Merge(m, src)
 }
-func (m *AwsDiscoveryStatus) XXX_Size() int {
-	return xxx_messageInfo_AwsDiscoveryStatus.Size(m)
+func (m *AwsDiscoveryDirectiveStatus) XXX_Size() int {
+	return xxx_messageInfo_AwsDiscoveryDirectiveStatus.Size(m)
 }
-func (m *AwsDiscoveryStatus) XXX_DiscardUnknown() {
-	xxx_messageInfo_AwsDiscoveryStatus.DiscardUnknown(m)
+func (m *AwsDiscoveryDirectiveStatus) XXX_DiscardUnknown() {
+	xxx_messageInfo_AwsDiscoveryDirectiveStatus.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AwsDiscoveryStatus proto.InternalMessageInfo
+var xxx_messageInfo_AwsDiscoveryDirectiveStatus proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*AwsDiscoverySpec)(nil), "discovery.multicluster.solo.io.AwsDiscoverySpec")
-	proto.RegisterType((*AwsDiscoverySpec_AwsResourceSelector)(nil), "discovery.multicluster.solo.io.AwsDiscoverySpec.AwsResourceSelector")
-	proto.RegisterType((*AwsDiscoverySpec_AwsResourceSelector_Matcher)(nil), "discovery.multicluster.solo.io.AwsDiscoverySpec.AwsResourceSelector.Matcher")
-	proto.RegisterMapType((map[string]string)(nil), "discovery.multicluster.solo.io.AwsDiscoverySpec.AwsResourceSelector.Matcher.TagsEntry")
-	proto.RegisterType((*AwsDiscoveryStatus)(nil), "discovery.multicluster.solo.io.AwsDiscoveryStatus")
+	proto.RegisterType((*AwsDiscoveryDirectiveSpec)(nil), "discovery.multicluster.solo.io.AwsDiscoveryDirectiveSpec")
+	proto.RegisterType((*AwsDiscoveryDirectiveSpec_AwsResourceSelector)(nil), "discovery.multicluster.solo.io.AwsDiscoveryDirectiveSpec.AwsResourceSelector")
+	proto.RegisterType((*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher)(nil), "discovery.multicluster.solo.io.AwsDiscoveryDirectiveSpec.AwsResourceSelector.Matcher")
+	proto.RegisterMapType((map[string]string)(nil), "discovery.multicluster.solo.io.AwsDiscoveryDirectiveSpec.AwsResourceSelector.Matcher.TagsEntry")
+	proto.RegisterType((*AwsDiscoveryDirectiveStatus)(nil), "discovery.multicluster.solo.io.AwsDiscoveryDirectiveStatus")
 }
 
 func init() {
@@ -251,43 +255,43 @@ func init() {
 }
 
 var fileDescriptor_c0b8f6d4627dc227 = []byte{
-	// 410 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x92, 0xcd, 0x6e, 0xd3, 0x40,
-	0x14, 0x85, 0xeb, 0x3a, 0x10, 0xf9, 0x06, 0x44, 0x35, 0x64, 0x61, 0x79, 0x51, 0xa2, 0xae, 0xb2,
-	0x61, 0x46, 0x0d, 0x0b, 0x10, 0x3b, 0xaa, 0x22, 0x8a, 0x04, 0x42, 0x4c, 0x11, 0x0b, 0x36, 0xd1,
-	0x74, 0x72, 0x35, 0x19, 0xec, 0x64, 0xac, 0xb9, 0xe3, 0xb4, 0x7e, 0x09, 0xc4, 0x63, 0xf0, 0x08,
-	0x3c, 0x0f, 0x3b, 0x1e, 0x80, 0x3d, 0xb2, 0x1d, 0x87, 0x1f, 0x41, 0x57, 0xdd, 0xcd, 0xfd, 0x34,
-	0x73, 0xee, 0xf1, 0xf1, 0x81, 0x37, 0xc6, 0x86, 0x65, 0x75, 0xc1, 0xb5, 0x5b, 0x09, 0x72, 0x85,
-	0x7b, 0x68, 0x9d, 0xa0, 0x7c, 0x33, 0x13, 0xaa, 0xb4, 0x62, 0x55, 0x15, 0xc1, 0xea, 0xa2, 0xa2,
-	0x80, 0x5e, 0x2c, 0x2c, 0x69, 0xb7, 0x41, 0x5f, 0x8b, 0xcd, 0xb1, 0x2a, 0xca, 0xa5, 0x3a, 0x16,
-	0xea, 0x92, 0xe6, 0x3b, 0xcc, 0x4b, 0xef, 0x82, 0x63, 0x87, 0xbf, 0xc0, 0xef, 0xcf, 0x79, 0x23,
-	0xce, 0xad, 0xcb, 0xc6, 0xc6, 0x19, 0xd7, 0x5e, 0x15, 0xcd, 0xa9, 0x7b, 0x95, 0x31, 0xbc, 0x0a,
-	0x1d, 0xc4, 0xab, 0xd0, 0xb1, 0xa3, 0x4f, 0x03, 0x38, 0x78, 0x76, 0x49, 0xa7, 0xbd, 0xde, 0x79,
-	0x89, 0x9a, 0x19, 0xb8, 0x83, 0x39, 0xcd, 0x09, 0x0b, 0xd4, 0xc1, 0xf9, 0x74, 0x7f, 0x12, 0x4f,
-	0x47, 0xb3, 0x53, 0x7e, 0xfd, 0x56, 0xfe, 0xb7, 0x4e, 0x03, 0x24, 0x92, 0xab, 0xbc, 0xc6, 0xf3,
-	0xad, 0x96, 0x1c, 0x61, 0x4e, 0xfd, 0x90, 0x7d, 0x8e, 0xe1, 0xfe, 0x3f, 0x2e, 0x31, 0x06, 0xb1,
-	0xf2, 0xeb, 0x34, 0x9a, 0x44, 0xd3, 0xe4, 0x6c, 0x4f, 0x36, 0x03, 0x5b, 0xc2, 0x70, 0xa5, 0x82,
-	0x5e, 0x62, 0xe3, 0x27, 0x9a, 0x8e, 0x66, 0xaf, 0x6e, 0xc2, 0x0f, 0x7f, 0xdd, 0x69, 0x9e, 0xed,
-	0xc9, 0x5e, 0x3e, 0xfb, 0x1e, 0xc1, 0x70, 0x8b, 0xd9, 0x03, 0x18, 0x29, 0xad, 0x5d, 0xb5, 0x0e,
-	0x73, 0xbb, 0xa0, 0x34, 0x9a, 0xc4, 0xd3, 0x44, 0xc2, 0x16, 0xbd, 0x5c, 0x10, 0x4b, 0x61, 0xe8,
-	0xd1, 0x58, 0xb7, 0xa6, 0x36, 0xa6, 0x44, 0xf6, 0x23, 0xfb, 0x08, 0x83, 0xa0, 0x0c, 0xa5, 0x71,
-	0x9b, 0xde, 0xfb, 0x9b, 0x74, 0xcb, 0xdf, 0x29, 0x43, 0xcf, 0xd7, 0xc1, 0xd7, 0xb2, 0xdd, 0x91,
-	0x3d, 0x86, 0x64, 0x87, 0xd8, 0x01, 0xc4, 0x39, 0xd6, 0x5d, 0x7a, 0xb2, 0x39, 0xb2, 0x31, 0xdc,
-	0xda, 0xa8, 0xa2, 0xc2, 0x36, 0xb9, 0x44, 0x76, 0xc3, 0xd3, 0xfd, 0x27, 0xd1, 0xc9, 0x3d, 0xb8,
-	0xdb, 0xff, 0xe6, 0x79, 0xa8, 0x4b, 0x3c, 0x1a, 0x03, 0xfb, 0xc3, 0x49, 0x50, 0xa1, 0xa2, 0x93,
-	0xb7, 0x5f, 0x7f, 0x0c, 0xa2, 0x2f, 0xdf, 0x0e, 0xa3, 0x0f, 0x2f, 0xfe, 0xd7, 0xe5, 0x32, 0x37,
-	0x6d, 0x9f, 0xaf, 0xff, 0xcc, 0x5d, 0xaf, 0x2f, 0x6e, 0xb7, 0x05, 0x7c, 0xf4, 0x33, 0x00, 0x00,
-	0xff, 0xff, 0x53, 0x44, 0x0b, 0xee, 0x1d, 0x03, 0x00, 0x00,
+	// 415 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x53, 0xb1, 0x6e, 0xd4, 0x40,
+	0x14, 0x8c, 0xe3, 0x83, 0x93, 0xdf, 0x81, 0x40, 0x4b, 0x0a, 0x63, 0x44, 0x38, 0xa5, 0xba, 0x86,
+	0x5d, 0xe5, 0x28, 0x40, 0x74, 0x44, 0x41, 0x84, 0x22, 0x42, 0x6c, 0xa0, 0xa1, 0xb1, 0x36, 0x7b,
+	0x4f, 0xbe, 0x95, 0x7d, 0xb7, 0x66, 0xdf, 0xda, 0x89, 0x7f, 0x87, 0x8a, 0x9a, 0x8a, 0xef, 0xe1,
+	0x13, 0x90, 0xe8, 0x91, 0xed, 0xf3, 0x41, 0x91, 0xa4, 0x82, 0x6e, 0x67, 0xbc, 0x6f, 0xde, 0x78,
+	0x34, 0x0b, 0xef, 0x32, 0xe3, 0x97, 0xd5, 0x39, 0xd7, 0x76, 0x25, 0xc8, 0x16, 0xf6, 0xa9, 0xb1,
+	0x82, 0xf2, 0x7a, 0x2e, 0x54, 0x69, 0xc4, 0xaa, 0x2a, 0xbc, 0xd1, 0x45, 0x45, 0x1e, 0x9d, 0x58,
+	0x18, 0xd2, 0xb6, 0x46, 0xd7, 0x88, 0xfa, 0x50, 0x15, 0xe5, 0x52, 0x1d, 0x0a, 0x75, 0x41, 0xe9,
+	0x96, 0xe6, 0xa5, 0xb3, 0xde, 0xb2, 0xfd, 0x3f, 0xc4, 0xdf, 0xe3, 0xbc, 0x15, 0xe7, 0xc6, 0x26,
+	0x7b, 0x99, 0xcd, 0x6c, 0x77, 0x55, 0xb4, 0xa7, 0x7e, 0x2a, 0x61, 0x78, 0xe9, 0x7b, 0x12, 0x2f,
+	0x7d, 0xcf, 0x1d, 0x7c, 0x1b, 0xc1, 0xc3, 0x57, 0x17, 0x74, 0x3c, 0xe8, 0x1d, 0x1b, 0x87, 0xda,
+	0x9b, 0x1a, 0xcf, 0x4a, 0xd4, 0xac, 0x84, 0x3b, 0x98, 0x53, 0x4a, 0x58, 0xa0, 0xf6, 0xd6, 0xc5,
+	0xbb, 0xd3, 0x70, 0x36, 0x99, 0x9f, 0xf2, 0x9b, 0xd7, 0xf3, 0x6b, 0x05, 0xdb, 0x2f, 0x12, 0xc9,
+	0x56, 0x4e, 0xe3, 0xd9, 0x46, 0x54, 0x4e, 0x30, 0xa7, 0x01, 0x24, 0x5f, 0x42, 0x78, 0x70, 0xc5,
+	0x25, 0xc6, 0x20, 0x54, 0x6e, 0x1d, 0x07, 0xd3, 0x60, 0x16, 0x9d, 0xec, 0xc8, 0x16, 0xb0, 0xcf,
+	0x30, 0x5e, 0x29, 0xaf, 0x97, 0xd8, 0x1a, 0x0b, 0x66, 0x93, 0xf9, 0xc7, 0x7f, 0x6a, 0x8c, 0x9f,
+	0xf6, 0xe2, 0x27, 0x3b, 0x72, 0xd8, 0x93, 0xfc, 0x0c, 0x60, 0xbc, 0xa1, 0xd9, 0x13, 0x98, 0x28,
+	0xad, 0x6d, 0xb5, 0xf6, 0xa9, 0x59, 0x50, 0x1c, 0x4c, 0xc3, 0x59, 0x24, 0x61, 0x43, 0xbd, 0x5d,
+	0x10, 0x8b, 0x61, 0xec, 0x30, 0x33, 0x76, 0x4d, 0x5d, 0x70, 0x91, 0x1c, 0x20, 0x23, 0x18, 0x79,
+	0x95, 0x51, 0x1c, 0x76, 0x79, 0xa6, 0xff, 0xc5, 0x36, 0xff, 0xa0, 0x32, 0x7a, 0xbd, 0xf6, 0xae,
+	0x91, 0xdd, 0xb2, 0xe4, 0x39, 0x44, 0x5b, 0x8a, 0xdd, 0x87, 0x30, 0xc7, 0xa6, 0xcf, 0x53, 0xb6,
+	0x47, 0xb6, 0x07, 0xb7, 0x6a, 0x55, 0x54, 0xd8, 0x65, 0x19, 0xc9, 0x1e, 0xbc, 0xdc, 0x7d, 0x11,
+	0x1c, 0xdd, 0x83, 0xbb, 0x43, 0x03, 0x52, 0xdf, 0x94, 0x78, 0xf0, 0x18, 0x1e, 0x5d, 0x6d, 0xc9,
+	0x2b, 0x5f, 0xd1, 0xd1, 0xfb, 0xef, 0xbf, 0x46, 0xc1, 0xd7, 0x1f, 0xfb, 0xc1, 0xa7, 0x37, 0xd7,
+	0x15, 0xbf, 0xcc, 0xb3, 0xae, 0xfc, 0x37, 0xff, 0xf8, 0xf6, 0x11, 0x9c, 0xdf, 0xee, 0xda, 0xfa,
+	0xec, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff, 0xc5, 0x56, 0x67, 0x20, 0x4a, 0x03, 0x00, 0x00,
 }
 
-func (this *AwsDiscoverySpec) Equal(that interface{}) bool {
+func (this *AwsDiscoveryDirectiveSpec) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AwsDiscoverySpec)
+	that1, ok := that.(*AwsDiscoveryDirectiveSpec)
 	if !ok {
-		that2, ok := that.(AwsDiscoverySpec)
+		that2, ok := that.(AwsDiscoveryDirectiveSpec)
 		if ok {
 			that1 = &that2
 		} else {
@@ -312,14 +316,14 @@ func (this *AwsDiscoverySpec) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *AwsDiscoverySpec_AwsResourceSelector) Equal(that interface{}) bool {
+func (this *AwsDiscoveryDirectiveSpec_AwsResourceSelector) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AwsDiscoverySpec_AwsResourceSelector)
+	that1, ok := that.(*AwsDiscoveryDirectiveSpec_AwsResourceSelector)
 	if !ok {
-		that2, ok := that.(AwsDiscoverySpec_AwsResourceSelector)
+		that2, ok := that.(AwsDiscoveryDirectiveSpec_AwsResourceSelector)
 		if ok {
 			that1 = &that2
 		} else {
@@ -345,14 +349,14 @@ func (this *AwsDiscoverySpec_AwsResourceSelector) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *AwsDiscoverySpec_AwsResourceSelector_Arn) Equal(that interface{}) bool {
+func (this *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AwsDiscoverySpec_AwsResourceSelector_Arn)
+	that1, ok := that.(*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn)
 	if !ok {
-		that2, ok := that.(AwsDiscoverySpec_AwsResourceSelector_Arn)
+		that2, ok := that.(AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn)
 		if ok {
 			that1 = &that2
 		} else {
@@ -369,14 +373,14 @@ func (this *AwsDiscoverySpec_AwsResourceSelector_Arn) Equal(that interface{}) bo
 	}
 	return true
 }
-func (this *AwsDiscoverySpec_AwsResourceSelector_Matcher_) Equal(that interface{}) bool {
+func (this *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AwsDiscoverySpec_AwsResourceSelector_Matcher_)
+	that1, ok := that.(*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_)
 	if !ok {
-		that2, ok := that.(AwsDiscoverySpec_AwsResourceSelector_Matcher_)
+		that2, ok := that.(AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_)
 		if ok {
 			that1 = &that2
 		} else {
@@ -393,14 +397,14 @@ func (this *AwsDiscoverySpec_AwsResourceSelector_Matcher_) Equal(that interface{
 	}
 	return true
 }
-func (this *AwsDiscoverySpec_AwsResourceSelector_Matcher) Equal(that interface{}) bool {
+func (this *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AwsDiscoverySpec_AwsResourceSelector_Matcher)
+	that1, ok := that.(*AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher)
 	if !ok {
-		that2, ok := that.(AwsDiscoverySpec_AwsResourceSelector_Matcher)
+		that2, ok := that.(AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher)
 		if ok {
 			that1 = &that2
 		} else {
@@ -441,14 +445,14 @@ func (this *AwsDiscoverySpec_AwsResourceSelector_Matcher) Equal(that interface{}
 	}
 	return true
 }
-func (this *AwsDiscoveryStatus) Equal(that interface{}) bool {
+func (this *AwsDiscoveryDirectiveStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AwsDiscoveryStatus)
+	that1, ok := that.(*AwsDiscoveryDirectiveStatus)
 	if !ok {
-		that2, ok := that.(AwsDiscoveryStatus)
+		that2, ok := that.(AwsDiscoveryDirectiveStatus)
 		if ok {
 			that1 = &that2
 		} else {

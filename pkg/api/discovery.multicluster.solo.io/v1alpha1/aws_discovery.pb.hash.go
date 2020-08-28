@@ -26,7 +26,7 @@ var (
 )
 
 // Hash function
-func (m *AwsDiscoverySpec) Hash(hasher hash.Hash64) (uint64, error) {
+func (m *AwsDiscoveryDirectiveSpec) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -34,7 +34,7 @@ func (m *AwsDiscoverySpec) Hash(hasher hash.Hash64) (uint64, error) {
 		hasher = fnv.New64()
 	}
 	var err error
-	if _, err = hasher.Write([]byte("discovery.multicluster.solo.io.github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1.AwsDiscoverySpec")); err != nil {
+	if _, err = hasher.Write([]byte("discovery.multicluster.solo.io.github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1.AwsDiscoveryDirectiveSpec")); err != nil {
 		return 0, err
 	}
 
@@ -60,7 +60,7 @@ func (m *AwsDiscoverySpec) Hash(hasher hash.Hash64) (uint64, error) {
 }
 
 // Hash function
-func (m *AwsDiscoveryStatus) Hash(hasher hash.Hash64) (uint64, error) {
+func (m *AwsDiscoveryDirectiveStatus) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -68,7 +68,7 @@ func (m *AwsDiscoveryStatus) Hash(hasher hash.Hash64) (uint64, error) {
 		hasher = fnv.New64()
 	}
 	var err error
-	if _, err = hasher.Write([]byte("discovery.multicluster.solo.io.github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1.AwsDiscoveryStatus")); err != nil {
+	if _, err = hasher.Write([]byte("discovery.multicluster.solo.io.github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1.AwsDiscoveryDirectiveStatus")); err != nil {
 		return 0, err
 	}
 
@@ -76,7 +76,7 @@ func (m *AwsDiscoveryStatus) Hash(hasher hash.Hash64) (uint64, error) {
 }
 
 // Hash function
-func (m *AwsDiscoverySpec_AwsResourceSelector) Hash(hasher hash.Hash64) (uint64, error) {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -84,19 +84,19 @@ func (m *AwsDiscoverySpec_AwsResourceSelector) Hash(hasher hash.Hash64) (uint64,
 		hasher = fnv.New64()
 	}
 	var err error
-	if _, err = hasher.Write([]byte("discovery.multicluster.solo.io.github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1.AwsDiscoverySpec_AwsResourceSelector")); err != nil {
+	if _, err = hasher.Write([]byte("discovery.multicluster.solo.io.github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1.AwsDiscoveryDirectiveSpec_AwsResourceSelector")); err != nil {
 		return 0, err
 	}
 
 	switch m.SelectorType.(type) {
 
-	case *AwsDiscoverySpec_AwsResourceSelector_Arn:
+	case *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Arn:
 
 		if _, err = hasher.Write([]byte(m.GetArn())); err != nil {
 			return 0, err
 		}
 
-	case *AwsDiscoverySpec_AwsResourceSelector_Matcher_:
+	case *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher_:
 
 		if h, ok := interface{}(m.GetMatcher()).(safe_hasher.SafeHasher); ok {
 			if _, err = h.Hash(hasher); err != nil {
@@ -118,7 +118,7 @@ func (m *AwsDiscoverySpec_AwsResourceSelector) Hash(hasher hash.Hash64) (uint64,
 }
 
 // Hash function
-func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) Hash(hasher hash.Hash64) (uint64, error) {
+func (m *AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -126,7 +126,7 @@ func (m *AwsDiscoverySpec_AwsResourceSelector_Matcher) Hash(hasher hash.Hash64) 
 		hasher = fnv.New64()
 	}
 	var err error
-	if _, err = hasher.Write([]byte("discovery.multicluster.solo.io.github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1.AwsDiscoverySpec_AwsResourceSelector_Matcher")); err != nil {
+	if _, err = hasher.Write([]byte("discovery.multicluster.solo.io.github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1.AwsDiscoveryDirectiveSpec_AwsResourceSelector_Matcher")); err != nil {
 		return 0, err
 	}
 
