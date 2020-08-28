@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	discoveryv1alpha1 "github.com/solo-io/skv2/api/multicluster/discovery/v1alpha1"
 	"github.com/solo-io/skv2/api/multicluster/v1alpha1"
 
 	"github.com/solo-io/skv2/api/k8s"
@@ -21,6 +22,7 @@ func main() {
 
 	groups := []model.Group{
 		v1alpha1.Group,
+		discoveryv1alpha1.Group,
 	}
 
 	// add internal k8s groups we depend on
