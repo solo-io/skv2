@@ -1,0 +1,45 @@
+syntax = "proto3";
+package discovery.multicluster.solo.io;
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
+
+option go_package = "github.com/solo-io/skv2/pkg/api/discovery.multicluster.solo.io/v1alpha1";
+
+/*
+    Discovery configuration for AWS resources.
+*/
+message AwsDiscoverySpec {
+
+    // For a given resource_selector to apply to a resource, the resource must match all of the resource_selector's match criteria.
+    message AwsResourceSelector {
+
+        // Selects all resources that exist in the specified AWS region and possess the specified tags.
+        message Matcher {
+
+            // AWS account IDs. If unspecified, select across any accessible AWS account.
+            repeated string account_ids = 1;
+
+            // AWS regions, e.g. us-east-2. If unspecified, select across all regions.
+            repeated string regions = 2;
+
+            // AWS resource tags. If unspecified, match any tags.
+            map<string, string> tags = 3;
+        }
+
+        oneof selector_type {
+            // AWS resource ARN that directly references a resource.
+            string arn = 1;
+            // Matcher that selects groups of AWS resources.
+            Matcher matcher = 2;
+        }
+    }
+
+    // If unspecified, by default discovery will run for EKS clusters in all regions.
+    repeated AwsResourceSelector eks_selector = 2;
+}
+
+message AwsDiscoveryStatus {
+}
