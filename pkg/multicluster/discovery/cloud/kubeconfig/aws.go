@@ -1,4 +1,4 @@
-package discovery
+package kubeconfig
 
 import (
 	"context"
@@ -6,20 +6,20 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/solo-io/skv2/pkg/multicluster/discovery/cloud"
+	"github.com/solo-io/skv2/pkg/multicluster/discovery/cloud/clients"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func NewEksConfigBuilder(eksClient cloud.EksClient) EksConfigBuilder {
+func NewEksConfigBuilder(eksClient clients.EksClient) EksConfigBuilder {
 	return &awsClusterConfigBuilder{
 		eksClient: eksClient,
 	}
 }
 
 type awsClusterConfigBuilder struct {
-	eksClient cloud.EksClient
+	eksClient clients.EksClient
 }
 
 func (a *awsClusterConfigBuilder) ConfigForCluster(ctx context.Context, cluster *eks.Cluster) (clientcmd.ClientConfig, error) {

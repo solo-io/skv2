@@ -1,4 +1,4 @@
-package discovery_test
+package kubeconfig_test
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/skv2/pkg/multicluster/discovery"
-	mock_cloud "github.com/solo-io/skv2/pkg/multicluster/discovery/cloud/mocks"
+	mock_cloud "github.com/solo-io/skv2/pkg/multicluster/discovery/cloud/clients/mocks"
+	kubeconfig2 "github.com/solo-io/skv2/pkg/multicluster/discovery/cloud/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
@@ -35,7 +35,7 @@ var _ = Describe("Aws", func() {
 	})
 
 	It("will fail if token cannot be found", func() {
-		configBuilder := discovery.NewEksConfigBuilder(eksClient)
+		configBuilder := kubeconfig2.NewEksConfigBuilder(eksClient)
 
 		cluster := &eks.Cluster{
 			Name: aws.String("cluster-name"),
@@ -50,7 +50,7 @@ var _ = Describe("Aws", func() {
 	})
 
 	It("will Create ClientConfig if token can be found", func() {
-		configBuilder := discovery.NewEksConfigBuilder(eksClient)
+		configBuilder := kubeconfig2.NewEksConfigBuilder(eksClient)
 		caData := []byte("fake-ca-data")
 		tok := token.Token{Token: "new-token-who-dis"}
 		cluster := &eks.Cluster{

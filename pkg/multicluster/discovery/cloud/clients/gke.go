@@ -1,4 +1,4 @@
-package cloud
+package clients
 
 import (
 	"context"

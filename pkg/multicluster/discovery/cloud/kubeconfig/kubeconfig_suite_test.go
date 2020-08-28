@@ -1,4 +1,4 @@
-package discovery_test
+package kubeconfig_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestDiscovery(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Discovery Suite")
+	RunSpecs(t, "Cloud Kubeconfig Suite")
 }

@@ -1,4 +1,4 @@
-package discovery_test
+package kubeconfig_test
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/skv2/pkg/multicluster/discovery"
-	mock_cloud "github.com/solo-io/skv2/pkg/multicluster/discovery/cloud/mocks"
+	mock_cloud "github.com/solo-io/skv2/pkg/multicluster/discovery/cloud/clients/mocks"
+	kubeconfig2 "github.com/solo-io/skv2/pkg/multicluster/discovery/cloud/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"golang.org/x/oauth2"
 	containerpb "google.golang.org/genproto/googleapis/container/v1"
@@ -34,7 +34,7 @@ var _ = Describe("Gke", func() {
 	})
 
 	It("will fail if token cannot be found", func() {
-		configBuilder := discovery.NewGkeConfigBuilder(gkeClient)
+		configBuilder := kubeconfig2.NewGkeConfigBuilder(gkeClient)
 
 		cluster := &containerpb.Cluster{}
 		gkeClient.EXPECT().
@@ -47,7 +47,7 @@ var _ = Describe("Gke", func() {
 	})
 
 	It("will Create ClientConfig if token can be found", func() {
-		configBuilder := discovery.NewGkeConfigBuilder(gkeClient)
+		configBuilder := kubeconfig2.NewGkeConfigBuilder(gkeClient)
 		caData := []byte("fake-ca-data")
 		token := &oauth2.Token{
 			AccessToken: "new-token-who-dis",
