@@ -54,18 +54,17 @@ func (mr *MockEksClientMockRecorder) DescribeCluster(ctx, name interface{}) *gom
 }
 
 // ListClusters mocks base method
-func (m *MockEksClient) ListClusters(ctx context.Context, input *eks.ListClustersInput) (*eks.ListClustersOutput, error) {
+func (m *MockEksClient) ListClusters(ctx context.Context, fn func(*eks.ListClustersOutput)) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListClusters", ctx, input)
-	ret0, _ := ret[0].(*eks.ListClustersOutput)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "ListClusters", ctx, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ListClusters indicates an expected call of ListClusters
-func (mr *MockEksClientMockRecorder) ListClusters(ctx, input interface{}) *gomock.Call {
+func (mr *MockEksClientMockRecorder) ListClusters(ctx, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListClusters", reflect.TypeOf((*MockEksClient)(nil).ListClusters), ctx, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListClusters", reflect.TypeOf((*MockEksClient)(nil).ListClusters), ctx, fn)
 }
 
 // Token mocks base method
