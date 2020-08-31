@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Use ListClustersPagesWithContext for safer paging on EKSClient.
+    issueLink: https://github.com/solo-io/skv2/issues/133
