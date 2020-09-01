@@ -18,11 +18,11 @@ func (k *KubeCfg) getKubeCfgType() isKubeCfgType {
 	return nil
 }
 
-func (k *KubeCfg) getKubeCfgDisk() string {
-	if x, ok := k.getKubeCfgType().(*KubeCfgDisk); ok {
-		return x.KubeConfigPath
+func (k *KubeCfg) getKubeCfgDisk() KubeCfgDisk {
+	if x, ok := k.getKubeCfgType().(*KubeCfgDisk_); ok {
+		return x.KubeCfgDisk
 	}
-	return ""
+	return KubeCfgDisk{}
 }
 
 func (k *KubeCfg) getClientConfig() clientcmd.ClientConfig {
@@ -43,11 +43,17 @@ type isKubeCfgType interface {
 	isKubeCfgType()
 }
 
-type KubeCfgDisk struct {
-	KubeConfigPath string
+type KubeCfgDisk_ struct {
+	KubeCfgDisk KubeCfgDisk
 }
 
-func (k *KubeCfgDisk) isKubeCfgType() {}
+type KubeCfgDisk struct {
+	KubeConfigPath string
+	// override the context to use from the local kubeconfig. if unset, use current context
+	KubeContext string
+}
+
+func (k *KubeCfgDisk_) isKubeCfgType() {}
 
 type KubeCfgClientConfig struct {
 	ClientConfig clientcmd.ClientConfig
