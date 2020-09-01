@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/rotisserie/eris"
 	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
 
 	k8s_rbac_types "k8s.io/api/rbac/v1"
@@ -116,24 +117,37 @@ func (opts RegistrationOptions) DeregisterCluster(
 
 // Initialize registration dependencies
 func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, rbacOpts RbacOptions, registrant ClusterRegistrant, err error) {
-	var masterCfg clientcmd.ClientConfig
+	// Remote KubeConfig must be provided as either on disk path or clientcmd.ClientConfig.
+	if opts.RemoteKubeCfg.getRestConfig() != nil {
+		return masterRestCfg, remoteCfg, rbacOpts, registrant, eris.New("RemoteKubeCfg must be provided from disk or as clientcmd.ClientConfig.")
+	}
 
-	if opts.KubeCfg.getClientConfig() == nil {
-		masterCfg, err = getClientConfigWithContext(opts.MasterURL, opts.KubeCfg.getKubeCfgDisk(), opts.KubeContext)
+	// Master KubeConfig can be provided as on disk path, clientcmd.ClientConfig, or *rest.Config.
+	// Convert any of them into *rest.Config.
+	switch opts.KubeCfg.getKubeCfgType().(type) {
+	case *KubeCfgDisk:
+		masterCfg, err := getClientConfigWithContext(opts.MasterURL, opts.KubeCfg.getKubeCfgDisk(), opts.KubeContext)
 		if err != nil {
 			return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 		}
+		masterRestCfg, err = masterCfg.ClientConfig()
+		if err != nil {
+			return masterRestCfg, remoteCfg, rbacOpts, registrant, err
+		}
+	case *KubeCfgClientConfig:
+		masterRestCfg, err := opts.KubeCfg.getClientConfig().ClientConfig()
+		if err != nil {
+			return masterRestCfg, remoteCfg, rbacOpts, registrant, err
+		}
+	case *KubeCfgRestConfig:
+		masterRestCfg = opts.KubeCfg.getRestConfig()
 	}
+
 	if opts.RemoteKubeCfg.getClientConfig() == nil {
 		remoteCfg, err = getClientConfigWithContext(opts.MasterURL, opts.RemoteKubeCfg.getKubeCfgDisk(), opts.RemoteKubeContext)
 		if err != nil {
 			return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 		}
-	}
-
-	masterRestCfg, err = masterCfg.ClientConfig()
-	if err != nil {
-		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 	}
 
 	registrant, err = defaultRegistrant(masterRestCfg, opts.APIServerAddress)

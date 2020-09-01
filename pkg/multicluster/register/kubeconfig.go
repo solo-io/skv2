@@ -1,6 +1,7 @@
 package register
 
 import (
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -19,14 +20,21 @@ func (k *KubeCfg) getKubeCfgType() isKubeCfgType {
 
 func (k *KubeCfg) getKubeCfgDisk() string {
 	if x, ok := k.getKubeCfgType().(*KubeCfgDisk); ok {
-		return x.kubeConfigPath
+		return x.KubeConfigPath
 	}
 	return ""
 }
 
 func (k *KubeCfg) getClientConfig() clientcmd.ClientConfig {
-	if x, ok := k.getKubeCfgType().(*KubeCfgMemory); ok {
-		return x.clientConfig
+	if x, ok := k.getKubeCfgType().(*KubeCfgClientConfig); ok {
+		return x.ClientConfig
+	}
+	return nil
+}
+
+func (k *KubeCfg) getRestConfig() *rest.Config {
+	if x, ok := k.getKubeCfgType().(*KubeCfgRestConfig); ok {
+		return x.RestConfig
 	}
 	return nil
 }
@@ -36,13 +44,19 @@ type isKubeCfgType interface {
 }
 
 type KubeCfgDisk struct {
-	kubeConfigPath string
+	KubeConfigPath string
 }
 
 func (k *KubeCfgDisk) isKubeCfgType() {}
 
-type KubeCfgMemory struct {
-	clientConfig clientcmd.ClientConfig
+type KubeCfgClientConfig struct {
+	ClientConfig clientcmd.ClientConfig
 }
 
-func (k *KubeCfgMemory) isKubeCfgType() {}
+func (k *KubeCfgClientConfig) isKubeCfgType() {}
+
+type KubeCfgRestConfig struct {
+	RestConfig *rest.Config
+}
+
+func (k *KubeCfgRestConfig) isKubeCfgType() {}
