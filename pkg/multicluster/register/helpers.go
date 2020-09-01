@@ -26,21 +26,15 @@ type RegistrationOptions struct {
 	// override the url of the k8s server
 	MasterURL string
 
-	// In memory kubeconfig, takes precedence over KubeCfgPath
-	KubeCfg clientcmd.ClientConfig
-
-	// override the path of the local kubeconfig
-	KubeCfgPath string
+	// Local kubeconfig
+	KubeCfg KubeCfg
 
 	// override the context to use from the local kubeconfig.
 	// if unset, use current context
 	KubeContext string
 
 	// In memory kubeconfig, takes precedence over RemoteKubeCfgPath
-	RemoteKubeCfg clientcmd.ClientConfig
-
-	// override the path of the remote kubeconfig
-	RemoteKubeCfgPath string
+	RemoteKubeCfg KubeCfg
 
 	// override the context to use from the remote kubeconfig
 	// if unset, use current context
@@ -122,17 +116,16 @@ func (opts RegistrationOptions) DeregisterCluster(
 
 // Initialize registration dependencies
 func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, rbacOpts RbacOptions, registrant ClusterRegistrant, err error) {
-	masterCfg := opts.KubeCfg
-	remoteCfg = opts.RemoteKubeCfg
+	var masterCfg clientcmd.ClientConfig
 
-	if masterCfg == nil {
-		masterCfg, err = getClientConfigWithContext(opts.MasterURL, opts.KubeCfgPath, opts.KubeContext)
+	if opts.KubeCfg.getClientConfig() == nil {
+		masterCfg, err = getClientConfigWithContext(opts.MasterURL, opts.KubeCfg.getKubeCfgDisk(), opts.KubeContext)
 		if err != nil {
 			return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 		}
 	}
-	if remoteCfg == nil {
-		remoteCfg, err = getClientConfigWithContext(opts.MasterURL, opts.RemoteKubeCfgPath, opts.RemoteKubeContext)
+	if opts.RemoteKubeCfg.getClientConfig() == nil {
+		remoteCfg, err = getClientConfigWithContext(opts.MasterURL, opts.RemoteKubeCfg.getKubeCfgDisk(), opts.RemoteKubeContext)
 		if err != nil {
 			return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 		}
