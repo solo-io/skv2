@@ -27,6 +27,10 @@ type RegistrationOptions struct {
 	// Remote kubeconfig
 	RemoteKubeCfg clientcmd.ClientConfig
 
+	// Remote context name
+	// We need to explicitly pass this because of this open issue: https://github.com/kubernetes/client-go/issues/735
+	RemoteCtx string
+
 	// localAPIServerAddress is optional. When passed in, it will overwrite the Api Server endpoint in
 	//	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
 	//	on a mac as  the local IP needs to be re-written to `host.docker.internal` so that the local instance
@@ -119,6 +123,7 @@ func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remote
 		Options: Options{
 			ClusterName:     opts.ClusterName,
 			Namespace:       opts.Namespace,
+			RemoteCtx:       opts.RemoteCtx,
 			RemoteNamespace: opts.RemoteNamespace,
 			ClusterDomain:   opts.ClusterDomain,
 		},
