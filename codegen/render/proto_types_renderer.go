@@ -130,8 +130,8 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 func uniqueGoImportPathsForGroup(grp Group) []string {
 	resultMap := make(map[string]struct{})
 	for _, res := range grp.Resources {
-		// if the group does not have protos to render, than finding the go import path is unnecessary
-		if !grp.HasProtos() {
+		// if the group has had its GoPackage set, either the types are being imported from another package, or they've been automatically set by the proto renderer
+		if res.Spec.Type.GoPackage == "" {
 			continue
 		}
 		resultMap[res.Spec.Type.GoPackage] = struct{}{}
