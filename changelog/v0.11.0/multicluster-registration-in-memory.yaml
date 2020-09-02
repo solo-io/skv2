@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: For cluster registration, represent all kubeconfigs as clientcmd.ClientConfig to allow passing in memory kubeconfigs.
+    issueLink: https://github.com/solo-io/skv2/issues/134
