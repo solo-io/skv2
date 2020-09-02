@@ -87,6 +87,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			Options: register.Options{
 				ClusterName: cluster2,
 				Namespace:   ns,
+				RemoteCtx:   remoteContext,
 			},
 			ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 		}, registrant)
