@@ -305,14 +305,14 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	}
 
 	remoteContextName := opts.RemoteCtx
-	if opts.RemoteCtx == "" {
+	if remoteContextName == "" {
 		remoteContextName = rawRemoteCfg.CurrentContext
 	}
 	remoteContext := rawRemoteCfg.Contexts[remoteContextName]
 	remoteCluster := rawRemoteCfg.Clusters[remoteContext.Cluster]
 
 	// hacky step for running locally in KIND
-	if err = c.hackClusterConfigForLocalTestingInKIND(remoteCluster, opts.RemoteCtx); err != nil {
+	if err = c.hackClusterConfigForLocalTestingInKIND(remoteCluster, remoteContextName); err != nil {
 		return err
 	}
 

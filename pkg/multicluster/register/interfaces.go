@@ -29,12 +29,13 @@ type Options struct {
 	// If left empty will return error
 	ClusterName string
 
-	// Name of the remote cluster Kubeconfig Context
-	RemoteCtx string
-
 	// Namespace to write namespaced resources to in the "master" and "remote" clusters
 	// If left empty will return error
 	Namespace string
+
+	// Name of the remote cluster Kubeconfig Context.
+	// We need to explicitly pass this because of this open issue: https://github.com/kubernetes/client-go/issues/735
+	RemoteCtx string
 
 	// Namespace to write namespaced resources to in the "master" and "remote" clusters
 	// If left empty will return error
