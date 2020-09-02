@@ -135,7 +135,6 @@ var _ = Describe("Registrant", func() {
 				ClusterName:     clusterName,
 				Namespace:       namespace,
 				RemoteNamespace: "remote",
-				RemoteCtx:       remoteCtx,
 			}
 
 			saClient.EXPECT().
@@ -182,7 +181,6 @@ var _ = Describe("Registrant", func() {
 				ClusterName:     clusterName,
 				Namespace:       namespace,
 				RemoteNamespace: "remote",
-				RemoteCtx:       remoteCtx,
 			}
 
 			saClient.EXPECT().
@@ -229,7 +227,6 @@ var _ = Describe("Registrant", func() {
 				Options: register.Options{
 					ClusterName: clusterName,
 					Namespace:   namespace,
-					RemoteCtx:   remoteCtx,
 				},
 				Roles: []*rbacv1.Role{
 					{
@@ -349,7 +346,6 @@ var _ = Describe("Registrant", func() {
 				Options: register.Options{
 					ClusterName:     clusterName,
 					Namespace:       namespace,
-					RemoteCtx:       remoteCtx,
 					RemoteNamespace: "remote-namespace",
 				},
 				Roles: []*rbacv1.Role{
@@ -429,7 +425,6 @@ var _ = Describe("Registrant", func() {
 			opts := register.Options{
 				ClusterName: clusterName,
 				Namespace:   namespace,
-				RemoteCtx:   remoteCtx,
 			}
 
 			restCfg := &rest.Config{
@@ -534,7 +529,6 @@ var _ = Describe("Registrant", func() {
 			opts := register.Options{
 				ClusterName: clusterName,
 				Namespace:   namespace,
-				RemoteCtx:   "kind-test",
 			}
 
 			restCfg := &rest.Config{
@@ -548,11 +542,11 @@ var _ = Describe("Registrant", func() {
 					},
 				},
 				Contexts: map[string]*api.Context{
-					opts.RemoteCtx: {
+					"kind-test": {
 						Cluster: clusterName,
 					},
 				},
-				CurrentContext: opts.RemoteCtx,
+				CurrentContext: "kind-test",
 			}
 
 			clientConfig.EXPECT().
@@ -643,7 +637,6 @@ var _ = Describe("Registrant", func() {
 			opts := register.Options{
 				ClusterName: clusterName,
 				Namespace:   namespace,
-				RemoteCtx:   remoteCtx,
 			}
 
 			restCfg := &rest.Config{

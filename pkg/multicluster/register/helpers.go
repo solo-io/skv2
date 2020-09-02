@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/rotisserie/eris"
 	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
 
 	k8s_rbac_types "k8s.io/api/rbac/v1"
@@ -22,11 +21,11 @@ import (
 
 // Options for registering a cluster
 type RegistrationOptions struct {
-	// Local kubeconfig
-	KubeCfg *KubeCfg
+	// Management kubeconfig
+	KubeCfg clientcmd.ClientConfig
 
-	// In memory kubeconfig, takes precedence over RemoteKubeCfgPath
-	RemoteKubeCfg *KubeCfg
+	// Remote kubeconfig
+	RemoteKubeCfg clientcmd.ClientConfig
 
 	// localAPIServerAddress is optional. When passed in, it will overwrite the Api Server endpoint in
 	//	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
@@ -104,20 +103,12 @@ func (opts RegistrationOptions) DeregisterCluster(
 
 // Initialize registration dependencies
 func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, rbacOpts RbacOptions, registrant ClusterRegistrant, err error) {
-	// Remote KubeConfig must be provided as either on disk path or clientcmd.ClientConfig.
-	if opts.RemoteKubeCfg.GetRestConfig() != nil {
-		return masterRestCfg, remoteCfg, rbacOpts, registrant, eris.New("RemoteKubeCfg must be provided from disk or as clientcmd.ClientConfig.")
-	}
-
-	masterRestCfg, err = opts.KubeCfg.ConstructRestConfig()
+	masterRestCfg, err = opts.KubeCfg.ClientConfig()
 	if err != nil {
 		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 	}
 
-	remoteCfg, err = opts.RemoteKubeCfg.ConstructClientConfig()
-	if err != nil {
-		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
-	}
+	remoteCfg = opts.RemoteKubeCfg
 
 	registrant, err = defaultRegistrant(masterRestCfg, opts.APIServerAddress)
 	if err != nil {
@@ -127,7 +118,6 @@ func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remote
 	rbacOpts = RbacOptions{
 		Options: Options{
 			ClusterName:     opts.ClusterName,
-			RemoteCtx:       opts.RemoteKubeCfg.GetKubeCfgDisk().KubeContext,
 			Namespace:       opts.Namespace,
 			RemoteNamespace: opts.RemoteNamespace,
 			ClusterDomain:   opts.ClusterDomain,

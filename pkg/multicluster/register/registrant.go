@@ -304,10 +304,8 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 		return err
 	}
 
-	remoteContextName := opts.RemoteCtx
-	if opts.RemoteCtx == "" {
-		remoteContextName = rawRemoteCfg.CurrentContext
-	}
+	remoteContextName := rawRemoteCfg.CurrentContext
+
 	remoteContext := rawRemoteCfg.Contexts[remoteContextName]
 	remoteCluster := rawRemoteCfg.Clusters[remoteContext.Cluster]
 
