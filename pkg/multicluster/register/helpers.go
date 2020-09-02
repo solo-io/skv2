@@ -10,8 +10,6 @@ import (
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/rest"
 
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-
 	k8s_core_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
 	k8s_core_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1/providers"
 	rbac_v1_providers "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/providers"
@@ -23,22 +21,15 @@ import (
 
 // Options for registering a cluster
 type RegistrationOptions struct {
-	// override the url of the k8s server
-	MasterURL string
+	// Management kubeconfig
+	KubeCfg clientcmd.ClientConfig
 
-	// override the path of the local kubeconfig
-	KubeCfgPath string
+	// Remote kubeconfig
+	RemoteKubeCfg clientcmd.ClientConfig
 
-	// override the context to use from the local kubeconfig.
-	// if unset, use current context
-	KubeContext string
-
-	// override the path of the remote kubeconfig
-	RemoteKubeCfgPath string
-
-	// override the context to use from the remote kubeconfig
-	// if unset, use current context
-	RemoteKubeContext string
+	// Remote context name
+	// We need to explicitly pass this because of this open issue: https://github.com/kubernetes/client-go/issues/735
+	RemoteCtx string
 
 	// localAPIServerAddress is optional. When passed in, it will overwrite the Api Server endpoint in
 	//	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
@@ -116,22 +107,14 @@ func (opts RegistrationOptions) DeregisterCluster(
 
 // Initialize registration dependencies
 func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, rbacOpts RbacOptions, registrant ClusterRegistrant, err error) {
-	masterCfg, err := getClientConfigWithContext(opts.MasterURL, opts.KubeCfgPath, opts.KubeContext)
+	masterRestCfg, err = opts.KubeCfg.ClientConfig()
 	if err != nil {
 		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 	}
 
-	masterRestCfg, err = masterCfg.ClientConfig()
-	if err != nil {
-		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
-	}
+	remoteCfg = opts.RemoteKubeCfg
 
 	registrant, err = defaultRegistrant(masterRestCfg, opts.APIServerAddress)
-	if err != nil {
-		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
-	}
-
-	remoteCfg, err = getClientConfigWithContext(opts.MasterURL, opts.RemoteKubeCfgPath, opts.RemoteKubeContext)
 	if err != nil {
 		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
 	}
@@ -139,8 +122,8 @@ func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remote
 	rbacOpts = RbacOptions{
 		Options: Options{
 			ClusterName:     opts.ClusterName,
-			RemoteCtx:       opts.RemoteKubeContext,
 			Namespace:       opts.Namespace,
+			RemoteCtx:       opts.RemoteCtx,
 			RemoteNamespace: opts.RemoteNamespace,
 			ClusterDomain:   opts.ClusterDomain,
 		},
@@ -246,27 +229,6 @@ func defaultRegistrant(cfg *rest.Config, apiServerAddress string) (ClusterRegist
 		kubeClusterClientFactory,
 	)
 	return registrant, nil
-}
-
-// Attempts to load a Client KubeConfig from a default list of sources.
-func getClientConfigWithContext(masterURL, kubeCfgPath, context string) (clientcmd.ClientConfig, error) {
-	verifiedKubeConfigPath := clientcmd.RecommendedHomeFile
-	if kubeCfgPath != "" {
-		verifiedKubeConfigPath = kubeCfgPath
-	}
-
-	if err := assertKubeConfigExists(verifiedKubeConfigPath); err != nil {
-		return nil, err
-	}
-
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.ExplicitPath = verifiedKubeConfigPath
-	configOverrides := &clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: masterURL}}
-
-	if context != "" {
-		configOverrides.CurrentContext = context
-	}
-	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides), nil
 }
 
 // expects `path` to be nonempty
