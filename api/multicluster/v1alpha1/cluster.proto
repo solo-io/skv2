@@ -17,7 +17,10 @@ message KubernetesClusterSpec {
 
     // Metadata for clusters provisioned from cloud providers.
     message ProviderInfo {
-        oneof ProviderInfoType {
+
+        // Metadata specific to a cloud provider.
+        oneof provider_info_type {
+            // Provider info for an AWS EKS provisioned cluster.
             Eks eks = 1;
         }
     }

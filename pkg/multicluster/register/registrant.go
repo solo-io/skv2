@@ -289,21 +289,10 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	token string,
 	opts Options,
 ) error {
-	return c.registerClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil)
+	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil)
 }
 
 func (c *clusterRegistrant) RegisterProviderClusterWithToken(
-	ctx context.Context,
-	masterClusterCfg *rest.Config,
-	remoteClientCfg clientcmd.ClientConfig,
-	token string,
-	opts Options,
-	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-) error {
-	return c.registerClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo)
-}
-
-func (c *clusterRegistrant) registerClusterWithToken(
 	ctx context.Context,
 	masterClusterCfg *rest.Config,
 	remoteClientCfg clientcmd.ClientConfig,
