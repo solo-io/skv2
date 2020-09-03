@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
 
 	k8s_rbac_types "k8s.io/api/rbac/v1"
@@ -143,6 +144,17 @@ func RegisterClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 ) error {
+	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil)
+}
+
+func RegisterProviderClusterFromConfig(
+	ctx context.Context,
+	masterClusterCfg *rest.Config,
+	remoteCfg clientcmd.ClientConfig,
+	opts RbacOptions,
+	registrant ClusterRegistrant,
+	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+) error {
 	sa, err := registrant.EnsureRemoteServiceAccount(ctx, remoteCfg, opts.Options)
 	if err != nil {
 		return err
@@ -156,7 +168,7 @@ func RegisterClusterFromConfig(
 		return err
 	}
 
-	return registrant.RegisterClusterWithToken(ctx, masterClusterCfg, remoteCfg, token, opts.Options)
+	return registrant.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteCfg, token, opts.Options, providerInfo)
 }
 
 func DeregisterClusterFromConfig(
