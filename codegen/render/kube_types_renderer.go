@@ -25,7 +25,7 @@ type KubeCodeRenderer struct {
 	ApiRoot string
 }
 
-var TypesTemplates = func() inputTemplates {
+var TypesTemplates = func(skipDeepCopy bool) inputTemplates {
 	tmpl := inputTemplates{
 		"code/types/types.gotmpl": {
 			Path: "types.go",
@@ -39,6 +39,10 @@ var TypesTemplates = func() inputTemplates {
 		"code/types/zz_generated.deepcopy.gotmpl": {
 			Path: "zz_generated.deepcopy.go",
 		},
+	}
+
+	if skipDeepCopy {
+		delete(tmpl, "code/types/zz_generated.deepcopy.gotmpl")
 	}
 
 	return tmpl
@@ -68,7 +72,7 @@ var ControllerTemplates = inputTemplates{
 func RenderApiTypes(grp Group) ([]OutFile, error) {
 	defaultKubeCodeRenderer := KubeCodeRenderer{
 		templateRenderer:    DefaultTemplateRenderer,
-		TypesTemplates:      TypesTemplates(),
+		TypesTemplates:      TypesTemplates(grp.Generators.HasDeepcopy()),
 		ClientsTemplates:    ClientsTemplates,
 		ControllerTemplates: ControllerTemplates,
 		GoModule:            grp.Module,
