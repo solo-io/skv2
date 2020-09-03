@@ -82,11 +82,25 @@ type RegistrationOptions struct {
 func (opts RegistrationOptions) RegisterCluster(
 	ctx context.Context,
 ) error {
+	return opts.RegisterProviderCluster(ctx, nil)
+}
+
+/*
+	RegisterCluster is meant to be a helper function to easily "register" a remote cluster.
+	Currently this entails:
+		1. Creating a `ServiceAccount` on the remote cluster.
+		2. Binding RBAC `Roles/ClusterRoles` to said `ServiceAccount`
+		3. And finally creating a kubeconfig `Secret` with the BearerToken of the remote `ServiceAccount`
+*/
+func (opts RegistrationOptions) RegisterProviderCluster(
+	ctx context.Context,
+	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+) error {
 	masterRestCfg, remoteCfg, rbacOpts, registrant, err := opts.initialize()
 	if err != nil {
 		return err
 	}
-	return RegisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant)
+	return RegisterProviderClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant, providerInfo)
 }
 
 /*
