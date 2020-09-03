@@ -14,8 +14,12 @@ func (in *KubernetesCluster) DeepCopyInto(out *KubernetesCluster) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
 	in.Status.DeepCopyInto(&out.Status)
+
 	return
 }
 

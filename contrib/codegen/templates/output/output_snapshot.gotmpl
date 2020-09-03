@@ -308,6 +308,8 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 {{- end }}
 {{- end }}
 
+    snapshotMap["clusters"] = s.clusters
+
     return json.Marshal(snapshotMap)
 }
 
