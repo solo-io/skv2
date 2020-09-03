@@ -15,6 +15,13 @@ import "skv2/api/core/v1/core.proto";
 */
 message KubernetesClusterSpec {
 
+    // Metadata for clusters provisioned from cloud providers.
+    message ProviderInfo {
+        oneof ProviderInfoType {
+            Eks eks = 1;
+        }
+    }
+
     // AWS metadata associated with an EKS provisioned cluster.
     message Eks {
         // AWS ARN.
@@ -39,9 +46,7 @@ message KubernetesClusterSpec {
     string cluster_domain = 2;
 
     // Metadata for clusters provisioned from cloud providers.
-    oneof ProviderInfo {
-        Eks eks = 3;
-    }
+    ProviderInfo provider_info = 3;
 }
 
 message KubernetesClusterStatus {

@@ -31,6 +31,17 @@ func (this *KubernetesClusterSpec) UnmarshalJSON(b []byte) error {
 	return ClusterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for KubernetesClusterSpec_ProviderInfo
+func (this *KubernetesClusterSpec_ProviderInfo) MarshalJSON() ([]byte, error) {
+	str, err := ClusterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for KubernetesClusterSpec_ProviderInfo
+func (this *KubernetesClusterSpec_ProviderInfo) UnmarshalJSON(b []byte) error {
+	return ClusterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for KubernetesClusterSpec_Eks
 func (this *KubernetesClusterSpec_Eks) MarshalJSON() ([]byte, error) {
 	str, err := ClusterMarshaler.MarshalToString(this)
