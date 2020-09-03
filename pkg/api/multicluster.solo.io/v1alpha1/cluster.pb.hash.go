@@ -46,6 +46,26 @@ func (m *KubernetesClusterSpec) Hash(hasher hash.Hash64) (uint64, error) {
 		return 0, err
 	}
 
+	switch m.ProviderInfo.(type) {
+
+	case *KubernetesClusterSpec_Eks_:
+
+		if h, ok := interface{}(m.GetEks()).(safe_hasher.SafeHasher); ok {
+			if _, err = h.Hash(hasher); err != nil {
+				return 0, err
+			}
+		} else {
+			if val, err := hashstructure.Hash(m.GetEks(), nil); err != nil {
+				return 0, err
+			} else {
+				if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
+					return 0, err
+				}
+			}
+		}
+
+	}
+
 	return hasher.Sum64(), nil
 }
 
@@ -78,6 +98,38 @@ func (m *KubernetesClusterStatus) Hash(hasher hash.Hash64) (uint64, error) {
 			}
 		}
 
+	}
+
+	return hasher.Sum64(), nil
+}
+
+// Hash function
+func (m *KubernetesClusterSpec_Eks) Hash(hasher hash.Hash64) (uint64, error) {
+	if m == nil {
+		return 0, nil
+	}
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	var err error
+	if _, err = hasher.Write([]byte("multicluster.solo.io.github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1.KubernetesClusterSpec_Eks")); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetArn())); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetAccountId())); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetRegion())); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetName())); err != nil {
+		return 0, err
 	}
 
 	return hasher.Sum64(), nil
