@@ -56,6 +56,9 @@ type Group struct {
 	// Should we generate kubernetes manifests?
 	RenderManifests bool
 
+	// Should we generate deepcopy functions for non-proto Spec/Status fields?
+	RenderFieldJsonDeepcopy bool
+
 	// Should we generate kubernetes Go structs?
 	RenderTypes bool
 

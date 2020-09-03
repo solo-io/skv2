@@ -3,6 +3,8 @@
 package {{ .Version }}
 
 import (
+    "encoding/json"
+
     runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -14,10 +16,25 @@ func (in *{{ $resource.Kind }}) DeepCopyInto(out *{{ $resource.Kind }}) {
     *out = *in
     out.TypeMeta = in.TypeMeta
     in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+    // deepcopy spec
+    {{- if $.RenderFieldJsonDeepcopy }}
+    b, _ := json.Marshal(in.Spec)
+    _ = json.Unmarshal(b, &out.Spec)
+    {{- else }}
     in.Spec.DeepCopyInto(&out.Spec)
+    {{- end }}
+
     {{- if $resource.Status }}
+    // deepcopy status
+    {{- if $.RenderFieldJsonDeepcopy }}
+    b, _ = json.Marshal(in.Status)
+    _ = json.Unmarshal(b, &out.Status)
+    {{- else }}
     in.Status.DeepCopyInto(&out.Status)
     {{- end }}
+    {{- end }}
+
     return
 }
 

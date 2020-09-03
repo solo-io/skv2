@@ -41,7 +41,6 @@ var TypesTemplates = func(skipDeepCopy bool) inputTemplates {
 		},
 	}
 
-	// remove deepcopy template if using deprecated Deepcopy generator
 	if skipDeepCopy {
 		delete(tmpl, "code/types/zz_generated.deepcopy.gotmpl")
 	}
