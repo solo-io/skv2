@@ -1,4 +1,6 @@
 changelog:
   - type: NEW_FEATURE
-    description: Extend KubernetesCluster CRD with ProviderInfo field containing metadata about cloud provided clusters.
+    description: |
+      Extend KubernetesCluster CRD with ProviderInfo field containing metadata about cloud provided clusters.
+      Also extend registration interfaces to allow passing in ProviderInfo.
     issueLink: https://github.com/solo-io/skv2/issues/139
