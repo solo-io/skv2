@@ -516,6 +516,122 @@ var _ = Describe("Registrant", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
+		It("works with provider info", func() {
+
+			clusterRegistrant := register.NewClusterRegistrant(
+				"",
+				clusterRbacBinderFactory,
+				secretClient,
+				secretClientFactory,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
+				kubeClusterClientFactory,
+			)
+
+			opts := register.Options{
+				ClusterName: clusterName,
+				Namespace:   namespace,
+				RemoteCtx:   remoteCtx,
+			}
+
+			restCfg := &rest.Config{
+				Host: "mock-host",
+			}
+			apiCfg := api.Config{
+				Clusters: map[string]*api.Cluster{
+					clusterName: {
+						Server:                   "fake-server",
+						CertificateAuthorityData: []byte("fake-ca-data"),
+					},
+				},
+				Contexts: map[string]*api.Context{
+					remoteCtx: {
+						Cluster: clusterName,
+					},
+				},
+				CurrentContext: remoteCtx,
+			}
+
+			clientConfig.EXPECT().
+				ClientConfig().
+				Return(restCfg, nil)
+
+			clientConfig.EXPECT().
+				RawConfig().
+				Return(apiCfg, nil)
+
+			nsClient.EXPECT().
+				GetNamespace(ctx, namespace).
+				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+
+			nsClient.EXPECT().
+				CreateNamespace(ctx, &k8s_core_types.Namespace{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: namespace,
+					},
+				}).Return(nil)
+
+			secretClient.EXPECT().
+				GetSecret(ctx, client.ObjectKey{
+					Namespace: namespace,
+					Name:      clusterName,
+				}).
+				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+				Kind:        "Secret",
+				APIVersion:  "kubernetes_core",
+				Preferences: api.Preferences{},
+				Clusters: map[string]*api.Cluster{
+					clusterName: apiCfg.Clusters[clusterName],
+				},
+				AuthInfos: map[string]*api.AuthInfo{
+					clusterName: {
+						Token: token,
+					},
+				},
+				Contexts: map[string]*api.Context{
+					clusterName: {
+						Cluster:  clusterName,
+						AuthInfo: clusterName,
+					},
+				},
+				CurrentContext: clusterName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			secretClient.EXPECT().
+				CreateSecret(ctx, secret).
+				Return(nil)
+
+			providerInfo := &v1alpha1.KubernetesClusterSpec_ProviderInfo{
+				ProviderInfoType: &v1alpha1.KubernetesClusterSpec_ProviderInfo_Eks{
+					Eks: &v1alpha1.KubernetesClusterSpec_Eks{
+						Arn:       "arn",
+						AccountId: "accountId",
+						Region:    "region",
+						Name:      "name",
+					},
+				},
+			}
+
+			kubeClusterClient.EXPECT().
+				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
+					ObjectMeta: secret.ObjectMeta,
+					Spec: v1alpha1.KubernetesClusterSpec{
+						SecretName:    secret.Name,
+						ClusterDomain: "cluster.local",
+						ProviderInfo:  providerInfo,
+					},
+				}).Return(nil)
+
+			err = clusterRegistrant.RegisterProviderClusterWithToken(ctx, restCfg, clientConfig, token, opts, providerInfo)
+
+			Expect(err).NotTo(HaveOccurred())
+		})
+
 		It("can override local cluster domain", func() {
 			apiServerAddress := "test-override"
 

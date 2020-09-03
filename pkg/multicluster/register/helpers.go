@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
 
 	k8s_rbac_types "k8s.io/api/rbac/v1"
@@ -81,11 +82,25 @@ type RegistrationOptions struct {
 func (opts RegistrationOptions) RegisterCluster(
 	ctx context.Context,
 ) error {
+	return opts.RegisterProviderCluster(ctx, nil)
+}
+
+/*
+	RegisterCluster is meant to be a helper function to easily "register" a remote cluster.
+	Currently this entails:
+		1. Creating a `ServiceAccount` on the remote cluster.
+		2. Binding RBAC `Roles/ClusterRoles` to said `ServiceAccount`
+		3. And finally creating a kubeconfig `Secret` with the BearerToken of the remote `ServiceAccount`
+*/
+func (opts RegistrationOptions) RegisterProviderCluster(
+	ctx context.Context,
+	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+) error {
 	masterRestCfg, remoteCfg, rbacOpts, registrant, err := opts.initialize()
 	if err != nil {
 		return err
 	}
-	return RegisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant)
+	return RegisterProviderClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant, providerInfo)
 }
 
 /*
@@ -143,6 +158,17 @@ func RegisterClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 ) error {
+	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil)
+}
+
+func RegisterProviderClusterFromConfig(
+	ctx context.Context,
+	masterClusterCfg *rest.Config,
+	remoteCfg clientcmd.ClientConfig,
+	opts RbacOptions,
+	registrant ClusterRegistrant,
+	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+) error {
 	sa, err := registrant.EnsureRemoteServiceAccount(ctx, remoteCfg, opts.Options)
 	if err != nil {
 		return err
@@ -156,7 +182,7 @@ func RegisterClusterFromConfig(
 		return err
 	}
 
-	return registrant.RegisterClusterWithToken(ctx, masterClusterCfg, remoteCfg, token, opts.Options)
+	return registrant.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteCfg, token, opts.Options, providerInfo)
 }
 
 func DeregisterClusterFromConfig(

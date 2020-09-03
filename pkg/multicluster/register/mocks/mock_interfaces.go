@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	register "github.com/solo-io/skv2/pkg/multicluster/register"
 	v1 "k8s.io/api/core/v1"
 	rest "k8s.io/client-go/rest"
@@ -109,6 +110,20 @@ func (m *MockClusterRegistrant) RegisterClusterWithToken(ctx context.Context, ma
 func (mr *MockClusterRegistrantMockRecorder) RegisterClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts)
+}
+
+// RegisterProviderClusterWithToken mocks base method
+func (m *MockClusterRegistrant) RegisterProviderClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options, providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterProviderClusterWithToken", ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RegisterProviderClusterWithToken indicates an expected call of RegisterProviderClusterWithToken
+func (mr *MockClusterRegistrantMockRecorder) RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterProviderClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterProviderClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo)
 }
 
 // DeregisterCluster mocks base method
