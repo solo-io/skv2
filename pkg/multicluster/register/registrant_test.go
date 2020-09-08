@@ -617,6 +617,13 @@ var _ = Describe("Registrant", func() {
 				},
 			}
 
+			policyRules := []*v1alpha1.PolicyRule{
+				{
+					Verbs:     []string{"watch"},
+					ApiGroups: []string{"v1alpha1"},
+					Resources: []string{"foo"},
+				},
+			}
 			kubeClusterClient.EXPECT().
 				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
 					ObjectMeta: secret.ObjectMeta,
@@ -625,9 +632,22 @@ var _ = Describe("Registrant", func() {
 						ClusterDomain: "cluster.local",
 						ProviderInfo:  providerInfo,
 					},
+					Status: v1alpha1.KubernetesClusterStatus{
+						Namespace:   "namespace",
+						PolicyRules: policyRules,
+					},
 				}).Return(nil)
 
-			err = clusterRegistrant.RegisterProviderClusterWithToken(ctx, restCfg, clientConfig, token, opts, providerInfo)
+			err = clusterRegistrant.RegisterProviderClusterWithToken(
+				ctx,
+				restCfg,
+				clientConfig,
+				token,
+				opts,
+				providerInfo,
+				"namespace",
+				policyRules,
+			)
 
 			Expect(err).NotTo(HaveOccurred())
 		})

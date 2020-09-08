@@ -289,7 +289,7 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	token string,
 	opts Options,
 ) error {
-	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil)
+	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil, "", nil)
 }
 
 func (c *clusterRegistrant) RegisterProviderClusterWithToken(
@@ -299,6 +299,8 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	token string,
 	opts Options,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+	namespace string,
+	policyRules []*v1alpha1.PolicyRule,
 ) error {
 	if err := (&opts).validate(); err != nil {
 		return err
@@ -343,7 +345,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 		return err
 	}
 
-	kubeCluster := buildKubeClusterResource(kcSecret, opts.ClusterDomain, providerInfo)
+	kubeCluster := buildKubeClusterResource(kcSecret, opts.ClusterDomain, providerInfo, namespace, policyRules)
 
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {
@@ -385,6 +387,8 @@ func buildKubeClusterResource(
 	secret *corev1.Secret,
 	clusterDomain string,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+	namespace string,
+	policyRules []*v1alpha1.PolicyRule,
 ) *v1alpha1.KubernetesCluster {
 	if clusterDomain == "" {
 		clusterDomain = DefaultClusterDomain
@@ -395,6 +399,10 @@ func buildKubeClusterResource(
 			SecretName:    secret.Name,
 			ClusterDomain: clusterDomain,
 			ProviderInfo:  providerInfo,
+		},
+		Status: v1alpha1.KubernetesClusterStatus{
+			Namespace:   namespace,
+			PolicyRules: policyRules,
 		},
 	}
 }

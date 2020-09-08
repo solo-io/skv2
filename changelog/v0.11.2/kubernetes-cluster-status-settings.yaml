@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Extend KubernetesCluster CRD status with namespace and policy rules it was registered with.
+    issueLink: https://github.com/solo-io/skv2/issues/142

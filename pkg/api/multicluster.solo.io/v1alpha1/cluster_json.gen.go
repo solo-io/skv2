@@ -6,13 +6,12 @@ package v1alpha1
 import (
 	bytes "bytes"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/gogo/protobuf/gogoproto"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/solo-io/protoc-gen-ext/extproto"
 	_ "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -61,6 +60,17 @@ func (this *KubernetesClusterStatus) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for KubernetesClusterStatus
 func (this *KubernetesClusterStatus) UnmarshalJSON(b []byte) error {
+	return ClusterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for PolicyRule
+func (this *PolicyRule) MarshalJSON() ([]byte, error) {
+	str, err := ClusterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for PolicyRule
+func (this *PolicyRule) UnmarshalJSON(b []byte) error {
 	return ClusterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

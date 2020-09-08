@@ -56,4 +56,40 @@ message KubernetesClusterStatus {
     // List of statuses about the kubernetes cluster.
     // This list allows for multiple applications/pods to record their connection status.
     repeated core.skv2.solo.io.Status status = 1;
+
+    // The namespace on in which cluster registration resources are created.
+    string namespace = 2;
+
+    // JSON representation of the set of PolicyRules to attach to the newly created ClusterRole when registering clusters.
+    repeated PolicyRule policy_rules = 3;
+}
+
+/*
+    Copy pasted from the official kubernetes definition:
+    https://github.com/kubernetes/api/blob/697df40f2d58d7d48b180b83d7b9b2b5ff812923/rbac/v1alpha1/generated.proto#L98
+    PolicyRule holds information that describes a policy rule, but does not contain information
+    about who the rule applies to or which namespace the rule applies to.
+    */
+message PolicyRule {
+    // Verbs is a list of Verbs that apply to ALL the ResourceKinds and AttributeRestrictions contained in this rule.  VerbAll represents all kinds.
+    repeated string verbs = 1;
+
+    // APIGroups is the name of the APIGroup that contains the resources.  If multiple API groups are specified, any action requested against one of
+    // the enumerated resources in any API group will be allowed.
+    // +optional
+    repeated string api_groups = 2;
+
+    // Resources is a list of resources this rule applies to.  ResourceAll represents all resources.
+    // +optional
+    repeated string resources = 3;
+
+    // ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
+    // +optional
+    repeated string resource_names = 4;
+
+    // NonResourceURLs is a set of partial urls that a user should have access to.  *s are allowed, but only as the full, final step in the path
+    // Since non-resource URLs are not namespaced, this field is only applicable for ClusterRoles referenced from a ClusterRoleBinding.
+    // Rules can either apply to API resources (such as "pods" or "secrets") or non-resource URL paths (such as "/api"),  but not both.
+    // +optional
+    repeated string non_resource_urls = 5;
 }

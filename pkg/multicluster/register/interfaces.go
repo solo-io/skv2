@@ -148,7 +148,7 @@ type ClusterRegistrant interface {
 	) error
 
 	/*
-		Same functionality as RegisterClusterWithToken but supply extra ProviderInfo metadata.
+		Same functionality as RegisterClusterWithToken but supply extra ProviderInfo metadata and registration settings (namespace and policyRules).
 	*/
 	RegisterProviderClusterWithToken(
 		ctx context.Context,
@@ -157,6 +157,8 @@ type ClusterRegistrant interface {
 		token string,
 		opts Options,
 		providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+		namespace string,
+		policyRules []*v1alpha1.PolicyRule,
 	) error
 
 	/*

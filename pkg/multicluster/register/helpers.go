@@ -86,11 +86,9 @@ func (opts RegistrationOptions) RegisterCluster(
 }
 
 /*
-	RegisterCluster is meant to be a helper function to easily "register" a remote cluster.
-	Currently this entails:
-		1. Creating a `ServiceAccount` on the remote cluster.
-		2. Binding RBAC `Roles/ClusterRoles` to said `ServiceAccount`
-		3. And finally creating a kubeconfig `Secret` with the BearerToken of the remote `ServiceAccount`
+	RegisterProviderCluster augments RegisterCluster functionality
+	with additional metadata to persist to the resulting KubernetesCluster object.
+	ProviderInfo contains cloud provider metadata.
 */
 func (opts RegistrationOptions) RegisterProviderCluster(
 	ctx context.Context,
@@ -100,7 +98,30 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 	if err != nil {
 		return err
 	}
-	return RegisterProviderClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant, providerInfo)
+	// Parse ClusterRole policy rules and pass into RegisterProviderClusterFromConfig in order to persist them to the resulting
+	// KubernetesCluster status.
+	var clusterRolePolicyRules []*v1alpha1.PolicyRule
+	for _, clusterRole := range opts.ClusterRoles {
+		for _, policyRules := range clusterRole.Rules {
+			clusterRolePolicyRules = append(clusterRolePolicyRules, &v1alpha1.PolicyRule{
+				Verbs:           policyRules.Verbs,
+				ApiGroups:       policyRules.APIGroups,
+				Resources:       policyRules.Resources,
+				ResourceNames:   policyRules.ResourceNames,
+				NonResourceUrls: policyRules.NonResourceURLs,
+			})
+		}
+	}
+	return RegisterProviderClusterFromConfig(
+		ctx,
+		masterRestCfg,
+		remoteCfg,
+		rbacOpts,
+		registrant,
+		providerInfo,
+		opts.RemoteNamespace,
+		clusterRolePolicyRules,
+	)
 }
 
 /*
@@ -158,7 +179,7 @@ func RegisterClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 ) error {
-	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil)
+	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil, "", nil)
 }
 
 func RegisterProviderClusterFromConfig(
@@ -168,6 +189,8 @@ func RegisterProviderClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+	namespace string,
+	policyRules []*v1alpha1.PolicyRule,
 ) error {
 	sa, err := registrant.EnsureRemoteServiceAccount(ctx, remoteCfg, opts.Options)
 	if err != nil {
@@ -182,7 +205,16 @@ func RegisterProviderClusterFromConfig(
 		return err
 	}
 
-	return registrant.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteCfg, token, opts.Options, providerInfo)
+	return registrant.RegisterProviderClusterWithToken(
+		ctx,
+		masterClusterCfg,
+		remoteCfg,
+		token,
+		opts.Options,
+		providerInfo,
+		namespace,
+		policyRules,
+	)
 }
 
 func DeregisterClusterFromConfig(
