@@ -70,6 +70,9 @@ type RegistrationOptions struct {
 	// List of cluster roles which will be bound to by the created cluster role bindings
 	// The ClusterRoles upserted from the above list will automatically appended to the list
 	ClusterRoleBindings []client.ObjectKey
+
+	// Set of labels to include on the KubernetesCluster resource.
+	Labels map[string]string
 }
 
 /*
@@ -119,6 +122,7 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 		rbacOpts,
 		registrant,
 		providerInfo,
+		opts.Labels,
 		opts.RemoteNamespace,
 		clusterRolePolicyRules,
 	)
@@ -179,7 +183,7 @@ func RegisterClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 ) error {
-	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil, "", nil)
+	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil, nil, "", nil)
 }
 
 func RegisterProviderClusterFromConfig(
@@ -189,6 +193,7 @@ func RegisterProviderClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+	labels map[string]string,
 	namespace string,
 	policyRules []*v1alpha1.PolicyRule,
 ) error {
@@ -212,6 +217,7 @@ func RegisterProviderClusterFromConfig(
 		token,
 		opts.Options,
 		providerInfo,
+		labels,
 		namespace,
 		policyRules,
 	)

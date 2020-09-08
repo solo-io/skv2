@@ -157,6 +157,7 @@ type ClusterRegistrant interface {
 		token string,
 		opts Options,
 		providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+		labels map[string]string,
 		namespace string,
 		policyRules []*v1alpha1.PolicyRule,
 	) error

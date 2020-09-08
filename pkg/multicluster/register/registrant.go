@@ -289,7 +289,7 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	token string,
 	opts Options,
 ) error {
-	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil, "", nil)
+	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil, nil, "", nil)
 }
 
 func (c *clusterRegistrant) RegisterProviderClusterWithToken(
@@ -299,6 +299,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	token string,
 	opts Options,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+	labels map[string]string,
 	namespace string,
 	policyRules []*v1alpha1.PolicyRule,
 ) error {
@@ -345,7 +346,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 		return err
 	}
 
-	kubeCluster := buildKubeClusterResource(kcSecret, opts.ClusterDomain, providerInfo, namespace, policyRules)
+	kubeCluster := buildKubeClusterResource(kcSecret, labels, opts.ClusterDomain, providerInfo, namespace, policyRules)
 
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {
@@ -368,7 +369,7 @@ func (c *clusterRegistrant) DeregisterCluster(
 	}
 
 	kcSecretObjMeta := kubeconfig.SecretObjMeta(opts.Namespace, opts.ClusterName)
-	kubeClusterObjMeta := kubeClusterObjMeta(kcSecretObjMeta.Name, kcSecretObjMeta.Namespace)
+	kubeClusterObjMeta := kubeClusterObjMeta(kcSecretObjMeta.Name, kcSecretObjMeta.Namespace, nil)
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {
 		return err
@@ -388,6 +389,7 @@ func (c *clusterRegistrant) DeregisterCluster(
 
 func buildKubeClusterResource(
 	secret *corev1.Secret,
+	labels map[string]string,
 	clusterDomain string,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
 	namespace string,
@@ -397,7 +399,7 @@ func buildKubeClusterResource(
 		clusterDomain = DefaultClusterDomain
 	}
 	return &v1alpha1.KubernetesCluster{
-		ObjectMeta: kubeClusterObjMeta(secret.Name, secret.Namespace),
+		ObjectMeta: kubeClusterObjMeta(secret.Name, secret.Namespace, labels),
 		Spec: v1alpha1.KubernetesClusterSpec{
 			SecretName:    secret.Name,
 			ClusterDomain: clusterDomain,
@@ -410,10 +412,11 @@ func buildKubeClusterResource(
 	}
 }
 
-func kubeClusterObjMeta(secretName, secretNamespace string) metav1.ObjectMeta {
+func kubeClusterObjMeta(secretName, secretNamespace string, labels map[string]string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Name:      secretName,
 		Namespace: secretNamespace,
+		Labels:    labels,
 	}
 }
 

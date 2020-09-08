@@ -502,14 +502,15 @@ var _ = Describe("Registrant", func() {
 				CreateSecret(ctx, secret).
 				Return(nil)
 
-			kubeClusterClient.EXPECT().
-				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
-					ObjectMeta: secret.ObjectMeta,
-					Spec: v1alpha1.KubernetesClusterSpec{
-						SecretName:    secret.Name,
-						ClusterDomain: "cluster.local",
-					},
-				}).Return(nil)
+			kubeCluster := &v1alpha1.KubernetesCluster{
+				ObjectMeta: secret.ObjectMeta,
+				Spec: v1alpha1.KubernetesClusterSpec{
+					SecretName:    secret.Name,
+					ClusterDomain: "cluster.local",
+				},
+			}
+			kubeClusterClient.EXPECT().UpsertKubernetesCluster(ctx, kubeCluster).Return(nil)
+			kubeClusterClient.EXPECT().UpdateKubernetesClusterStatus(ctx, kubeCluster).Return(nil)
 
 			err = clusterRegistrant.RegisterClusterWithToken(ctx, restCfg, clientConfig, token, opts)
 
@@ -624,19 +625,26 @@ var _ = Describe("Registrant", func() {
 					Resources: []string{"foo"},
 				},
 			}
-			kubeClusterClient.EXPECT().
-				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
-					ObjectMeta: secret.ObjectMeta,
-					Spec: v1alpha1.KubernetesClusterSpec{
-						SecretName:    secret.Name,
-						ClusterDomain: "cluster.local",
-						ProviderInfo:  providerInfo,
+			kubeCluster := &v1alpha1.KubernetesCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      secret.ObjectMeta.Name,
+					Namespace: secret.ObjectMeta.Namespace,
+					Labels: map[string]string{
+						"foo": "bar",
 					},
-					Status: v1alpha1.KubernetesClusterStatus{
-						Namespace:   "namespace",
-						PolicyRules: policyRules,
-					},
-				}).Return(nil)
+				},
+				Spec: v1alpha1.KubernetesClusterSpec{
+					SecretName:    secret.Name,
+					ClusterDomain: "cluster.local",
+					ProviderInfo:  providerInfo,
+				},
+				Status: v1alpha1.KubernetesClusterStatus{
+					Namespace:   "namespace",
+					PolicyRules: policyRules,
+				},
+			}
+			kubeClusterClient.EXPECT().UpsertKubernetesCluster(ctx, kubeCluster).Return(nil)
+			kubeClusterClient.EXPECT().UpdateKubernetesClusterStatus(ctx, kubeCluster).Return(nil)
 
 			err = clusterRegistrant.RegisterProviderClusterWithToken(
 				ctx,
@@ -645,6 +653,9 @@ var _ = Describe("Registrant", func() {
 				token,
 				opts,
 				providerInfo,
+				map[string]string{
+					"foo": "bar",
+				},
 				"namespace",
 				policyRules,
 			)
@@ -749,14 +760,15 @@ var _ = Describe("Registrant", func() {
 				CreateSecret(ctx, secret).
 				Return(nil)
 
-			kubeClusterClient.EXPECT().
-				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
-					ObjectMeta: secret.ObjectMeta,
-					Spec: v1alpha1.KubernetesClusterSpec{
-						SecretName:    secret.Name,
-						ClusterDomain: "cluster.local",
-					},
-				}).Return(nil)
+			kubeCluster := &v1alpha1.KubernetesCluster{
+				ObjectMeta: secret.ObjectMeta,
+				Spec: v1alpha1.KubernetesClusterSpec{
+					SecretName:    secret.Name,
+					ClusterDomain: "cluster.local",
+				},
+			}
+			kubeClusterClient.EXPECT().UpsertKubernetesCluster(ctx, kubeCluster).Return(nil)
+			kubeClusterClient.EXPECT().UpdateKubernetesClusterStatus(ctx, kubeCluster).Return(nil)
 
 			err = clusterRegistrant.RegisterClusterWithToken(ctx, restCfg, clientConfig, token, opts)
 
