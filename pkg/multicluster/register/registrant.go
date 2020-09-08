@@ -352,7 +352,10 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 		return err
 	}
 
-	return kubeClusterClient.UpsertKubernetesCluster(ctx, kubeCluster)
+	if err = kubeClusterClient.UpsertKubernetesCluster(ctx, kubeCluster); err != nil {
+		return err
+	}
+	return kubeClusterClient.UpdateKubernetesClusterStatus(ctx, kubeCluster)
 }
 
 func (c *clusterRegistrant) DeregisterCluster(
