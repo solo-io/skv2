@@ -226,9 +226,9 @@ type KubernetesClusterStatus struct {
 	// List of statuses about the kubernetes cluster.
 	// This list allows for multiple applications/pods to record their connection status.
 	Status []*v1.Status `protobuf:"bytes,1,rep,name=status,proto3" json:"status,omitempty"`
-	// The namespace on in which cluster registration resources are created.
+	// The namespace in which cluster registration resources were created.
 	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// JSON representation of the set of PolicyRules to attach to the newly created ClusterRole when registering clusters.
+	// The set of PolicyRules attached to ClusterRoles when this cluster was registered.
 	PolicyRules          []*PolicyRule `protobuf:"bytes,3,rep,name=policy_rules,json=policyRules,proto3" json:"policy_rules,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
 	XXX_unrecognized     []byte        `json:"-"`

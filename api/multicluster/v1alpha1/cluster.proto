@@ -57,10 +57,10 @@ message KubernetesClusterStatus {
     // This list allows for multiple applications/pods to record their connection status.
     repeated core.skv2.solo.io.Status status = 1;
 
-    // The namespace on in which cluster registration resources are created.
+    // The namespace in which cluster registration resources were created.
     string namespace = 2;
 
-    // JSON representation of the set of PolicyRules to attach to the newly created ClusterRole when registering clusters.
+    // The set of PolicyRules attached to ClusterRoles when this cluster was registered.
     repeated PolicyRule policy_rules = 3;
 }
 
