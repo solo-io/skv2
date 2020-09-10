@@ -28,3 +28,10 @@ type ClusterSet interface {
 	// List the clusters (sorted) currently known to the set
 	ListClusters() []string
 }
+
+// the multicluster Interface provides a handle to interacting with multiple clusters.
+// the multicluster watcher implements this interface.
+type Interface interface {
+	ClusterWatcher
+	ManagerSet
+}

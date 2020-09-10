@@ -66,8 +66,8 @@ func (m *multicluster{{ $resource.Kind }}ReconcileLoop) AddMulticluster{{ $resou
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticluster{{ $resource.Kind }}ReconcileLoop(name string, cw multicluster.ClusterWatcher) Multicluster{{ $resource.Kind }}ReconcileLoop {
-	return &multicluster{{ $resource.Kind }}ReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &{{ $import_prefix }}.{{ $resource.Kind }}{})}
+func NewMulticluster{{ $resource.Kind }}ReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) Multicluster{{ $resource.Kind }}ReconcileLoop {
+	return &multicluster{{ $resource.Kind }}ReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &{{ $import_prefix }}.{{ $resource.Kind }}{}, options)}
 }
 
 type generic{{ $resource.Kind }}MulticlusterReconciler struct {

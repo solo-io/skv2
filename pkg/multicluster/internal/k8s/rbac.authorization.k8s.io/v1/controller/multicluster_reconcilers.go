@@ -66,8 +66,8 @@ func (m *multiclusterRoleReconcileLoop) AddMulticlusterRoleReconciler(ctx contex
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterRoleReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterRoleReconcileLoop {
-	return &multiclusterRoleReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &rbac_authorization_k8s_io_v1.Role{})}
+func NewMulticlusterRoleReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterRoleReconcileLoop {
+	return &multiclusterRoleReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &rbac_authorization_k8s_io_v1.Role{}, options)}
 }
 
 type genericRoleMulticlusterReconciler struct {
@@ -137,8 +137,8 @@ func (m *multiclusterRoleBindingReconcileLoop) AddMulticlusterRoleBindingReconci
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterRoleBindingReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterRoleBindingReconcileLoop {
-	return &multiclusterRoleBindingReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &rbac_authorization_k8s_io_v1.RoleBinding{})}
+func NewMulticlusterRoleBindingReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterRoleBindingReconcileLoop {
+	return &multiclusterRoleBindingReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &rbac_authorization_k8s_io_v1.RoleBinding{}, options)}
 }
 
 type genericRoleBindingMulticlusterReconciler struct {
@@ -208,8 +208,8 @@ func (m *multiclusterClusterRoleReconcileLoop) AddMulticlusterClusterRoleReconci
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterClusterRoleReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterClusterRoleReconcileLoop {
-	return &multiclusterClusterRoleReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &rbac_authorization_k8s_io_v1.ClusterRole{})}
+func NewMulticlusterClusterRoleReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterClusterRoleReconcileLoop {
+	return &multiclusterClusterRoleReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &rbac_authorization_k8s_io_v1.ClusterRole{}, options)}
 }
 
 type genericClusterRoleMulticlusterReconciler struct {
@@ -279,8 +279,8 @@ func (m *multiclusterClusterRoleBindingReconcileLoop) AddMulticlusterClusterRole
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterClusterRoleBindingReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterClusterRoleBindingReconcileLoop {
-	return &multiclusterClusterRoleBindingReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &rbac_authorization_k8s_io_v1.ClusterRoleBinding{})}
+func NewMulticlusterClusterRoleBindingReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterClusterRoleBindingReconcileLoop {
+	return &multiclusterClusterRoleBindingReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &rbac_authorization_k8s_io_v1.ClusterRoleBinding{}, options)}
 }
 
 type genericClusterRoleBindingMulticlusterReconciler struct {
