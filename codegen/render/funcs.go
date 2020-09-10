@@ -18,11 +18,11 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func makeTemplateFuncs() template.FuncMap {
+func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	f := sprig.TxtFuncMap()
 
-	// Add some extra functionality
-	extra := template.FuncMap{
+	// Add some functionality for skv2 templates
+	skv2Funcs := template.FuncMap{
 		// string utils
 
 		"toToml":   toTOML,
@@ -40,15 +40,19 @@ func makeTemplateFuncs() template.FuncMap {
 		"split":           splitTrimEmpty,
 		"string_contains": strings.Contains,
 
-		// skv2 funcs
+		// resource-related funcs
 		"group_import_path": func(grp Group) string {
 			return util.GoPackage(grp)
 		},
 		"group_import_name": func(grp Group) string {
 			name := strings.ReplaceAll(grp.GroupVersion.String(), "/", "_")
 			name = strings.ReplaceAll(name, ".", "_")
+			name = strings.ReplaceAll(name, "-", "_")
 
 			return name
+		},
+		"generated_code_import_path": func(grp Group) string {
+			return util.GeneratedGoPackage(grp)
 		},
 		// Used by types.go to get all unique external imports for a groups resources
 		"imports_for_group": func(grp Group) []string {
@@ -64,7 +68,11 @@ func makeTemplateFuncs() template.FuncMap {
 		},
 	}
 
-	for k, v := range extra {
+	for k, v := range skv2Funcs {
+		f[k] = v
+	}
+
+	for k, v := range customFuncs {
 		f[k] = v
 	}
 

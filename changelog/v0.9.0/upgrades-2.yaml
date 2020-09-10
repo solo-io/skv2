@@ -1,0 +1,37 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Input Reconciler - Add the ability to rate-limit reconciliations.
+    issueLink: https://github.com/solo-io/skv2/issues/120
+  - type: NEW_FEATURE
+    description: Input Reconciler - Add the ability to supply `predicate.Predicate`s to the reconciler's watch function.
+    issueLink: https://github.com/solo-io/skv2/issues/121
+  - type: NEW_FEATURE
+    description: Input Snapshot - Add the ability to sync input resource statuses across multiple clusters.
+    issueLink: https://github.com/solo-io/skv2/issues/122
+  - type: NEW_FEATURE
+    description: Input & Output Snapshot - Add a MarshalJSON function for debugging.
+    issueLink: https://github.com/solo-io/skv2/issues/123
+  - type: NEW_FEATURE
+    description: Input Snapshot - Add a builder for manually constructing input snapshots (to be used for testing).
+    issueLink: https://github.com/solo-io/skv2/issues/124
+  - type: FIX
+    description: Output Snapshot - Explicitly define desired clusters for multicluster snapshots.
+    issueLink: https://github.com/solo-io/skv2/issues/125
+  - type: BREAKING_CHANGE
+    description: Output Snapshot - Create separate Apply methods for Local Cluster and Multiple Clusters.
+    issueLink: https://github.com/solo-io/skv2/issues/126
+  - type: NEW_FEATURE
+    description: Output Snapshot - Add a builder for more conveniently constructing output snapshots.
+    issueLink: https://github.com/solo-io/skv2/issues/127
+  - type: FIX
+    description: Sets - now sets accept an `ezkube.ResourceId` for most methods.
+    issueLink: https://github.com/solo-io/skv2/issues/128
+  - type: NEW_FEATURE
+    description: Sets - now sets List function accepts a filter function.
+    issueLink: https://github.com/solo-io/skv2/issues/129
+  - type: NEW_FEATURE
+    description: Sets - now nil sets will not panic when calling methods (other than Insert).
+    issueLink: https://github.com/solo-io/skv2/issues/130
+  - type: NEW_FEATURE
+    description: Ezkube - Add util method `MakeClientObjectKey` for creating `client.ObjectKey`s.
+    issueLink: https://github.com/solo-io/skv2/issues/131

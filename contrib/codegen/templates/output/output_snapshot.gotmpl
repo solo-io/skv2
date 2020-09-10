@@ -1,0 +1,524 @@
+// Definitions for Output Snapshots
+package {{ package }}
+
+{{ $groups := imported_groups }}
+
+import (
+	"context"
+    "encoding/json"
+    "github.com/solo-io/go-utils/contextutils"
+
+    "github.com/rotisserie/eris"
+    "github.com/solo-io/skv2/contrib/pkg/sets"
+    "github.com/solo-io/skv2/contrib/pkg/output"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    "sigs.k8s.io/controller-runtime/pkg/client"
+
+
+{{- range $group := $groups }}
+{{ $type_import_prefix := group_import_name $group }}
+{{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
+    {{ $type_import_prefix }} "{{ group_import_path $group }}"
+    {{ $set_import_prefix }} "{{ set_import_path $group }}"
+{{- end }}
+
+)
+
+// this error can occur if constructing a Partitioned Snapshot from a resource
+// that is missing the partition label
+var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.ResourceId) error {
+    return eris.Errorf("expected label %v not on labels of %v %v", labelKey, resourceKind, sets.Key(obj))
+}
+
+// the snapshot of output resources produced by a translation
+type Snapshot interface {
+{{/* generate a getter for each resource */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+    // return the set of {{ $kindPlural }} with a given set of labels
+    {{ $kindPlural }}() []Labeled{{ $resource.Kind }}Set
+{{- end }}
+{{- end }}
+
+    // apply the snapshot to the local cluster, garbage collecting stale resources
+    ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
+
+    // apply resources from the snapshot across multiple clusters, garbage collecting stale resources
+    ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler)
+
+    // serialize the entire snapshot as JSON
+    MarshalJSON() ([]byte, error)
+}
+
+type snapshot struct {
+    name string
+{{/* generate fields of the real snapshot impl here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} []Labeled{{ $resource.Kind }}Set
+{{- end }}
+{{- end }}
+    clusters []string
+}
+
+func NewSnapshot(
+	name string,
+{{/* generate constructor params here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} []Labeled{{ $resource.Kind }}Set,
+{{- end }}
+{{- end }}
+    clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
+) Snapshot {
+    return &snapshot{
+    	name: name,
+{{/* add constructor params here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }}:  {{ $kindLowerCamelPlural }},
+{{- end }}
+{{- end }}
+        clusters: clusters,
+    }
+}
+
+// automatically partitions the input resources
+// by the presence of the provided label.
+func NewLabelPartitionedSnapshot(
+	name,
+	labelKey string, // the key by which to partition the resources
+{{/* generate partitioned constructor params here */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set,
+{{- end }}
+{{- end }}
+    clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
+) (Snapshot, error) {
+
+{{/* convert input sets to partioned output sets */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    partitioned{{ $kindPlural }}, err := partition{{ $kindPlural }}ByLabel(labelKey, {{ $kindLowerCamelPlural }})
+    if err != nil {
+    	return nil, err
+    }
+{{- end }}
+{{- end }}
+
+    return NewSnapshot(
+    	name,
+{{/* args for NewSnapshot */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        partitioned{{ $kindPlural }},
+{{- end }}
+{{- end }}
+        clusters...,
+    ), nil
+}
+
+// simplified constructor for a snapshot
+// with a single label partition (i.e. all resources share a single set of labels).
+func NewSinglePartitionedSnapshot(
+	name string,
+    snapshotLabels map[string]string, // a single set of labels shared by all resources
+{{/* generate partitioned constructor params here */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set,
+{{- end }}
+{{- end }}
+    clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
+) (Snapshot, error) {
+
+{{/* convert input sets to partioned output sets */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    labeled{{ $kindPlural }}, err := NewLabeled{{ $resource.Kind }}Set({{ $kindLowerCamelPlural }}, snapshotLabels)
+    if err != nil {
+    	return nil, err
+    }
+{{- end }}
+{{- end }}
+
+    return NewSnapshot(
+    	name,
+{{/* args for NewSnapshot */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        []Labeled{{ $resource.Kind }}Set{labeled{{ $kindPlural }}},
+{{- end }}
+{{- end }}
+        clusters...,
+    ), nil
+}
+
+
+// apply the desired resources to the cluster state; remove stale resources where necessary
+func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
+    var genericLists []output.ResourceList
+
+{{/* generate each list conversion */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    for _, outputSet := range s.{{ $kindLowerCamelPlural }} {
+        genericLists = append(genericLists,  outputSet.Generic())
+    }
+{{- end }}
+{{- end }}
+
+    output.Snapshot{
+        Name:        s.name,
+        ListsToSync: genericLists,
+    }.SyncLocalCluster(ctx, cli, errHandler)
+}
+
+// apply the desired resources to multiple cluster states; remove stale resources where necessary
+func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
+    var genericLists []output.ResourceList
+
+{{/* generate each list conversion */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    for _, outputSet := range s.{{ $kindLowerCamelPlural }} {
+        genericLists = append(genericLists,  outputSet.Generic())
+    }
+{{- end }}
+{{- end }}
+
+    output.Snapshot{
+        Name:        s.name,
+        Clusters:    s.clusters,
+        ListsToSync: genericLists,
+    }.SyncMultiCluster(ctx, multiClusterClient, errHandler)
+}
+
+{{/* generate conversion funcs which partition each individual set */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+func partition{{ $kindPlural }}ByLabel(labelKey string, set {{ $set_import_prefix }}.{{ $resource.Kind }}Set) ([]Labeled{{ $resource.Kind }}Set, error) {
+    setsByLabel := map[string]{{ $set_import_prefix }}.{{ $resource.Kind }}Set{}
+
+    for _, obj := range set.List() {
+        if obj.Labels == nil {
+            return nil, MissingRequiredLabelError(labelKey, "{{ $resource.Kind }}", obj)
+        }
+        labelValue := obj.Labels[labelKey]
+        if labelValue == "" {
+            return nil, MissingRequiredLabelError(labelKey, "{{ $resource.Kind }}", obj)
+        }
+
+        setForValue, ok := setsByLabel[labelValue]
+        if !ok {
+            setForValue = {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+            setsByLabel[labelValue] = setForValue
+        }
+        setForValue.Insert(obj)
+    }
+
+    // partition by label key
+    var partitioned{{ $kindPlural }} []Labeled{{ $resource.Kind }}Set
+
+    for labelValue, setForValue := range setsByLabel {
+        labels := map[string]string{labelKey: labelValue}
+
+        partitionedSet, err := NewLabeled{{ $resource.Kind }}Set(setForValue, labels)
+        if err != nil {
+            return nil, err
+        }
+
+        partitioned{{ $kindPlural }} = append(partitioned{{ $kindPlural }}, partitionedSet)
+    }
+
+    // sort for idempotency
+    sort.SliceStable(partitioned{{ $kindPlural }}, func(i, j int) bool {
+        leftLabelValue := partitioned{{ $kindPlural }}[i].Labels()[labelKey]
+        rightLabelValue := partitioned{{ $kindPlural }}[j].Labels()[labelKey]
+        return leftLabelValue < rightLabelValue
+    })
+
+    return partitioned{{ $kindPlural }}, nil
+}
+
+{{- end }}
+{{- end }}
+
+{{/* generate getters here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+func (s snapshot) {{ $kindPlural }}() []Labeled{{ $resource.Kind }}Set {
+    return s.{{ $kindLowerCamelPlural }}
+}
+{{- end }}
+{{- end }}
+
+func (s snapshot) MarshalJSON() ([]byte, error) {
+    snapshotMap := map[string]interface{}{"name": s.name}
+{{/* add map contents here */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    for _, set := range s.{{ $kindLowerCamelPlural }} {
+        {{ $kindLowerCamel }}Set = {{ $kindLowerCamel }}Set.Union(set.Set() )
+    }
+    snapshotMap["{{ $kindLowerCamelPlural }}"] = {{ $kindLowerCamel }}Set.List()
+{{- end }}
+{{- end }}
+
+    snapshotMap["clusters"] = s.clusters
+
+    return json.Marshal(snapshotMap)
+}
+
+{{/* generate labeled sets here */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $type_import_prefix := group_import_name $group }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+// Labeled{{ $resource.Kind }}Set represents a set of {{ $kindLowerCamelPlural }}
+// which share a common set of labels.
+// These labels are used to find diffs between {{ $resource.Kind }}Sets.
+type Labeled{{ $resource.Kind }}Set interface {
+    // returns the set of Labels shared by this {{ $resource.Kind }}Set
+    Labels() map[string]string
+
+    // returns the set of {{ $resource.Kind }}es with the given labels
+    Set() {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+
+    // converts the set to a generic format which can be applied by the Snapshot.Apply functions
+    Generic() output.ResourceList
+}
+
+type labeled{{ $resource.Kind }}Set struct {
+    set    {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+    labels map[string]string
+}
+
+func NewLabeled{{ $resource.Kind }}Set(set {{ $set_import_prefix }}.{{ $resource.Kind }}Set, labels map[string]string) (Labeled{{ $resource.Kind }}Set, error) {
+    // validate that each {{ $resource.Kind }} contains the labels, else this is not a valid Labeled{{ $resource.Kind }}Set
+    for _, item := range set.List() {
+        for k, v := range labels {
+            // k=v must be present in the item
+            if item.Labels[k] != v {
+                return nil, eris.Errorf("internal error: %v=%v missing on {{ $resource.Kind }} %v", k, v, item.Name)
+            }
+        }
+    }
+
+    return &labeled{{ $resource.Kind }}Set{set: set, labels: labels}, nil
+}
+
+func (l *labeled{{ $resource.Kind }}Set) Labels() map[string]string {
+    return l.labels
+}
+
+func (l *labeled{{ $resource.Kind }}Set) Set() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
+    return l.set
+}
+
+func (l labeled{{ $resource.Kind }}Set) Generic() output.ResourceList {
+    var desiredResources []ezkube.Object
+    for _, desired := range l.set.List() {
+        desiredResources = append(desiredResources, desired)
+    }
+
+    // enable list func for garbage collection
+    listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+        var list {{ $type_import_prefix }}.{{ $resource.Kind }}List
+        if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+            return nil, err
+        }
+        var items []ezkube.Object
+        for _, item := range list.Items {
+            item := item // pike
+            items = append(items, &item)
+        }
+        return items, nil
+    }
+
+    return output.ResourceList{
+        Resources: desiredResources,
+        ListFunc: listFunc,
+        ResourceKind: "{{ $resource.Kind }}",
+    }
+}
+
+{{- end }}
+{{- end }}
+
+type builder struct {
+    ctx context.Context
+    name string
+    clusters []string
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+{{- end }}
+{{- end }}
+}
+
+func NewBuilder(ctx context.Context, name string) *builder {
+return &builder{
+	ctx: ctx,
+    name: name,
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }}: {{ $set_import_prefix }}.New{{ $resource.Kind }}Set(),
+{{- end }}
+{{- end }}
+}
+}
+
+// the output Builder uses a builder pattern to allow
+// iteratively collecting outputs before producing a final snapshot
+type Builder interface {
+
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+    // add {{ $kindPlural }} to the collected outputs
+    Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} ...*{{ group_import_name $group }}.{{ $resource.Kind }})
+
+    // get the collected {{ $kindPlural }}
+    Get{{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+
+{{- end }}
+{{- end }}
+
+    // build the collected outputs into a label-partitioned snapshot
+    BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
+
+    // build the collected outputs into a snapshot with a single partition
+    BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+
+    // add a cluster to the collected clusters.
+    // this can be used to collect clusters for use with MultiCluster snapshots.
+    AddCluster(cluster string)
+
+}
+
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+func (b *builder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} ...*{{ group_import_name $group }}.{{ $resource.Kind }}) {
+    for _, obj := range {{ $kindLowerCamelPlural }} {
+    	if obj == nil {
+    		continue
+        }
+        contextutils.LoggerFrom(b.ctx).Debugf("added output {{ $resource.Kind }} %v", sets.Key(obj))
+        b.{{ $kindLowerCamelPlural }}.Insert(obj)
+    }
+}
+{{- end }}
+{{- end }}
+
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+func (b *builder) Get{{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
+    return b.{{ $kindLowerCamelPlural }}
+}
+
+{{- end }}
+{{- end }}
+
+func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
+    return NewLabelPartitionedSnapshot(
+        b.name,
+        labelKey,
+{{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+        {{- $kindPlural := pluralize $resource.Kind }}
+        {{- $kindLowerCamel := lower_camel $resource.Kind }}
+        {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        b.{{ $kindLowerCamelPlural }},
+    {{- end }}
+{{- end }}
+        b.clusters...,
+    )
+}
+
+func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
+    return NewSinglePartitionedSnapshot(
+        b.name,
+        snapshotLabels,
+{{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+        {{- $kindPlural := pluralize $resource.Kind }}
+        {{- $kindLowerCamel := lower_camel $resource.Kind }}
+        {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        b.{{ $kindLowerCamelPlural }},
+    {{- end }}
+{{- end }}
+        b.clusters...,
+    )
+}
+
+func (b *builder) AddCluster(cluster string) {
+    b.clusters = append(b.clusters, cluster)
+}

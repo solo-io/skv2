@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/44
+    description: Add generation for set types and gomega matchers for those sets. Also create structure for contributions to skv2.
+  - type: BREAKING_CHANGE
+    issueLink: https://github.com/solo-io/skv2/issues/46
+    description: Added the ability to provide multiple custom codegen templates.

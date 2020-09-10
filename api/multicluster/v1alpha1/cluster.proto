@@ -1,0 +1,59 @@
+syntax = "proto3";
+package multicluster.solo.io;
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
+
+option go_package = "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1";
+
+import "skv2/api/core/v1/core.proto";
+
+/*
+    Representation of a Kubernetes cluster that has been registered.
+*/
+message KubernetesClusterSpec {
+
+    // Metadata for clusters provisioned from cloud providers.
+    message ProviderInfo {
+
+        // Metadata specific to a cloud provider.
+        oneof provider_info_type {
+            // Provider info for an AWS EKS provisioned cluster.
+            Eks eks = 1;
+        }
+    }
+
+    // AWS metadata associated with an EKS provisioned cluster.
+    message Eks {
+        // AWS ARN.
+        string arn = 1;
+
+        // AWS 12 digit account ID.
+        string account_id = 2;
+
+        // AWS region.
+        string region = 3;
+
+        // EKS resource name.
+        string name = 4;
+    }
+
+    // name of the secret which contains the kubeconfig with information to connect to the remote cluster.
+    string secret_name = 1;
+
+    // name local DNS suffix used by the cluster.
+    // used for building FQDNs for in-cluster services
+    // defaults to 'cluster.local'
+    string cluster_domain = 2;
+
+    // Metadata for clusters provisioned from cloud providers.
+    ProviderInfo provider_info = 3;
+}
+
+message KubernetesClusterStatus {
+    // List of statuses about the kubernetes cluster.
+    // This list allows for multiple applications/pods to record their connection status.
+    repeated core.skv2.solo.io.Status status = 1;
+}

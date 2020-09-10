@@ -1,0 +1,197 @@
+{{ $groups := imported_groups }}
+
+// The Input Reconciler calls a simple func() error whenever a
+// storage event is received for any of:
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+// * {{ $kindPlural }}
+{{- end }}
+{{- end }}
+// for a given cluster or set of clusters.
+//
+// Input Reconcilers can be be constructed from either a single Manager (watch events in a single cluster)
+// or a ClusterWatcher (watch events in multiple clusters).
+package {{ package }}
+
+import (
+    "context"
+
+    "github.com/solo-io/skv2/contrib/pkg/input"
+    sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+    "github.com/solo-io/skv2/pkg/multicluster"
+    "github.com/solo-io/skv2/pkg/reconcile"
+
+    "go.uber.org/zap"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "github.com/hashicorp/go-multierror"
+    "sigs.k8s.io/controller-runtime/pkg/client"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
+
+{{- range $group := $groups }}
+{{ $type_import_prefix := group_import_name $group }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+    {{ $type_import_prefix }} "{{ group_import_path $group }}"
+    {{ $controller_import_prefix }} "{{ controller_import_path $group }}"
+{{- end }}
+)
+
+// the multiClusterReconciler reconciles events for input resources across clusters
+type multiClusterReconciler interface {
+{{/* implement reconciler interfaces here */}}
+{{- range $group := $groups }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $controller_import_prefix }}.Multicluster{{ $resource.Kind }}Reconciler
+{{- end }}
+{{- end }}
+}
+
+var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
+
+type multiClusterReconcilerImpl struct {
+    base input.MultiClusterReconciler
+}
+
+// register the reconcile func with the cluster watcher
+// the reconcileInterval, if greater than 0, will limit the number of reconciles
+// to one per interval.
+func RegisterMultiClusterReconciler(
+        ctx context.Context,
+        clusters multicluster.ClusterWatcher,
+        reconcileFunc input.MultiClusterReconcileFunc,
+        reconcileInterval time.Duration,
+        predicates ...predicate.Predicate,
+) {
+
+	base := input.NewMultiClusterReconcilerImpl(
+		ctx,
+		reconcileFunc,
+		reconcileInterval,
+    )
+
+    r := &multiClusterReconcilerImpl{
+    	base: base,
+    }
+
+// initialize reconcile loops
+{{- range $group := $groups }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, r, predicates...)
+{{- end }}
+{{- end }}
+
+}
+
+{{- range $group := $groups }}
+{{ $type_import_prefix := group_import_name $group }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+    obj.ClusterName = clusterName
+    return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileClusterGeneric(ref)
+    return err
+}
+{{- end }}
+{{- end }}
+
+
+// the singleClusterReconciler reconciles events for input resources across clusters
+type singleClusterReconciler interface {
+{{/* implement reconciler interfaces here */}}
+{{- range $group := $groups }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $controller_import_prefix }}.{{ $resource.Kind }}Reconciler
+{{- end }}
+{{- end }}
+}
+var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
+
+type singleClusterReconcilerImpl struct {
+    base input.SingleClusterReconciler
+}
+
+// register the reconcile func with the manager
+// the reconcileInterval, if greater than 0, will limit the number of reconciles
+// to one per interval.
+func RegisterSingleClusterReconciler(
+        ctx context.Context,
+        mgr manager.Manager,
+        reconcileFunc input.SingleClusterReconcileFunc,
+        reconcileInterval time.Duration,
+        predicates ...predicate.Predicate,
+) error {
+
+    base := input.NewSingleClusterReconciler(
+        ctx,
+        reconcileFunc,
+        reconcileInterval,
+    )
+
+    r := &singleClusterReconcilerImpl{
+        base: base,
+    }
+
+// initialize reconcile loops
+{{- range $group := $groups }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, reconcile.Options{}).Run{{ $resource.Kind }}Reconciler(ctx, r, predicates...); err != nil {
+    	return err
+    }
+{{- end }}
+{{- end }}
+
+    return nil
+}
+
+{{- range $group := $groups }}
+{{ $type_import_prefix := group_import_name $group }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+    return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileGeneric(ref)
+    return err
+}
+{{- end }}
+{{- end }}

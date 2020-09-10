@@ -10,7 +10,7 @@ import (
 
 // exported interface for using to render templates
 type TemplateRenderer interface {
-	ExecuteTemplate(name, templateText string, data interface{}) (string, error)
+	RenderCustomTemplates(customTemplates map[string]string, customFuncs template.FuncMap, data interface{}) ([]OutFile, error)
 }
 
 // map of template files to the file they render to
@@ -60,13 +60,13 @@ func (r templateRenderer) renderCoreTemplate(path string, data interface{}) (str
 		return "", err
 	}
 
-	return r.executeTemplate(path, templateText, data)
+	return r.executeTemplate(path, templateText, nil, data)
 }
 
-func (r templateRenderer) renderCustomTemplates(customTemplates map[string]string, data interface{}) ([]OutFile, error) {
+func (r templateRenderer) RenderCustomTemplates(customTemplates map[string]string, customFuncs template.FuncMap, data interface{}) ([]OutFile, error) {
 	var renderedFiles []OutFile
 	for outPath, templateText := range customTemplates {
-		content, err := r.executeTemplate(outPath, templateText, data)
+		content, err := r.executeTemplate(outPath, templateText, customFuncs, data)
 		if err != nil {
 			return nil, err
 		}
@@ -82,13 +82,9 @@ func (r templateRenderer) renderCustomTemplates(customTemplates map[string]strin
 	return renderedFiles, nil
 }
 
-func (r templateRenderer) ExecuteTemplate(name, templateText string, data interface{}) (string, error) {
-	return r.executeTemplate(name, templateText, data)
-}
+func (r templateRenderer) executeTemplate(name, templateText string, extraFuncs template.FuncMap, data interface{}) (string, error) {
 
-func (r templateRenderer) executeTemplate(name, templateText string, data interface{}) (string, error) {
-
-	funcs := makeTemplateFuncs()
+	funcs := makeTemplateFuncs(extraFuncs)
 
 	tmpl := template.New(name).Funcs(funcs)
 

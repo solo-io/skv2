@@ -1,0 +1,4 @@
+changelog:
+- type: BREAKING_CHANGE
+  description: DeletionReconciler can now requeue events by returning an error.
+  issueLink: https://github.com/solo-io/skv2/issues/85

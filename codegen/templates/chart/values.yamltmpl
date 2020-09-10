@@ -11,4 +11,8 @@
     [[ $port.Name ]]: [[ $port.DefaultPort ]]
 [[- end ]]
 [[- end ]]
+[[- if gt (len $operator.Env) 0 ]]
+  env:
+[[ toYaml $operator.Env | indent 4 ]]
+[[- end ]]
 [[- end ]]

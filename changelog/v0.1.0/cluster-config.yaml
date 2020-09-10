@@ -1,0 +1,6 @@
+changelog:
+- type: NEW_FEATURE
+  description: |
+    Add functions to build temporary ClientConfig from different cloud provider cluster resources
+  issueLink: https://github.com/solo-io/skv2/issues/25
+  resolvesIssue: false

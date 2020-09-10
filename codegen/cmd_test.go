@@ -4,7 +4,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
+	"github.com/solo-io/skv2/contrib"
+	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	. "github.com/solo-io/skv2/codegen"
@@ -33,15 +34,20 @@ var _ = Describe("Cmd", func() {
 							ClusterScoped: true,
 						},
 					},
-					RenderProtos:     true,
 					RenderManifests:  true,
 					RenderTypes:      true,
 					RenderClients:    true,
 					RenderController: true,
+					MockgenDirective: true,
 					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
 				},
 			},
-			AnyVendorConfig: skv2_anyvendor.CreateDefaultMatchOptions([]string{"codegen/test/*.proto"}),
+			AnyVendorConfig: &sk_anyvendor.Imports{
+				Local: []string{"codegen/test/*.proto"},
+			},
+			RenderProtos: true,
+
 			Chart: &Chart{
 				Operators: []Operator{
 					{

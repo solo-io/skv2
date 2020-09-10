@@ -27,131 +27,124 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-func applyFile(file string) error {
+func applyFile(file string, extraArgs ...string) error {
 	path := filepath.Join(util.GetModuleRoot(), "codegen/test/chart/crds", file)
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	return util.KubectlApply(b)
+	return util.KubectlApply(b, extraArgs...)
+}
+
+func newPaint(namespace, name string) *Paint {
+	return &Paint{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: PaintSpec{
+			Color: &PaintColor{
+				Hue:   "prussian blue",
+				Value: 0.5,
+			},
+			PaintType: &PaintSpec_Acrylic{
+				Acrylic: &AcrylicType{
+					Body: AcrylicType_Heavy,
+				},
+			},
+		},
+	}
+}
+
+func mustCrud(ctx context.Context, clientSet Clientset, paint *Paint) {
+	err := clientSet.Paints().CreatePaint(ctx, paint)
+	Expect(err).NotTo(HaveOccurred())
+
+	written, err := clientSet.Paints().GetPaint(ctx, client.ObjectKey{
+		Namespace: paint.Namespace,
+		Name:      paint.Name,
+	})
+	Expect(err).NotTo(HaveOccurred())
+
+	Expect(written.Spec).To(Equal(paint.Spec))
+
+	status := PaintStatus{
+		ObservedGeneration: written.Generation,
+		PercentRemaining:   22,
+	}
+
+	written.Status = status
+
+	err = clientSet.Paints().UpdatePaintStatus(ctx, written)
+	Expect(err).NotTo(HaveOccurred())
+
+	Eventually(func() PaintStatus {
+		written, err = clientSet.Paints().GetPaint(ctx, client.ObjectKey{
+			Namespace: paint.Namespace,
+			Name:      paint.Name,
+		})
+		Expect(err).NotTo(HaveOccurred())
+		return written.Status
+	}, time.Second).Should(Equal(status))
 }
 
 var _ = Describe("Generated Code", func() {
 	var (
+		ctx       context.Context
+		cancel    context.CancelFunc
 		ns        string
 		kube      kubernetes.Interface
 		clientSet Clientset
 		logLevel  = zap.NewAtomicLevel()
-		ctx       = context.TODO()
 	)
 	BeforeEach(func() {
+		ctx, cancel = context.WithCancel(context.Background())
 		logLevel.SetLevel(zap.DebugLevel)
 		log.SetLogger(zaputil.New(
 			zaputil.Level(&logLevel),
 		))
-		log.Log.Info("test")
 		err := applyFile("things.test.io_v1_crds.yaml")
 		Expect(err).NotTo(HaveOccurred())
 		ns = randutils.RandString(4)
 		kube = kubehelp.MustKubeClient()
-		err = kubeutils.CreateNamespacesInParallel(kube, ns)
+		err = kubeutils.CreateNamespacesInParallel(ctx, kube, ns)
 		Expect(err).NotTo(HaveOccurred())
-		clientSet, err = NewClientsetFromConfig(test.MustConfig())
+		clientSet, err = NewClientsetFromConfig(test.MustConfig(""))
 		Expect(err).NotTo(HaveOccurred())
 	})
 	AfterEach(func() {
-		err := kubeutils.DeleteNamespacesInParallelBlocking(kube, ns)
+		err := kubeutils.DeleteNamespacesInParallelBlocking(ctx, kube, ns)
 		Expect(err).NotTo(HaveOccurred())
+		cancel()
 	})
 
-	Context("kube clientsests", func() {
+	Context("kube clientsets", func() {
 		It("uses the generated clientsets to crud", func() {
 
-			paint := &Paint{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "paint-1",
-					Namespace: ns,
-				},
-				Spec: PaintSpec{
-					Color: &PaintColor{
-						Hue:   "prussian blue",
-						Value: 0.5,
-					},
-					PaintType: &PaintSpec_Acrylic{
-						Acrylic: &AcrylicType{
-							Body: AcrylicType_Heavy,
-						},
-					},
-				},
-			}
+			paint := newPaint(ns, "paint-kube-clientsets")
 
-			err := clientSet.Paints().CreatePaint(ctx, paint)
-			Expect(err).NotTo(HaveOccurred())
-
-			written, err := clientSet.Paints().GetPaint(ctx, client.ObjectKey{
-				Namespace: paint.Namespace,
-				Name:      paint.Name,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(written.Spec).To(Equal(paint.Spec))
-
-			status := PaintStatus{
-				ObservedGeneration: written.Generation,
-				PercentRemaining:   22,
-			}
-
-			written.Status = status
-
-			err = clientSet.Paints().UpdatePaintStatus(ctx, written)
-			Expect(err).NotTo(HaveOccurred())
-
-			written, err = clientSet.Paints().GetPaint(ctx, client.ObjectKey{
-				Namespace: paint.Namespace,
-				Name:      paint.Name,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(written.Status).To(Equal(status))
+			mustCrud(ctx, clientSet, paint)
 		})
 	})
 
 	Context("kube reconciler", func() {
 		var (
-			mgr    manager.Manager
-			cancel = func() {}
+			mgr manager.Manager
 		)
 		BeforeEach(func() {
-			mgr, cancel = test.MustManager(ns)
+			mgr = test.MustManager(ctx, ns)
 		})
-		AfterEach(cancel)
 
 		It("uses the generated controller to reconcile", func() {
 
-			paint := &Paint{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "paint-2",
-					Namespace: ns,
-				},
-				Spec: PaintSpec{
-					Color: &PaintColor{
-						Hue:   "prussian blue",
-						Value: 0.5,
-					},
-					PaintType: &PaintSpec_Acrylic{
-						Acrylic: &AcrylicType{
-							Body: AcrylicType_Heavy,
-						},
-					},
-				},
-			}
+			paint := newPaint(ns, "paint-kube-reconciler")
 
 			err := clientSet.Paints().CreatePaint(ctx, paint)
 			Expect(err).NotTo(HaveOccurred())
 
 			paint.GetObjectKind().GroupVersionKind()
 
-			loop := controller.NewPaintReconcileLoop("blick", mgr)
+			loop := controller.NewPaintReconcileLoop("blick", mgr, reconcile.Options{})
 
 			var reconciled *Paint
 			var deleted reconcile.Request
@@ -160,9 +153,9 @@ var _ = Describe("Generated Code", func() {
 					reconciled = obj
 					return
 				},
-				OnReconcilePaintDeletion: func(req reconcile.Request) {
+				OnReconcilePaintDeletion: func(req reconcile.Request) error {
 					deleted = req
-					return
+					return nil
 				},
 			}
 			err = loop.RunPaintReconciler(ctx, reconciler)
@@ -197,4 +190,5 @@ var _ = Describe("Generated Code", func() {
 			}}))
 		})
 	})
+
 })

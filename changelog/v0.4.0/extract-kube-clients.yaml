@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Extract generated Kubernetes clientsets to https://github.com/solo-io/external-apis
+    issueLink: https://github.com/solo-io/skv2/issues/54

@@ -1,0 +1,22 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Move client constructor to multicluster package.
+    issueLink: https://github.com/solo-io/skv2/issues/60
+  - type: NEW_FEATURE
+    description: Generate type_helpers.go with helper functions for generated types.
+    issueLink: https://github.com/solo-io/skv2/issues/61
+  - type: FIX
+    description: Allow sets to be threadsafe.
+    issueLink: https://github.com/solo-io/skv2/issues/62
+  - type: NEW_FEATURE
+    description: Add Find method to sets
+    issueLink: https://github.com/solo-io/skv2/issues/63
+  - type: NEW_FEATURE
+    description: Add ClusterObjectRef to core API types.
+    issueLink: https://github.com/solo-io/skv2/issues/64
+  - type: NEW_FEATURE
+    description: Support top-level custom templates.
+    issueLink: https://github.com/solo-io/skv2/issues/65
+  - type: NON_USER_FACING
+    description: Upsert runs transition function before updating upserted object's resource version when performing an update.
+

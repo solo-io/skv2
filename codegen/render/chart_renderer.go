@@ -51,22 +51,23 @@ func (r ChartRenderer) Render(chart model.Chart) ([]OutFile, error) {
 		return nil, err
 	}
 
-	customFiles, err := r.renderCustomTemplates(chart.CustomTemplates, chart)
+	customFiles, err := r.RenderCustomTemplates(chart.CustomTemplates.Templates, chart.CustomTemplates.Funcs, chart)
 	if err != nil {
 		return nil, err
 	}
 
 	files = append(files, customFiles...)
 
-	var filteredFiles []OutFile
 	if chart.FilterTemplate != nil {
+		var filteredFiles []OutFile
 		for _, file := range files {
 			if chart.FilterTemplate(file.Path) {
 				continue
 			}
 			filteredFiles = append(filteredFiles, file)
 		}
+		files = filteredFiles
 	}
 
-	return filteredFiles, nil
+	return files, nil
 }

@@ -1,17 +1,45 @@
 package {{.Version}}
 
+{{/* Import prefix required because mockgen doesn't handle dot imports correctly */}}
+{{ $import_prefix := "" }}
+
 import (
     "context"
 
+    "github.com/solo-io/skv2/pkg/controllerutils"
+    "github.com/solo-io/skv2/pkg/multicluster"
+    "k8s.io/apimachinery/pkg/runtime"
     "k8s.io/client-go/kubernetes/scheme"
     "k8s.io/client-go/rest"
     "sigs.k8s.io/controller-runtime/pkg/client"
 
     {{- if $.CustomTypesImportPath }}
-
-    . "{{ $.CustomTypesImportPath }}"
+    {{ group_import_name $ }} "{{ $.CustomTypesImportPath }}"
+    {{ $import_prefix = (printf "%s." (group_import_name $)) }}
     {{- end}}
 )
+
+// MulticlusterClientset for the {{.Group}}/{{.Version}} APIs
+type MulticlusterClientset interface {
+    // Cluster returns a Clientset for the given cluster
+    Cluster(cluster string) (Clientset, error)
+}
+
+type multiclusterClientset struct {
+    client multicluster.Client
+}
+
+func NewMulticlusterClientset(client multicluster.Client) MulticlusterClientset {
+    return &multiclusterClientset{client: client}
+}
+
+func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
+    client, err := m.client.Cluster(cluster)
+    if err != nil {
+        return nil, err
+    }
+    return NewClientset(client), nil
+}
 
 // clienset for the {{.Group}}/{{.Version}} APIs
 type Clientset interface {
@@ -27,7 +55,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
     scheme := scheme.Scheme
-    if err := AddToScheme(scheme); err != nil{
+    if err := {{ $import_prefix }}AddToScheme(scheme); err != nil{
         return nil, err
     }
     client, err := client.New(cfg, client.Options{
@@ -47,7 +75,7 @@ func NewClientset(client client.Client) Clientset {
 
 // clienset for the {{.Group}}/{{.Version}} APIs
 func (c *clientSet) {{ pluralize $resource.Kind }}() {{ $resource.Kind }}Client {
-	return New{{ $resource.Kind }}Client(c.client)
+    return New{{ $resource.Kind }}Client(c.client)
 }
 {{- end }}
 
@@ -59,19 +87,23 @@ func (c *clientSet) {{ pluralize $resource.Kind }}() {{ $resource.Kind }}Client 
 type {{ $resource.Kind }}Reader interface {
     // Get retrieves a {{ $resource.Kind }} for the given object key
     {{- if $resource.ClusterScoped }}
-    Get{{ $resource.Kind }}(ctx context.Context, name string) (*{{ $resource.Kind }}, error)
+    Get{{ $resource.Kind }}(ctx context.Context, name string) (*{{ $import_prefix }}{{ $resource.Kind }}, error)
     {{- else }}
-    Get{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey) (*{{ $resource.Kind }}, error)
+    Get{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey) (*{{ $import_prefix }}{{ $resource.Kind }}, error)
     {{- end }}
 
     // List retrieves list of {{ $resource.Kind }}s for a given namespace and list options.
-    List{{ $resource.Kind }}(ctx context.Context, opts ...client.ListOption) (*{{ $resource.Kind }}List, error)
+    List{{ $resource.Kind }}(ctx context.Context, opts ...client.ListOption) (*{{ $import_prefix }}{{ $resource.Kind }}List, error)
 }
+
+// {{ $resource.Kind }}TransitionFunction instructs the {{ $resource.Kind }}Writer how to transition between an existing
+// {{ $resource.Kind }} object and a desired on an Upsert
+type {{ $resource.Kind }}TransitionFunction func(existing, desired *{{ $import_prefix }}{{ $resource.Kind }}) error
 
 // Writer knows how to create, delete, and update {{ $resource.Kind }}s.
 type {{ $resource.Kind }}Writer interface {
     // Create saves the {{ $resource.Kind }} object.
-    Create{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.CreateOption) error
+    Create{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.CreateOption) error
 
     // Delete deletes the {{ $resource.Kind }} object.
     {{- if $resource.ClusterScoped }}
@@ -81,23 +113,26 @@ type {{ $resource.Kind }}Writer interface {
     {{- end}}
 
     // Update updates the given {{ $resource.Kind }} object.
-    Update{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error
+    Update{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.UpdateOption) error
 
     // Patch patches the given {{ $resource.Kind }} object.
-    Patch{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error
+    Patch{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error
 
     // DeleteAllOf deletes all {{ $resource.Kind }} objects matching the given options.
     DeleteAllOf{{ $resource.Kind }}(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+    // Create or Update the {{ $resource.Kind }} object.
+    Upsert{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, transitionFuncs ...{{ $resource.Kind }}TransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a {{ $resource.Kind }} object.
 type {{ $resource.Kind }}StatusWriter interface {
     // Update updates the fields corresponding to the status subresource for the
     // given {{ $resource.Kind }} object.
-    Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error
+    Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.UpdateOption) error
 
     // Patch patches the given {{ $resource.Kind }} object's subresource.
-    Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error
+    Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error
 }
 
 // Client knows how to perform CRUD operations on {{ $resource.Kind }}s.
@@ -116,8 +151,8 @@ func New{{ $resource.Kind }}Client(client client.Client) *{{ $kindLowerCamel }}C
 }
 
 {{if $resource.ClusterScoped }}
-func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Context, name string) (*{{ $resource.Kind }}, error) {
-    obj := &{{ $resource.Kind }}{}
+func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Context, name string) (*{{ $import_prefix }}{{ $resource.Kind }}, error) {
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     key := client.ObjectKey{
         Name: name,
     }
@@ -127,8 +162,8 @@ func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Contex
     return obj, nil
 }
 {{- else }}
-func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey) (*{{ $resource.Kind }}, error) {
-    obj := &{{ $resource.Kind }}{}
+func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey) (*{{ $import_prefix }}{{ $resource.Kind }}, error) {
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     if err := c.client.Get(ctx, key, obj); err != nil {
         return nil, err
     }
@@ -136,52 +171,87 @@ func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Contex
 }
 {{- end}}
 
-func (c *{{ $kindLowerCamel }}Client) List{{ $resource.Kind }}(ctx context.Context, opts ...client.ListOption) (*{{ $resource.Kind }}List, error) {
-    list := &{{ $resource.Kind }}List{}
+func (c *{{ $kindLowerCamel }}Client) List{{ $resource.Kind }}(ctx context.Context, opts ...client.ListOption) (*{{ $import_prefix }}{{ $resource.Kind }}List, error) {
+    list := &{{ $import_prefix }}{{ $resource.Kind }}List{}
     if err := c.client.List(ctx, list, opts...); err != nil {
         return nil, err
     }
     return list, nil
 }
 
-func (c *{{ $kindLowerCamel }}Client) Create{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.CreateOption) error {
+func (c *{{ $kindLowerCamel }}Client) Create{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.CreateOption) error {
     return c.client.Create(ctx, obj, opts...)
 }
 
 {{if $resource.ClusterScoped }}
 func (c *{{ $kindLowerCamel }}Client) Delete{{ $resource.Kind }}(ctx context.Context, name string, opts ...client.DeleteOption) error {
-    obj := &{{ $resource.Kind }}{}
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     obj.SetName(name)
     return c.client.Delete(ctx, obj, opts...)
 }
 {{- else }}
 func (c *{{ $kindLowerCamel }}Client) Delete{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-    obj := &{{ $resource.Kind }}{}
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     obj.SetName(key.Name)
     obj.SetNamespace(key.Namespace)
     return c.client.Delete(ctx, obj, opts...)
 }
 {{- end}}
 
-func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error {
+func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.UpdateOption) error {
     return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error {
+func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error {
     return c.client.Patch(ctx, obj, patch, opts...)
 }
 
 func (c *{{ $kindLowerCamel }}Client) DeleteAllOf{{ $resource.Kind }}(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-    obj := &{{ $resource.Kind }}{}
+    obj := &{{ $import_prefix }}{{ $resource.Kind }}{}
     return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error {
+func (c *{{ $kindLowerCamel }}Client) Upsert{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, transitionFuncs ...{{ $resource.Kind }}TransitionFunction) error {
+    genericTxFunc := func(existing, desired runtime.Object) error {
+        for _, txFunc := range transitionFuncs {
+            if err := txFunc(existing.(*{{ $import_prefix }}{{ $resource.Kind }}), desired.(*{{ $import_prefix }}{{ $resource.Kind }})); err != nil {
+                return err
+            }
+        }
+        return nil
+    }
+    _, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+    return err
+}
+
+func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.UpdateOption) error {
     return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error {
+func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error {
     return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides {{ $resource.Kind }}Clients for multiple clusters.
+type Multicluster{{ $resource.Kind }}Client interface {
+    // Cluster returns a {{ $resource.Kind }}Client for the given cluster
+    Cluster(cluster string) ({{ $resource.Kind }}Client, error)
+}
+
+type multicluster{{ $resource.Kind }}Client struct {
+    client multicluster.Client
+}
+
+func NewMulticluster{{ $resource.Kind }}Client(client multicluster.Client) Multicluster{{ $resource.Kind }}Client {
+    return &multicluster{{ $resource.Kind }}Client{client: client}
+}
+
+func (m *multicluster{{ $resource.Kind }}Client) Cluster(cluster string) ({{ $resource.Kind }}Client, error) {
+    client, err := m.client.Cluster(cluster)
+    if err != nil {
+        return nil, err
+    }
+    return  New{{ $resource.Kind }}Client(client), nil
 }
 
 {{- end }}

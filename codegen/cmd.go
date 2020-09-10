@@ -9,18 +9,21 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/sirupsen/logrus"
+	"github.com/solo-io/skv2/codegen/collector"
+
+	"github.com/solo-io/anyvendor/anyvendor"
+	"github.com/solo-io/anyvendor/pkg/manager"
+	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
+
 	"cuelang.org/go/cue"
 	"cuelang.org/go/encoding/openapi"
 	"cuelang.org/go/encoding/protobuf"
-	"github.com/sirupsen/logrus"
-	"github.com/solo-io/anyvendor/anyvendor"
-	"github.com/solo-io/anyvendor/pkg/manager"
+
 	"github.com/solo-io/skv2/builder"
-	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/proto"
 	"github.com/solo-io/skv2/codegen/render"
-	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 	"github.com/solo-io/skv2/codegen/util"
 	"github.com/solo-io/skv2/codegen/writer"
 )
@@ -37,10 +40,14 @@ type Command struct {
 
 	// config to vendor protos and other non-go files
 	// Optional: If nil will not be used
-	AnyVendorConfig *skv2_anyvendor.Imports
+	AnyVendorConfig *sk_anyvendor.Imports
 
 	// the k8s api groups for which to compile
 	Groups []render.Group
+
+	// top-level custom templates to render.
+	// these will recieve all groups as inputs
+	TopLevelTemplates []model.CustomTemplates
 
 	// optinal helm chart to render
 	Chart *model.Chart
@@ -63,6 +70,13 @@ type Command struct {
 	// If not provided, skv2 will exec
 	// go and docker commands
 	Builder builder.Builder
+
+	// Should we compile protos?
+	RenderProtos bool
+
+	// search protos recursively starting from this directory.
+	// will default vendor_any if empty
+	ProtoDir string
 
 	// the path to the root dir of the module on disk
 	// files will be written relative to this dir,
@@ -90,6 +104,11 @@ func (c Command) Execute() error {
 		c.GeneratedHeader = DefaultHeader
 	}
 
+	descriptors, err := c.renderProtos()
+	if err != nil {
+		return err
+	}
+
 	if err := c.generateChart(); err != nil {
 		return err
 	}
@@ -98,7 +117,13 @@ func (c Command) Execute() error {
 		// init connects children to their parents
 		group.Init()
 
-		if err := c.generateGroup(group); err != nil {
+		if err := c.generateGroup(group, descriptors); err != nil {
+			return err
+		}
+	}
+
+	for _, template := range c.TopLevelTemplates {
+		if err := c.generateTopLevelTemplates(template); err != nil {
 			return err
 		}
 	}
@@ -134,10 +159,39 @@ func (c Command) generateChart() error {
 	return nil
 }
 
-func (c Command) generateGroup(grp model.Group) error {
-	if err := c.compileProtosAndUpdateGroup(&grp); err != nil {
-		return err
+func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
+	if !c.RenderProtos {
+		return nil, nil
 	}
+
+	if c.ProtoDir == "" {
+		c.ProtoDir = anyvendor.DefaultDepDir
+	}
+
+	if c.AnyVendorConfig != nil {
+		mgr, err := manager.NewManager(c.ctx, c.moduleRoot)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := mgr.Ensure(c.ctx, c.AnyVendorConfig.ToAnyvendorConfig()); err != nil {
+			return nil, err
+		}
+	}
+	descriptors, err := proto.CompileProtos(
+		c.moduleRoot,
+		c.moduleName,
+		c.ProtoDir,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return descriptors, nil
+}
+
+func (c Command) generateGroup(grp model.Group, descriptors []*collector.DescriptorWithPath) error {
+	c.addDescriptorsToGroup(&grp, descriptors)
 
 	fileWriter := &writer.DefaultFileWriter{
 		Root:   c.moduleRoot,
@@ -178,120 +232,132 @@ func (c Command) generateGroup(grp model.Group) error {
 	return nil
 }
 
-// compiles protos and attaches descriptors to the group and its resources
-// it is important to run this func before rendering as it attaches protos to the
-// group model
-func (c Command) compileProtosAndUpdateGroup(grp *render.Group) error {
-	if !grp.RenderProtos {
-		return nil
+func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) error {
+
+	fileWriter := &writer.DefaultFileWriter{
+		Root:   c.moduleRoot,
+		Header: c.GeneratedHeader,
 	}
 
-	if grp.ProtoDir == "" {
-		grp.ProtoDir = anyvendor.DefaultDepDir
-	}
-
-	if c.AnyVendorConfig != nil {
-		mgr, err := manager.NewManager(c.ctx, c.moduleRoot)
-		if err != nil {
-			return err
-		}
-
-		if err := mgr.Ensure(c.ctx, c.AnyVendorConfig.ToAnyvendorConfig()); err != nil {
-			return err
-		}
-	}
-	descriptors, err := proto.CompileProtos(
-		grp.Module,
-		grp.ApiRoot,
-		grp.ProtoDir,
-	)
+	customCode, err := render.DefaultTemplateRenderer.RenderCustomTemplates(templates.Templates, templates.Funcs, c.Groups)
 	if err != nil {
 		return err
 	}
 
-	// set the descriptors on the group for compilation
-	grp.Descriptors = descriptors
+	if templates.MockgenDirective {
+		render.PrependMockgenDirective(customCode)
+	}
 
-	for i, resource := range grp.Resources {
-		// attach the proto messages for spec and status to each resource
-		// these are processed by renderers at later stages
-		addMessagesToResource(descriptors, &resource)
-		grp.Resources[i] = resource
+	if err := fileWriter.WriteFiles(customCode); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func addMessagesToResource(descriptors []*collector.DescriptorWithPath, resource *model.Resource) {
-	var foundSpec bool
-	for _, fileDescriptor := range descriptors {
+// compiles protos and attaches descriptors to the group and its resources
+// it is important to run this func before rendering as it attaches protos to the
+// group model
+func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*collector.DescriptorWithPath) {
+	if len(descriptors) == 0 {
+		logrus.Debugf("no descriptors generated")
+		return
+	}
+	descriptorMap := map[string]*collector.DescriptorWithPath{}
 
-		if fileDescriptor.GetPackage() == resource.Group.Group {
+	for i, resource := range grp.Resources {
+		var foundSpec bool
 
-			protoDir := resource.Group.ProtoDir
-			if protoDir == "" {
-				protoDir = anyvendor.DefaultDepDir
-			}
-			coll := collector.NewCollector([]string{protoDir}, nil)
-			imports, err := coll.CollectImportsForFile(protoDir, fileDescriptor.ProtoFilePath)
-			if err != nil {
-				log.Fatal(err)
-			}
-			cfg := &protobuf.Config{
-				Root:   resource.Group.ProtoDir,
-				Module: resource.Group.Group,
-				Paths:  imports,
-			}
-			ext := protobuf.NewExtractor(cfg)
-			if err := ext.AddFile(fileDescriptor.ProtoFilePath, nil); err != nil {
-				log.Fatal(err)
-			}
-			instances, err := ext.Instances()
-			if err != nil {
-				log.Fatal(err)
-			}
-			generator := &openapi.Generator{
-				ExpandReferences: true,
-			}
-			built := cue.Build(instances)
-			for _, builtInstance := range built {
-				if builtInstance.Err != nil {
-					log.Fatal(err)
+		// attach the proto messages for spec and status to each resource
+		// these are processed by renderers at later stages
+		for _, fileDescriptor := range descriptors {
+
+			findFieldMessageFunc := func(fieldType *model.Type) bool {
+				matchingProtoPackage := fieldType.ProtoPackage
+				if matchingProtoPackage == "" {
+					// default to the resource API Group name
+					matchingProtoPackage = resource.Group.Group
 				}
-				if err := builtInstance.Value().Validate(); err != nil {
-					log.Fatal(err)
+				if fileDescriptor.GetPackage() == matchingProtoPackage {
+
+					protoDir := c.ProtoDir
+					if protoDir == "" {
+						protoDir = anyvendor.DefaultDepDir
+					}
+					coll := collector.NewCollector([]string{protoDir}, nil)
+					imports, err := coll.CollectImportsForFile(protoDir, fileDescriptor.ProtoFilePath)
+					if err != nil {
+						log.Fatal(err)
+					}
+					cfg := &protobuf.Config{
+						Root:   protoDir,
+						Module: resource.Group.Group,
+						Paths:  imports,
+					}
+					ext := protobuf.NewExtractor(cfg)
+					if err := ext.AddFile(fileDescriptor.ProtoFilePath, nil); err != nil {
+						log.Fatal(err)
+					}
+					instances, err := ext.Instances()
+					if err != nil {
+						log.Fatal(err)
+					}
+					generator := &openapi.Generator{
+						ExpandReferences: true,
+					}
+					built := cue.Build(instances)
+					for _, builtInstance := range built {
+						if builtInstance.Err != nil {
+							log.Fatal(err)
+						}
+						if err := builtInstance.Value().Validate(); err != nil {
+							log.Fatal(err)
+						}
+						oapi, err := generator.Schemas(builtInstance)
+						if err != nil {
+							log.Fatal(err)
+						}
+						byt, err := json.Marshal(oapi)
+						if err != nil {
+							log.Fatal(err)
+						}
+						buf := &bytes.Buffer{}
+						if err := json.Indent(buf, byt, "", " "); err != nil {
+							log.Fatal(err)
+						}
+						fmt.Println(buf.String())
+					}
+
+					if message := fileDescriptor.GetMessage(fieldType.Name); message != nil {
+						fieldType.Message = message
+						fieldType.GoPackage = fileDescriptor.GetOptions().GetGoPackage()
+						descriptorMap[fileDescriptor.GetName()+fileDescriptor.GetPackage()] = fileDescriptor
+						return true
+					}
 				}
-				oapi, err := generator.Schemas(builtInstance)
-				if err != nil {
-					log.Fatal(err)
-				}
-				byt, err := json.Marshal(oapi)
-				if err != nil {
-					log.Fatal(err)
-				}
-				buf := &bytes.Buffer{}
-				if err := json.Indent(buf, byt, "", " "); err != nil {
-					log.Fatal(err)
-				}
-				fmt.Println(buf.String())
+
+				return false
 			}
 
-			if specMessage := fileDescriptor.GetMessage(resource.Spec.Type.Name); specMessage != nil {
-				resource.Spec.Type.Message = specMessage
-				resource.Spec.Type.GoPackage = fileDescriptor.GetOptions().GetGoPackage()
-				foundSpec = true
+			// find message for spec
+			if !foundSpec {
+				foundSpec = findFieldMessageFunc(&resource.Spec.Type)
 			}
 
 			if resource.Status != nil {
-				if statusMessage := fileDescriptor.GetMessage(resource.Status.Type.Name); statusMessage != nil {
-					resource.Status.Type.Message = statusMessage
-				}
+				findFieldMessageFunc(&resource.Status.Type)
 			}
 
 		}
+
+		grp.Resources[i] = resource
+		if !foundSpec {
+			logrus.Warnf("no package found for resource %v.%v", resource.Kind, resource.Group.Group)
+		}
 	}
-	if !foundSpec {
-		logrus.Warnf("no package found for %v", resource.Group.Group)
+
+	for _, descriptor := range descriptorMap {
+		grp.Descriptors = append(grp.Descriptors, descriptor)
 	}
 }
 

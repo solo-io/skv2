@@ -12,7 +12,7 @@ type Chart struct {
 	FilterTemplate func(outPath string) bool
 
 	// outPath: content template map
-	CustomTemplates map[string]string
+	CustomTemplates CustomTemplates
 
 	Values interface{}
 
@@ -32,6 +32,8 @@ type Operator struct {
 	Volumes []v1.Volume
 	// mount these volumes to the operator container
 	VolumeMounts []v1.VolumeMount
+	// set these environment variables on the operator container
+	Env []v1.EnvVar
 	// add a manifest for each configmap
 	ConfigMaps []v1.ConfigMap
 
@@ -71,12 +73,20 @@ type Image struct {
 	PullSecret string        `json:"pullSecret,omitempty" desc:"image pull policy for the container "`
 }
 
+// Helm chart dependency
+type Dependency struct {
+	Name       string `json:"name,omitempty"`
+	Version    string `json:"version,omitempty"`
+	Repository string `json:"repository,omitempty"`
+}
+
 type Data struct {
-	ApiVersion  string   `json:"apiVersion,omitempty"`
-	Description string   `json:"description,omitempty"`
-	Name        string   `json:"name,omitempty"`
-	Version     string   `json:"version,omitempty"`
-	Home        string   `json:"home,omitempty"`
-	Icon        string   `json:"icon,omitempty"`
-	Sources     []string `json:"sources,omitempty"`
+	ApiVersion   string       `json:"apiVersion,omitempty"`
+	Description  string       `json:"description,omitempty"`
+	Name         string       `json:"name,omitempty"`
+	Version      string       `json:"version,omitempty"`
+	Home         string       `json:"home,omitempty"`
+	Icon         string       `json:"icon,omitempty"`
+	Sources      []string     `json:"sources,omitempty"`
+	Dependencies []Dependency `json:"dependencies,omitempty"`
 }

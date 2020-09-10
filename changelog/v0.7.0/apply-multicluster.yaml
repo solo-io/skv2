@@ -1,0 +1,11 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add controllerutils.UpdateStatus method for updating an object status IFF it is not equal to the existing object's status.
+    issueLink: https://github.com/solo-io/skv2/issues/86
+  - type: NEW_FEATURE
+    description: Add SyncStatuses method to input snapshots. Use this to update the status of objects in an input snapshot (in memory), then apply the differences by running `inputSnapshot.SyncStatuses`.
+    issueLink: https://github.com/solo-io/skv2/issues/95
+  - type: NEW_FEATURE
+    description: Add ApplyMultiCluster function to output snapshot to automaticaly apply resources across multiple clusters using a multicluster client and the `ClusterName` field on the resources.
+    issueLink: https://github.com/solo-io/skv2/issues/94
+

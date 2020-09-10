@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Support generated Deepcopy methods for non-proto resources.
+    issueLink: https://github.com/solo-io/skv2/issues/136

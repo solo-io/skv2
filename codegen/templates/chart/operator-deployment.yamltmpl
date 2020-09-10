@@ -48,6 +48,10 @@ spec:
         args:
 [[ toYaml $operator.Args | indent 8 ]]
 [[- end ]]
+{{- if $[[ $operatorVar ]].env }}
+        env:
+{{ toYaml $[[ $operatorVar ]].env | indent 10 }}
+{{- end }}
 [[- if $operator.VolumeMounts ]]
         volumeMounts:
 [[ toYaml $operator.VolumeMounts | indent 8 ]]
@@ -88,7 +92,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
 
 
-[[ if gt (len $operator.Name) 0 ]]
+[[ if gt (len $operator.Service.Ports) 0 ]]
 ---
 # Service for [[ $operator.Name ]]
 

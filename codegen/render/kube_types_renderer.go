@@ -41,7 +41,6 @@ var TypesTemplates = func(skipDeepCopy bool) inputTemplates {
 		},
 	}
 
-	// remove deepcopy template if using deprecated Deepcopy generator
 	if skipDeepCopy {
 		delete(tmpl, "code/types/zz_generated.deepcopy.gotmpl")
 	}
@@ -53,6 +52,9 @@ var ClientsTemplates = inputTemplates{
 	"code/types/clients.gotmpl": {
 		Path: "clients.go",
 	},
+	"code/types/type_helpers.gotmpl": {
+		Path: "type_helpers.go",
+	},
 }
 
 var ControllerTemplates = inputTemplates{
@@ -61,6 +63,9 @@ var ControllerTemplates = inputTemplates{
 	},
 	"code/controller/reconcilers.gotmpl": {
 		Path: "controller/reconcilers.go",
+	},
+	"code/controller/multicluster_reconcilers.gotmpl": {
+		Path: "controller/multicluster_reconcilers.go",
 	},
 }
 
@@ -94,17 +99,22 @@ func (r KubeCodeRenderer) RenderKubeCode(grp Group) ([]OutFile, error) {
 		return nil, err
 	}
 
-	customFiles, err := r.renderCustomTemplates(grp.CustomTemplates, grp)
-	if err != nil {
-		return nil, err
+	for _, customTemplates := range grp.CustomTemplates {
+		customFiles, err := r.RenderCustomTemplates(customTemplates.Templates, customTemplates.Funcs, grp)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, customFiles...)
 	}
-
-	files = append(files, customFiles...)
 
 	// prepend output file paths with path to api dir
 	for i, out := range files {
 		out.Path = filepath.Join(r.ApiRoot, grp.Group, grp.Version, out.Path)
 		files[i] = out
+	}
+
+	if grp.MockgenDirective {
+		PrependMockgenDirective(files)
 	}
 
 	return files, nil

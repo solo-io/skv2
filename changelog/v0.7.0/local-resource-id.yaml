@@ -1,0 +1,10 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Introduce new `ezkube.ClusterResourceId` which implements `GetClusterName()`, `ezkube.ResourceId` now removes it from its interface.
+    issueLink: https://github.com/solo-io/skv2/issues/90
+  - type: NON_USER_FACING
+    description: remove deprecated fields from ObjectRef.
+  - type: NEW_FEATURE
+    description: Added `ezkube` functions for easily constructing ObjectRefs.
+    issueLink: https://github.com/solo-io/skv2/issues/91
+

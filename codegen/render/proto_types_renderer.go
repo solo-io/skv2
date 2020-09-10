@@ -33,7 +33,7 @@ func RenderProtoTypes(grp Group) ([]OutFile, error) {
 func (r ProtoCodeRenderer) RenderProtoHelpers(grp Group) ([]OutFile, error) {
 
 	// only render proto helpers for proto groups in the current module
-	if !grp.RenderProtos || grp.Module != r.GoModule {
+	if !grp.HasProtos() {
 		return nil, nil
 	}
 
@@ -130,15 +130,20 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 func uniqueGoImportPathsForGroup(grp Group) []string {
 	resultMap := make(map[string]struct{})
 	for _, res := range grp.Resources {
-		// if the group does not have protos to render, than finding the go import path is unnecessary
-		if !grp.RenderProtos {
+		// if the group has had its GoPackage set, either the types are being imported from another package, or they've been automatically set by the proto renderer
+		if res.Spec.Type.GoPackage == "" {
 			continue
 		}
 		resultMap[res.Spec.Type.GoPackage] = struct{}{}
+		if res.Status != nil {
+			resultMap[res.Status.Type.GoPackage] = struct{}{}
+		}
 	}
 	var result []string
 	for k, _ := range resultMap {
-		result = append(result, k)
+		if k != "" {
+			result = append(result, k)
+		}
 	}
 	sort.Strings(result)
 	return result

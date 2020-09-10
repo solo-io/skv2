@@ -1,6 +1,8 @@
 package model
 
 import (
+	"text/template"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/skv2/codegen/collector"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -48,18 +50,14 @@ type Group struct {
 	// the root directory for generated API code
 	ApiRoot string
 
-	// search protos recursively starting from this directory.
-	// will default vendor_any if empty
-	ProtoDir string
-
 	// the kinds in the group
 	Resources []Resource
 
-	// Should we compile protos?
-	RenderProtos bool
-
 	// Should we generate kubernetes manifests?
 	RenderManifests bool
+
+	// Should we generate deepcopy functions for non-proto Spec/Status fields?
+	RenderFieldJsonDeepcopy bool
 
 	// Should we generate kubernetes Go structs?
 	RenderTypes bool
@@ -76,6 +74,9 @@ type Group struct {
 	// Should we generate kubernetes Go controllers?
 	RenderController bool
 
+	// Enable to add //go:generate mockgen directive to the top of generated Go files.
+	MockgenDirective bool
+
 	// custom import path to the package
 	// containing the Go types
 	// use this if you are generating controllers
@@ -85,7 +86,25 @@ type Group struct {
 	// proto descriptors will be available to the templates if the group was compiled with them.
 	Descriptors []*collector.DescriptorWithPath
 
-	CustomTemplates map[string]string
+	// data for providing custom templates to generate custom code for groups
+	CustomTemplates []CustomTemplates
+}
+
+func (g Group) HasProtos() bool {
+	return len(g.Descriptors) > 0
+}
+
+type CustomTemplates struct {
+	// the custom templates to run generation on.
+	// maps output filename to template text
+	Templates map[string]string
+
+	// Enable to add //go:generate mockgen directive to the top of generated Go files.
+	MockgenDirective bool
+
+	// custom template funcs which will be inserted into the
+	// default template funcmap at rendering time
+	Funcs template.FuncMap
 }
 
 // ensures the resources point to this group
@@ -129,4 +148,10 @@ type Type struct {
 		If unset, SKv2 uses the default types package for the type.
 	*/
 	GoPackage string
+
+	/*
+		The proto package containing the type, if different than the Group name of the Resource.
+		If unset, SKv2 uses the Group name of the Resource that specifies this Type.
+	*/
+	ProtoPackage string
 }

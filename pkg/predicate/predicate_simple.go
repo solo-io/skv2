@@ -8,6 +8,12 @@ import (
 
 var _ predicate.Predicate = SimplePredicate{}
 
+type SimpleEventFilterFunc func(obj v1.Object) bool
+
+func (f SimpleEventFilterFunc) FilterEvent(obj v1.Object) bool {
+	return f(obj)
+}
+
 // SimpleEventFilter filters events for a single object type
 type SimpleEventFilter interface {
 	// return True to filter out the event
