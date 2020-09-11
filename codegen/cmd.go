@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/anyvendor/anyvendor"
 	"github.com/solo-io/anyvendor/pkg/manager"
 	"github.com/solo-io/skv2/codegen/collector"
-	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
+	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 
 	"github.com/solo-io/skv2/builder"
 	"github.com/solo-io/skv2/codegen/model"
@@ -33,7 +33,7 @@ type Command struct {
 
 	// config to vendor protos and other non-go files
 	// Optional: If nil will not be used
-	AnyVendorConfig *sk_anyvendor.Imports
+	AnyVendorConfig *skv2_anyvendor.Imports
 
 	// the k8s api groups for which to compile
 	Groups []render.Group

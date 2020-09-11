@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 	"github.com/solo-io/skv2/contrib"
-	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	. "github.com/solo-io/skv2/codegen"
@@ -43,7 +43,7 @@ var _ = Describe("Cmd", func() {
 					CustomTemplates:  contrib.AllGroupCustomTemplates,
 				},
 			},
-			AnyVendorConfig: sk_anyvendor.CreateDefaultMatchOptions(
+			AnyVendorConfig: skv2_anyvendor.CreateDefaultMatchOptions(
 				[]string{"codegen/test/*.proto"},
 			),
 			RenderProtos: true,

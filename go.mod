@@ -9,6 +9,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/avast/retry-go v2.2.0+incompatible
 	github.com/aws/aws-sdk-go v1.30.15
+	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v0.1.0
 	github.com/gobuffalo/envy v1.8.1 // indirect
@@ -33,7 +34,6 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/go-utils v0.17.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
-	github.com/solo-io/solo-kit v0.14.0
 	go.uber.org/zap v1.13.0
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
