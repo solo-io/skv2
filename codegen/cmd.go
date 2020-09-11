@@ -1,24 +1,17 @@
 package codegen
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
-	"github.com/solo-io/skv2/codegen/collector"
-
 	"github.com/solo-io/anyvendor/anyvendor"
 	"github.com/solo-io/anyvendor/pkg/manager"
+	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
-
-	"cuelang.org/go/cue"
-	"cuelang.org/go/encoding/openapi"
-	"cuelang.org/go/encoding/protobuf"
 
 	"github.com/solo-io/skv2/builder"
 	"github.com/solo-io/skv2/codegen/model"
@@ -216,7 +209,7 @@ func (c Command) generateGroup(grp model.Group, descriptors []*collector.Descrip
 		return err
 	}
 
-	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, grp)
+	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, grp)
 	if err != nil {
 		return err
 	}
@@ -279,55 +272,6 @@ func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*collect
 					matchingProtoPackage = resource.Group.Group
 				}
 				if fileDescriptor.GetPackage() == matchingProtoPackage {
-
-					protoDir := c.ProtoDir
-					if protoDir == "" {
-						protoDir = anyvendor.DefaultDepDir
-					}
-					coll := collector.NewCollector([]string{protoDir}, nil)
-					imports, err := coll.CollectImportsForFile(protoDir, fileDescriptor.ProtoFilePath)
-					if err != nil {
-						log.Fatal(err)
-					}
-					cfg := &protobuf.Config{
-						Root:   protoDir,
-						Module: resource.Group.Group,
-						Paths:  imports,
-					}
-					ext := protobuf.NewExtractor(cfg)
-					if err := ext.AddFile(fileDescriptor.ProtoFilePath, nil); err != nil {
-						log.Fatal(err)
-					}
-					instances, err := ext.Instances()
-					if err != nil {
-						log.Fatal(err)
-					}
-					generator := &openapi.Generator{
-						ExpandReferences: true,
-					}
-					built := cue.Build(instances)
-					for _, builtInstance := range built {
-						if builtInstance.Err != nil {
-							log.Fatal(err)
-						}
-						if err := builtInstance.Value().Validate(); err != nil {
-							log.Fatal(err)
-						}
-						oapi, err := generator.Schemas(builtInstance)
-						if err != nil {
-							log.Fatal(err)
-						}
-						byt, err := json.Marshal(oapi)
-						if err != nil {
-							log.Fatal(err)
-						}
-						buf := &bytes.Buffer{}
-						if err := json.Indent(buf, byt, "", " "); err != nil {
-							log.Fatal(err)
-						}
-						fmt.Println(buf.String())
-					}
-
 					if message := fileDescriptor.GetMessage(fieldType.Name); message != nil {
 						fieldType.Message = message
 						fieldType.GoPackage = fileDescriptor.GetOptions().GetGoPackage()

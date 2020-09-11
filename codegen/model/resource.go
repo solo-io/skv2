@@ -56,6 +56,9 @@ type Group struct {
 	// Should we generate kubernetes manifests?
 	RenderManifests bool
 
+	// Should we generate validating schemas for CRDs?
+	RenderValidationSchemas bool
+
 	// Should we generate deepcopy functions for non-proto Spec/Status fields?
 	RenderFieldJsonDeepcopy bool
 
