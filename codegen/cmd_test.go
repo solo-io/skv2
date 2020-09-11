@@ -43,9 +43,9 @@ var _ = Describe("Cmd", func() {
 					CustomTemplates:  contrib.AllGroupCustomTemplates,
 				},
 			},
-			AnyVendorConfig: &sk_anyvendor.Imports{
-				Local: []string{"codegen/test/*.proto"},
-			},
+			AnyVendorConfig: sk_anyvendor.CreateDefaultMatchOptions(
+				[]string{"codegen/test/*.proto"},
+			),
 			RenderProtos: true,
 
 			Chart: &Chart{
