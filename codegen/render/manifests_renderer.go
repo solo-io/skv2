@@ -124,6 +124,9 @@ func generateOpenApi(grp model.Group, protoDir string) (kuberesource.OpenApiSche
 			return nil, eris.Errorf("Cue instance validation failed for %s: %+v", grp.Group, err)
 		}
 		schemas, err := generator.Schemas(builtInstance)
+		if err != nil {
+			return nil, eris.Errorf("Cue openapi generation failed for %s: %+v", grp.Group, err)
+		}
 
 		// Iterate openapi objects to construct mapping from proto message name to openapi schema
 		oapiSchemas := kuberesource.OpenApiSchemas{}
