@@ -68,11 +68,13 @@ func (r ManifestsRenderer) RenderManifests(grp Group) ([]OutFile, error) {
 	return renderedFiles, nil
 }
 
+// Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
 func generateOpenApi(grp model.Group, protoDir string) (kuberesource.OpenApiSchemas, error) {
 	if protoDir == "" {
 		protoDir = anyvendor.DefaultDepDir
 	}
 
+	// Collect all protobuf definitions including transitive dependencies.
 	var imports []string
 	coll := collector.NewCollector([]string{protoDir}, nil)
 	for _, fileDescriptor := range grp.Descriptors {
@@ -84,6 +86,7 @@ func generateOpenApi(grp model.Group, protoDir string) (kuberesource.OpenApiSche
 	}
 	imports = stringutils.Unique(imports)
 
+	// Parse protobuf into cuelang
 	cfg := &protobuf.Config{
 		Root:   protoDir,
 		Module: grp.Module,
@@ -102,7 +105,9 @@ func generateOpenApi(grp model.Group, protoDir string) (kuberesource.OpenApiSche
 		return nil, err
 	}
 
+	// Convert cuelang to openapi
 	generator := &openapi.Generator{
+		// k8s structural schemas do not allow $refs, i.e. all references must be expanded
 		ExpandReferences: true,
 	}
 	built := cue.Build(instances)
@@ -116,10 +121,11 @@ func generateOpenApi(grp model.Group, protoDir string) (kuberesource.OpenApiSche
 			return nil, err
 		}
 		if err = builtInstance.Value().Validate(); err != nil {
-			return nil, eris.Errorf("Validation failed for %s: %+v", grp.Group, err)
+			return nil, eris.Errorf("Cue instance validation failed for %s: %+v", grp.Group, err)
 		}
 		schemas, err := generator.Schemas(builtInstance)
 
+		// Iterate openapi objects to construct mapping from proto message name to openapi schema
 		oapiSchemas := kuberesource.OpenApiSchemas{}
 		for _, kv := range schemas.Pairs() {
 			oapiSchemas[kv.Key] = kv.Value.(*openapi.OrderedMap)
