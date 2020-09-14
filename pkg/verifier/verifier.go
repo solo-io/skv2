@@ -34,7 +34,7 @@ const (
 
 // ServerResourceVerifier verifies whether a given cluster server supports a given resource.
 type ServerResourceVerifier interface {
-	// Verify whether the API server for the given rest.Config supports the resource with the given GVK.
+	// VerifyServerResource verifies whether the API server for the given rest.Config supports the resource with the given GVK.
 	// For the "local/management" cluster, set cluster to ""
 	// Note that once a resource has been verified, the result will be cached for subsequent calls.
 	// Returns true if the resource is registered, false otherwise.
@@ -47,13 +47,48 @@ type verifier struct {
 	ctx context.Context
 
 	// set of per-resource-type verify options; default is Skip.
-	options map[schema.GroupVersionKind]ServerVerifyOption
+	options     map[schema.GroupVersionKind]ServerVerifyOption
+	optionsLock sync.RWMutex
 
 	// set when a resource is successfully verified for the first time.
 	// future calls to VerifyServerResource will return quickly if the
 	// resources have already been verified for the cluster.
+	cachedVerificationResponses *cachedVerificationResponses
+}
+
+type cachedVerificationResponses struct {
 	verifiedClusterResources map[string]map[schema.GroupVersionKind]bool
 	lock                     sync.RWMutex
+}
+
+func newCachedVerificationResponses() *cachedVerificationResponses {
+	return &cachedVerificationResponses{verifiedClusterResources: map[string]map[schema.GroupVersionKind]bool{}}
+}
+
+// returns <is response cached>, <is resource supported>
+func (c *cachedVerificationResponses) getCachedResponse(cluster string, gvk schema.GroupVersionKind) (bool, bool) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	verifiedResources, ok := c.verifiedClusterResources[cluster]
+	if !ok {
+		return false, false
+	}
+	resourceRegistered, ok := verifiedResources[gvk]
+	if !ok {
+		return false, false
+	}
+	return true, resourceRegistered
+}
+
+// returns <is response cached>, <is resource supported>
+func (c *cachedVerificationResponses) setCachedResponse(cluster string, gvk schema.GroupVersionKind, registered bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	verifiedResources, ok := c.verifiedClusterResources[cluster]
+	if !ok {
+		verifiedResources = map[schema.GroupVersionKind]bool{}
+	}
+	verifiedResources[gvk] = registered
 }
 
 func NewVerifier(
@@ -64,31 +99,24 @@ func NewVerifier(
 		options = map[schema.GroupVersionKind]ServerVerifyOption{}
 	}
 	return &verifier{
-		ctx:                      ctx,
-		options:                  options,
-		verifiedClusterResources: map[string]map[schema.GroupVersionKind]bool{},
+		ctx:                         ctx,
+		options:                     options,
+		cachedVerificationResponses: newCachedVerificationResponses(),
 	}
 }
 
 // Verify whether the API server for the given rest.Config supports the resource with the given GVK.
 func (v *verifier) VerifyServerResource(cluster string, cfg *rest.Config, gvk schema.GroupVersionKind) (bool, error) {
-	v.lock.RLock()
-	verifiedResources, ok := v.verifiedClusterResources[cluster]
-	if ok {
-		resourceRegistered, resourceHasBeenVerified := verifiedResources[gvk]
-		if resourceHasBeenVerified {
-			// exit early if the resource has already been verified
-			v.lock.RUnlock()
-			return resourceRegistered, nil
-		}
-	} else {
-		verifiedResources = map[schema.GroupVersionKind]bool{}
+	responseCached, resourceVerified := v.cachedVerificationResponses.getCachedResponse(cluster, gvk)
+	if responseCached {
+		return resourceVerified, nil
 	}
 
 	// get option for this gvk
 	// defaults to skip
+	v.optionsLock.RLock()
 	verifyOption := v.options[gvk]
-	v.lock.RUnlock()
+	v.optionsLock.RUnlock()
 
 	if verifyOption == ServerVerifyOption_SkipVerify {
 		return true, nil
@@ -114,10 +142,7 @@ func (v *verifier) VerifyServerResource(cluster string, cfg *rest.Config, gvk sc
 	}
 
 	// update cache
-	v.lock.Lock()
-	verifiedResources[gvk] = resourceRegistered
-	v.verifiedClusterResources[cluster] = verifiedResources
-	v.lock.Unlock()
+	v.cachedVerificationResponses.setCachedResponse(cluster, gvk, resourceRegistered)
 
 	return resourceRegistered, nil
 }
