@@ -66,8 +66,8 @@ func (m *multiclusterCertificateSigningRequestReconcileLoop) AddMulticlusterCert
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterCertificateSigningRequestReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterCertificateSigningRequestReconcileLoop {
-	return &multiclusterCertificateSigningRequestReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_k8s_io_v1beta1.CertificateSigningRequest{})}
+func NewMulticlusterCertificateSigningRequestReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterCertificateSigningRequestReconcileLoop {
+	return &multiclusterCertificateSigningRequestReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_k8s_io_v1beta1.CertificateSigningRequest{}, options)}
 }
 
 type genericCertificateSigningRequestMulticlusterReconciler struct {

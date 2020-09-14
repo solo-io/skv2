@@ -74,7 +74,8 @@ type paintReconcileLoop struct {
 
 func NewPaintReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) PaintReconcileLoop {
 	return &paintReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &things_test_io_v1.Paint{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &things_test_io_v1.Paint{}, options),
 	}
 }
 
@@ -190,7 +191,8 @@ type clusterResourceReconcileLoop struct {
 
 func NewClusterResourceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ClusterResourceReconcileLoop {
 	return &clusterResourceReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &things_test_io_v1.ClusterResource{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &things_test_io_v1.ClusterResource{}, options),
 	}
 }
 

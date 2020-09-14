@@ -1,0 +1,4 @@
+changelog:
+- type: BREAKING_CHANGE
+  description: '*Contrib:* Extend the options for the Input Snapshot Builder to verify that the backing CRD for a an input resource has been registered to the source cluster. Note that skv2 does not differentiate between non-CRD and CRD-based resources, meaning that the user should be careful not to unintentionally perform CRD checks for non-CRD resources.'
+  issueLink: https://github.com/solo-io/skv2/issues/140

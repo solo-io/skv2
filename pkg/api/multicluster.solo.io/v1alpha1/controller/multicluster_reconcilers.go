@@ -66,8 +66,8 @@ func (m *multiclusterKubernetesClusterReconcileLoop) AddMulticlusterKubernetesCl
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterKubernetesClusterReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterKubernetesClusterReconcileLoop {
-	return &multiclusterKubernetesClusterReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &multicluster_solo_io_v1alpha1.KubernetesCluster{})}
+func NewMulticlusterKubernetesClusterReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterKubernetesClusterReconcileLoop {
+	return &multiclusterKubernetesClusterReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &multicluster_solo_io_v1alpha1.KubernetesCluster{}, options)}
 }
 
 type genericKubernetesClusterMulticlusterReconciler struct {
