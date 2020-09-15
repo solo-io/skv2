@@ -94,6 +94,18 @@ type clusterRegistrant struct {
 	localAPIServerAddress string
 }
 
+func (c *clusterRegistrant) EnsureRemoteNamespace(
+	ctx context.Context,
+	remoteClientCfg clientcmd.ClientConfig,
+	remoteNamespace string,
+) error {
+	remoteRestCfg, err := remoteClientCfg.ClientConfig()
+	if err != nil {
+		return err
+	}
+	return c.ensureRemoteNamespace(ctx, remoteNamespace, remoteRestCfg)
+}
+
 func (c *clusterRegistrant) EnsureRemoteServiceAccount(
 	ctx context.Context,
 	remoteClientCfg clientcmd.ClientConfig,
@@ -289,7 +301,7 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	token string,
 	opts Options,
 ) error {
-	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil, nil, "", nil)
+	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil, nil, nil)
 }
 
 func (c *clusterRegistrant) RegisterProviderClusterWithToken(
@@ -300,7 +312,6 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	opts Options,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
 	labels map[string]string,
-	namespace string,
 	policyRules []*v1alpha1.PolicyRule,
 ) error {
 	if err := (&opts).validate(); err != nil {
@@ -346,7 +357,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 		return err
 	}
 
-	kubeCluster := buildKubeClusterResource(kcSecret, labels, opts.ClusterDomain, providerInfo, namespace, policyRules)
+	kubeCluster := buildKubeClusterResource(kcSecret, labels, opts.ClusterDomain, providerInfo, opts.RemoteNamespace, policyRules)
 
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {
@@ -392,7 +403,7 @@ func buildKubeClusterResource(
 	labels map[string]string,
 	clusterDomain string,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-	namespace string,
+	remoteNamespace string,
 	policyRules []*v1alpha1.PolicyRule,
 ) *v1alpha1.KubernetesCluster {
 	if clusterDomain == "" {
@@ -406,7 +417,7 @@ func buildKubeClusterResource(
 			ProviderInfo:  providerInfo,
 		},
 		Status: v1alpha1.KubernetesClusterStatus{
-			Namespace:   namespace,
+			Namespace:   remoteNamespace,
 			PolicyRules: policyRules,
 		},
 	}

@@ -89,6 +89,14 @@ func (o *Options) validate() error {
 	the registrant instance.
 */
 type ClusterRegistrant interface {
+	/*
+		EnsureRemoteNamespace ensures that the specified remoteNamespace exists on the remote cluster being registered.
+	*/
+	EnsureRemoteNamespace(
+		ctx context.Context,
+		remoteClientCfg clientcmd.ClientConfig,
+		remoteNamespace string,
+	) error
 
 	/*
 		EnsureRemoteServiceAccount takes an instance of a remote config, and ensure a ServiceAccount exists on the
@@ -158,7 +166,6 @@ type ClusterRegistrant interface {
 		opts Options,
 		providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
 		labels map[string]string,
-		namespace string,
 		policyRules []*v1alpha1.PolicyRule,
 	) error
 

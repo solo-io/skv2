@@ -72,7 +72,7 @@ type RegistrationOptions struct {
 	ClusterRoleBindings []client.ObjectKey
 
 	// Set of labels to include on the KubernetesCluster resource.
-	Labels map[string]string
+	KubernetesClusterLabels map[string]string
 }
 
 /*
@@ -122,8 +122,7 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 		rbacOpts,
 		registrant,
 		providerInfo,
-		opts.Labels,
-		opts.RemoteNamespace,
+		opts.KubernetesClusterLabels,
 		clusterRolePolicyRules,
 	)
 }
@@ -183,7 +182,7 @@ func RegisterClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 ) error {
-	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil, nil, "", nil)
+	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil, nil, nil)
 }
 
 func RegisterProviderClusterFromConfig(
@@ -193,10 +192,14 @@ func RegisterProviderClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-	labels map[string]string,
-	namespace string,
+	kubeClusterLabels map[string]string,
 	policyRules []*v1alpha1.PolicyRule,
 ) error {
+	err := registrant.EnsureRemoteNamespace(ctx, remoteCfg, opts.RemoteNamespace)
+	if err != nil {
+		return err
+	}
+
 	sa, err := registrant.EnsureRemoteServiceAccount(ctx, remoteCfg, opts.Options)
 	if err != nil {
 		return err
@@ -217,8 +220,7 @@ func RegisterProviderClusterFromConfig(
 		token,
 		opts.Options,
 		providerInfo,
-		labels,
-		namespace,
+		kubeClusterLabels,
 		policyRules,
 	)
 }
