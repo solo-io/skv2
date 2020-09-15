@@ -71,8 +71,8 @@ type RegistrationOptions struct {
 	// The ClusterRoles upserted from the above list will automatically appended to the list
 	ClusterRoleBindings []client.ObjectKey
 
-	// Set of labels to include on the KubernetesCluster resource.
-	KubernetesClusterLabels map[string]string
+	// Set of labels to include on the registration output resources, currently consisting of KubernetesCluster and Secret.
+	ResourceLabels map[string]string
 }
 
 /*
@@ -122,7 +122,7 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 		rbacOpts,
 		registrant,
 		providerInfo,
-		opts.KubernetesClusterLabels,
+		opts.ResourceLabels,
 		clusterRolePolicyRules,
 	)
 }
@@ -192,7 +192,7 @@ func RegisterProviderClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-	kubeClusterLabels map[string]string,
+	resourceLabels map[string]string,
 	policyRules []*v1alpha1.PolicyRule,
 ) error {
 	err := registrant.EnsureRemoteNamespace(ctx, remoteCfg, opts.RemoteNamespace)
@@ -220,7 +220,7 @@ func RegisterProviderClusterFromConfig(
 		token,
 		opts.Options,
 		providerInfo,
-		kubeClusterLabels,
+		resourceLabels,
 		policyRules,
 	)
 }

@@ -311,7 +311,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	token string,
 	opts Options,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-	labels map[string]string,
+	resourceLabels map[string]string,
 	policyRules []*v1alpha1.PolicyRule,
 ) error {
 	if err := (&opts).validate(); err != nil {
@@ -347,6 +347,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	kcSecret, err := kubeconfig.ToSecret(
 		opts.Namespace,
 		opts.ClusterName,
+		resourceLabels,
 		c.buildRemoteCfg(remoteCluster, remoteContext, opts.ClusterName, token),
 	)
 	if err != nil {
@@ -357,7 +358,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 		return err
 	}
 
-	kubeCluster := buildKubeClusterResource(kcSecret, labels, opts.ClusterDomain, providerInfo, opts.RemoteNamespace, policyRules)
+	kubeCluster := buildKubeClusterResource(kcSecret, resourceLabels, opts.ClusterDomain, providerInfo, opts.RemoteNamespace, policyRules)
 
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {
@@ -379,7 +380,7 @@ func (c *clusterRegistrant) DeregisterCluster(
 		return err
 	}
 
-	kcSecretObjMeta := kubeconfig.SecretObjMeta(opts.Namespace, opts.ClusterName)
+	kcSecretObjMeta := kubeconfig.SecretObjMeta(opts.Namespace, opts.ClusterName, nil)
 	kubeClusterObjMeta := kubeClusterObjMeta(kcSecretObjMeta.Name, kcSecretObjMeta.Namespace, nil)
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {

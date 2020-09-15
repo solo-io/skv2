@@ -476,7 +476,7 @@ var _ = Describe("Registrant", func() {
 				}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 
-			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, nil, api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",
 				Preferences: api.Preferences{},
@@ -507,6 +507,9 @@ var _ = Describe("Registrant", func() {
 				Spec: v1alpha1.KubernetesClusterSpec{
 					SecretName:    secret.Name,
 					ClusterDomain: "cluster.local",
+				},
+				Status: v1alpha1.KubernetesClusterStatus{
+					Namespace: namespace,
 				},
 			}
 			kubeClusterClient.EXPECT().UpsertKubernetesCluster(ctx, kubeCluster).Return(nil)
@@ -581,7 +584,7 @@ var _ = Describe("Registrant", func() {
 				}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 
-			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, map[string]string{"foo": "bar"}, api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",
 				Preferences: api.Preferences{},
@@ -656,7 +659,6 @@ var _ = Describe("Registrant", func() {
 				map[string]string{
 					"foo": "bar",
 				},
-				"namespace",
 				policyRules,
 			)
 
@@ -734,7 +736,7 @@ var _ = Describe("Registrant", func() {
 			overwrittenApiConfig.Clusters[clusterName].CertificateAuthority = ""
 			overwrittenApiConfig.Clusters[clusterName].CertificateAuthorityData = []byte("")
 
-			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, nil, api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",
 				Preferences: api.Preferences{},
@@ -765,6 +767,9 @@ var _ = Describe("Registrant", func() {
 				Spec: v1alpha1.KubernetesClusterSpec{
 					SecretName:    secret.Name,
 					ClusterDomain: "cluster.local",
+				},
+				Status: v1alpha1.KubernetesClusterStatus{
+					Namespace: namespace,
 				},
 			}
 			kubeClusterClient.EXPECT().UpsertKubernetesCluster(ctx, kubeCluster).Return(nil)
