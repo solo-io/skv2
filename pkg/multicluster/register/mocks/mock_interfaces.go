@@ -40,6 +40,20 @@ func (m *MockClusterRegistrant) EXPECT() *MockClusterRegistrantMockRecorder {
 	return m.recorder
 }
 
+// EnsureRemoteNamespace mocks base method
+func (m *MockClusterRegistrant) EnsureRemoteNamespace(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, remoteNamespace string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureRemoteNamespace", ctx, remoteClientCfg, remoteNamespace)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureRemoteNamespace indicates an expected call of EnsureRemoteNamespace
+func (mr *MockClusterRegistrantMockRecorder) EnsureRemoteNamespace(ctx, remoteClientCfg, remoteNamespace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureRemoteNamespace", reflect.TypeOf((*MockClusterRegistrant)(nil).EnsureRemoteNamespace), ctx, remoteClientCfg, remoteNamespace)
+}
+
 // EnsureRemoteServiceAccount mocks base method
 func (m *MockClusterRegistrant) EnsureRemoteServiceAccount(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, opts register.Options) (*v1.ServiceAccount, error) {
 	m.ctrl.T.Helper()
@@ -113,17 +127,17 @@ func (mr *MockClusterRegistrantMockRecorder) RegisterClusterWithToken(ctx, maste
 }
 
 // RegisterProviderClusterWithToken mocks base method
-func (m *MockClusterRegistrant) RegisterProviderClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options, providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo, labels map[string]string, namespace string, policyRules []*v1alpha1.PolicyRule) error {
+func (m *MockClusterRegistrant) RegisterProviderClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options, providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo, labels map[string]string, policyRules []*v1alpha1.PolicyRule) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterProviderClusterWithToken", ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, namespace, policyRules)
+	ret := m.ctrl.Call(m, "RegisterProviderClusterWithToken", ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, policyRules)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterProviderClusterWithToken indicates an expected call of RegisterProviderClusterWithToken
-func (mr *MockClusterRegistrantMockRecorder) RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, namespace, policyRules interface{}) *gomock.Call {
+func (mr *MockClusterRegistrantMockRecorder) RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, policyRules interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterProviderClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterProviderClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, namespace, policyRules)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterProviderClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterProviderClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, policyRules)
 }
 
 // DeregisterCluster mocks base method
