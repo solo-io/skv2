@@ -74,7 +74,8 @@ type certificateSigningRequestReconcileLoop struct {
 
 func NewCertificateSigningRequestReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) CertificateSigningRequestReconcileLoop {
 	return &certificateSigningRequestReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &certificates_k8s_io_v1beta1.CertificateSigningRequest{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &certificates_k8s_io_v1beta1.CertificateSigningRequest{}, options),
 	}
 }
 

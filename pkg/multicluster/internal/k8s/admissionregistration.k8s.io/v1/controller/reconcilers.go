@@ -74,7 +74,8 @@ type validatingWebhookConfigurationReconcileLoop struct {
 
 func NewValidatingWebhookConfigurationReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ValidatingWebhookConfigurationReconcileLoop {
 	return &validatingWebhookConfigurationReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}, options),
 	}
 }
 

@@ -66,8 +66,8 @@ func (m *multiclusterPaintReconcileLoop) AddMulticlusterPaintReconciler(ctx cont
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterPaintReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterPaintReconcileLoop {
-	return &multiclusterPaintReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &things_test_io_v1.Paint{})}
+func NewMulticlusterPaintReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterPaintReconcileLoop {
+	return &multiclusterPaintReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &things_test_io_v1.Paint{}, options)}
 }
 
 type genericPaintMulticlusterReconciler struct {
@@ -137,8 +137,8 @@ func (m *multiclusterClusterResourceReconcileLoop) AddMulticlusterClusterResourc
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterClusterResourceReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterClusterResourceReconcileLoop {
-	return &multiclusterClusterResourceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &things_test_io_v1.ClusterResource{})}
+func NewMulticlusterClusterResourceReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterClusterResourceReconcileLoop {
+	return &multiclusterClusterResourceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &things_test_io_v1.ClusterResource{}, options)}
 }
 
 type genericClusterResourceMulticlusterReconciler struct {

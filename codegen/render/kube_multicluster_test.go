@@ -188,7 +188,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			})
 
 			It("works when a loop is registered before the watcher is started", func() {
-				loop := controller.NewMulticlusterPaintReconcileLoop("pre-run-paint", cw)
+				loop := controller.NewMulticlusterPaintReconcileLoop("pre-run-paint", cw, reconcile.Options{})
 
 				paintMap := &concurrentPaintMap{}
 				paintDeletes := &concurrentRequestMap{}
@@ -212,7 +212,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			})
 
 			It("works when a kubeconfig secret is deleted and recreated", func() {
-				loop := controller.NewMulticlusterPaintReconcileLoop("paint", cw)
+				loop := controller.NewMulticlusterPaintReconcileLoop("paint", cw, reconcile.Options{})
 
 				paintMap := &concurrentPaintMap{}
 				paintDeletes := &concurrentRequestMap{}
@@ -289,7 +289,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				err := cw.Run(masterManager)
 				Expect(err).NotTo(HaveOccurred())
 
-				loop := controller.NewMulticlusterPaintReconcileLoop("mid-run-paint", cw)
+				loop := controller.NewMulticlusterPaintReconcileLoop("mid-run-paint", cw, reconcile.Options{})
 
 				paintMap := &concurrentPaintMap{}
 				deleteMap := &concurrentRequestMap{}

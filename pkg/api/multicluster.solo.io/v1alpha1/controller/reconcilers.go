@@ -74,7 +74,8 @@ type kubernetesClusterReconcileLoop struct {
 
 func NewKubernetesClusterReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) KubernetesClusterReconcileLoop {
 	return &kubernetesClusterReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &multicluster_solo_io_v1alpha1.KubernetesCluster{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &multicluster_solo_io_v1alpha1.KubernetesCluster{}, options),
 	}
 }
 

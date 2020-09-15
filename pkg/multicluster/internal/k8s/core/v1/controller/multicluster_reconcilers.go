@@ -66,8 +66,8 @@ func (m *multiclusterSecretReconcileLoop) AddMulticlusterSecretReconciler(ctx co
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterSecretReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterSecretReconcileLoop {
-	return &multiclusterSecretReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &v1.Secret{})}
+func NewMulticlusterSecretReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterSecretReconcileLoop {
+	return &multiclusterSecretReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &v1.Secret{}, options)}
 }
 
 type genericSecretMulticlusterReconciler struct {
@@ -137,8 +137,8 @@ func (m *multiclusterServiceAccountReconcileLoop) AddMulticlusterServiceAccountR
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterServiceAccountReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterServiceAccountReconcileLoop {
-	return &multiclusterServiceAccountReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &v1.ServiceAccount{})}
+func NewMulticlusterServiceAccountReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterServiceAccountReconcileLoop {
+	return &multiclusterServiceAccountReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &v1.ServiceAccount{}, options)}
 }
 
 type genericServiceAccountMulticlusterReconciler struct {
@@ -208,8 +208,8 @@ func (m *multiclusterNamespaceReconcileLoop) AddMulticlusterNamespaceReconciler(
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterNamespaceReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterNamespaceReconcileLoop {
-	return &multiclusterNamespaceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &v1.Namespace{})}
+func NewMulticlusterNamespaceReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterNamespaceReconcileLoop {
+	return &multiclusterNamespaceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &v1.Namespace{}, options)}
 }
 
 type genericNamespaceMulticlusterReconciler struct {

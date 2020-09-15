@@ -74,7 +74,8 @@ type customResourceDefinitionReconcileLoop struct {
 
 func NewCustomResourceDefinitionReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) CustomResourceDefinitionReconcileLoop {
 	return &customResourceDefinitionReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, options),
 	}
 }
 

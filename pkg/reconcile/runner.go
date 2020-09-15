@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/skv2/pkg/verifier"
+
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -53,6 +55,7 @@ type Loop interface {
 
 type runner struct {
 	name     string
+	cluster  string // set to "" for local cluster
 	mgr      manager.Manager
 	resource ezkube.Object
 	options  Options
@@ -61,10 +64,24 @@ type runner struct {
 type Options struct {
 	// If true will wait for cache sync before returning from RunReconcile
 	WaitForCacheSync bool
+
+	// If provided, attempt to verify the resource before beginning the reconcile loop
+	Verifier verifier.ServerResourceVerifier
 }
 
-func NewLoop(name string, mgr manager.Manager, resource ezkube.Object, options Options) *runner {
-	return &runner{name: name, mgr: mgr, resource: resource, options: options}
+func NewLoop(
+	name, cluster string,
+	mgr manager.Manager,
+	resource ezkube.Object,
+	options Options,
+) *runner {
+	return &runner{
+		name:     name,
+		cluster:  cluster,
+		mgr:      mgr,
+		resource: resource,
+		options:  options,
+	}
 }
 
 type runnerReconciler struct {
@@ -80,6 +97,15 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	if err != nil {
 		return err
 	}
+
+	if r.options.Verifier != nil {
+		if resourceRegistered, err := r.options.Verifier.VerifyServerResource(r.cluster, r.mgr.GetConfig(), gvk); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
 	rec := &runnerReconciler{
 		logger:     log.Log.WithName("event-controller").WithValues("kind", gvk).WithName(r.name),
 		mgr:        r.mgr,

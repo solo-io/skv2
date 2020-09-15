@@ -21,6 +21,19 @@ import (
     "context"
     "encoding/json"
 
+    "k8s.io/apimachinery/pkg/runtime/schema"
+    "github.com/solo-io/skv2/pkg/verifier"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+
+    "github.com/solo-io/go-utils/contextutils"
+    "k8s.io/apimachinery/pkg/api/errors"
+    "k8s.io/client-go/rest"
+    "k8s.io/client-go/discovery"
+
+    "github.com/rotisserie/eris"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
     "github.com/hashicorp/go-multierror"
     "github.com/solo-io/skv2/pkg/controllerutils"
     "github.com/solo-io/skv2/pkg/multicluster"
@@ -201,46 +214,37 @@ type BuildOptions struct {
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     // List options for composing a snapshot from {{ $kindPlural }}
-    {{ $kindPlural }} []client.ListOption
+    {{ $kindPlural }} ResourceBuildOptions
 {{- end }}
 {{- end }}
+}
+
+// Options for reading resources of a given type
+type ResourceBuildOptions struct {
+{{/* generate build options here */}}
+    // List options for composing a snapshot from a resource type
+    ListOptions []client.ListOption
+
+    // If provided, ensure the resource has been verified before adding it to snapshots
+    Verifier verifier.ServerResourceVerifier
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
-    clusters     multicluster.ClusterSet
-{{/* generate client fields here */}}
-{{- range $group := $groups }}
-{{ $client_import_prefix := group_import_name $group }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }} {{ $client_import_prefix }}.Multicluster{{ $resource.Kind }}Client
-{{- end }}
-{{- end }}
+    clusters multicluster.Interface
+    client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewMultiClusterBuilder(
-        clusters multicluster.ClusterSet,
+        clusters multicluster.Interface,
         client multicluster.Client,
 ) Builder {
     return &multiClusterBuilder{
-        clusters:     clusters,
-{{/* generate constructor fields here */}}
-{{- range $group := $groups }}
-{{ $client_import_prefix := group_import_name $group }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }}: {{ $client_import_prefix }}.NewMulticluster{{ $resource.Kind }}Client(client),
-{{- end }}
-{{- end }}
+        clusters: clusters,
+        client:   client,
     }
 }
-
 
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 {{/* generate set initialization here */}}
@@ -264,7 +268,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-        if err := b.insert{{ $kindPlural }}FromCluster(ctx, cluster, {{ $kindLowerCamelPlural }}, opts.{{ $kindPlural }}...); err != nil {
+        if err := b.insert{{ $kindPlural }}FromCluster(ctx, cluster, {{ $kindLowerCamelPlural }}, opts.{{ $kindPlural }}); err != nil {
             errs = multierror.Append(errs, err)
         }
 {{- end }}
@@ -289,18 +293,42 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 {{/* generate insertion funcs here */}}
 {{- range $group := $groups }}
+{{ $client_import_prefix := group_import_name $group }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-func (b *multiClusterBuilder) insert{{ $kindPlural }}FromCluster(ctx context.Context, cluster string, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts ...client.ListOption) error {
-    {{ $kindLowerCamel }}Client, err := b.{{ $kindLowerCamelPlural }}.Cluster(cluster)
+func (b *multiClusterBuilder) insert{{ $kindPlural }}FromCluster(ctx context.Context, cluster string, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts ResourceBuildOptions) error {
+    {{ $kindLowerCamel }}Client, err := {{ $client_import_prefix }}.NewMulticluster{{ $resource.Kind }}Client(b.client).Cluster(cluster)
     if err != nil {
         return err
     }
 
-    {{ $kindLowerCamel }}List, err := {{ $kindLowerCamel }}Client.List{{ $resource.Kind }}(ctx, opts...)
+    if opts.Verifier != nil {
+    	mgr, err := b.clusters.Cluster(cluster)
+    	if err != nil {
+    		return err
+        }
+
+        gvk := schema.GroupVersionKind{
+            Group:   "{{ $resource.Group.Group }}",
+            Version: "{{ $resource.Group.Version }}",
+            Kind:    "{{ $resource.Kind }}",
+        }
+
+        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+        	cluster,
+        	mgr.GetConfig(),
+        	gvk,
+        ); err != nil{
+            return err
+        } else if !resourceRegistered {
+            return nil
+        }
+    }
+
+    {{ $kindLowerCamel }}List, err := {{ $kindLowerCamel }}Client.List{{ $resource.Kind }}(ctx, opts.ListOptions...)
     if err != nil {
         return err
     }
@@ -320,33 +348,15 @@ func (b *multiClusterBuilder) insert{{ $kindPlural }}FromCluster(ctx context.Con
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-{{/* generate client fields here */}}
-{{- range $group := $groups }}
-{{ $client_import_prefix := group_import_name $group }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }} {{ $client_import_prefix }}.{{ $resource.Kind }}Client
-{{- end }}
-{{- end }}
+    mgr manager.Manager
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewSingleClusterBuilder(
-        client client.Client,
+        mgr manager.Manager,
 ) Builder {
     return &singleClusterBuilder{
-{{/* generate constructor fields here */}}
-{{- range $group := $groups }}
-{{ $client_import_prefix := group_import_name $group }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }}: {{ $client_import_prefix }}.New{{ $resource.Kind }}Client(client),
-{{- end }}
-{{- end }}
+        mgr: mgr,
     }
 }
 
@@ -371,7 +381,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    if err := b.insert{{ $kindPlural }}(ctx,  {{ $kindLowerCamelPlural }}, opts.{{ $kindPlural }}...); err != nil {
+    if err := b.insert{{ $kindPlural }}(ctx,  {{ $kindLowerCamelPlural }}, opts.{{ $kindPlural }}); err != nil {
         errs = multierror.Append(errs, err)
     }
 {{- end }}
@@ -395,12 +405,32 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 {{/* generate insertion funcs here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $client_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-func (b *singleClusterBuilder) insert{{ $kindPlural }}(ctx context.Context, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts ...client.ListOption) error {
-    {{ $kindLowerCamel }}List, err := b.{{ $kindLowerCamelPlural }}.List{{ $resource.Kind }}(ctx, opts...)
+func (b *singleClusterBuilder) insert{{ $kindPlural }}(ctx context.Context, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts ResourceBuildOptions) error {
+
+    if opts.Verifier != nil {
+        gvk := schema.GroupVersionKind{
+            Group:   "{{ $resource.Group.Group }}",
+            Version: "{{ $resource.Group.Version }}",
+            Kind:    "{{ $resource.Kind }}",
+        }
+
+        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+            "", // verify in the local cluster
+            b.mgr.GetConfig(),
+            gvk,
+        ); err != nil{
+            return err
+        } else if !resourceRegistered {
+            return nil
+        }
+    }
+
+    {{ $kindLowerCamel }}List, err := {{ $client_import_prefix }}.New{{ $resource.Kind }}Client(b.mgr.GetClient()).List{{ $resource.Kind }}(ctx, opts.ListOptions...)
     if err != nil {
         return err
     }
