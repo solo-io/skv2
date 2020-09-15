@@ -26,6 +26,7 @@ func MakeTopLevelFuncs(outputFile string, selectFromGroups map[string][]model.Gr
 	groupImports := map[schema.GroupVersion]importedGroup{}
 
 	for _, grp := range importedGroups {
+		grp.Init()
 		groups = append(groups, grp.Group)
 		groupImports[grp.GroupVersion] = grp
 	}

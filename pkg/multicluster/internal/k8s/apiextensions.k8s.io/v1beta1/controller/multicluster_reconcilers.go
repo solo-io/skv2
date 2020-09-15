@@ -66,8 +66,8 @@ func (m *multiclusterCustomResourceDefinitionReconcileLoop) AddMulticlusterCusto
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterCustomResourceDefinitionReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterCustomResourceDefinitionReconcileLoop {
-	return &multiclusterCustomResourceDefinitionReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{})}
+func NewMulticlusterCustomResourceDefinitionReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterCustomResourceDefinitionReconcileLoop {
+	return &multiclusterCustomResourceDefinitionReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, options)}
 }
 
 type genericCustomResourceDefinitionMulticlusterReconciler struct {

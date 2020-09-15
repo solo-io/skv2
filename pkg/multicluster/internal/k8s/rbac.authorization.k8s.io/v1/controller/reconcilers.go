@@ -74,7 +74,8 @@ type roleReconcileLoop struct {
 
 func NewRoleReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) RoleReconcileLoop {
 	return &roleReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &rbac_authorization_k8s_io_v1.Role{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &rbac_authorization_k8s_io_v1.Role{}, options),
 	}
 }
 
@@ -190,7 +191,8 @@ type roleBindingReconcileLoop struct {
 
 func NewRoleBindingReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) RoleBindingReconcileLoop {
 	return &roleBindingReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &rbac_authorization_k8s_io_v1.RoleBinding{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &rbac_authorization_k8s_io_v1.RoleBinding{}, options),
 	}
 }
 
@@ -306,7 +308,8 @@ type clusterRoleReconcileLoop struct {
 
 func NewClusterRoleReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ClusterRoleReconcileLoop {
 	return &clusterRoleReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &rbac_authorization_k8s_io_v1.ClusterRole{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &rbac_authorization_k8s_io_v1.ClusterRole{}, options),
 	}
 }
 
@@ -422,7 +425,8 @@ type clusterRoleBindingReconcileLoop struct {
 
 func NewClusterRoleBindingReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ClusterRoleBindingReconcileLoop {
 	return &clusterRoleBindingReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &rbac_authorization_k8s_io_v1.ClusterRoleBinding{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &rbac_authorization_k8s_io_v1.ClusterRoleBinding{}, options),
 	}
 }
 

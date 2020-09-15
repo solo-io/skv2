@@ -77,7 +77,8 @@ type {{ $kindLowerCamel }}ReconcileLoop struct {
 
 func New{{ $resource.Kind }}ReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) {{ $resource.Kind }}ReconcileLoop {
     return &{{ $kindLowerCamel }}ReconcileLoop{
-        loop: reconcile.NewLoop(name, mgr, &{{ $import_prefix }}.{{ $resource.Kind }}{}, options),
+    	// empty cluster indicates this reconciler is built for the local cluster
+        loop: reconcile.NewLoop(name, "", mgr, &{{ $import_prefix }}.{{ $resource.Kind }}{}, options),
     }
 }
 

@@ -66,8 +66,8 @@ func (m *multiclusterValidatingWebhookConfigurationReconcileLoop) AddMulticluste
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterValidatingWebhookConfigurationReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterValidatingWebhookConfigurationReconcileLoop {
-	return &multiclusterValidatingWebhookConfigurationReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{})}
+func NewMulticlusterValidatingWebhookConfigurationReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterValidatingWebhookConfigurationReconcileLoop {
+	return &multiclusterValidatingWebhookConfigurationReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}, options)}
 }
 
 type genericValidatingWebhookConfigurationMulticlusterReconciler struct {

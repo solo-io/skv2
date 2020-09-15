@@ -23,9 +23,7 @@ type clusterWatcher struct {
 	options  manager.Options
 }
 
-var _ multicluster.ClusterWatcher = &clusterWatcher{}
-var _ multicluster.ManagerSet = &clusterWatcher{}
-var _ multicluster.ClusterSet = &clusterWatcher{}
+var _ multicluster.Interface = &clusterWatcher{}
 
 // NewClusterWatcher returns a *clusterWatcher.
 // When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
@@ -96,7 +94,7 @@ func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
 	go func() {
 		err := mgr.Start(ctx.Done())
 		if err != nil {
-			contextutils.LoggerFrom(ctx).DPanicw("manager start failed for cluster %v", clusterName)
+			contextutils.LoggerFrom(ctx).DPanicf("manager start failed for cluster %v: %v", clusterName, err)
 		}
 	}()
 
