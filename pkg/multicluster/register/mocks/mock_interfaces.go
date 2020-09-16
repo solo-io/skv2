@@ -9,7 +9,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	register "github.com/solo-io/skv2/pkg/multicluster/register"
 	v1 "k8s.io/api/core/v1"
 	rest "k8s.io/client-go/rest"
@@ -127,17 +126,17 @@ func (mr *MockClusterRegistrantMockRecorder) RegisterClusterWithToken(ctx, maste
 }
 
 // RegisterProviderClusterWithToken mocks base method
-func (m *MockClusterRegistrant) RegisterProviderClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options, providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo, labels map[string]string, policyRules []*v1alpha1.PolicyRule) error {
+func (m *MockClusterRegistrant) RegisterProviderClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options, metadata register.RegistrationMetadata) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterProviderClusterWithToken", ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, policyRules)
+	ret := m.ctrl.Call(m, "RegisterProviderClusterWithToken", ctx, masterClusterCfg, remoteClientCfg, token, opts, metadata)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterProviderClusterWithToken indicates an expected call of RegisterProviderClusterWithToken
-func (mr *MockClusterRegistrantMockRecorder) RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, policyRules interface{}) *gomock.Call {
+func (mr *MockClusterRegistrantMockRecorder) RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, metadata interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterProviderClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterProviderClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo, labels, policyRules)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterProviderClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterProviderClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts, metadata)
 }
 
 // DeregisterCluster mocks base method

@@ -655,11 +655,13 @@ var _ = Describe("Registrant", func() {
 				clientConfig,
 				token,
 				opts,
-				providerInfo,
-				map[string]string{
-					"foo": "bar",
+				register.RegistrationMetadata{
+					ProviderInfo: providerInfo,
+					ResourceLabels: map[string]string{
+						"foo": "bar",
+					},
+					ClusterRolePolicyRules: policyRules,
 				},
-				policyRules,
 			)
 
 			Expect(err).NotTo(HaveOccurred())

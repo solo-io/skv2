@@ -121,9 +121,11 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 		remoteCfg,
 		rbacOpts,
 		registrant,
-		providerInfo,
-		opts.ResourceLabels,
-		clusterRolePolicyRules,
+		RegistrationMetadata{
+			ProviderInfo:           providerInfo,
+			ResourceLabels:         opts.ResourceLabels,
+			ClusterRolePolicyRules: clusterRolePolicyRules,
+		},
 	)
 }
 
@@ -182,7 +184,7 @@ func RegisterClusterFromConfig(
 	opts RbacOptions,
 	registrant ClusterRegistrant,
 ) error {
-	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil, nil, nil)
+	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, RegistrationMetadata{})
 }
 
 func RegisterProviderClusterFromConfig(
@@ -191,9 +193,7 @@ func RegisterProviderClusterFromConfig(
 	remoteCfg clientcmd.ClientConfig,
 	opts RbacOptions,
 	registrant ClusterRegistrant,
-	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-	resourceLabels map[string]string,
-	policyRules []*v1alpha1.PolicyRule,
+	metadata RegistrationMetadata,
 ) error {
 	err := registrant.EnsureRemoteNamespace(ctx, remoteCfg, opts.RemoteNamespace)
 	if err != nil {
@@ -219,9 +219,7 @@ func RegisterProviderClusterFromConfig(
 		remoteCfg,
 		token,
 		opts.Options,
-		providerInfo,
-		resourceLabels,
-		policyRules,
+		metadata,
 	)
 }
 

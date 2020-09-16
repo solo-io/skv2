@@ -3,7 +3,6 @@ package register
 import (
 	"context"
 
-	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"k8s.io/client-go/rest"
 
 	"github.com/rotisserie/eris"
@@ -164,9 +163,7 @@ type ClusterRegistrant interface {
 		remoteClientCfg clientcmd.ClientConfig,
 		token string,
 		opts Options,
-		providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-		resourceLabels map[string]string,
-		policyRules []*v1alpha1.PolicyRule,
+		metadata RegistrationMetadata,
 	) error
 
 	/*

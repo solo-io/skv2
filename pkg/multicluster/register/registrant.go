@@ -49,6 +49,18 @@ var (
 	}
 )
 
+// Optional additional metadata to persist to registration output resources.
+type RegistrationMetadata struct {
+	// Metadata about the provider for cloud hosted k8s clusters.
+	ProviderInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo
+
+	// Labels to add to registration output resources (KubernetesCluster and Secret).
+	ResourceLabels map[string]string
+
+	// The set of PolicyRules for the cluster roles created on the remote cluster upon registration.
+	ClusterRolePolicyRules []*v1alpha1.PolicyRule
+}
+
 /*
 	NewClusterRegistrant returns an implementation of ClusterRegistrant.
 
@@ -301,7 +313,7 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	token string,
 	opts Options,
 ) error {
-	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil, nil, nil)
+	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, RegistrationMetadata{})
 }
 
 func (c *clusterRegistrant) RegisterProviderClusterWithToken(
@@ -310,9 +322,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	remoteClientCfg clientcmd.ClientConfig,
 	token string,
 	opts Options,
-	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-	resourceLabels map[string]string,
-	policyRules []*v1alpha1.PolicyRule,
+	metadata RegistrationMetadata,
 ) error {
 	if err := (&opts).validate(); err != nil {
 		return err
@@ -347,7 +357,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	kcSecret, err := kubeconfig.ToSecret(
 		opts.Namespace,
 		opts.ClusterName,
-		resourceLabels,
+		metadata.ResourceLabels,
 		c.buildRemoteCfg(remoteCluster, remoteContext, opts.ClusterName, token),
 	)
 	if err != nil {
@@ -358,7 +368,14 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 		return err
 	}
 
-	kubeCluster := buildKubeClusterResource(kcSecret, resourceLabels, opts.ClusterDomain, providerInfo, opts.RemoteNamespace, policyRules)
+	kubeCluster := buildKubeClusterResource(
+		kcSecret,
+		metadata.ResourceLabels,
+		opts.ClusterDomain,
+		metadata.ProviderInfo,
+		opts.RemoteNamespace,
+		metadata.ClusterRolePolicyRules,
+	)
 
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {
