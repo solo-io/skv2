@@ -49,18 +49,6 @@ var (
 	}
 )
 
-// Optional additional metadata to persist to registration output resources.
-type RegistrationMetadata struct {
-	// Metadata about the provider for cloud hosted k8s clusters.
-	ProviderInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo
-
-	// Labels to add to registration output resources (KubernetesCluster and Secret).
-	ResourceLabels map[string]string
-
-	// The set of PolicyRules for the cluster roles created on the remote cluster upon registration.
-	ClusterRolePolicyRules []*v1alpha1.PolicyRule
-}
-
 /*
 	NewClusterRegistrant returns an implementation of ClusterRegistrant.
 
@@ -195,7 +183,7 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 	ctx context.Context,
 	remoteClientCfg clientcmd.ClientConfig,
 	sa client.ObjectKey,
-	opts RbacOptions,
+	opts Options,
 ) (token string, err error) {
 
 	if err = (&opts).validate(); err != nil {
@@ -212,13 +200,15 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 		return "", err
 	}
 
-	roleBindings := make([]client.ObjectKey, 0, len(opts.Roles)+len(opts.RoleBindings))
-	roleBindings = append(roleBindings, opts.RoleBindings...)
-	if len(opts.Roles) != 0 {
-		if err = c.upsertRoles(ctx, remoteCfg, opts.Roles); err != nil {
+	rbacOpts := opts.RbacOptions
+
+	roleBindings := make([]client.ObjectKey, 0, len(rbacOpts.Roles)+len(rbacOpts.RoleBindings))
+	roleBindings = append(roleBindings, rbacOpts.RoleBindings...)
+	if len(rbacOpts.Roles) != 0 {
+		if err = c.upsertRoles(ctx, remoteCfg, rbacOpts.Roles); err != nil {
 			return "", err
 		}
-		for _, v := range opts.Roles {
+		for _, v := range rbacOpts.Roles {
 			roleBindings = append(roleBindings, client.ObjectKey{
 				Namespace: v.GetNamespace(),
 				Name:      v.GetName(),
@@ -231,13 +221,13 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 		}
 	}
 
-	clusterRoleBindings := make([]client.ObjectKey, 0, len(opts.ClusterRoles)+len(opts.ClusterRoleBindings))
-	clusterRoleBindings = append(clusterRoleBindings, opts.ClusterRoleBindings...)
-	if len(opts.ClusterRoles) != 0 {
-		if err = c.upsertClusterRoles(ctx, remoteCfg, opts.ClusterRoles); err != nil {
+	clusterRoleBindings := make([]client.ObjectKey, 0, len(rbacOpts.ClusterRoles)+len(rbacOpts.ClusterRoleBindings))
+	clusterRoleBindings = append(clusterRoleBindings, rbacOpts.ClusterRoleBindings...)
+	if len(rbacOpts.ClusterRoles) != 0 {
+		if err = c.upsertClusterRoles(ctx, remoteCfg, rbacOpts.ClusterRoles); err != nil {
 			return "", err
 		}
-		for _, v := range opts.ClusterRoles {
+		for _, v := range rbacOpts.ClusterRoles {
 			clusterRoleBindings = append(clusterRoleBindings, client.ObjectKey{
 				Name: v.GetName(),
 			})
@@ -254,22 +244,25 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 
 func (c *clusterRegistrant) DeleteRemoteAccessResources(ctx context.Context,
 	remoteClientCfg clientcmd.ClientConfig,
-	opts RbacOptions,
+	opts Options,
 ) error {
-	saObjMeta := serviceAccountObjMeta(opts.Options)
+	saObjMeta := serviceAccountObjMeta(opts)
 	sa := client.ObjectKey{Name: saObjMeta.Name, Namespace: saObjMeta.Namespace}
 
 	remoteCfg, err := remoteClientCfg.ClientConfig()
 	if err != nil {
 		return err
 	}
+
+	rbacOpts := opts.RbacOptions
+
 	var multierr *multierror.Error
 	// Delete Roles
-	if err := c.deleteRoles(ctx, remoteCfg, opts.Roles); err != nil {
+	if err := c.deleteRoles(ctx, remoteCfg, rbacOpts.Roles); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	// Delete ClusterRoles
-	if err := c.deleteClusterRoles(ctx, remoteCfg, opts.ClusterRoles); err != nil {
+	if err := c.deleteClusterRoles(ctx, remoteCfg, rbacOpts.ClusterRoles); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 
@@ -279,9 +272,9 @@ func (c *clusterRegistrant) DeleteRemoteAccessResources(ctx context.Context,
 	}
 
 	// Delete RoleBindings
-	roleBindings := make([]client.ObjectKey, 0, len(opts.Roles)+len(opts.RoleBindings))
-	roleBindings = append(roleBindings, opts.RoleBindings...)
-	for _, v := range opts.Roles {
+	roleBindings := make([]client.ObjectKey, 0, len(rbacOpts.Roles)+len(rbacOpts.RoleBindings))
+	roleBindings = append(roleBindings, rbacOpts.RoleBindings...)
+	for _, v := range rbacOpts.Roles {
 		roleBindings = append(roleBindings, client.ObjectKey{
 			Name:      v.GetName(),
 			Namespace: v.GetNamespace(),
@@ -292,9 +285,9 @@ func (c *clusterRegistrant) DeleteRemoteAccessResources(ctx context.Context,
 	}
 
 	// Delete ClusterRoleBindings
-	clusterRoleBindings := make([]client.ObjectKey, 0, len(opts.ClusterRoles)+len(opts.ClusterRoleBindings))
-	clusterRoleBindings = append(clusterRoleBindings, opts.ClusterRoleBindings...)
-	for _, v := range opts.ClusterRoles {
+	clusterRoleBindings := make([]client.ObjectKey, 0, len(rbacOpts.ClusterRoles)+len(rbacOpts.ClusterRoleBindings))
+	clusterRoleBindings = append(clusterRoleBindings, rbacOpts.ClusterRoleBindings...)
+	for _, v := range rbacOpts.ClusterRoles {
 		clusterRoleBindings = append(clusterRoleBindings, client.ObjectKey{
 			Name: v.GetName(),
 		})
@@ -312,17 +305,6 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	remoteClientCfg clientcmd.ClientConfig,
 	token string,
 	opts Options,
-) error {
-	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, RegistrationMetadata{})
-}
-
-func (c *clusterRegistrant) RegisterProviderClusterWithToken(
-	ctx context.Context,
-	masterClusterCfg *rest.Config,
-	remoteClientCfg clientcmd.ClientConfig,
-	token string,
-	opts Options,
-	metadata RegistrationMetadata,
 ) error {
 	if err := (&opts).validate(); err != nil {
 		return err
@@ -357,7 +339,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	kcSecret, err := kubeconfig.ToSecret(
 		opts.Namespace,
 		opts.ClusterName,
-		metadata.ResourceLabels,
+		opts.RegistrationMetadata.ResourceLabels,
 		c.buildRemoteCfg(remoteCluster, remoteContext, opts.ClusterName, token),
 	)
 	if err != nil {
@@ -370,11 +352,11 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 
 	kubeCluster := buildKubeClusterResource(
 		kcSecret,
-		metadata.ResourceLabels,
+		opts.RegistrationMetadata.ResourceLabels,
 		opts.ClusterDomain,
-		metadata.ProviderInfo,
+		opts.RegistrationMetadata.ProviderInfo,
 		opts.RemoteNamespace,
-		metadata.ClusterRolePolicyRules,
+		opts.RegistrationMetadata.ClusterRolePolicyRules,
 	)
 
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
