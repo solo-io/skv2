@@ -29,7 +29,7 @@ type Options struct {
 	// If left empty will return error
 	ClusterName string
 
-	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// Namespace to write namespaced resources to in the management cluster.
 	// If left empty will return error
 	Namespace string
 
@@ -37,7 +37,7 @@ type Options struct {
 	// We need to explicitly pass this because of this open issue: https://github.com/kubernetes/client-go/issues/735
 	RemoteCtx string
 
-	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// Namespace to write namespaced resources to in the remote cluster.
 	// If left empty will return error
 	RemoteNamespace string
 

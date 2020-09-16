@@ -85,9 +85,10 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		Expect(err).NotTo(HaveOccurred())
 		err = register.RegisterClusterFromConfig(ctx, masterConfig, remoteCfg, register.RbacOptions{
 			Options: register.Options{
-				ClusterName: cluster2,
-				Namespace:   ns,
-				RemoteCtx:   remoteContext,
+				ClusterName:     cluster2,
+				Namespace:       ns,
+				RemoteNamespace: ns,
+				RemoteCtx:       remoteContext,
 			},
 			ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 		}, registrant)
@@ -95,8 +96,9 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		cfg := test.ClientConfigWithContext("")
 		err = register.RegisterClusterFromConfig(ctx, masterConfig, cfg, register.RbacOptions{
 			Options: register.Options{
-				ClusterName: cluster1,
-				Namespace:   ns,
+				ClusterName:     cluster1,
+				Namespace:       ns,
+				RemoteNamespace: ns,
 			},
 			ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 		}, registrant)
