@@ -144,19 +144,7 @@ func (opts RegistrationOptions) initialize(
 		return masterRestCfg, remoteCfg, registrationOpts, registrant, err
 	}
 
-	// Parse ClusterRole policy rules by iterating all cluster roles
-	var clusterRolePolicyRules []*v1alpha1.PolicyRule
-	for _, clusterRole := range opts.ClusterRoles {
-		for _, policyRules := range clusterRole.Rules {
-			clusterRolePolicyRules = append(clusterRolePolicyRules, &v1alpha1.PolicyRule{
-				Verbs:           policyRules.Verbs,
-				ApiGroups:       policyRules.APIGroups,
-				Resources:       policyRules.Resources,
-				ResourceNames:   policyRules.ResourceNames,
-				NonResourceUrls: policyRules.NonResourceURLs,
-			})
-		}
-	}
+	rolePolicyRules, clusterRolePolicyRules := collectPolicyRules(opts.Roles, opts.ClusterRoles)
 
 	registrationOpts = Options{
 		ClusterName:     opts.ClusterName,
@@ -173,11 +161,42 @@ func (opts RegistrationOptions) initialize(
 		RegistrationMetadata: RegistrationMetadata{
 			ProviderInfo:           providerInfo,
 			ResourceLabels:         opts.ResourceLabels,
+			RolePolicyRules:        rolePolicyRules,
 			ClusterRolePolicyRules: clusterRolePolicyRules,
 		},
 	}
 
 	return masterRestCfg, remoteCfg, registrationOpts, registrant, nil
+}
+
+// Iterate Roles and ClusterRoles to collect set of PolicyRules for each.
+func collectPolicyRules(
+	roles []*k8s_rbac_types.Role,
+	clusterRoles []*k8s_rbac_types.ClusterRole,
+) (rolePolicyRules []*v1alpha1.PolicyRule, clusterRolePolicyRules []*v1alpha1.PolicyRule) {
+	for _, role := range roles {
+		for _, policyRules := range role.Rules {
+			rolePolicyRules = append(rolePolicyRules, &v1alpha1.PolicyRule{
+				Verbs:           policyRules.Verbs,
+				ApiGroups:       policyRules.APIGroups,
+				Resources:       policyRules.Resources,
+				ResourceNames:   policyRules.ResourceNames,
+				NonResourceUrls: policyRules.NonResourceURLs,
+			})
+		}
+	}
+	for _, clusterRole := range clusterRoles {
+		for _, policyRules := range clusterRole.Rules {
+			clusterRolePolicyRules = append(clusterRolePolicyRules, &v1alpha1.PolicyRule{
+				Verbs:           policyRules.Verbs,
+				ApiGroups:       policyRules.APIGroups,
+				Resources:       policyRules.Resources,
+				ResourceNames:   policyRules.ResourceNames,
+				NonResourceUrls: policyRules.NonResourceURLs,
+			})
+		}
+	}
+	return rolePolicyRules, clusterRolePolicyRules
 }
 
 func RegisterClusterFromConfig(

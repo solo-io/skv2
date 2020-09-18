@@ -60,6 +60,9 @@ type RegistrationMetadata struct {
 	// Labels to add to registration output resources (KubernetesCluster and Secret).
 	ResourceLabels map[string]string
 
+	// The set of PolicyRules for Roles created on the remote cluster upon registration.
+	RolePolicyRules []*v1alpha1.PolicyRule
+
 	// The set of PolicyRules for the cluster roles created on the remote cluster upon registration.
 	ClusterRolePolicyRules []*v1alpha1.PolicyRule
 }
