@@ -50,6 +50,10 @@ type Options struct {
 	RegistrationMetadata RegistrationMetadata
 
 	RbacOptions RbacOptions
+
+	// Set to true if the remote cluster no longer exists (e.g. was deleted).
+	// If true, deregistration will not attempt to delete registration resources on the remote cluster.
+	RemoteClusterDeleted bool
 }
 
 // Optional additional metadata to persist to registration output resources.

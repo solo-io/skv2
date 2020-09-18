@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-// Options for registering a cluster
+// Options for registering and deregistering a cluster
 type RegistrationOptions struct {
 	// Management kubeconfig
 	KubeCfg clientcmd.ClientConfig
@@ -73,6 +73,10 @@ type RegistrationOptions struct {
 
 	// Set of labels to include on the registration output resources, currently consisting of KubernetesCluster and Secret.
 	ResourceLabels map[string]string
+
+	// Set to true if the remote cluster no longer exists (e.g. was deleted).
+	// If true, deregistration will not attempt to delete registration resources on the remote cluster.
+	RemoteClusterDeleted bool
 }
 
 /*
@@ -147,11 +151,12 @@ func (opts RegistrationOptions) initialize(
 	rolePolicyRules, clusterRolePolicyRules := collectPolicyRules(opts.Roles, opts.ClusterRoles)
 
 	registrationOpts = Options{
-		ClusterName:     opts.ClusterName,
-		Namespace:       opts.Namespace,
-		RemoteCtx:       opts.RemoteCtx,
-		RemoteNamespace: opts.RemoteNamespace,
-		ClusterDomain:   opts.ClusterDomain,
+		ClusterName:          opts.ClusterName,
+		Namespace:            opts.Namespace,
+		RemoteCtx:            opts.RemoteCtx,
+		RemoteNamespace:      opts.RemoteNamespace,
+		ClusterDomain:        opts.ClusterDomain,
+		RemoteClusterDeleted: opts.RemoteClusterDeleted,
 		RbacOptions: RbacOptions{
 			Roles:               opts.Roles,
 			ClusterRoles:        opts.ClusterRoles,
@@ -248,6 +253,11 @@ func DeregisterClusterFromConfig(
 
 	if err := registrant.DeregisterCluster(ctx, masterClusterCfg, opts); err != nil {
 		multierr = multierror.Append(multierr, err)
+	}
+
+	// Do not attempt to delete remote registration resources if remote cluster no longer exists.
+	if opts.RemoteClusterDeleted {
+		return multierr.ErrorOrNil()
 	}
 
 	if err := registrant.DeleteRemoteServiceAccount(ctx, remoteCfg, opts); err != nil {
