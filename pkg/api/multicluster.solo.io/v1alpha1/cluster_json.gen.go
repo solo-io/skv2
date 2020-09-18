@@ -64,6 +64,17 @@ func (this *KubernetesClusterStatus) UnmarshalJSON(b []byte) error {
 	return ClusterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for PolicyRule
+func (this *PolicyRule) MarshalJSON() ([]byte, error) {
+	str, err := ClusterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for PolicyRule
+func (this *PolicyRule) UnmarshalJSON(b []byte) error {
+	return ClusterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 var (
 	ClusterMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	ClusterUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}

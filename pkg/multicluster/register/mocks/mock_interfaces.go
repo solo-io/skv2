@@ -9,7 +9,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	register "github.com/solo-io/skv2/pkg/multicluster/register"
 	v1 "k8s.io/api/core/v1"
 	rest "k8s.io/client-go/rest"
@@ -38,6 +37,20 @@ func NewMockClusterRegistrant(ctrl *gomock.Controller) *MockClusterRegistrant {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRegistrant) EXPECT() *MockClusterRegistrantMockRecorder {
 	return m.recorder
+}
+
+// EnsureRemoteNamespace mocks base method
+func (m *MockClusterRegistrant) EnsureRemoteNamespace(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, remoteNamespace string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureRemoteNamespace", ctx, remoteClientCfg, remoteNamespace)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureRemoteNamespace indicates an expected call of EnsureRemoteNamespace
+func (mr *MockClusterRegistrantMockRecorder) EnsureRemoteNamespace(ctx, remoteClientCfg, remoteNamespace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureRemoteNamespace", reflect.TypeOf((*MockClusterRegistrant)(nil).EnsureRemoteNamespace), ctx, remoteClientCfg, remoteNamespace)
 }
 
 // EnsureRemoteServiceAccount mocks base method
@@ -70,7 +83,7 @@ func (mr *MockClusterRegistrantMockRecorder) DeleteRemoteServiceAccount(ctx, rem
 }
 
 // CreateRemoteAccessToken mocks base method
-func (m *MockClusterRegistrant) CreateRemoteAccessToken(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, sa client.ObjectKey, opts register.RbacOptions) (string, error) {
+func (m *MockClusterRegistrant) CreateRemoteAccessToken(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, sa client.ObjectKey, opts register.Options) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRemoteAccessToken", ctx, remoteClientCfg, sa, opts)
 	ret0, _ := ret[0].(string)
@@ -85,7 +98,7 @@ func (mr *MockClusterRegistrantMockRecorder) CreateRemoteAccessToken(ctx, remote
 }
 
 // DeleteRemoteAccessResources mocks base method
-func (m *MockClusterRegistrant) DeleteRemoteAccessResources(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, opts register.RbacOptions) error {
+func (m *MockClusterRegistrant) DeleteRemoteAccessResources(ctx context.Context, remoteClientCfg clientcmd.ClientConfig, opts register.Options) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteRemoteAccessResources", ctx, remoteClientCfg, opts)
 	ret0, _ := ret[0].(error)
@@ -110,20 +123,6 @@ func (m *MockClusterRegistrant) RegisterClusterWithToken(ctx context.Context, ma
 func (mr *MockClusterRegistrantMockRecorder) RegisterClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts)
-}
-
-// RegisterProviderClusterWithToken mocks base method
-func (m *MockClusterRegistrant) RegisterProviderClusterWithToken(ctx context.Context, masterClusterCfg *rest.Config, remoteClientCfg clientcmd.ClientConfig, token string, opts register.Options, providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterProviderClusterWithToken", ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RegisterProviderClusterWithToken indicates an expected call of RegisterProviderClusterWithToken
-func (mr *MockClusterRegistrantMockRecorder) RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterProviderClusterWithToken", reflect.TypeOf((*MockClusterRegistrant)(nil).RegisterProviderClusterWithToken), ctx, masterClusterCfg, remoteClientCfg, token, opts, providerInfo)
 }
 
 // DeregisterCluster mocks base method

@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-// Options for registering a cluster
+// Options for registering and deregistering a cluster
 type RegistrationOptions struct {
 	// Management kubeconfig
 	KubeCfg clientcmd.ClientConfig
@@ -70,6 +70,13 @@ type RegistrationOptions struct {
 	// List of cluster roles which will be bound to by the created cluster role bindings
 	// The ClusterRoles upserted from the above list will automatically appended to the list
 	ClusterRoleBindings []client.ObjectKey
+
+	// Set of labels to include on the registration output resources, currently consisting of KubernetesCluster and Secret.
+	ResourceLabels map[string]string
+
+	// Set to true if the remote cluster no longer exists (e.g. was deleted).
+	// If true, deregistration will not attempt to delete registration resources on the remote cluster.
+	RemoteClusterDeleted bool
 }
 
 /*
@@ -86,21 +93,26 @@ func (opts RegistrationOptions) RegisterCluster(
 }
 
 /*
-	RegisterCluster is meant to be a helper function to easily "register" a remote cluster.
-	Currently this entails:
-		1. Creating a `ServiceAccount` on the remote cluster.
-		2. Binding RBAC `Roles/ClusterRoles` to said `ServiceAccount`
-		3. And finally creating a kubeconfig `Secret` with the BearerToken of the remote `ServiceAccount`
+	RegisterProviderCluster augments RegisterCluster functionality
+	with additional metadata to persist to the resulting KubernetesCluster object.
+	ProviderInfo contains cloud provider metadata.
 */
 func (opts RegistrationOptions) RegisterProviderCluster(
 	ctx context.Context,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
 ) error {
-	masterRestCfg, remoteCfg, rbacOpts, registrant, err := opts.initialize()
+	masterRestCfg, remoteCfg, registrationOpts, registrant, err := opts.initialize(providerInfo)
 	if err != nil {
 		return err
 	}
-	return RegisterProviderClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant, providerInfo)
+
+	return RegisterClusterFromConfig(
+		ctx,
+		masterRestCfg,
+		remoteCfg,
+		registrationOpts,
+		registrant,
+	)
 }
 
 /*
@@ -113,92 +125,142 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 func (opts RegistrationOptions) DeregisterCluster(
 	ctx context.Context,
 ) error {
-	masterRestCfg, remoteCfg, rbacOpts, registrant, err := opts.initialize()
+	masterRestCfg, remoteCfg, registrationOpts, registrant, err := opts.initialize(nil)
 	if err != nil {
 		return err
 	}
-	return DeregisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, rbacOpts, registrant)
+	return DeregisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, registrationOpts, registrant)
 }
 
 // Initialize registration dependencies
-func (opts RegistrationOptions) initialize() (masterRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, rbacOpts RbacOptions, registrant ClusterRegistrant, err error) {
+func (opts RegistrationOptions) initialize(
+	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+) (masterRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, registrationOpts Options, registrant ClusterRegistrant, err error) {
 	masterRestCfg, err = opts.KubeCfg.ClientConfig()
 	if err != nil {
-		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
+		return masterRestCfg, remoteCfg, registrationOpts, registrant, err
 	}
 
 	remoteCfg = opts.RemoteKubeCfg
 
 	registrant, err = defaultRegistrant(masterRestCfg, opts.APIServerAddress)
 	if err != nil {
-		return masterRestCfg, remoteCfg, rbacOpts, registrant, err
+		return masterRestCfg, remoteCfg, registrationOpts, registrant, err
 	}
 
-	rbacOpts = RbacOptions{
-		Options: Options{
-			ClusterName:     opts.ClusterName,
-			Namespace:       opts.Namespace,
-			RemoteCtx:       opts.RemoteCtx,
-			RemoteNamespace: opts.RemoteNamespace,
-			ClusterDomain:   opts.ClusterDomain,
+	rolePolicyRules, clusterRolePolicyRules := collectPolicyRules(opts.Roles, opts.ClusterRoles)
+
+	registrationOpts = Options{
+		ClusterName:          opts.ClusterName,
+		Namespace:            opts.Namespace,
+		RemoteCtx:            opts.RemoteCtx,
+		RemoteNamespace:      opts.RemoteNamespace,
+		ClusterDomain:        opts.ClusterDomain,
+		RemoteClusterDeleted: opts.RemoteClusterDeleted,
+		RbacOptions: RbacOptions{
+			Roles:               opts.Roles,
+			ClusterRoles:        opts.ClusterRoles,
+			RoleBindings:        opts.RoleBindings,
+			ClusterRoleBindings: opts.ClusterRoleBindings,
 		},
-		Roles:               opts.Roles,
-		ClusterRoles:        opts.ClusterRoles,
-		RoleBindings:        opts.RoleBindings,
-		ClusterRoleBindings: opts.ClusterRoleBindings,
+		RegistrationMetadata: RegistrationMetadata{
+			ProviderInfo:           providerInfo,
+			ResourceLabels:         opts.ResourceLabels,
+			RolePolicyRules:        rolePolicyRules,
+			ClusterRolePolicyRules: clusterRolePolicyRules,
+		},
 	}
 
-	return masterRestCfg, remoteCfg, rbacOpts, registrant, nil
+	return masterRestCfg, remoteCfg, registrationOpts, registrant, nil
+}
+
+// Iterate Roles and ClusterRoles to collect set of PolicyRules for each.
+func collectPolicyRules(
+	roles []*k8s_rbac_types.Role,
+	clusterRoles []*k8s_rbac_types.ClusterRole,
+) (rolePolicyRules []*v1alpha1.PolicyRule, clusterRolePolicyRules []*v1alpha1.PolicyRule) {
+	for _, role := range roles {
+		for _, policyRules := range role.Rules {
+			rolePolicyRules = append(rolePolicyRules, &v1alpha1.PolicyRule{
+				Verbs:           policyRules.Verbs,
+				ApiGroups:       policyRules.APIGroups,
+				Resources:       policyRules.Resources,
+				ResourceNames:   policyRules.ResourceNames,
+				NonResourceUrls: policyRules.NonResourceURLs,
+			})
+		}
+	}
+	for _, clusterRole := range clusterRoles {
+		for _, policyRules := range clusterRole.Rules {
+			clusterRolePolicyRules = append(clusterRolePolicyRules, &v1alpha1.PolicyRule{
+				Verbs:           policyRules.Verbs,
+				ApiGroups:       policyRules.APIGroups,
+				Resources:       policyRules.Resources,
+				ResourceNames:   policyRules.ResourceNames,
+				NonResourceUrls: policyRules.NonResourceURLs,
+			})
+		}
+	}
+	return rolePolicyRules, clusterRolePolicyRules
 }
 
 func RegisterClusterFromConfig(
 	ctx context.Context,
 	masterClusterCfg *rest.Config,
 	remoteCfg clientcmd.ClientConfig,
-	opts RbacOptions,
+	opts Options,
 	registrant ClusterRegistrant,
 ) error {
-	return RegisterProviderClusterFromConfig(ctx, masterClusterCfg, remoteCfg, opts, registrant, nil)
-}
-
-func RegisterProviderClusterFromConfig(
-	ctx context.Context,
-	masterClusterCfg *rest.Config,
-	remoteCfg clientcmd.ClientConfig,
-	opts RbacOptions,
-	registrant ClusterRegistrant,
-	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-) error {
-	sa, err := registrant.EnsureRemoteServiceAccount(ctx, remoteCfg, opts.Options)
+	err := registrant.EnsureRemoteNamespace(ctx, remoteCfg, opts.RemoteNamespace)
 	if err != nil {
 		return err
 	}
 
-	token, err := registrant.CreateRemoteAccessToken(ctx, remoteCfg, client.ObjectKey{
-		Namespace: sa.GetNamespace(),
-		Name:      sa.GetName(),
-	}, opts)
+	sa, err := registrant.EnsureRemoteServiceAccount(ctx, remoteCfg, opts)
 	if err != nil {
 		return err
 	}
 
-	return registrant.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteCfg, token, opts.Options, providerInfo)
+	token, err := registrant.CreateRemoteAccessToken(
+		ctx,
+		remoteCfg,
+		client.ObjectKey{
+			Namespace: sa.GetNamespace(),
+			Name:      sa.GetName(),
+		},
+		opts)
+	if err != nil {
+		return err
+	}
+
+	return registrant.RegisterClusterWithToken(
+		ctx,
+		masterClusterCfg,
+		remoteCfg,
+		token,
+		opts,
+	)
 }
 
 func DeregisterClusterFromConfig(
 	ctx context.Context,
 	masterClusterCfg *rest.Config,
 	remoteCfg clientcmd.ClientConfig,
-	opts RbacOptions,
+	opts Options,
 	registrant ClusterRegistrant,
 ) error {
 	var multierr *multierror.Error
 
-	if err := registrant.DeregisterCluster(ctx, masterClusterCfg, opts.Options); err != nil {
+	if err := registrant.DeregisterCluster(ctx, masterClusterCfg, opts); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 
-	if err := registrant.DeleteRemoteServiceAccount(ctx, remoteCfg, opts.Options); err != nil {
+	// Do not attempt to delete remote registration resources if remote cluster no longer exists.
+	if opts.RemoteClusterDeleted {
+		return multierr.ErrorOrNil()
+	}
+
+	if err := registrant.DeleteRemoteServiceAccount(ctx, remoteCfg, opts); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 

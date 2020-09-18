@@ -94,6 +94,84 @@ func (m *KubernetesClusterStatus) Hash(hasher hash.Hash64) (uint64, error) {
 
 	}
 
+	if _, err = hasher.Write([]byte(m.GetNamespace())); err != nil {
+		return 0, err
+	}
+
+	for _, v := range m.GetPolicyRules() {
+
+		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
+			if _, err = h.Hash(hasher); err != nil {
+				return 0, err
+			}
+		} else {
+			if val, err := hashstructure.Hash(v, nil); err != nil {
+				return 0, err
+			} else {
+				if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
+					return 0, err
+				}
+			}
+		}
+
+	}
+
+	return hasher.Sum64(), nil
+}
+
+// Hash function
+func (m *PolicyRule) Hash(hasher hash.Hash64) (uint64, error) {
+	if m == nil {
+		return 0, nil
+	}
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	var err error
+	if _, err = hasher.Write([]byte("multicluster.solo.io.github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1.PolicyRule")); err != nil {
+		return 0, err
+	}
+
+	for _, v := range m.GetVerbs() {
+
+		if _, err = hasher.Write([]byte(v)); err != nil {
+			return 0, err
+		}
+
+	}
+
+	for _, v := range m.GetApiGroups() {
+
+		if _, err = hasher.Write([]byte(v)); err != nil {
+			return 0, err
+		}
+
+	}
+
+	for _, v := range m.GetResources() {
+
+		if _, err = hasher.Write([]byte(v)); err != nil {
+			return 0, err
+		}
+
+	}
+
+	for _, v := range m.GetResourceNames() {
+
+		if _, err = hasher.Write([]byte(v)); err != nil {
+			return 0, err
+		}
+
+	}
+
+	for _, v := range m.GetNonResourceUrls() {
+
+		if _, err = hasher.Write([]byte(v)); err != nil {
+			return 0, err
+		}
+
+	}
+
 	return hasher.Sum64(), nil
 }
 

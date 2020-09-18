@@ -83,22 +83,24 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		remoteCfg := test.ClientConfigWithContext(remoteContext)
 		registrant, err := register.DefaultRegistrant("", "")
 		Expect(err).NotTo(HaveOccurred())
-		err = register.RegisterClusterFromConfig(ctx, masterConfig, remoteCfg, register.RbacOptions{
-			Options: register.Options{
-				ClusterName: cluster2,
-				Namespace:   ns,
-				RemoteCtx:   remoteContext,
+		err = register.RegisterClusterFromConfig(ctx, masterConfig, remoteCfg, register.Options{
+			ClusterName:     cluster2,
+			Namespace:       ns,
+			RemoteNamespace: ns,
+			RemoteCtx:       remoteContext,
+			RbacOptions: register.RbacOptions{
+				ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 			},
-			ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 		}, registrant)
 		Expect(err).NotTo(HaveOccurred())
 		cfg := test.ClientConfigWithContext("")
-		err = register.RegisterClusterFromConfig(ctx, masterConfig, cfg, register.RbacOptions{
-			Options: register.Options{
-				ClusterName: cluster1,
-				Namespace:   ns,
+		err = register.RegisterClusterFromConfig(ctx, masterConfig, cfg, register.Options{
+			ClusterName:     cluster1,
+			Namespace:       ns,
+			RemoteNamespace: ns,
+			RbacOptions: register.RbacOptions{
+				ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 			},
-			ClusterRoleBindings: test.ServiceAccountClusterAdminRoles,
 		}, registrant)
 		Expect(err).NotTo(HaveOccurred())
 	})
