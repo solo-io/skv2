@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Add support for generating validation schemas for inclusion in CRDs.
-    issueLink: https://github.com/solo-io/skv2/issues/145
