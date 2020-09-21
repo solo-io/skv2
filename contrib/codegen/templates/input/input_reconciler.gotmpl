@@ -23,6 +23,7 @@ import (
     sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
     "github.com/solo-io/skv2/pkg/multicluster"
     "github.com/solo-io/skv2/pkg/reconcile"
+    "github.com/solo-io/skv2/pkg/ezkube"
 
     "go.uber.org/zap"
     metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -84,7 +85,7 @@ func RegisterMultiClusterReconciler(
         reconcileInterval time.Duration,
         options ReconcileOptions,
         predicates ...predicate.Predicate,
-) {
+) TriggerClusterReconcileFunc {
 
 	base := input.NewMultiClusterReconcilerImpl(
 		ctx,
@@ -109,7 +110,14 @@ func RegisterMultiClusterReconciler(
 
 {{- end }}
 {{- end }}
+  return r.TriggerReconcile
+}
 
+type TriggerClusterReconcileFunc func(id ezkube.ClusterResourceId) error
+
+// Manually trigger a reconcile.
+func (r *multiClusterReconcilerImpl) TriggerReconcile(id ezkube.ClusterResourceId) error {
+    return r.base.TriggerClusterReconcile(id)
 }
 
 {{- range $group := $groups }}
@@ -167,7 +175,7 @@ func RegisterSingleClusterReconciler(
         reconcileInterval time.Duration,
         options reconcile.Options,
         predicates ...predicate.Predicate,
-) error {
+) (TriggerReconcileFunc, error) {
 
     base := input.NewSingleClusterReconciler(
         ctx,
@@ -187,12 +195,19 @@ func RegisterSingleClusterReconciler(
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options).Run{{ $resource.Kind }}Reconciler(ctx, r, predicates...); err != nil {
-    	return err
+    	return nil, err
     }
 {{- end }}
 {{- end }}
 
-    return nil
+    return r.TriggerReconcile, nil
+}
+
+type TriggerReconcileFunc func(id ezkube.ResourceId) error
+
+// Manually trigger a reconcile.
+func (r *singleClusterReconcilerImpl) TriggerReconcile(id ezkube.ResourceId) error {
+    return r.base.TriggerReconcile(id)
 }
 
 {{- range $group := $groups }}
