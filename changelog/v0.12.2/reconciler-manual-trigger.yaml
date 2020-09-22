@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Expose manual triggers on generated reconcilers.
+    issueLink: https://github.com/solo-io/skv2/issues/147

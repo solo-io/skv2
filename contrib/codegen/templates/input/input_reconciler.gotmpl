@@ -40,6 +40,7 @@ import (
 )
 
 // the multiClusterReconciler reconciles events for input resources across clusters
+// this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
 {{/* implement reconciler interfaces here */}}
 {{- range $group := $groups }}
@@ -84,7 +85,7 @@ func RegisterMultiClusterReconciler(
         reconcileInterval time.Duration,
         options ReconcileOptions,
         predicates ...predicate.Predicate,
-) {
+) input.MultiClusterReconciler {
 
 	base := input.NewMultiClusterReconcilerImpl(
 		ctx,
@@ -109,7 +110,7 @@ func RegisterMultiClusterReconciler(
 
 {{- end }}
 {{- end }}
-
+  return r.base
 }
 
 {{- range $group := $groups }}
@@ -139,6 +140,7 @@ func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clust
 
 
 // the singleClusterReconciler reconciles events for input resources across clusters
+// this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
 {{/* implement reconciler interfaces here */}}
 {{- range $group := $groups }}
@@ -167,7 +169,7 @@ func RegisterSingleClusterReconciler(
         reconcileInterval time.Duration,
         options reconcile.Options,
         predicates ...predicate.Predicate,
-) error {
+) (input.SingleClusterReconciler, error) {
 
     base := input.NewSingleClusterReconciler(
         ctx,
@@ -187,12 +189,12 @@ func RegisterSingleClusterReconciler(
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options).Run{{ $resource.Kind }}Reconciler(ctx, r, predicates...); err != nil {
-    	return err
+    	return nil, err
     }
 {{- end }}
 {{- end }}
 
-    return nil
+    return r.base, nil
 }
 
 {{- range $group := $groups }}
