@@ -25,8 +25,6 @@ type SingleClusterReconciler interface {
 	// reconcile the generic resource type.
 	// this function is called from generated code.
 	ReconcileGeneric(id ezkube.ResourceId) (reconcile.Result, error)
-	// manually trigger a reconcile
-	TriggerReconcile(id ezkube.ResourceId) error
 }
 
 // reconcile a resource across multiple clusters.
@@ -38,8 +36,6 @@ type MultiClusterReconciler interface {
 	// reconcile the generic resource type.
 	// this function is called from generated code.
 	ReconcileClusterGeneric(id ezkube.ClusterResourceId) (reconcile.Result, error)
-	// manually trigger a reconcile
-	TriggerClusterReconcile(id ezkube.ClusterResourceId) error
 }
 
 // input reconciler implements both the single and multi cluster reconcilers, for convenience.
@@ -110,16 +106,6 @@ func (r *inputReconciler) ReconcileClusterGeneric(id ezkube.ClusterResourceId) (
 	}
 
 	return reconcile.Result{}, nil
-}
-
-func (r *inputReconciler) TriggerReconcile(id ezkube.ResourceId) error {
-	_, err := r.ReconcileGeneric(id)
-	return err
-}
-
-func (r *inputReconciler) TriggerClusterReconcile(id ezkube.ClusterResourceId) error {
-	_, err := r.ReconcileClusterGeneric(id)
-	return err
 }
 
 // reconcile queued events until context is cancelled.

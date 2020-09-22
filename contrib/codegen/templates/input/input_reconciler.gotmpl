@@ -40,20 +40,6 @@ import (
 {{- end }}
 )
 
-// Exposed functions on the underlying multicluster reconciler.
-type MultiClusterReconciler interface {
-
-    // Manually trigger a reconcile
-    TriggerReconcile(id ezkube.ClusterResourceId) error
-}
-
-// Exposed functions on the underlying multicluster reconciler.
-type SingleClusterReconciler interface {
-
-    // Manually trigger a reconcile
-    TriggerReconcile(id ezkube.ResourceId) error
-}
-
 // the multiClusterReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
@@ -100,7 +86,7 @@ func RegisterMultiClusterReconciler(
         reconcileInterval time.Duration,
         options ReconcileOptions,
         predicates ...predicate.Predicate,
-) MultiClusterReconciler {
+) input.MultiClusterReconciler {
 
 	base := input.NewMultiClusterReconcilerImpl(
 		ctx,
@@ -125,12 +111,7 @@ func RegisterMultiClusterReconciler(
 
 {{- end }}
 {{- end }}
-  return r
-}
-
-// Manually trigger a reconcile.
-func (r *multiClusterReconcilerImpl) TriggerReconcile(id ezkube.ClusterResourceId) error {
-    return r.base.TriggerClusterReconcile(id)
+  return r.base
 }
 
 {{- range $group := $groups }}
@@ -189,7 +170,7 @@ func RegisterSingleClusterReconciler(
         reconcileInterval time.Duration,
         options reconcile.Options,
         predicates ...predicate.Predicate,
-) (SingleClusterReconciler, error) {
+) (input.SingleClusterReconciler, error) {
 
     base := input.NewSingleClusterReconciler(
         ctx,
@@ -214,12 +195,7 @@ func RegisterSingleClusterReconciler(
 {{- end }}
 {{- end }}
 
-    return r, nil
-}
-
-// Manually trigger a reconcile.
-func (r *singleClusterReconcilerImpl) TriggerReconcile(id ezkube.ResourceId) error {
-    return r.base.TriggerReconcile(id)
+    return r.base, nil
 }
 
 {{- range $group := $groups }}
