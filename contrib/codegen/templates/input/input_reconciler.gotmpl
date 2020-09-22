@@ -55,6 +55,7 @@ type SingleClusterReconciler interface {
 }
 
 // the multiClusterReconciler reconciles events for input resources across clusters
+// this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
 {{/* implement reconciler interfaces here */}}
 {{- range $group := $groups }}
@@ -159,6 +160,7 @@ func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clust
 
 
 // the singleClusterReconciler reconciles events for input resources across clusters
+// this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
 {{/* implement reconciler interfaces here */}}
 {{- range $group := $groups }}
