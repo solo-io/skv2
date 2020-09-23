@@ -225,59 +225,59 @@ var _ = Describe("Registrant", func() {
 				ClientConfig().
 				Return(nil, nil)
 
-			opts := register.RbacOptions{
-				Options: register.Options{
-					ClusterName: clusterName,
-					Namespace:   namespace,
-					RemoteCtx:   remoteCtx,
-				},
-				Roles: []*rbacv1.Role{
-					{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "r-1",
-							Namespace: namespace,
+			opts := register.Options{
+				ClusterName: clusterName,
+				Namespace:   namespace,
+				RemoteCtx:   remoteCtx,
+				RbacOptions: register.RbacOptions{
+					Roles: []*rbacv1.Role{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "r-1",
+								Namespace: namespace,
+							},
 						},
 					},
-				},
-				ClusterRoles: []*rbacv1.ClusterRole{
-					{
-						ObjectMeta: metav1.ObjectMeta{
-							Name: "cr-1",
+					ClusterRoles: []*rbacv1.ClusterRole{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "cr-1",
+							},
 						},
 					},
-				},
-				RoleBindings: []client.ObjectKey{
-					{
-						Namespace: "namespace",
-						Name:      "rb-1",
+					RoleBindings: []client.ObjectKey{
+						{
+							Namespace: "namespace",
+							Name:      "rb-1",
+						},
 					},
-				},
-				ClusterRoleBindings: []client.ObjectKey{
-					{
-						Namespace: "",
-						Name:      "crb-1",
+					ClusterRoleBindings: []client.ObjectKey{
+						{
+							Namespace: "",
+							Name:      "crb-1",
+						},
 					},
 				},
 			}
-
+			rbacOpts := opts.RbacOptions
 			roleClient.EXPECT().
-				UpsertRole(ctx, opts.Roles[0]).
+				UpsertRole(ctx, rbacOpts.Roles[0]).
 				Return(nil)
 
 			clusterRBACBinder.EXPECT().
-				BindRoles(ctx, sa, append(opts.RoleBindings, client.ObjectKey{
-					Name:      opts.Roles[0].GetName(),
-					Namespace: opts.Roles[0].GetNamespace(),
+				BindRoles(ctx, sa, append(rbacOpts.RoleBindings, client.ObjectKey{
+					Name:      rbacOpts.Roles[0].GetName(),
+					Namespace: rbacOpts.Roles[0].GetNamespace(),
 				})).
 				Return(nil)
 
 			clusterRoleClient.EXPECT().
-				UpsertClusterRole(ctx, opts.ClusterRoles[0]).
+				UpsertClusterRole(ctx, rbacOpts.ClusterRoles[0]).
 				Return(nil)
 
 			clusterRBACBinder.EXPECT().
-				BindClusterRoles(ctx, sa, append(opts.ClusterRoleBindings, client.ObjectKey{
-					Name: opts.ClusterRoles[0].GetName(),
+				BindClusterRoles(ctx, sa, append(rbacOpts.ClusterRoleBindings, client.ObjectKey{
+					Name: rbacOpts.ClusterRoles[0].GetName(),
 				})).Return(nil)
 
 			token := "hello"
@@ -345,60 +345,62 @@ var _ = Describe("Registrant", func() {
 				ClientConfig().
 				Return(nil, nil)
 
-			opts := register.RbacOptions{
-				Options: register.Options{
-					ClusterName:     clusterName,
-					Namespace:       namespace,
-					RemoteCtx:       remoteCtx,
-					RemoteNamespace: "remote-namespace",
-				},
-				Roles: []*rbacv1.Role{
-					{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "r-1",
-							Namespace: namespace,
+			opts := register.Options{
+				ClusterName:     clusterName,
+				Namespace:       namespace,
+				RemoteCtx:       remoteCtx,
+				RemoteNamespace: "remote-namespace",
+				RbacOptions: register.RbacOptions{
+					Roles: []*rbacv1.Role{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "r-1",
+								Namespace: namespace,
+							},
 						},
 					},
-				},
-				ClusterRoles: []*rbacv1.ClusterRole{
-					{
-						ObjectMeta: metav1.ObjectMeta{
-							Name: "cr-1",
+					ClusterRoles: []*rbacv1.ClusterRole{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "cr-1",
+							},
 						},
 					},
-				},
-				RoleBindings: []client.ObjectKey{
-					{
-						Namespace: "namespace",
-						Name:      "rb-1",
+					RoleBindings: []client.ObjectKey{
+						{
+							Namespace: "namespace",
+							Name:      "rb-1",
+						},
 					},
-				},
-				ClusterRoleBindings: []client.ObjectKey{
-					{
-						Namespace: "",
-						Name:      "crb-1",
+					ClusterRoleBindings: []client.ObjectKey{
+						{
+							Namespace: "",
+							Name:      "crb-1",
+						},
 					},
 				},
 			}
 
+			rbacOpts := opts.RbacOptions
+
 			roleClient.EXPECT().
-				DeleteRole(ctx, client.ObjectKey{Name: opts.Roles[0].Name, Namespace: opts.Roles[0].Namespace}).
+				DeleteRole(ctx, client.ObjectKey{Name: rbacOpts.Roles[0].Name, Namespace: rbacOpts.Roles[0].Namespace}).
 				Return(nil)
 
 			clusterRBACBinder.EXPECT().
-				DeleteRoleBindings(ctx, sa, append(opts.RoleBindings, client.ObjectKey{
-					Name:      opts.Roles[0].GetName(),
-					Namespace: opts.Roles[0].GetNamespace(),
+				DeleteRoleBindings(ctx, sa, append(rbacOpts.RoleBindings, client.ObjectKey{
+					Name:      rbacOpts.Roles[0].GetName(),
+					Namespace: rbacOpts.Roles[0].GetNamespace(),
 				})).
 				Return(nil)
 
 			clusterRoleClient.EXPECT().
-				DeleteClusterRole(ctx, opts.ClusterRoles[0].Name).
+				DeleteClusterRole(ctx, rbacOpts.ClusterRoles[0].Name).
 				Return(nil)
 
 			clusterRBACBinder.EXPECT().
-				DeleteClusterRoleBindings(ctx, sa, append(opts.ClusterRoleBindings, client.ObjectKey{
-					Name: opts.ClusterRoles[0].GetName(),
+				DeleteClusterRoleBindings(ctx, sa, append(rbacOpts.ClusterRoleBindings, client.ObjectKey{
+					Name: rbacOpts.ClusterRoles[0].GetName(),
 				})).Return(nil)
 
 			err := clusterRegistrant.DeleteRemoteAccessResources(ctx, clientConfig, opts)
@@ -476,7 +478,7 @@ var _ = Describe("Registrant", func() {
 				}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 
-			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, nil, api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",
 				Preferences: api.Preferences{},
@@ -502,14 +504,18 @@ var _ = Describe("Registrant", func() {
 				CreateSecret(ctx, secret).
 				Return(nil)
 
-			kubeClusterClient.EXPECT().
-				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
-					ObjectMeta: secret.ObjectMeta,
-					Spec: v1alpha1.KubernetesClusterSpec{
-						SecretName:    secret.Name,
-						ClusterDomain: "cluster.local",
-					},
-				}).Return(nil)
+			kubeCluster := &v1alpha1.KubernetesCluster{
+				ObjectMeta: secret.ObjectMeta,
+				Spec: v1alpha1.KubernetesClusterSpec{
+					SecretName:    secret.Name,
+					ClusterDomain: "cluster.local",
+				},
+				Status: v1alpha1.KubernetesClusterStatus{
+					Namespace: namespace,
+				},
+			}
+			kubeClusterClient.EXPECT().UpsertKubernetesCluster(ctx, kubeCluster).Return(nil)
+			kubeClusterClient.EXPECT().UpdateKubernetesClusterStatus(ctx, kubeCluster).Return(nil)
 
 			err = clusterRegistrant.RegisterClusterWithToken(ctx, restCfg, clientConfig, token, opts)
 
@@ -530,10 +536,36 @@ var _ = Describe("Registrant", func() {
 				kubeClusterClientFactory,
 			)
 
+			providerInfo := &v1alpha1.KubernetesClusterSpec_ProviderInfo{
+				ProviderInfoType: &v1alpha1.KubernetesClusterSpec_ProviderInfo_Eks{
+					Eks: &v1alpha1.KubernetesClusterSpec_Eks{
+						Arn:       "arn",
+						AccountId: "accountId",
+						Region:    "region",
+						Name:      "name",
+					},
+				},
+			}
+
+			policyRules := []*v1alpha1.PolicyRule{
+				{
+					Verbs:     []string{"watch"},
+					ApiGroups: []string{"v1alpha1"},
+					Resources: []string{"foo"},
+				},
+			}
+
 			opts := register.Options{
 				ClusterName: clusterName,
 				Namespace:   namespace,
 				RemoteCtx:   remoteCtx,
+				RegistrationMetadata: register.RegistrationMetadata{
+					ProviderInfo: providerInfo,
+					ResourceLabels: map[string]string{
+						"foo": "bar",
+					},
+					ClusterRolePolicyRules: policyRules,
+				},
 			}
 
 			restCfg := &rest.Config{
@@ -580,7 +612,7 @@ var _ = Describe("Registrant", func() {
 				}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 
-			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, map[string]string{"foo": "bar"}, api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",
 				Preferences: api.Preferences{},
@@ -606,28 +638,34 @@ var _ = Describe("Registrant", func() {
 				CreateSecret(ctx, secret).
 				Return(nil)
 
-			providerInfo := &v1alpha1.KubernetesClusterSpec_ProviderInfo{
-				ProviderInfoType: &v1alpha1.KubernetesClusterSpec_ProviderInfo_Eks{
-					Eks: &v1alpha1.KubernetesClusterSpec_Eks{
-						Arn:       "arn",
-						AccountId: "accountId",
-						Region:    "region",
-						Name:      "name",
+			kubeCluster := &v1alpha1.KubernetesCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      secret.ObjectMeta.Name,
+					Namespace: secret.ObjectMeta.Namespace,
+					Labels: map[string]string{
+						"foo": "bar",
 					},
 				},
+				Spec: v1alpha1.KubernetesClusterSpec{
+					SecretName:    secret.Name,
+					ClusterDomain: "cluster.local",
+					ProviderInfo:  providerInfo,
+				},
+				Status: v1alpha1.KubernetesClusterStatus{
+					Namespace:   "namespace",
+					PolicyRules: policyRules,
+				},
 			}
+			kubeClusterClient.EXPECT().UpsertKubernetesCluster(ctx, kubeCluster).Return(nil)
+			kubeClusterClient.EXPECT().UpdateKubernetesClusterStatus(ctx, kubeCluster).Return(nil)
 
-			kubeClusterClient.EXPECT().
-				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
-					ObjectMeta: secret.ObjectMeta,
-					Spec: v1alpha1.KubernetesClusterSpec{
-						SecretName:    secret.Name,
-						ClusterDomain: "cluster.local",
-						ProviderInfo:  providerInfo,
-					},
-				}).Return(nil)
-
-			err = clusterRegistrant.RegisterProviderClusterWithToken(ctx, restCfg, clientConfig, token, opts, providerInfo)
+			err = clusterRegistrant.RegisterClusterWithToken(
+				ctx,
+				restCfg,
+				clientConfig,
+				token,
+				opts,
+			)
 
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -703,7 +741,7 @@ var _ = Describe("Registrant", func() {
 			overwrittenApiConfig.Clusters[clusterName].CertificateAuthority = ""
 			overwrittenApiConfig.Clusters[clusterName].CertificateAuthorityData = []byte("")
 
-			secret, err := kubeconfig.ToSecret(namespace, clusterName, api.Config{
+			secret, err := kubeconfig.ToSecret(namespace, clusterName, nil, api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",
 				Preferences: api.Preferences{},
@@ -729,14 +767,18 @@ var _ = Describe("Registrant", func() {
 				CreateSecret(ctx, secret).
 				Return(nil)
 
-			kubeClusterClient.EXPECT().
-				UpsertKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
-					ObjectMeta: secret.ObjectMeta,
-					Spec: v1alpha1.KubernetesClusterSpec{
-						SecretName:    secret.Name,
-						ClusterDomain: "cluster.local",
-					},
-				}).Return(nil)
+			kubeCluster := &v1alpha1.KubernetesCluster{
+				ObjectMeta: secret.ObjectMeta,
+				Spec: v1alpha1.KubernetesClusterSpec{
+					SecretName:    secret.Name,
+					ClusterDomain: "cluster.local",
+				},
+				Status: v1alpha1.KubernetesClusterStatus{
+					Namespace: namespace,
+				},
+			}
+			kubeClusterClient.EXPECT().UpsertKubernetesCluster(ctx, kubeCluster).Return(nil)
+			kubeClusterClient.EXPECT().UpdateKubernetesClusterStatus(ctx, kubeCluster).Return(nil)
 
 			err = clusterRegistrant.RegisterClusterWithToken(ctx, restCfg, clientConfig, token, opts)
 

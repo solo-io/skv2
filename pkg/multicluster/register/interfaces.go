@@ -30,7 +30,7 @@ type Options struct {
 	// If left empty will return error
 	ClusterName string
 
-	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// Namespace to write namespaced resources to in the management cluster.
 	// If left empty will return error
 	Namespace string
 
@@ -38,7 +38,7 @@ type Options struct {
 	// We need to explicitly pass this because of this open issue: https://github.com/kubernetes/client-go/issues/735
 	RemoteCtx string
 
-	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// Namespace to write namespaced resources to in the remote cluster.
 	// If left empty will return error
 	RemoteNamespace string
 
@@ -46,11 +46,32 @@ type Options struct {
 	// Defaults to 'cluster.local'
 	// Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
 	ClusterDomain string
+
+	RegistrationMetadata RegistrationMetadata
+
+	RbacOptions RbacOptions
+
+	// Set to true if the remote cluster no longer exists (e.g. was deleted).
+	// If true, deregistration will not attempt to delete registration resources on the remote cluster.
+	RemoteClusterDeleted bool
+}
+
+// Optional additional metadata to persist to registration output resources.
+type RegistrationMetadata struct {
+	// Metadata about the provider for cloud hosted k8s clusters.
+	ProviderInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo
+
+	// Labels to add to registration output resources (KubernetesCluster and Secret).
+	ResourceLabels map[string]string
+
+	// The set of PolicyRules for Roles created on the remote cluster upon registration.
+	RolePolicyRules []*v1alpha1.PolicyRule
+
+	// The set of PolicyRules for the cluster roles created on the remote cluster upon registration.
+	ClusterRolePolicyRules []*v1alpha1.PolicyRule
 }
 
 type RbacOptions struct {
-	Options
-
 	// A list of roles to bind the New kubeconfig token to
 	// Any Roles in this list will be Upserted by the registrant, prior to binding
 	Roles []*k8s_rbac_types.Role
@@ -89,6 +110,14 @@ func (o *Options) validate() error {
 	the registrant instance.
 */
 type ClusterRegistrant interface {
+	/*
+		EnsureRemoteNamespace ensures that the specified remoteNamespace exists on the remote cluster being registered.
+	*/
+	EnsureRemoteNamespace(
+		ctx context.Context,
+		remoteClientCfg clientcmd.ClientConfig,
+		remoteNamespace string,
+	) error
 
 	/*
 		EnsureRemoteServiceAccount takes an instance of a remote config, and ensure a ServiceAccount exists on the
@@ -122,7 +151,7 @@ type ClusterRegistrant interface {
 		ctx context.Context,
 		remoteClientCfg clientcmd.ClientConfig,
 		sa client.ObjectKey,
-		opts RbacOptions,
+		opts Options,
 	) (token string, err error)
 
 	/*
@@ -132,7 +161,7 @@ type ClusterRegistrant interface {
 	DeleteRemoteAccessResources(
 		ctx context.Context,
 		remoteClientCfg clientcmd.ClientConfig,
-		opts RbacOptions,
+		opts Options,
 	) error
 
 	/*
@@ -145,18 +174,6 @@ type ClusterRegistrant interface {
 		remoteClientCfg clientcmd.ClientConfig,
 		token string,
 		opts Options,
-	) error
-
-	/*
-		Same functionality as RegisterClusterWithToken but supply extra ProviderInfo metadata.
-	*/
-	RegisterProviderClusterWithToken(
-		ctx context.Context,
-		masterClusterCfg *rest.Config,
-		remoteClientCfg clientcmd.ClientConfig,
-		token string,
-		opts Options,
-		providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
 	) error
 
 	/*

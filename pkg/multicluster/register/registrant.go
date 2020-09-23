@@ -94,6 +94,18 @@ type clusterRegistrant struct {
 	localAPIServerAddress string
 }
 
+func (c *clusterRegistrant) EnsureRemoteNamespace(
+	ctx context.Context,
+	remoteClientCfg clientcmd.ClientConfig,
+	remoteNamespace string,
+) error {
+	remoteRestCfg, err := remoteClientCfg.ClientConfig()
+	if err != nil {
+		return err
+	}
+	return c.ensureRemoteNamespace(ctx, remoteNamespace, remoteRestCfg)
+}
+
 func (c *clusterRegistrant) EnsureRemoteServiceAccount(
 	ctx context.Context,
 	remoteClientCfg clientcmd.ClientConfig,
@@ -171,7 +183,7 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 	ctx context.Context,
 	remoteClientCfg clientcmd.ClientConfig,
 	sa client.ObjectKey,
-	opts RbacOptions,
+	opts Options,
 ) (token string, err error) {
 
 	if err = (&opts).validate(); err != nil {
@@ -188,13 +200,15 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 		return "", err
 	}
 
-	roleBindings := make([]client.ObjectKey, 0, len(opts.Roles)+len(opts.RoleBindings))
-	roleBindings = append(roleBindings, opts.RoleBindings...)
-	if len(opts.Roles) != 0 {
-		if err = c.upsertRoles(ctx, remoteCfg, opts.Roles); err != nil {
+	rbacOpts := opts.RbacOptions
+
+	roleBindings := make([]client.ObjectKey, 0, len(rbacOpts.Roles)+len(rbacOpts.RoleBindings))
+	roleBindings = append(roleBindings, rbacOpts.RoleBindings...)
+	if len(rbacOpts.Roles) != 0 {
+		if err = c.upsertRoles(ctx, remoteCfg, rbacOpts.Roles); err != nil {
 			return "", err
 		}
-		for _, v := range opts.Roles {
+		for _, v := range rbacOpts.Roles {
 			roleBindings = append(roleBindings, client.ObjectKey{
 				Namespace: v.GetNamespace(),
 				Name:      v.GetName(),
@@ -207,13 +221,13 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 		}
 	}
 
-	clusterRoleBindings := make([]client.ObjectKey, 0, len(opts.ClusterRoles)+len(opts.ClusterRoleBindings))
-	clusterRoleBindings = append(clusterRoleBindings, opts.ClusterRoleBindings...)
-	if len(opts.ClusterRoles) != 0 {
-		if err = c.upsertClusterRoles(ctx, remoteCfg, opts.ClusterRoles); err != nil {
+	clusterRoleBindings := make([]client.ObjectKey, 0, len(rbacOpts.ClusterRoles)+len(rbacOpts.ClusterRoleBindings))
+	clusterRoleBindings = append(clusterRoleBindings, rbacOpts.ClusterRoleBindings...)
+	if len(rbacOpts.ClusterRoles) != 0 {
+		if err = c.upsertClusterRoles(ctx, remoteCfg, rbacOpts.ClusterRoles); err != nil {
 			return "", err
 		}
-		for _, v := range opts.ClusterRoles {
+		for _, v := range rbacOpts.ClusterRoles {
 			clusterRoleBindings = append(clusterRoleBindings, client.ObjectKey{
 				Name: v.GetName(),
 			})
@@ -230,22 +244,25 @@ func (c *clusterRegistrant) CreateRemoteAccessToken(
 
 func (c *clusterRegistrant) DeleteRemoteAccessResources(ctx context.Context,
 	remoteClientCfg clientcmd.ClientConfig,
-	opts RbacOptions,
+	opts Options,
 ) error {
-	saObjMeta := serviceAccountObjMeta(opts.Options)
+	saObjMeta := serviceAccountObjMeta(opts)
 	sa := client.ObjectKey{Name: saObjMeta.Name, Namespace: saObjMeta.Namespace}
 
 	remoteCfg, err := remoteClientCfg.ClientConfig()
 	if err != nil {
 		return err
 	}
+
+	rbacOpts := opts.RbacOptions
+
 	var multierr *multierror.Error
 	// Delete Roles
-	if err := c.deleteRoles(ctx, remoteCfg, opts.Roles); err != nil {
+	if err := c.deleteRoles(ctx, remoteCfg, rbacOpts.Roles); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	// Delete ClusterRoles
-	if err := c.deleteClusterRoles(ctx, remoteCfg, opts.ClusterRoles); err != nil {
+	if err := c.deleteClusterRoles(ctx, remoteCfg, rbacOpts.ClusterRoles); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 
@@ -255,9 +272,9 @@ func (c *clusterRegistrant) DeleteRemoteAccessResources(ctx context.Context,
 	}
 
 	// Delete RoleBindings
-	roleBindings := make([]client.ObjectKey, 0, len(opts.Roles)+len(opts.RoleBindings))
-	roleBindings = append(roleBindings, opts.RoleBindings...)
-	for _, v := range opts.Roles {
+	roleBindings := make([]client.ObjectKey, 0, len(rbacOpts.Roles)+len(rbacOpts.RoleBindings))
+	roleBindings = append(roleBindings, rbacOpts.RoleBindings...)
+	for _, v := range rbacOpts.Roles {
 		roleBindings = append(roleBindings, client.ObjectKey{
 			Name:      v.GetName(),
 			Namespace: v.GetNamespace(),
@@ -268,9 +285,9 @@ func (c *clusterRegistrant) DeleteRemoteAccessResources(ctx context.Context,
 	}
 
 	// Delete ClusterRoleBindings
-	clusterRoleBindings := make([]client.ObjectKey, 0, len(opts.ClusterRoles)+len(opts.ClusterRoleBindings))
-	clusterRoleBindings = append(clusterRoleBindings, opts.ClusterRoleBindings...)
-	for _, v := range opts.ClusterRoles {
+	clusterRoleBindings := make([]client.ObjectKey, 0, len(rbacOpts.ClusterRoles)+len(rbacOpts.ClusterRoleBindings))
+	clusterRoleBindings = append(clusterRoleBindings, rbacOpts.ClusterRoleBindings...)
+	for _, v := range rbacOpts.ClusterRoles {
 		clusterRoleBindings = append(clusterRoleBindings, client.ObjectKey{
 			Name: v.GetName(),
 		})
@@ -288,17 +305,6 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	remoteClientCfg clientcmd.ClientConfig,
 	token string,
 	opts Options,
-) error {
-	return c.RegisterProviderClusterWithToken(ctx, masterClusterCfg, remoteClientCfg, token, opts, nil)
-}
-
-func (c *clusterRegistrant) RegisterProviderClusterWithToken(
-	ctx context.Context,
-	masterClusterCfg *rest.Config,
-	remoteClientCfg clientcmd.ClientConfig,
-	token string,
-	opts Options,
-	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
 ) error {
 	if err := (&opts).validate(); err != nil {
 		return err
@@ -333,6 +339,7 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 	kcSecret, err := kubeconfig.ToSecret(
 		opts.Namespace,
 		opts.ClusterName,
+		opts.RegistrationMetadata.ResourceLabels,
 		c.buildRemoteCfg(remoteCluster, remoteContext, opts.ClusterName, token),
 	)
 	if err != nil {
@@ -343,14 +350,24 @@ func (c *clusterRegistrant) RegisterProviderClusterWithToken(
 		return err
 	}
 
-	kubeCluster := buildKubeClusterResource(kcSecret, opts.ClusterDomain, providerInfo)
+	kubeCluster := buildKubeClusterResource(
+		kcSecret,
+		opts.RegistrationMetadata.ResourceLabels,
+		opts.ClusterDomain,
+		opts.RegistrationMetadata.ProviderInfo,
+		opts.RemoteNamespace,
+		opts.RegistrationMetadata.ClusterRolePolicyRules,
+	)
 
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {
 		return err
 	}
 
-	return kubeClusterClient.UpsertKubernetesCluster(ctx, kubeCluster)
+	if err = kubeClusterClient.UpsertKubernetesCluster(ctx, kubeCluster); err != nil {
+		return err
+	}
+	return kubeClusterClient.UpdateKubernetesClusterStatus(ctx, kubeCluster)
 }
 
 func (c *clusterRegistrant) DeregisterCluster(
@@ -362,8 +379,8 @@ func (c *clusterRegistrant) DeregisterCluster(
 		return err
 	}
 
-	kcSecretObjMeta := kubeconfig.SecretObjMeta(opts.Namespace, opts.ClusterName)
-	kubeClusterObjMeta := kubeClusterObjMeta(kcSecretObjMeta.Name, kcSecretObjMeta.Namespace)
+	kcSecretObjMeta := kubeconfig.SecretObjMeta(opts.Namespace, opts.ClusterName, nil)
+	kubeClusterObjMeta := kubeClusterObjMeta(kcSecretObjMeta.Name, kcSecretObjMeta.Namespace, nil)
 	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
 	if err != nil {
 		return err
@@ -383,26 +400,34 @@ func (c *clusterRegistrant) DeregisterCluster(
 
 func buildKubeClusterResource(
 	secret *corev1.Secret,
+	labels map[string]string,
 	clusterDomain string,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+	remoteNamespace string,
+	policyRules []*v1alpha1.PolicyRule,
 ) *v1alpha1.KubernetesCluster {
 	if clusterDomain == "" {
 		clusterDomain = DefaultClusterDomain
 	}
 	return &v1alpha1.KubernetesCluster{
-		ObjectMeta: kubeClusterObjMeta(secret.Name, secret.Namespace),
+		ObjectMeta: kubeClusterObjMeta(secret.Name, secret.Namespace, labels),
 		Spec: v1alpha1.KubernetesClusterSpec{
 			SecretName:    secret.Name,
 			ClusterDomain: clusterDomain,
 			ProviderInfo:  providerInfo,
 		},
+		Status: v1alpha1.KubernetesClusterStatus{
+			Namespace:   remoteNamespace,
+			PolicyRules: policyRules,
+		},
 	}
 }
 
-func kubeClusterObjMeta(secretName, secretNamespace string) metav1.ObjectMeta {
+func kubeClusterObjMeta(secretName, secretNamespace string, labels map[string]string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Name:      secretName,
 		Namespace: secretNamespace,
+		Labels:    labels,
 	}
 }
 

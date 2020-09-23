@@ -48,17 +48,21 @@ users:
 	Describe("ToSecret", func() {
 
 		It("should convert a single KubeConfig to a single secret", func() {
+			expectedLabels := map[string]string{
+				"foo": "bar",
+			}
 			expectedSecret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: namespace,
+					Labels:    expectedLabels,
 				},
 				Data: map[string][]byte{
 					Key: []byte(kubeConfigRaw),
 				},
 				Type: SecretType,
 			}
-			secret, err := ToSecret(namespace, clusterName, *config)
+			secret, err := ToSecret(namespace, clusterName, expectedLabels, *config)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).To(Equal(expectedSecret))
 		})

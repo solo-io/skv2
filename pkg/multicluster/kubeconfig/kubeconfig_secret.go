@@ -27,7 +27,7 @@ var (
 // TODO settle on how to canonicalize cluster names: https://github.com/solo-io/skv2/issues/15
 
 // ToSecret converts a kubernetes api.Config to a secret with the provided name and namespace.
-func ToSecret(namespace string, cluster string, kc api.Config) (*kubev1.Secret, error) {
+func ToSecret(namespace string, cluster string, resourceLabels map[string]string, kc api.Config) (*kubev1.Secret, error) {
 	err := convertCertFilesToInline(kc)
 	if err != nil {
 		return nil, err
@@ -39,16 +39,17 @@ func ToSecret(namespace string, cluster string, kc api.Config) (*kubev1.Secret, 
 	}
 
 	return &kubev1.Secret{
-		ObjectMeta: SecretObjMeta(namespace, cluster),
+		ObjectMeta: SecretObjMeta(namespace, cluster, resourceLabels),
 		Type:       SecretType,
 		Data:       map[string][]byte{Key: rawKubeConfig},
 	}, nil
 }
 
-func SecretObjMeta(namespace string, cluster string) metav1.ObjectMeta {
+func SecretObjMeta(namespace string, cluster string, resourceLabels map[string]string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Name:      cluster,
 		Namespace: namespace,
+		Labels:    resourceLabels,
 	}
 }
 
