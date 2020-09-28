@@ -2,6 +2,7 @@ package register
 
 import (
 	"context"
+	"strings"
 
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"k8s.io/client-go/rest"
@@ -26,7 +27,7 @@ var (
 
 type Options struct {
 
-	// Name by which the cluster will be identified
+	// Name by which the cluster will be identified. Must not contain '.'
 	// If left empty will return error
 	ClusterName string
 
@@ -98,6 +99,9 @@ func (o *Options) validate() error {
 	}
 	if o.ClusterName == "" {
 		return eris.Errorf("Must specify cluster name")
+	}
+	if strings.Contains(o.ClusterName, ".") {
+		return eris.Errorf("Cluster name %s must not contain '.'", o.ClusterName)
 	}
 	return nil
 }
