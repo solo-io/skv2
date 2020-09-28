@@ -818,6 +818,37 @@ var _ = Describe("Registrant", func() {
 			err := clusterRegistrant.DeregisterCluster(ctx, restCfg, opts)
 			Expect(err).NotTo(HaveOccurred())
 		})
+
+		It("should error if cluster name is wrong", func() {
+			clusterRegistrant := register.NewClusterRegistrant(
+				"",
+				clusterRbacBinderFactory,
+				secretClient,
+				secretClientFactory,
+				nsClientFactory,
+				saClientFactory,
+				clusterRoleClientFactory,
+				roleClientFactory,
+				kubeClusterClientFactory,
+			)
+
+			opts := register.Options{
+				ClusterName: "",
+				Namespace:   namespace,
+				RemoteCtx:   remoteCtx,
+			}
+
+			restCfg := &rest.Config{
+				Host: "mock-host",
+			}
+
+			err := clusterRegistrant.DeregisterCluster(ctx, restCfg, opts)
+			Expect(err.Error()).To(Equal("Must specify cluster name"))
+
+			opts.ClusterName = "wrong."
+			err = clusterRegistrant.DeregisterCluster(ctx, restCfg, opts)
+			Expect(err.Error()).To(Equal("Cluster name wrong. must not contain '.'"))
+		})
 	})
 
 })
