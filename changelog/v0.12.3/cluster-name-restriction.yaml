@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Do not allow cluster names with '.' characters.
+    issueLink: https://github.com/solo-io/skv2/issues/149
