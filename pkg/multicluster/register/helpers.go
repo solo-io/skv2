@@ -171,6 +171,10 @@ func (opts RegistrationOptions) initialize(
 		},
 	}
 
+	if err = (&registrationOpts).validate(); err != nil {
+		return nil, nil, Options{}, nil, err
+	}
+
 	return masterRestCfg, remoteCfg, registrationOpts, registrant, nil
 }
 
