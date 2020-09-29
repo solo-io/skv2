@@ -38,7 +38,7 @@ type RegistrationOptions struct {
 	//	knows to hit localhost.
 	APIServerAddress string
 
-	// Name by which the cluster will be identified
+	// Name by which the cluster will be identified. Must not contain '.'
 	// If left empty will return error
 	ClusterName string
 
@@ -169,6 +169,10 @@ func (opts RegistrationOptions) initialize(
 			RolePolicyRules:        rolePolicyRules,
 			ClusterRolePolicyRules: clusterRolePolicyRules,
 		},
+	}
+
+	if err = (&registrationOpts).validate(); err != nil {
+		return nil, nil, Options{}, nil, err
 	}
 
 	return masterRestCfg, remoteCfg, registrationOpts, registrant, nil
