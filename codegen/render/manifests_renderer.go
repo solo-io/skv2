@@ -18,7 +18,7 @@ import (
 
 // creates a k8s resource for a group
 // this gets turned into a k8s manifest file
-type MakeResourceFunc func(group Group, oapiSchemas kuberesource.OpenApiSchemas) ([]metav1.Object, error)
+type MakeResourceFunc func(group Group) ([]metav1.Object, error)
 
 // renders kubernetes from templates
 type ManifestsRenderer struct {
@@ -47,18 +47,18 @@ func (r ManifestsRenderer) RenderManifests(grp Group) ([]OutFile, error) {
 		return nil, nil
 	}
 
-	var err error
-	var oapiSchemas kuberesource.OpenApiSchemas
 	if grp.RenderValidationSchemas {
-		oapiSchemas, err = generateOpenApi(grp, r.ProtoDir)
+		var err error
+		oapiSchemas, err := generateOpenApi(grp, r.ProtoDir)
 		if err != nil {
 			return nil, err
 		}
+		grp.OpenApiSchemas = oapiSchemas
 	}
 
 	var renderedFiles []OutFile
 	for out, mkFunc := range r.ResourceFuncs {
-		content, err := renderManifest(r.AppName, mkFunc, grp, oapiSchemas)
+		content, err := renderManifest(r.AppName, mkFunc, grp)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +69,7 @@ func (r ManifestsRenderer) RenderManifests(grp Group) ([]OutFile, error) {
 }
 
 // Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
-func generateOpenApi(grp model.Group, protoDir string) (kuberesource.OpenApiSchemas, error) {
+func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, error) {
 	if protoDir == "" {
 		protoDir = anyvendor.DefaultDepDir
 	}
@@ -129,7 +129,7 @@ func generateOpenApi(grp model.Group, protoDir string) (kuberesource.OpenApiSche
 		}
 
 		// Iterate openapi objects to construct mapping from proto message name to openapi schema
-		oapiSchemas := kuberesource.OpenApiSchemas{}
+		oapiSchemas := model.OpenApiSchemas{}
 		for _, kv := range schemas.Pairs() {
 			oapiSchemas[kv.Key] = kv.Value.(*openapi.OrderedMap)
 		}
@@ -139,8 +139,8 @@ func generateOpenApi(grp model.Group, protoDir string) (kuberesource.OpenApiSche
 	return nil, nil
 }
 
-func renderManifest(appName string, mk MakeResourceFunc, group Group, oapiSchemas kuberesource.OpenApiSchemas) (string, error) {
-	objs, err := mk(group, oapiSchemas)
+func renderManifest(appName string, mk MakeResourceFunc, group Group) (string, error) {
+	objs, err := mk(group)
 	if err != nil {
 		return "", err
 	}

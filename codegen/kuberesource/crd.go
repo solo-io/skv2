@@ -15,16 +15,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Mapping from protobuf message name to OpenApi schema
-type OpenApiSchemas map[string]*openapi.OrderedMap
-
 // Create CRDs for a group
-func CustomResourceDefinitions(group model.Group, oapiSchemas OpenApiSchemas) (objects []metav1.Object, err error) {
+func CustomResourceDefinitions(group model.Group) (objects []metav1.Object, err error) {
 	for _, resource := range group.Resources {
 
 		var validationSchema *apiextv1beta1.CustomResourceValidation
 		if group.RenderValidationSchemas {
-			validationSchema, err = constructValidationSchema(resource, oapiSchemas)
+			validationSchema, err = constructValidationSchema(resource, group.OpenApiSchemas)
 			if err != nil {
 				return nil, err
 			}
@@ -35,24 +32,31 @@ func CustomResourceDefinitions(group model.Group, oapiSchemas OpenApiSchemas) (o
 	return objects, nil
 }
 
-func constructValidationSchema(resource model.Resource, oapiSchemas OpenApiSchemas) (*apiextv1beta1.CustomResourceValidation, error) {
+func constructValidationSchema(resource model.Resource, oapiSchemas model.OpenApiSchemas) (*apiextv1beta1.CustomResourceValidation, error) {
+	validationSchema := &apiextv1beta1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextv1beta1.JSONSchemaProps{
+			Type:       "object",
+			Properties: map[string]apiextv1beta1.JSONSchemaProps{},
+		},
+	}
+
+	// Spec validation schema
 	specSchema, err := getJsonSchema(resource, resource.Spec.Type.Name, oapiSchemas)
 	if err != nil {
 		return nil, eris.Wrapf(err, "constructing spec validation schema for Kind %s", resource.Kind)
 	}
-	statusSchema, err := getJsonSchema(resource, resource.Status.Type.Name, oapiSchemas)
-	if err != nil {
-		return nil, eris.Wrapf(err, "constructing status validation schema for Kind %s", resource.Kind)
+	validationSchema.OpenAPIV3Schema.Properties["spec"] = *specSchema
+
+	// Status validation schema
+	if resource.Status != nil {
+		statusSchema, err := getJsonSchema(resource, resource.Status.Type.Name, oapiSchemas)
+		if err != nil {
+			return nil, eris.Wrapf(err, "constructing status validation schema for Kind %s", resource.Kind)
+		}
+		validationSchema.OpenAPIV3Schema.Properties["status"] = *statusSchema
 	}
-	return &apiextv1beta1.CustomResourceValidation{
-		OpenAPIV3Schema: &apiextv1beta1.JSONSchemaProps{
-			Type: "object",
-			Properties: map[string]apiextv1beta1.JSONSchemaProps{
-				"spec":   *specSchema,
-				"status": *statusSchema,
-			},
-		},
-	}, nil
+
+	return validationSchema, nil
 }
 
 func getJsonSchema(resource model.Resource, schemaName string, schemas map[string]*openapi.OrderedMap) (*apiextv1beta1.JSONSchemaProps, error) {

@@ -3,6 +3,7 @@ package model
 import (
 	"text/template"
 
+	"cuelang.org/go/encoding/openapi"
 	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/skv2/codegen/collector"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -39,6 +40,9 @@ func (g GeneratorTypes) HasDeepcopy() bool {
 	}
 	return false
 }
+
+// Mapping from protobuf message name to OpenApi schema
+type OpenApiSchemas map[string]*openapi.OrderedMap
 
 type Group struct {
 	// the group version of the group
@@ -93,6 +97,9 @@ type Group struct {
 
 	// data for providing custom templates to generate custom code for groups
 	CustomTemplates []CustomTemplates
+
+	// Mapping from protobuf message name to generated open api structural schema
+	OpenApiSchemas OpenApiSchemas
 }
 
 func (g Group) HasProtos() bool {
