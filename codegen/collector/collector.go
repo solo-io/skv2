@@ -124,7 +124,7 @@ func (c *collector) findImportRelativeToRoot(absoluteRoot, importedProtoFile str
 			absoluteRoot, importedProtoFile)
 	}
 	if len(possibleImportPaths) != 1 {
-		log.Warnf("found more than one possible import path in root directory for "+
+		log.Debugf("found more than one possible import path in root directory for "+
 			"import %v: %v",
 			importedProtoFile, possibleImportPaths)
 	}
