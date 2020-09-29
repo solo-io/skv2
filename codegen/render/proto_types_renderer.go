@@ -37,10 +37,19 @@ func (r ProtoCodeRenderer) RenderProtoHelpers(grp Group) ([]OutFile, error) {
 		return nil, nil
 	}
 
-	files, err := r.deepCopyGenTemplate(grp)
+	var files []OutFile
+
+	deepCopyFiles, err := r.deepCopyGenTemplate(grp)
 	if err != nil {
 		return nil, err
 	}
+	files = append(files, deepCopyFiles...)
+
+	jsonFiles, err := r.jsonGenTemplate(grp)
+	if err != nil {
+		return nil, err
+	}
+	files = append(files, jsonFiles...)
 
 	return files, nil
 }
@@ -48,6 +57,9 @@ func (r ProtoCodeRenderer) RenderProtoHelpers(grp Group) ([]OutFile, error) {
 const (
 	protoDeepCopyTemplate = "code/types/proto_deepcopy.gotmpl"
 	protoDeepCopyGo       = "proto_deepcopy.go"
+
+	protoJsonTemplate = "code/types/json.gen.gotmpl"
+	protoJsonGo       = "json.gen.go"
 )
 
 // helper type for rendering proto_deepcopy.go files
@@ -58,6 +70,8 @@ type descriptorsWithGopath struct {
 	Resources []Resource
 	// package name used to render the package name in the go template
 	PackageName string
+	// group name
+	GroupName string
 	// go package of the group api root
 	rootGoPackage string
 	// full go package which the template render funcs will use to match against the
@@ -112,6 +126,43 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 			Descriptors:      grp.Descriptors,
 			Resources:        grp.Resources,
 			PackageName:      packageName,
+			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			goPackageToMatch: pkgForGroup,
+		})
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, files...)
+	}
+	return result, nil
+}
+
+/*
+	Create and render the templates for protobuf to json marshalling/unmarshalling.
+
+	The empty string package name is treated as local, and so it it computed the same way as before
+
+	Any other package name is than rendered to the relative path supplied.
+*/
+func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
+	var result []OutFile
+	for _, pkgForGroup := range uniqueGoImportPathsForGroup(grp) {
+
+		// render the proto helper code in the directory containing the type's package
+		outPath := "." + strings.TrimPrefix(pkgForGroup, r.GoModule)
+
+		inputTmpls := inputTemplates{
+			protoJsonTemplate: OutFile{
+				Path: filepath.Join(outPath, protoJsonGo),
+			},
+		}
+		packageName := filepath.Base(pkgForGroup)
+
+		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
+			Descriptors:      grp.Descriptors,
+			Resources:        grp.Resources,
+			PackageName:      packageName,
+			GroupName:        grp.Group,
 			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
 			goPackageToMatch: pkgForGroup,
 		})

@@ -41,9 +41,7 @@ func CompileProtos(goModule, moduleName, protoDir string) ([]*collector.Descript
 		coll,
 		[]string{protoDir}, // import the inputs dir
 		nil,
-		[]string{
-			"jsonshim",
-		},
+		[]string{},
 		protoOutDir,
 		func(file string) bool {
 			return true
