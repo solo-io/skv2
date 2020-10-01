@@ -39,8 +39,8 @@ message OilType {
 }
 
 message PaintStatus {
-    uint32 observedGeneration = 1;
-    uint32 percentRemaining = 2;
+    int64 observedGeneration = 1;
+    int64 percentRemaining = 2;
 }
 
 message ClusterResourceSpec {

@@ -89,12 +89,10 @@ spec:
         status:
           properties:
             observedGeneration:
-              maximum: 4294967295
-              minimum: 0
+              format: int64
               type: integer
             percentRemaining:
-              maximum: 4294967295
-              minimum: 0
+              format: int64
               type: integer
           type: object
       type: object

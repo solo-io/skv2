@@ -99,7 +99,7 @@ message Status {
 
     // The most recently observed generation of the resource. This value corresponds to the `metadata.generation` of
     // a kubernetes resource
-    uint32 observed_generation = 3;
+    int64 observed_generation = 3;
 
     // The time at which this status was recorded
     google.protobuf.Timestamp processing_time = 4;

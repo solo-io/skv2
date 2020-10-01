@@ -69,7 +69,7 @@ func mustCrud(ctx context.Context, clientSet Clientset, paint *Paint) {
 	Expect(written.Spec).To(Equal(paint.Spec))
 
 	status := PaintStatus{
-		ObservedGeneration: uint32(written.Generation),
+		ObservedGeneration: written.Generation,
 		PercentRemaining:   22,
 	}
 
