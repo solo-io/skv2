@@ -15,7 +15,6 @@ DEPSGOBIN=$(shell pwd)/_output/.bin
 install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
 	GOBIN=$(DEPSGOBIN) go install github.com/gobuffalo/packr/packr
-	GOBIN=$(DEPSGOBIN) go install istio.io/tools/cmd/protoc-gen-jsonshim
 	GOBIN=$(DEPSGOBIN) go install github.com/gogo/protobuf/protoc-gen-gogo
 	GOBIN=$(DEPSGOBIN) go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 	GOBIN=$(DEPSGOBIN) go install github.com/solo-io/protoc-gen-ext

@@ -8,11 +8,10 @@ import (
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
-	skmodel "github.com/solo-io/solo-kit/pkg/code-generator/model"
-
 	"github.com/solo-io/anyvendor/anyvendor"
 	"github.com/solo-io/anyvendor/pkg/manager"
-	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
+	"github.com/solo-io/skv2/codegen/collector"
+	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 
 	"github.com/solo-io/skv2/builder"
 	"github.com/solo-io/skv2/codegen/model"
@@ -34,7 +33,7 @@ type Command struct {
 
 	// config to vendor protos and other non-go files
 	// Optional: If nil will not be used
-	AnyVendorConfig *sk_anyvendor.Imports
+	AnyVendorConfig *skv2_anyvendor.Imports
 
 	// the k8s api groups for which to compile
 	Groups []render.Group
@@ -153,7 +152,7 @@ func (c Command) generateChart() error {
 	return nil
 }
 
-func (c Command) renderProtos() ([]*skmodel.DescriptorWithPath, error) {
+func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 	if !c.RenderProtos {
 		return nil, nil
 	}
@@ -184,7 +183,7 @@ func (c Command) renderProtos() ([]*skmodel.DescriptorWithPath, error) {
 	return descriptors, nil
 }
 
-func (c Command) generateGroup(grp model.Group, descriptors []*skmodel.DescriptorWithPath) error {
+func (c Command) generateGroup(grp model.Group, descriptors []*collector.DescriptorWithPath) error {
 	c.addDescriptorsToGroup(&grp, descriptors)
 
 	fileWriter := &writer.DefaultFileWriter{
@@ -210,7 +209,7 @@ func (c Command) generateGroup(grp model.Group, descriptors []*skmodel.Descripto
 		return err
 	}
 
-	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, grp)
+	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, grp)
 	if err != nil {
 		return err
 	}
@@ -252,12 +251,12 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 // compiles protos and attaches descriptors to the group and its resources
 // it is important to run this func before rendering as it attaches protos to the
 // group model
-func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*skmodel.DescriptorWithPath) {
+func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*collector.DescriptorWithPath) {
 	if len(descriptors) == 0 {
 		logrus.Debugf("no descriptors generated")
 		return
 	}
-	descriptorMap := map[string]*skmodel.DescriptorWithPath{}
+	descriptorMap := map[string]*collector.DescriptorWithPath{}
 
 	for i, resource := range grp.Resources {
 		var foundSpec bool

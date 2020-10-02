@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/solo-io/solo-kit/pkg/code-generator/model"
+	"github.com/solo-io/skv2/codegen/collector"
 )
 
 // renders kubernetes from templates
@@ -37,10 +37,19 @@ func (r ProtoCodeRenderer) RenderProtoHelpers(grp Group) ([]OutFile, error) {
 		return nil, nil
 	}
 
-	files, err := r.deepCopyGenTemplate(grp)
+	var files []OutFile
+
+	deepCopyFiles, err := r.deepCopyGenTemplate(grp)
 	if err != nil {
 		return nil, err
 	}
+	files = append(files, deepCopyFiles...)
+
+	jsonFiles, err := r.jsonGenTemplate(grp)
+	if err != nil {
+		return nil, err
+	}
+	files = append(files, jsonFiles...)
 
 	return files, nil
 }
@@ -48,16 +57,21 @@ func (r ProtoCodeRenderer) RenderProtoHelpers(grp Group) ([]OutFile, error) {
 const (
 	protoDeepCopyTemplate = "code/types/proto_deepcopy.gotmpl"
 	protoDeepCopyGo       = "proto_deepcopy.go"
+
+	protoJsonTemplate = "code/types/json.gen.gotmpl"
+	protoJsonGo       = "json.gen.go"
 )
 
 // helper type for rendering proto_deepcopy.go files
 type descriptorsWithGopath struct {
 	// list of descriptors pulled from the group
-	Descriptors []*model.DescriptorWithPath
+	Descriptors []*collector.DescriptorWithPath
 	// list of resources pulled from the group
 	Resources []Resource
 	// package name used to render the package name in the go template
 	PackageName string
+	// group name
+	GroupName string
 	// go package of the group api root
 	rootGoPackage string
 	// full go package which the template render funcs will use to match against the
@@ -69,14 +83,14 @@ type descriptorsWithGopath struct {
 	Get the relevant descriptors for a group of descriptors with a go package to match against.
 	A unique object is initialized for each external go package to the group package
 */
-func (grp descriptorsWithGopath) getUniqueDescriptorsWithPath() []*model.DescriptorWithPath {
-	result := make(map[string]*model.DescriptorWithPath)
+func (grp descriptorsWithGopath) getUniqueDescriptorsWithPath() []*collector.DescriptorWithPath {
+	result := make(map[string]*collector.DescriptorWithPath)
 	for _, desc := range grp.Descriptors {
 		if desc.GetOptions().GetGoPackage() == grp.goPackageToMatch {
 			result[desc.ProtoFilePath] = desc
 		}
 	}
-	var array []*model.DescriptorWithPath
+	var array []*collector.DescriptorWithPath
 	for _, v := range result {
 		array = append(array, v)
 	}
@@ -112,6 +126,43 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 			Descriptors:      grp.Descriptors,
 			Resources:        grp.Resources,
 			PackageName:      packageName,
+			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			goPackageToMatch: pkgForGroup,
+		})
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, files...)
+	}
+	return result, nil
+}
+
+/*
+	Create and render the templates for protobuf to json marshalling/unmarshalling.
+
+	The empty string package name is treated as local, and so it it computed the same way as before
+
+	Any other package name is than rendered to the relative path supplied.
+*/
+func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
+	var result []OutFile
+	for _, pkgForGroup := range uniqueGoImportPathsForGroup(grp) {
+
+		// render the proto helper code in the directory containing the type's package
+		outPath := "." + strings.TrimPrefix(pkgForGroup, r.GoModule)
+
+		inputTmpls := inputTemplates{
+			protoJsonTemplate: OutFile{
+				Path: filepath.Join(outPath, protoJsonGo),
+			},
+		}
+		packageName := filepath.Base(pkgForGroup)
+
+		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
+			Descriptors:      grp.Descriptors,
+			Resources:        grp.Resources,
+			PackageName:      packageName,
+			GroupName:        grp.Group,
 			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
 			goPackageToMatch: pkgForGroup,
 		})

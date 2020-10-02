@@ -3,8 +3,9 @@ package model
 import (
 	"text/template"
 
+	"cuelang.org/go/encoding/openapi"
 	"github.com/gogo/protobuf/proto"
-	"github.com/solo-io/solo-kit/pkg/code-generator/model"
+	"github.com/solo-io/skv2/codegen/collector"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -40,6 +41,9 @@ func (g GeneratorTypes) HasDeepcopy() bool {
 	return false
 }
 
+// Mapping from protobuf message name to OpenApi schema
+type OpenApiSchemas map[string]*openapi.OrderedMap
+
 type Group struct {
 	// the group version of the group
 	schema.GroupVersion
@@ -55,6 +59,11 @@ type Group struct {
 
 	// Should we generate kubernetes manifests?
 	RenderManifests bool
+
+	// Should we generate validating schemas for CRDs?
+	// NOTE: proto int64's cannot currently be used with generated validation schemas.
+	// See https://github.com/solo-io/skv2/issues/146 for details.
+	RenderValidationSchemas bool
 
 	// Should we generate deepcopy functions for non-proto Spec/Status fields?
 	RenderFieldJsonDeepcopy bool
@@ -84,10 +93,14 @@ type Group struct {
 	CustomTypesImportPath string
 
 	// proto descriptors will be available to the templates if the group was compiled with them.
-	Descriptors []*model.DescriptorWithPath
+	Descriptors []*collector.DescriptorWithPath
 
 	// data for providing custom templates to generate custom code for groups
 	CustomTemplates []CustomTemplates
+
+	// Mapping from protobuf message name to generated open api structural schema
+	// This is populated during skv2 generation by the manifests renderer.
+	OpenApiSchemas OpenApiSchemas
 }
 
 func (g Group) HasProtos() bool {

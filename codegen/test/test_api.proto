@@ -4,6 +4,8 @@ package things.test.io;
 
 option go_package = "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1";
 
+import "google/protobuf/wrappers.proto";
+
 message PaintSpec {
     PaintColor color = 1;
 
@@ -41,4 +43,6 @@ message PaintStatus {
     int64 percentRemaining = 2;
 }
 
-message ClusterResourceSpec {}
+message ClusterResourceSpec {
+    google.protobuf.StringValue imported = 1;
+}
