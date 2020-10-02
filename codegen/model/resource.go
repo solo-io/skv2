@@ -99,6 +99,7 @@ type Group struct {
 	CustomTemplates []CustomTemplates
 
 	// Mapping from protobuf message name to generated open api structural schema
+	// This is populated during skv2 generation by the manifests renderer.
 	OpenApiSchemas OpenApiSchemas
 }
 
