@@ -61,8 +61,6 @@ type Group struct {
 	RenderManifests bool
 
 	// Should we generate validating schemas for CRDs?
-	// NOTE: proto int64's cannot currently be used with generated validation schemas.
-	// See https://github.com/solo-io/skv2/issues/146 for details.
 	RenderValidationSchemas bool
 
 	// Should we generate deepcopy functions for non-proto Spec/Status fields?
