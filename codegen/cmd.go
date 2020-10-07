@@ -42,7 +42,7 @@ type Command struct {
 	// these will recieve all groups as inputs
 	TopLevelTemplates []model.CustomTemplates
 
-	// optinal helm chart to render
+	// optional helm chart to render
 	Chart *model.Chart
 
 	// the root directory for generated Kube manifests
