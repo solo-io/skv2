@@ -13,6 +13,7 @@ import (
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	structuralschema "k8s.io/apiextensions-apiserver/pkg/apiserver/schema"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 )
 
 // Create CRDs for a group
@@ -149,11 +150,16 @@ func CustomResourceDefinition(
 				Kind:     kind,
 				ListKind: kind + "List",
 			},
-			// TODO move this block into versions once we support multiple versions of a CRD
-			// Including a validation schema inside the Version field when there is only a single version present yields the error:
-			// "per-version schemas may not all be set to identical values (top-level validation should be used instead"
-			Validation: validationSchema,
 		},
+	}
+	if validationSchema != nil {
+		// Setting PreserveUnknownFields to false ensures that objects with unknown fields are rejected.
+		crd.Spec.PreserveUnknownFields = pointer.BoolPtr(false)
+
+		// TODO move this block into versions once we support multiple versions of a CRD
+		// Including a validation schema inside the Version field when there is only a single version present yields the error:
+		// "per-version schemas may not all be set to identical values (top-level validation should be used instead"
+		crd.Spec.Validation = validationSchema
 	}
 	return crd
 }
