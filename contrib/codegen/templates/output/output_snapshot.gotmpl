@@ -453,6 +453,8 @@ type Builder interface {
     // this can be used to collect clusters for use with MultiCluster snapshots.
     AddCluster(cluster string)
 
+    // merge all the resources from anotehr Builder into this one
+    Merge(other Builder)
 }
 
 {{- range $group := $groups }}
@@ -521,4 +523,19 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
     b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+    }
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    b.Add{{ $kindPlural }}(other.Get{{ $kindPlural }}().List()...)
+    {{- end }}
+    {{- end }}
 }

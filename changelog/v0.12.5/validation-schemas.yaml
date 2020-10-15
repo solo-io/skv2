@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add Merge() functionality to Output Snapshots.
+    issueLink: https://github.com/solo-io/skv2/issues/157
