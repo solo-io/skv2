@@ -148,6 +148,7 @@ func CustomResourceDefinition(
 				Plural:   kindLowerPlural,
 				Singular: kindLower,
 				Kind:     kind,
+				ShortNames: resource.ShortNames,
 				ListKind: kind + "List",
 			},
 		},
