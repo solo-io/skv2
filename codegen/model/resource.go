@@ -136,6 +136,9 @@ type Resource struct {
 	// This is important when rendering the CustomResourceDefinition manifest.
 	ClusterScoped bool
 
+	// Set the short name of the resource
+	ShortNames []string
+
 	// The set of additional printer columns to apply to the CustomResourceDefinition
 	AdditionalPrinterColumns []apiextv1beta1.CustomResourceColumnDefinition
 }
