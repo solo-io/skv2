@@ -145,11 +145,11 @@ func CustomResourceDefinition(
 				Status: status,
 			},
 			Names: apiextv1beta1.CustomResourceDefinitionNames{
-				Plural:   kindLowerPlural,
-				Singular: kindLower,
-				Kind:     kind,
+				Plural:     kindLowerPlural,
+				Singular:   kindLower,
+				Kind:       kind,
 				ShortNames: resource.ShortNames,
-				ListKind: kind + "List",
+				ListKind:   kind + "List",
 			},
 		},
 	}
