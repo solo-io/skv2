@@ -1,6 +1,8 @@
 package codegen_test
 
 import (
+	"os/exec"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen/model"
@@ -80,6 +82,9 @@ var _ = Describe("Cmd", func() {
 		}
 
 		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		err = exec.Command("goimports", "-w", "codegen/test/api").Run()
 		Expect(err).NotTo(HaveOccurred())
 	})
 

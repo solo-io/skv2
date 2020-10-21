@@ -1,0 +1,10 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add Merge() functionality to Output Snapshots.
+    issueLink: https://github.com/solo-io/skv2/issues/157
+  - type: NEW_FEATURE
+    description: Add Clone() functionality to Output Snapshots.
+    issueLink: https://github.com/solo-io/skv2/issues/161
+  - type: FIX
+    description: Fix incredibly slow generation of some files by removing the built-in `Imports` formatting inside SKv2 file writer. Ensure to run `goimports` manually after running skv2 generation.
+    issueLink: https://github.com/solo-io/skv2/issues/162

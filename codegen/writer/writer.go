@@ -6,10 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/solo-io/skv2/codegen/render"
-	"golang.org/x/tools/imports"
 )
 
 var commentPrefixes = map[string]string{
@@ -59,18 +57,6 @@ func (w *DefaultFileWriter) WriteFiles(files []render.OutFile) error {
 			return err
 		}
 
-		if !strings.HasSuffix(name, ".go") {
-			continue
-		}
-
-		formatted, err := imports.Process(name, []byte(content), nil)
-		if err != nil {
-			return err
-		}
-
-		if err := ioutil.WriteFile(name, formatted, 0644); err != nil {
-			return err
-		}
 	}
 	return nil
 }
