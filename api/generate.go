@@ -34,5 +34,6 @@ func main() {
 	if err := skv2Cmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Finished generating kube clients\n")
+
+	log.Printf("Finished generating multicluster apis\n")
 }
