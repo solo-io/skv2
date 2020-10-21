@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix a break that was caused by removing the built-in `goimports` functionality
+    issueLink: https://github.com/solo-io/skv2/issues/166
