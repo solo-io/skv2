@@ -23,9 +23,13 @@ const (
 	// return an error if the resource does not exist for a kind before reading it from the API server
 	ServerVerifyOption_ErrorIfNotPresent
 
-	// log an error (and continue) if the resource does not exist for a kind before reading it from the API server
+	// log a warning (and continue) if the resource does not exist for a kind before reading it from the API server
 	// the reconcile loop will not be started if the server resource is not supported.
 	ServerVerifyOption_WarnIfNotPresent
+
+	// write a debug log (and continue) if the resource does not exist for a kind before reading it from the API server
+	// the reconcile loop will not be started if the server resource is not supported.
+	ServerVerifyOption_LogDebugIfNotPresent
 
 	// ignore error (and continue) if the resource does not exist for a kind before reading it from the API server.
 	// the reconcile loop will not be started if the server resource is not supported.
@@ -133,7 +137,10 @@ func (v *verifier) VerifyServerResource(cluster string, cfg *rest.Config, gvk sc
 			return false, err
 		case ServerVerifyOption_WarnIfNotPresent:
 			contextutils.LoggerFrom(v.ctx).Warnf("%v not registered (fetch err: %v)", gvk, err)
-			fallthrough
+			resourceRegistered = false
+		case ServerVerifyOption_LogDebugIfNotPresent:
+			contextutils.LoggerFrom(v.ctx).Debugf("%v not registered (fetch err: %v)", gvk, err)
+			resourceRegistered = false
 		case ServerVerifyOption_IgnoreIfNotPresent:
 			resourceRegistered = false
 		}

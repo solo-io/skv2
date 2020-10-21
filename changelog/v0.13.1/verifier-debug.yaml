@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/159
+    description: Add a verifier option for writing a debug log when a resource is unavailable.
