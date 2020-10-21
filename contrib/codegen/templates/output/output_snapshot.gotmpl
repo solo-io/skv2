@@ -453,7 +453,7 @@ type Builder interface {
     // this can be used to collect clusters for use with MultiCluster snapshots.
     AddCluster(cluster string)
 
-    // merge all the resources from anotehr Builder into this one
+    // merge all the resources from another Builder into this one
     Merge(other Builder)
 
     // create a clone of this builder (deepcopying all resources)
