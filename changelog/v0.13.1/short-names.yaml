@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Set a `model.Resource.ShortNames` field to a list of strings to set additional aliases for a resource.
+    issueLink: https://github.com/solo-io/skv2/issues/164
