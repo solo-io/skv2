@@ -25,17 +25,18 @@ import (
     "github.com/solo-io/skv2/pkg/verifier"
     "sigs.k8s.io/controller-runtime/pkg/manager"
 
-    "github.com/solo-io/go-utils/contextutils"
-    "k8s.io/apimachinery/pkg/api/errors"
-    "k8s.io/client-go/rest"
-    "k8s.io/client-go/discovery"
-
-    "github.com/rotisserie/eris"
-    "github.com/solo-io/skv2/pkg/ezkube"
-    apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-
     "github.com/hashicorp/go-multierror"
+{{ $needsControllerUtils := false }}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- if $resource.Status }}
+{{ $needsControllerUtils = true }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $needsControllerUtils }}
     "github.com/solo-io/skv2/pkg/controllerutils"
+{{- end }}
     "github.com/solo-io/skv2/pkg/multicluster"
     "sigs.k8s.io/controller-runtime/pkg/client"
 
