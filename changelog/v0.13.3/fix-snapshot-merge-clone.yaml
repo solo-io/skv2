@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    description: Fix for snapshot.Clone and snapshot.Merge to include Clusters field.
+    issueLink: https://github.com/solo-io/skv2/issues/166
+  - type: FIX
+    description: Fix template imports broken by removal of builtin goimports.
+    issueLink: https://github.com/solo-io/skv2/issues/168

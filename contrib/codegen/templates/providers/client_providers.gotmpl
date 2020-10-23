@@ -3,12 +3,8 @@ package {{.Version}}
 {{ $import_prefix := group_import_name $ }}
 
 import (
-	"context"
-
     {{ $import_prefix }} "{{ generated_code_import_path $ }}"
 
-    "k8s.io/apimachinery/pkg/api/errors"
-    "k8s.io/client-go/kubernetes/scheme"
     "k8s.io/client-go/rest"
     "sigs.k8s.io/controller-runtime/pkg/client"
 )
