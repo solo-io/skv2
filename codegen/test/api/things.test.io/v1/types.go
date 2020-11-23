@@ -5,6 +5,7 @@ package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // +genclient
@@ -19,6 +20,15 @@ type Paint struct {
 
 	Spec   PaintSpec   `json:"spec,omitempty"`
 	Status PaintStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (Paint) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "things.test.io/v1",
+		Version: "v1",
+		Kind:    "Paint",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -41,6 +51,15 @@ type ClusterResource struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec ClusterResourceSpec `json:"spec,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (ClusterResource) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "things.test.io/v1",
+		Version: "v1",
+		Kind:    "ClusterResource",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
