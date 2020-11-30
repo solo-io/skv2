@@ -25,7 +25,7 @@ type KubernetesCluster struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (KubernetesCluster) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "multicluster.solo.io/v1alpha1",
+		Group:   "multicluster.solo.io",
 		Version: "v1alpha1",
 		Kind:    "KubernetesCluster",
 	}

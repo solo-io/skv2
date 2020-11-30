@@ -25,7 +25,7 @@ type Paint struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Paint) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "things.test.io/v1",
+		Group:   "things.test.io",
 		Version: "v1",
 		Kind:    "Paint",
 	}
@@ -56,7 +56,7 @@ type ClusterResource struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (ClusterResource) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "things.test.io/v1",
+		Group:   "things.test.io",
 		Version: "v1",
 		Kind:    "ClusterResource",
 	}

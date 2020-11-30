@@ -37,7 +37,7 @@ type {{ $resource.Kind }} struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func ({{ $resource.Kind}})  GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group: "{{ $resource.Group }}",
+		Group: "{{ $resource.Group.Group }}",
         Version: "{{ $resource.Version }}",
         Kind: "{{ $resource.Kind }}",
     }
