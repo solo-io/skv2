@@ -38,8 +38,8 @@ type {{ $resource.Kind }} struct {
 func ({{ $resource.Kind}})  GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
 		Group: "{{ $resource.Group.Group }}",
-        Version: "{{ $resource.Version }}",
-        Kind: "{{ $resource.Kind }}",
+		Version: "{{ $resource.Version }}",
+		Kind: "{{ $resource.Kind }}",
     }
 }
 
