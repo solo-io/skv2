@@ -3,6 +3,8 @@ package {{ .Version }}
 
 import (
     metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/runtime/schema"
+
 {{- range $import := imports_for_group . }}
     . "{{ $import }}"
 {{ end -}}
@@ -30,6 +32,15 @@ type {{ $resource.Kind }} struct {
 {{- if $resource.Status }}
     Status {{ $resource.Status.Type.Name }} `json:"status,omitempty"`
 {{- end }}
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func ({{ $resource.Kind}})  GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group: "{{ $resource.Group.Group }}",
+		Version: "{{ $resource.Version }}",
+		Kind: "{{ $resource.Kind }}",
+    }
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
