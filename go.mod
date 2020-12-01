@@ -3,7 +3,7 @@ module github.com/solo-io/skv2
 go 1.13
 
 require (
-	cloud.google.com/go v0.40.0
+	cloud.google.com/go v0.56.0
 	cuelang.org/go v0.2.2
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.1.0
@@ -32,16 +32,16 @@ require (
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.1
-	github.com/solo-io/go-utils v0.17.0
+	github.com/solo-io/go-utils v0.20.0
+	github.com/solo-io/k8s-utils v0.0.1
 	github.com/solo-io/protoc-gen-ext v0.0.9
 	go.uber.org/zap v1.13.0
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
 	golang.org/x/tools v0.0.0-20200811153730-74512f09e4b0
-	google.golang.org/api v0.6.0
-	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
-	google.golang.org/grpc v1.28.1 // indirect
+	google.golang.org/api v0.29.0
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
 	k8s.io/api v0.18.6
 	k8s.io/apiextensions-apiserver v0.18.6
 	k8s.io/apimachinery v0.18.6

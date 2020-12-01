@@ -1,0 +1,6 @@
+changelog:
+- dependencyOwner: solo-io
+  dependencyRepo: go-utils
+  dependencyTag: v0.20.0
+  description: Update go-utils to version to the one without kubernetes deps
+  type: DEPENDENCY_BUMP

@@ -10,9 +10,9 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/go-utils/randutils"
-	kubehelp "github.com/solo-io/go-utils/testutils/kube"
+	"github.com/solo-io/k8s-utils/kubeutils"
+	kubehelp "github.com/solo-io/k8s-utils/testutils/kube"
 	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	"github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/controller"
 	"github.com/solo-io/skv2/pkg/multicluster"
