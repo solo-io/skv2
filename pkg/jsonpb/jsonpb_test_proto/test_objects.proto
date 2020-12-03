@@ -39,8 +39,6 @@ import "google/protobuf/wrappers.proto";
 
 package jsonpb;
 
-import weak "gogoproto/gogo.proto";
-
 // Test message for holding primitive types.
 message Simple {
   optional bool o_bool = 1;
@@ -62,7 +60,6 @@ message Simple {
   optional double o_double_str = 17;
   optional string o_string = 18;
   optional bytes o_bytes = 19;
-  optional bytes o_cast_bytes = 20 [(gogoproto.casttype) = "Bytes"];
 }
 
 // Test message for holding special non-finites primitives.

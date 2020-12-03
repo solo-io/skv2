@@ -10,20 +10,16 @@ var (
 
 	// matches ext.proto for solo hash gen
 	ExtProtoMatcher = &anyvendor.GoModImport{
-		Package:  "github.com/solo-io/protoc-gen-ext",
-		Patterns: []string{"extproto/*.proto"},
-	}
-
-	// matches gogo.proto, used for gogoproto code gen.
-	GogoProtoMatcher = &anyvendor.GoModImport{
-		Package:  "github.com/gogo/protobuf",
-		Patterns: []string{"gogoproto/*.proto", "protobuf/**/*.proto"},
+		Package: "github.com/solo-io/protoc-gen-ext",
+		Patterns: []string{
+			"extproto/*.proto",
+			"external/google/protobuf/*.proto",
+		},
 	}
 
 	// default match options which should be used when creating a solo-kit project
 	DefaultExternalMatchOptions = map[string][]string{
-		ExtProtoMatcher.Package:  ExtProtoMatcher.Patterns,
-		GogoProtoMatcher.Package: GogoProtoMatcher.Patterns,
+		ExtProtoMatcher.Package: ExtProtoMatcher.Patterns,
 	}
 )
 
