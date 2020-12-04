@@ -5,23 +5,22 @@
 package v1
 
 import (
-	proto "github.com/gogo/protobuf/proto"
+    proto "github.com/gogo/protobuf/proto"
 )
 
 // DeepCopyInto for the Paint.Spec
 func (in *PaintSpec) DeepCopyInto(out *PaintSpec) {
-	p := proto.Clone(in).(*PaintSpec)
-	*out = *p
+    p := proto.Clone(in).(*PaintSpec)
+    *out = *p
 }
-
 // DeepCopyInto for the Paint.Status
 func (in *PaintStatus) DeepCopyInto(out *PaintStatus) {
-	p := proto.Clone(in).(*PaintStatus)
-	*out = *p
+    p := proto.Clone(in).(*PaintStatus)
+    *out = *p
 }
 
 // DeepCopyInto for the ClusterResource.Spec
 func (in *ClusterResourceSpec) DeepCopyInto(out *ClusterResourceSpec) {
-	p := proto.Clone(in).(*ClusterResourceSpec)
-	*out = *p
+    p := proto.Clone(in).(*ClusterResourceSpec)
+    *out = *p
 }
