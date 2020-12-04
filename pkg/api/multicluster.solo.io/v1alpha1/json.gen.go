@@ -9,8 +9,7 @@ import (
 	fmt "fmt"
 	math "math"
 
-	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
+	proto "github.com/golang/protobuf/proto"
 	skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
 )
 

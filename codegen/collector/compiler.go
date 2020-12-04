@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gogo/protobuf/proto"
-	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/log"
 	"golang.org/x/sync/errgroup"
