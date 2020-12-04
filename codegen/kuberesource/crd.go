@@ -1,11 +1,9 @@
 package kuberesource
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
-	"cuelang.org/go/encoding/openapi"
 	"github.com/gertd/go-pluralize"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/codegen/model"
@@ -42,7 +40,7 @@ func constructValidationSchema(resource model.Resource, oapiSchemas model.OpenAp
 	}
 
 	// Spec validation schema
-	specSchema, err := getJsonSchema(resource, resource.Spec.Type.Name, oapiSchemas)
+	specSchema, err := getJsonSchema(resource.Spec.Type.Name, oapiSchemas)
 	if err != nil {
 		return nil, eris.Wrapf(err, "constructing spec validation schema for Kind %s", resource.Kind)
 	}
@@ -50,7 +48,7 @@ func constructValidationSchema(resource model.Resource, oapiSchemas model.OpenAp
 
 	// Status validation schema
 	if resource.Status != nil {
-		statusSchema, err := getJsonSchema(resource, resource.Status.Type.Name, oapiSchemas)
+		statusSchema, err := getJsonSchema(resource.Status.Type.Name, oapiSchemas)
 		if err != nil {
 			return nil, eris.Wrapf(err, "constructing status validation schema for Kind %s", resource.Kind)
 		}
@@ -60,28 +58,18 @@ func constructValidationSchema(resource model.Resource, oapiSchemas model.OpenAp
 	return validationSchema, nil
 }
 
-func getJsonSchema(resource model.Resource, schemaName string, schemas map[string]*openapi.OrderedMap) (*apiextv1beta1.JSONSchemaProps, error) {
+func getJsonSchema(schemaName string, schemas map[string]*apiextv1beta1.JSONSchemaProps) (*apiextv1beta1.JSONSchemaProps, error) {
 
 	schema, ok := schemas[schemaName]
 	if !ok {
 		return nil, eris.Errorf("Could not find open api schema for %s", schemaName)
 	}
 
-	byt, err := schema.MarshalJSON()
-	if err != nil {
-		return nil, eris.Errorf("Cannot marshal OpenAPI schema for %v: %v", resource.Group.Group, err)
-	}
-
-	jsonSchema := &apiextv1beta1.JSONSchemaProps{}
-	if err = json.Unmarshal(byt, jsonSchema); err != nil {
-		return nil, eris.Errorf("Cannot unmarshal raw OpenAPI schema to JSONSchemaProps for %v: %v", resource.Group.Group, err)
-	}
-
-	if err = validateStructural(jsonSchema); err != nil {
+	if err := validateStructural(schema); err != nil {
 		return nil, err
 	}
 
-	return jsonSchema, nil
+	return schema, nil
 }
 
 // Lifted from https://github.com/istio/tools/blob/477454adf7995dd3070129998495cdc8aaec5aff/cmd/cue-gen/crd.go#L108
