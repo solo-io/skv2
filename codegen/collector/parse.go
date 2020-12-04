@@ -15,10 +15,6 @@ func (file *DescriptorWithPath) GetMessage(typeName string) *descriptor.Descript
 		if msg.GetName() == typeName {
 			return msg
 		}
-		// nes := file.GetNestedMessage(msg, strings.TrimPrefix(typeName, msg.GetName()+"."))
-		// if nes != nil {
-		// 	return nes
-		// }
 	}
 	return nil
 }
