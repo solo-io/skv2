@@ -1,17 +1,19 @@
 package render
 
 import (
+	"encoding/json"
 	"strings"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/encoding/openapi"
 	"cuelang.org/go/encoding/protobuf"
-	eris "github.com/rotisserie/eris"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/anyvendor/anyvendor"
 	"github.com/solo-io/go-utils/stringutils"
 	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/skv2/codegen/kuberesource"
 	"github.com/solo-io/skv2/codegen/model"
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -131,7 +133,12 @@ func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, er
 		// Iterate openapi objects to construct mapping from proto message name to openapi schema
 		oapiSchemas := model.OpenApiSchemas{}
 		for _, kv := range schemas.Pairs() {
-			oapiSchemas[kv.Key] = kv.Value.(*openapi.OrderedMap)
+			orderedMap := kv.Value.(*openapi.OrderedMap)
+			jsonSchema, err := postProcessValidationSchema(orderedMap)
+			if err != nil {
+				return nil, err
+			}
+			oapiSchemas[kv.Key] = jsonSchema
 		}
 
 		return oapiSchemas, err
@@ -199,4 +206,49 @@ func marshalObjToYaml(appName string, obj metav1.Object) (string, error) {
 	yam, err = yaml.Marshal(v)
 
 	return string(yam), err
+}
+
+func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1beta1.JSONSchemaProps, error) {
+	oapiJson, err := oapi.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	var obj map[string]interface{}
+	if err = json.Unmarshal(oapiJson, &obj); err != nil {
+		return nil, err
+	}
+
+	// remove 'properties' and 'required' fields to prevent validating proto.Any fields
+	removeProtoAnyProperties(obj)
+
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		return nil, err
+	}
+	jsonSchema := &apiextv1beta1.JSONSchemaProps{}
+	if err = json.Unmarshal(bytes, jsonSchema); err != nil {
+		return nil, err
+	}
+	return jsonSchema, nil
+}
+
+// prevent k8s from validating proto.Any fields (since it's unstructured) by removing 'properties' and 'required' fields
+func removeProtoAnyProperties(d map[string]interface{}) {
+	for _, v := range d {
+		values, ok := v.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		desc, ok := values["properties"]
+		properties, isObj := desc.(map[string]interface{})
+		// detect proto.Any field from presence of "@type" as field under "properties"
+		if !ok || !isObj || properties["@type"] == nil {
+			removeProtoAnyProperties(values)
+			continue
+		}
+		// remove "properties" value
+		delete(values, "properties")
+		// remove "required" value
+		delete(values, "required")
+	}
 }

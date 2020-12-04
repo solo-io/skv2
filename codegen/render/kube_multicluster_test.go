@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/solo-io/skv2/codegen/util"
+	"github.com/solo-io/skv2/test/matchers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -166,9 +167,9 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 				err = clientSet.Paints().UpdatePaint(ctx, paint)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(func() PaintSpec {
-					return paints.get(cluster, paint.Name).Spec
-				}, time.Second).Should(Equal(paint.Spec))
+				Eventually(func() *PaintSpec {
+					return &paints.get(cluster, paint.Name).Spec
+				}, time.Second).Should(matchers.MatchProto(&paint.Spec))
 
 				// delete
 				err = clientSet.Paints().DeletePaint(ctx, client.ObjectKey{

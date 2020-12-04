@@ -3,8 +3,7 @@ package model
 import (
 	"text/template"
 
-	"cuelang.org/go/encoding/openapi"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"github.com/solo-io/skv2/codegen/collector"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -42,7 +41,7 @@ func (g GeneratorTypes) HasDeepcopy() bool {
 }
 
 // Mapping from protobuf message name to OpenApi schema
-type OpenApiSchemas map[string]*openapi.OrderedMap
+type OpenApiSchemas map[string]*apiextv1beta1.JSONSchemaProps
 
 type Group struct {
 	// the group version of the group

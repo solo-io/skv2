@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/solo-io/skv2/pkg/reconcile"
+	"github.com/solo-io/skv2/test/matchers"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -66,7 +67,7 @@ func mustCrud(ctx context.Context, clientSet Clientset, paint *Paint) {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	Expect(written.Spec).To(Equal(paint.Spec))
+	Expect(&written.Spec).To(matchers.MatchProto(&paint.Spec))
 
 	status := PaintStatus{
 		ObservedGeneration: written.Generation,
@@ -78,14 +79,14 @@ func mustCrud(ctx context.Context, clientSet Clientset, paint *Paint) {
 	err = clientSet.Paints().UpdatePaintStatus(ctx, written)
 	Expect(err).NotTo(HaveOccurred())
 
-	Eventually(func() PaintStatus {
+	Eventually(func() *PaintStatus {
 		written, err = clientSet.Paints().GetPaint(ctx, client.ObjectKey{
 			Namespace: paint.Namespace,
 			Name:      paint.Name,
 		})
 		Expect(err).NotTo(HaveOccurred())
-		return written.Status
-	}, time.Second).Should(Equal(status))
+		return &written.Status
+	}, time.Second).Should(matchers.MatchProto(&status))
 }
 
 var _ = Describe("Generated Code", func() {
@@ -171,9 +172,9 @@ var _ = Describe("Generated Code", func() {
 			err = clientSet.Paints().UpdatePaint(ctx, paint)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(func() PaintSpec {
-				return reconciled.Spec
-			}, time.Second).Should(Equal(paint.Spec))
+			Eventually(func() *PaintSpec {
+				return &reconciled.Spec
+			}, time.Second).Should(matchers.MatchProto(&paint.Spec))
 
 			// delete
 			err = clientSet.Paints().DeletePaint(ctx, client.ObjectKey{
