@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/171
+    description: Prevent k8s from validating proto.Any fields (since it's unstructured) by removing 'properties' and 'required' fields.
