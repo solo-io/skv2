@@ -544,9 +544,9 @@ func (w *jsonWriter) marshalSingularValue(fd protoreflect.FieldDescriptor, v pro
 				w.write(`"NaN"`)
 				return nil
 			}
-		// case int64, uint64:
-		// 	w.write(fmt.Sprintf(`"%d"`, v.Interface()))
-		// 	return nil
+			// case int64, uint64:
+			// 	w.write(fmt.Sprintf(`"%d"`, v.Interface()))
+			// 	return nil
 		}
 
 		b, err := json.Marshal(v.Interface())

@@ -13,13 +13,14 @@
 package proto2_proto
 
 import (
+	math "math"
+	reflect "reflect"
+	sync "sync"
+
 	proto "github.com/golang/protobuf/proto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	math "math"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
