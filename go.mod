@@ -14,7 +14,6 @@ require (
 	github.com/go-logr/logr v0.1.0
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr v1.30.1
-	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3
 	github.com/gophercloud/gophercloud v0.2.0 // indirect
@@ -34,7 +33,7 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/go-utils v0.20.0
 	github.com/solo-io/k8s-utils v0.0.1
-	github.com/solo-io/protoc-gen-ext v0.0.12
+	github.com/solo-io/protoc-gen-ext v0.0.13
 	go.uber.org/zap v1.13.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
@@ -72,5 +71,3 @@ replace (
 replace sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.2.2-0.20190919011008-6ed4ff330711
 
 replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
-
-replace github.com/solo-io/protoc-gen-ext => ../protoc-gen-ext

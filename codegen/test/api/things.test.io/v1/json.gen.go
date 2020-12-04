@@ -10,7 +10,7 @@ import (
 	math "math"
 
 	proto "github.com/golang/protobuf/proto"
-	skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
+	skv2jsonpb "github.com/solo-io/skv2/pkg/kube_jsonpb"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

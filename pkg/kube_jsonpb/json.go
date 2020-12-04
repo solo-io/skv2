@@ -11,7 +11,7 @@
 //
 // Deprecated: Use the "google.golang.org/protobuf/encoding/protojson"
 // package instead.
-package jsonpb
+package kube_jsonpb
 
 import (
 	"github.com/golang/protobuf/proto"

@@ -9,8 +9,9 @@ import (
 	fmt "fmt"
 	math "math"
 
+	jsonpb "github.com/golang/protobuf/jsonpb"
 	proto "github.com/golang/protobuf/proto"
-	skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
+	skv2jsonpb "github.com/solo-io/skv2/pkg/kube_jsonpb"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -20,7 +21,7 @@ var _ = math.Inf
 
 var (
 	marshaller   = &skv2jsonpb.Marshaler{}
-	unmarshaller = &skv2jsonpb.Unmarshaler{}
+	unmarshaller = &jsonpb.Unmarshaler{}
 )
 
 // MarshalJSON is a custom marshaler for KubernetesClusterSpec

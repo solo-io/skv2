@@ -16,7 +16,7 @@ import (
 
 	proto "github.com/golang/protobuf/proto"
 	any "github.com/golang/protobuf/ptypes/any"
-	proto2_proto "github.com/solo-io/skv2/pkg/jsonpb/internal/testprotos/proto2_proto"
+	proto2_proto "github.com/solo-io/skv2/pkg/kube_jsonpb/internal/testprotos/proto2_proto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
