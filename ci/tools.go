@@ -18,9 +18,8 @@ package tools
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate"
-	_ "github.com/gogo/protobuf/gogoproto"
-	_ "github.com/gogo/protobuf/protoc-gen-gogo"
 	_ "github.com/golang/mock/mockgen"
+	_ "github.com/golang/protobuf/protoc-gen-go"
 	_ "github.com/solo-io/protoc-gen-ext"
 	_ "golang.org/x/tools/cmd/goimports"
 	_ "k8s.io/code-generator"

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gogo/protobuf/proto"
-	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/log"
 	"golang.org/x/sync/errgroup"
@@ -132,15 +132,6 @@ func (p *protoCompiler) addDescriptorsForFile(addDescriptor func(f DescriptorWit
 
 var defaultGogoArgs = []string{
 	"plugins=grpc",
-	"Mgoogle/protobuf/descriptor.proto=github.com/gogo/protobuf/protoc-gen-gogo/descriptor",
-	"Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types",
-	"Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types",
-	"Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types",
-	"Mgoogle/protobuf/struct.proto=github.com/gogo/protobuf/types",
-	"Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types",
-	"Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types",
-	"Mgoogle/rpc/status.proto=github.com/gogo/googleapis/google/rpc",
-	"gogoproto/gogo.proto=github.com/gogo/protobuf/gogoproto",
 }
 
 func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []string, compileProtos bool) error {
@@ -153,7 +144,7 @@ func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []str
 
 	if compileProtos {
 		cmd.Args = append(cmd.Args,
-			"--gogo_out="+strings.Join(gogoArgs, ",")+":"+p.descriptorOutDir,
+			"--go_out="+strings.Join(gogoArgs, ",")+":"+p.descriptorOutDir,
 			"--ext_out="+strings.Join(gogoArgs, ",")+":"+p.descriptorOutDir,
 		)
 
