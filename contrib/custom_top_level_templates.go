@@ -1,10 +1,11 @@
 package contrib
 
 import (
+	"text/template"
+
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib/codegen/funcs"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"text/template"
 )
 
 /*
@@ -53,7 +54,7 @@ type HybridSnapshotResources struct {
 	RemoteResourcesToSelect map[schema.GroupVersion][]string
 }
 
-func (r HybridSnapshotResources) makeTemplateFuncs(outputFilename string,selectFromGroups map[string][]model.Group) template.FuncMap {
+func (r HybridSnapshotResources) makeTemplateFuncs(outputFilename string, selectFromGroups map[string][]model.Group) template.FuncMap {
 	return funcs.MakeHybridSnapshotFuncs(
 		outputFilename,
 		selectFromGroups,
@@ -61,7 +62,6 @@ func (r HybridSnapshotResources) makeTemplateFuncs(outputFilename string,selectF
 		r.RemoteResourcesToSelect,
 	)
 }
-
 
 func (p SnapshotTemplateParameters) constructTemplate(params SnapshotTemplateParameters, templatePath string) model.CustomTemplates {
 	templateContents, err := templatesBox.FindString(templatePath)
@@ -109,7 +109,7 @@ InputReconciler custom templates
 */
 const (
 	HomogenousInputReconcilerCustomTemplatePath = "input/input_reconciler.gotmpl"
-	HybridInputReconcilerCustomTemplatePath = "input/hybrid_input_reconciler.gotmpl"
+	HybridInputReconcilerCustomTemplatePath     = "input/hybrid_input_reconciler.gotmpl"
 )
 
 // Returns the template for generating input reconcilers.

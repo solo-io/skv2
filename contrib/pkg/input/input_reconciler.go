@@ -54,9 +54,9 @@ func NewInputReconciler(
 	reconcileInterval time.Duration,
 ) InputReconciler {
 	r := &inputReconciler{
-		ctx:                       ctx,
-		queue:                     workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
-		multiClusterReconcileFunc: multiClusterReconcileFunc,
+		ctx:                        ctx,
+		queue:                      workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
+		multiClusterReconcileFunc:  multiClusterReconcileFunc,
 		singleClusterReconcileFunc: singleClusterReconcileFunc,
 	}
 	go r.reconcileEventsForever(reconcileInterval)
@@ -120,7 +120,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 
 	// determine whether the resource has been read from a remote cluster
 	// based on whether its ClusterName field is set
-	if  clusterResource, ok := key.(ezkube.ClusterResourceId); ok {
+	if clusterResource, ok := key.(ezkube.ClusterResourceId); ok {
 		if clusterResource.GetClusterName() != "" {
 			isRemoteCluster = true
 		}
