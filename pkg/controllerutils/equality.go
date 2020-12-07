@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/solo-io/skv2/pkg/equalityutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -51,8 +52,8 @@ func ObjectsEqual(obj1, obj2 runtime.Object) bool {
 		field1 := value1.Field(i).Interface()
 		field2 := value2.Field(i).Interface()
 
-		// reflect.DeepEqual any other fields
-		if !reflect.DeepEqual(field1, field2) {
+		// assert DeepEquality any other fields
+		if !equalityutils.DeepEqual(field1, field2) {
 			return false
 		}
 	}

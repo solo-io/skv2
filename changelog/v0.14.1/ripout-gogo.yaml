@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: Fix break in reflect.DeepEqual caused by new proto messages which have non deterministic fields (https://github.com/golang/protobuf/issues/1173).
+  issueLink: https://github.com/solo-io/skv2/issues/180
