@@ -1,3 +1,4 @@
+{{ $snapshotName := snapshot_name }}
 {{ $localGroups := local_imported_groups }}
 {{ $remoteGroups := remote_imported_groups }}
 
@@ -50,12 +51,12 @@ import (
 // from the local cluster.
 {{- end }}
 
-type ReconcileOptions struct {
+type {{ $snapshotName }}ReconcileOptions struct {
     {{- if gt (len $remoteGroups) 0 }}
-    Remote RemoteReconcileOptions
+    Remote Remote{{ $snapshotName }}ReconcileOptions
     {{- end }}
     {{- if gt (len $localGroups) 0 }}
-    Local LocalReconcileOptions
+    Local Local{{ $snapshotName }}ReconcileOptions
     {{- end }}
 
     // the ReconcileInterval, if greater than 0, will limit the number of reconciles
@@ -69,7 +70,7 @@ type ReconcileOptions struct {
 {{- if gt (len $localGroups) 0 }}
 // register the given single cluster reconcile func with the local manager
 {{- end }}
-func RegisterInputReconciler(
+func Register{{ $snapshotName }}InputReconciler(
         ctx context.Context,
         {{- if gt (len $remoteGroups) 0 }}
         clusters multicluster.ClusterWatcher,
@@ -79,7 +80,7 @@ func RegisterInputReconciler(
         mgr manager.Manager,
         singleClusterReconcileFunc input.SingleClusterReconcileFunc,
 	    {{- end }}
-        options ReconcileOptions,
+        options {{ $snapshotName }}ReconcileOptions,
 ) (input.InputReconciler, error) {
 // {{$remoteGroups}} {{gt 0 (len $remoteGroups)}} {{ len $remoteGroups }}
 // {{$localGroups}}
@@ -128,7 +129,7 @@ func RegisterInputReconciler(
 
 {{- if gt (len $remoteGroups) 0 }}
 // Options for reconciling a snapshot in remote clusters
-type RemoteReconcileOptions struct {
+type Remote{{ $snapshotName }}ReconcileOptions struct {
     {{/* generate reconcile options here */}}
     {{- range $group := $remoteGroups }}
     {{ $client_import_prefix := group_import_name $group }}
@@ -145,7 +146,7 @@ type RemoteReconcileOptions struct {
     Predicates []predicate.Predicate
 }
 
-type remoteInputReconciler struct {
+type remote{{ $snapshotName }}InputReconciler struct {
     base input.InputReconciler
 }
 
@@ -157,12 +158,12 @@ type remoteInputReconciler struct {
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func (r *remoteInputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+func (r *remote{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     obj.ClusterName = clusterName
     return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
+func (r *remote{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
     ref := &sk_core_v1.ClusterObjectRef{
         Name:                 obj.Name,
         Namespace:            obj.Namespace,
@@ -177,7 +178,7 @@ func (r *remoteInputReconciler) Reconcile{{ $resource.Kind }}Deletion(clusterNam
 
 {{- if gt (len $localGroups) 0 }}
 // Options for reconciling a snapshot in remote clusters
-type LocalReconcileOptions struct {
+type Local{{ $snapshotName }}ReconcileOptions struct {
     {{/* generate reconcile options here */}}
     {{- range $group := $localGroups }}
     {{ $client_import_prefix := group_import_name $group }}
@@ -194,7 +195,7 @@ type LocalReconcileOptions struct {
     Predicates []predicate.Predicate
 }
 
-type localInputReconciler struct {
+type local{{ $snapshotName }}InputReconciler struct {
     base input.InputReconciler
 }
 
@@ -206,11 +207,11 @@ type localInputReconciler struct {
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func (r *localInputReconciler) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+func (r *local{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
+func (r *local{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
     ref := &sk_core_v1.ObjectRef{
         Name:                 obj.Name,
         Namespace:            obj.Namespace,

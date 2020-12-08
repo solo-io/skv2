@@ -1,3 +1,4 @@
+{{ $snapshotName := snapshot_name }}
 {{ $groups := imported_groups }}
 
 // The Input Reconciler calls a simple func() error whenever a
@@ -34,9 +35,9 @@ import (
 {{- end }}
 )
 
-// the multiClusterReconciler reconciles events for input resources across clusters
+// the multiCluster{{ $snapshotName }}Reconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
-type multiClusterReconciler interface {
+type multiCluster{{ $snapshotName }}Reconciler interface {
 {{/* implement reconciler interfaces here */}}
 {{- range $group := $groups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
@@ -49,14 +50,14 @@ type multiClusterReconciler interface {
 {{- end }}
 }
 
-var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
+var _ multiCluster{{ $snapshotName }}Reconciler = &multiCluster{{ $snapshotName }}ReconcilerImpl{}
 
-type multiClusterReconcilerImpl struct {
+type multiCluster{{ $snapshotName }}ReconcilerImpl struct {
     base input.InputReconciler
 }
 
 // Options for reconcileing a snapshot
-type ReconcileOptions struct {
+type {{ $snapshotName }}ReconcileOptions struct {
 {{/* generate reconcile options here */}}
 {{- range $group := $groups }}
 {{ $client_import_prefix := group_import_name $group }}
@@ -73,12 +74,12 @@ type ReconcileOptions struct {
 // register the reconcile func with the cluster watcher
 // the reconcileInterval, if greater than 0, will limit the number of reconciles
 // to one per interval.
-func RegisterMultiClusterReconciler(
+func RegisterMultiCluster{{ $snapshotName }}Reconciler(
         ctx context.Context,
         clusters multicluster.ClusterWatcher,
         reconcileFunc input.MultiClusterReconcileFunc,
         reconcileInterval time.Duration,
-        options ReconcileOptions,
+        options {{ $snapshotName }}ReconcileOptions,
         predicates ...predicate.Predicate,
 ) input.InputReconciler {
 
@@ -89,7 +90,7 @@ func RegisterMultiClusterReconciler(
 		reconcileInterval,
     )
 
-    r := &multiClusterReconcilerImpl{
+    r := &multiCluster{{ $snapshotName }}ReconcilerImpl{
     	base: base,
     }
 
@@ -117,12 +118,12 @@ func RegisterMultiClusterReconciler(
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+func (r *multiCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     obj.ClusterName = clusterName
     return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
+func (r *multiCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
     ref := &sk_core_v1.ClusterObjectRef{
         Name:                 obj.Name,
         Namespace:            obj.Namespace,
@@ -135,9 +136,9 @@ func (r *multiClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clust
 {{- end }}
 
 
-// the singleClusterReconciler reconciles events for input resources across clusters
+// the singleCluster{{ $snapshotName }}Reconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
-type singleClusterReconciler interface {
+type singleCluster{{ $snapshotName }}Reconciler interface {
 {{/* implement reconciler interfaces here */}}
 {{- range $group := $groups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
@@ -149,16 +150,16 @@ type singleClusterReconciler interface {
 {{- end }}
 {{- end }}
 }
-var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
+var _ singleCluster{{ $snapshotName }}Reconciler = &singleCluster{{ $snapshotName }}ReconcilerImpl{}
 
-type singleClusterReconcilerImpl struct {
+type singleCluster{{ $snapshotName }}ReconcilerImpl struct {
     base input.InputReconciler
 }
 
 // register the reconcile func with the manager
 // the reconcileInterval, if greater than 0, will limit the number of reconciles
 // to one per interval.
-func RegisterSingleClusterReconciler(
+func RegisterSingleCluster{{ $snapshotName }}Reconciler(
         ctx context.Context,
         mgr manager.Manager,
         reconcileFunc input.SingleClusterReconcileFunc,
@@ -167,14 +168,14 @@ func RegisterSingleClusterReconciler(
         predicates ...predicate.Predicate,
 ) (input.InputReconciler, error) {
 
-    base := input.NewInputReconciler(
+    base := input.NewInput{{ $snapshotName }}Reconciler(
         ctx,
         nil,
         reconcileFunc,
         reconcileInterval,
     )
 
-    r := &singleClusterReconcilerImpl{
+    r := &singleCluster{{ $snapshotName }}ReconcilerImpl{
         base: base,
     }
 
@@ -202,11 +203,11 @@ func RegisterSingleClusterReconciler(
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+func (r *singleCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *singleClusterReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
+func (r *singleCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
     ref := &sk_core_v1.ObjectRef{
         Name:                 obj.Name,
         Namespace:            obj.Namespace,

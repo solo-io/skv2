@@ -20,10 +20,15 @@ type importedGroup struct {
 //
 // selectFromGroups = a map of Go modules to (a superset of) the imported codegen Groups. only required if the codegen group is defined in a different go module than the types (i.e. it is using a CustomTypesImportPath)
 // resourcesToSelect = the GVKs of the resources which we want to select from the provided groups
-func MakeHomogenousSnapshotFuncs(outputFile string, selectFromGroups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) template.FuncMap {
+func MakeHomogenousSnapshotFuncs(
+	snapshotName, outputFile string,
+	selectFromGroups map[string][]model.Group,
+	resourcesToSelect map[schema.GroupVersion][]string,
+) template.FuncMap {
 	groups, groupImports := getImportedGroups(selectFromGroups, resourcesToSelect)
 
 	return template.FuncMap{
+		"snapshot_name": func() string { return snapshotName },
 		"package": func() string {
 			dirs := strings.Split(filepath.Dir(outputFile), string(filepath.Separator))
 			return dirs[len(dirs)-1] // last path element = package name
@@ -72,7 +77,11 @@ func getImportedGroups(selectFromGroups map[string][]model.Group, resourcesToSel
 //
 // selectFromGroups = a map of Go modules to (a superset of) the imported codegen Groups. only required if the codegen group is defined in a different go module than the types (i.e. it is using a CustomTypesImportPath)
 // resourcesToSelect = the GVKs of the resources which we want to select from the provided groups
-func MakeHybridSnapshotFuncs(outputFile string, selectFromGroups map[string][]model.Group, localResourcesToSelect, remoteResourcesToSelect map[schema.GroupVersion][]string) template.FuncMap {
+func MakeHybridSnapshotFuncs(
+	snapshotName, outputFile string,
+	selectFromGroups map[string][]model.Group,
+	localResourcesToSelect, remoteResourcesToSelect map[schema.GroupVersion][]string,
+) template.FuncMap {
 	localGroups, localGroupImports := getImportedGroups(selectFromGroups, localResourcesToSelect)
 	remoteGroups, remoteGroupImports := getImportedGroups(selectFromGroups, remoteResourcesToSelect)
 
@@ -88,6 +97,7 @@ func MakeHybridSnapshotFuncs(outputFile string, selectFromGroups map[string][]mo
 	}
 
 	return template.FuncMap{
+		"snapshot_name": func() string { return snapshotName },
 		"package": func() string {
 			dirs := strings.Split(filepath.Dir(outputFile), string(filepath.Separator))
 			return dirs[len(dirs)-1] // last path element = package name

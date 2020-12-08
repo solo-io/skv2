@@ -20,13 +20,20 @@ type SnapshotTemplateParameters struct {
 	// a map of Go modules to (a superset of) the imported codegen Groups. only required if the codegen group is defined in a different go module than the types (i.e. it is using a CustomTypesImportPath)
 	SelectFromGroups map[string][]model.Group
 
+	// the resources contained in the snapshot
 	SnapshotResources SnapshotResources
+
+	// name of the snapshot
+	SnapshotName string
 }
 
 // SnapshotResources acts as a "oneof" to encapsulate
 // HybridSnapshot or a HomogenousSnapshot
 type SnapshotResources interface {
-	makeTemplateFuncs(outputFilename string, selectFromGroups map[string][]model.Group) template.FuncMap
+	makeTemplateFuncs(
+		snapshotName, outputFilename string,
+		selectFromGroups map[string][]model.Group,
+	) template.FuncMap
 }
 
 // HomogenousSnapshotResources represents a set of snapshot resources read from a single source (either remote clusters or local cluster)
@@ -35,8 +42,9 @@ type HomogenousSnapshotResources struct {
 	ResourcesToSelect map[schema.GroupVersion][]string
 }
 
-func (r HomogenousSnapshotResources) makeTemplateFuncs(outputFilename string, selectFromGroups map[string][]model.Group) template.FuncMap {
+func (r HomogenousSnapshotResources) makeTemplateFuncs(snapshotName, outputFilename string, selectFromGroups map[string][]model.Group) template.FuncMap {
 	return funcs.MakeHomogenousSnapshotFuncs(
+		snapshotName,
 		outputFilename,
 		selectFromGroups,
 		r.ResourcesToSelect,
@@ -54,8 +62,9 @@ type HybridSnapshotResources struct {
 	RemoteResourcesToSelect map[schema.GroupVersion][]string
 }
 
-func (r HybridSnapshotResources) makeTemplateFuncs(outputFilename string, selectFromGroups map[string][]model.Group) template.FuncMap {
+func (r HybridSnapshotResources) makeTemplateFuncs(snapshotName, outputFilename string, selectFromGroups map[string][]model.Group) template.FuncMap {
 	return funcs.MakeHybridSnapshotFuncs(
+		snapshotName,
 		outputFilename,
 		selectFromGroups,
 		r.LocalResourcesToSelect,
@@ -72,7 +81,7 @@ func (p SnapshotTemplateParameters) constructTemplate(params SnapshotTemplatePar
 	crossGroupTemplate := model.CustomTemplates{
 		Templates:        map[string]string{params.OutputFilename: templateContents},
 		MockgenDirective: true,
-		Funcs:            p.SnapshotResources.makeTemplateFuncs(p.OutputFilename, p.SelectFromGroups),
+		Funcs:            p.SnapshotResources.makeTemplateFuncs(p.SnapshotName, p.OutputFilename, p.SelectFromGroups),
 	}
 
 	return crossGroupTemplate

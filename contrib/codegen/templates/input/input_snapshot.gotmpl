@@ -1,6 +1,7 @@
+{{ $snapshotName := snapshot_name }}
 {{ $groups := imported_groups }}
 
-// The Input Snapshot contains the set of all:
+// The Input {{ $snapshotName }}Snapshot contains the set of all:
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
@@ -10,7 +11,7 @@
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
-// or a ClusterWatcher (for multiple clusters) using the SnapshotBuilder.
+// or a ClusterWatcher (for multiple clusters) using the {{ $snapshotName }}SnapshotBuilder.
 //
 // Resources in a MultiCluster snapshot will have their ClusterName set to the
 // name of the cluster from which the resource was read.
@@ -61,7 +62,7 @@ import (
 {{- end }}
 
 // the snapshot of input resources consumed by translation
-type Snapshot interface {
+type {{ $snapshotName }}Snapshot interface {
 {{/* generate a getter for each resource */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -84,7 +85,7 @@ type Snapshot interface {
     MarshalJSON() ([]byte, error)
 }
 
-type snapshot struct {
+type snapshot{{ $snapshotName }} struct {
     name string
 {{/* generate fields of the real snapshot impl here */}}
 {{- range $group := $groups }}
@@ -98,7 +99,7 @@ type snapshot struct {
 
 }
 
-func NewSnapshot(
+func New{{ $snapshotName }}Snapshot(
 	name string,
 {{/* generate constructor params here */}}
 {{- range $group := $groups }}
@@ -110,8 +111,8 @@ func NewSnapshot(
 {{- end }}
 {{- end }}
 
-) Snapshot {
-    return &snapshot{
+) {{ $snapshotName }}Snapshot {
+    return &snapshot{{ $snapshotName }}{
     	name: name,
 {{/* add constructor params here */}}
 {{- range $group := $groups }}
@@ -132,14 +133,14 @@ func NewSnapshot(
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func (s snapshot) {{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
+func (s snapshot{{ $snapshotName }}) {{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
     return s.{{ $kindLowerCamelPlural }}
 }
 {{- end }}
 {{- end }}
 
 {{- if $needs_sync_status }}
-func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
+func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.Client) error {
 {{/* generate calls to update status here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -159,7 +160,7 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
     return nil
 }
 
-func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
     {{/* generate calls to update status here */}}
     {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -184,7 +185,7 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 }
 {{- end }}
 
-func (s snapshot) MarshalJSON() ([]byte, error) {
+func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
     snapshotMap := map[string]interface{}{"name": s.name}
 {{/* add map contents here */}}
 {{- range $group := $groups }}
@@ -201,12 +202,12 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 // Two types of builders are available:
 // a builder for snapshots of resources across multiple clusters
 // a builder for snapshots of resources within a single cluster
-type Builder interface {
-    BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error)
+type {{ $snapshotName }}Builder interface {
+    BuildSnapshot(ctx context.Context, name string, opts {{ $snapshotName }}BuildOptions) ({{ $snapshotName }}Snapshot, error)
 }
 
 // Options for building a snapshot
-type BuildOptions struct {
+type {{ $snapshotName }}BuildOptions struct {
 {{/* generate build options here */}}
 {{- range $group := $groups }}
 {{ $client_import_prefix := group_import_name $group }}
@@ -215,13 +216,13 @@ type BuildOptions struct {
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     // List options for composing a snapshot from {{ $kindPlural }}
-    {{ $kindPlural }} ResourceBuildOptions
+    {{ $kindPlural }} Resource{{ $snapshotName }}BuildOptions
 {{- end }}
 {{- end }}
 }
 
 // Options for reading resources of a given type
-type ResourceBuildOptions struct {
+type Resource{{ $snapshotName }}BuildOptions struct {
 {{/* generate build options here */}}
     // List options for composing a snapshot from a resource type
     ListOptions []client.ListOption
@@ -231,23 +232,23 @@ type ResourceBuildOptions struct {
 }
 
 // build a snapshot from resources across multiple clusters
-type multiClusterBuilder struct {
+type multiCluster{{ $snapshotName }}Builder struct {
     clusters multicluster.Interface
     client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
-func NewMultiClusterBuilder(
+func NewMultiCluster{{ $snapshotName }}Builder(
         clusters multicluster.Interface,
         client multicluster.Client,
-) Builder {
-    return &multiClusterBuilder{
+) {{ $snapshotName }}Builder {
+    return &multiCluster{{ $snapshotName }}Builder{
         clusters: clusters,
         client:   client,
     }
 }
 
-func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
+func (b *multiCluster{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, name string, opts {{ $snapshotName }}BuildOptions) ({{ $snapshotName }}Snapshot, error) {
 {{/* generate set initialization here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -277,7 +278,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
     }
 
-    outputSnap := NewSnapshot(
+    outputSnap := New{{ $snapshotName }}Snapshot(
         name,
 {{/* generate params for snapshot constructor here */}}
 {{- range $group := $groups }}
@@ -300,7 +301,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-func (b *multiClusterBuilder) insert{{ $kindPlural }}FromCluster(ctx context.Context, cluster string, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts ResourceBuildOptions) error {
+func (b *multiCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}FromCluster(ctx context.Context, cluster string, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts Resource{{ $snapshotName }}BuildOptions) error {
     {{ $kindLowerCamel }}Client, err := {{ $client_import_prefix }}.NewMulticluster{{ $resource.Kind }}Client(b.client).Cluster(cluster)
     if err != nil {
         return err
@@ -348,21 +349,21 @@ func (b *multiClusterBuilder) insert{{ $kindPlural }}FromCluster(ctx context.Con
 
 
 // build a snapshot from resources in a single cluster
-type singleClusterBuilder struct {
+type singleCluster{{ $snapshotName }}Builder struct {
     mgr manager.Manager
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
-func NewSingleClusterBuilder(
+func NewSingleCluster{{ $snapshotName }}Builder(
         mgr manager.Manager,
-) Builder {
-    return &singleClusterBuilder{
+) {{ $snapshotName }}Builder {
+    return &singleCluster{{ $snapshotName }}Builder{
         mgr: mgr,
     }
 }
 
 
-func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
+func (b *singleCluster{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, name string, opts {{ $snapshotName }}BuildOptions) ({{ $snapshotName }}Snapshot, error) {
 {{/* generate set initialization here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -388,7 +389,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 {{- end }}
 {{- end }}
 
-    outputSnap := NewSnapshot(
+    outputSnap := New{{ $snapshotName }}Snapshot(
         name,
 {{/* generate params for snapshot constructor here */}}
 {{- range $group := $groups }}
@@ -411,7 +412,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-func (b *singleClusterBuilder) insert{{ $kindPlural }}(ctx context.Context, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts ResourceBuildOptions) error {
+func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx context.Context, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts Resource{{ $snapshotName }}BuildOptions) error {
 
     if opts.Verifier != nil {
         gvk := schema.GroupVersionKind{
