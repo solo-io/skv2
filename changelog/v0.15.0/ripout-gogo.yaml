@@ -1,0 +1,4 @@
+changelog:
+- type: BREAKING_CHANGE
+  description: Update contrib/Snapshot code generation to support "Hybrid" input reconciler which reconciles events generated from both a multicluster client (remote clusters) and a local manager (local cluster).
+  issueLink: https://github.com/solo-io/skv2/issues/178
