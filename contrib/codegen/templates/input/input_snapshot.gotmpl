@@ -1,4 +1,5 @@
 {{ $snapshotName := snapshot_name }}
+{{ $isMulticluster := is_multicluster }}
 {{ $groups := imported_groups }}
 
 // The Input {{ $snapshotName }}Snapshot contains the set of all:
@@ -24,7 +25,6 @@ import (
 
     "k8s.io/apimachinery/pkg/runtime/schema"
     "github.com/solo-io/skv2/pkg/verifier"
-    "sigs.k8s.io/controller-runtime/pkg/manager"
 
     "github.com/hashicorp/go-multierror"
 {{ $needsControllerUtils := false }}
@@ -38,7 +38,11 @@ import (
 {{- if $needsControllerUtils }}
     "github.com/solo-io/skv2/pkg/controllerutils"
 {{- end }}
+{{- if $isMulticluster }}
     "github.com/solo-io/skv2/pkg/multicluster"
+{{- else }}
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+{{- end }}
     "sigs.k8s.io/controller-runtime/pkg/client"
 
 {{- range $group := $groups }}
@@ -73,13 +77,15 @@ type {{ $snapshotName }}Snapshot interface {
 {{- end }}
 {{- end }}
 {{- if $needs_sync_status }}
-    // update the status of all input objects which support
-    // the Status subresource (in the local cluster)
-    SyncStatuses(ctx context.Context, c client.Client) error
-
+{{- if $isMulticluster }}
     // update the status of all input objects which support
     // the Status subresource (across multiple clusters)
     SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
+{{- else }}
+    // update the status of all input objects which support
+    // the Status subresource (in the local cluster)
+    SyncStatuses(ctx context.Context, c client.Client) error
+{{- end }}
 {{- end }}
     // serialize the entire snapshot as JSON
     MarshalJSON() ([]byte, error)
@@ -140,25 +146,7 @@ func (s snapshot{{ $snapshotName }}) {{ $kindPlural }}() {{ $set_import_prefix }
 {{- end }}
 
 {{- if $needs_sync_status }}
-func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.Client) error {
-{{/* generate calls to update status here */}}
-{{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-{{- if $resource.Status }}
-    for _, obj := range s.{{ $kindPlural }}().List() {
-    	if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-    		return err
-        }
-    }
-{{- end }}
-{{- end }}
-{{- end }}
-    return nil
-}
+{{- if $isMulticluster }}
 
 func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
     {{/* generate calls to update status here */}}
@@ -178,11 +166,35 @@ func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Contex
             return err
         }
     }
-{{- end }}
-{{- end }}
-{{- end }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
     return nil
 }
+
+{{- else }}
+
+func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.Client) error {
+    {{/* generate calls to update status here */}}
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{- if $resource.Status }}
+    for _, obj := range s.{{ $kindPlural }}().List() {
+        if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+            return err
+        }
+    }
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    return nil
+}
+
+{{- end }}
 {{- end }}
 
 func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
@@ -199,9 +211,6 @@ func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
 }
 
 // builds the input snapshot from API Clients.
-// Two types of builders are available:
-// a builder for snapshots of resources across multiple clusters
-// a builder for snapshots of resources within a single cluster
 type {{ $snapshotName }}Builder interface {
     BuildSnapshot(ctx context.Context, name string, opts {{ $snapshotName }}BuildOptions) ({{ $snapshotName }}Snapshot, error)
 }
@@ -230,7 +239,7 @@ type Resource{{ $snapshotName }}BuildOptions struct {
     // If provided, ensure the resource has been verified before adding it to snapshots
     Verifier verifier.ServerResourceVerifier
 }
-
+{{- if $isMulticluster }}
 // build a snapshot from resources across multiple clusters
 type multiCluster{{ $snapshotName }}Builder struct {
     clusters multicluster.Interface
@@ -348,6 +357,8 @@ func (b *multiCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}FromClus
 {{- end }}
 
 
+{{- else }}
+
 // build a snapshot from resources in a single cluster
 type singleCluster{{ $snapshotName }}Builder struct {
     mgr manager.Manager
@@ -445,5 +456,6 @@ func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx co
     return nil
 }
 
+{{- end }}
 {{- end }}
 {{- end }}

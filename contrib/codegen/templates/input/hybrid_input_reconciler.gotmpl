@@ -17,14 +17,14 @@ import (
     "sigs.k8s.io/controller-runtime/pkg/predicate"
 
 {{- range $group := $remoteGroups }}
-{{ $type_import_prefix := group_import_name $group }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- $type_import_prefix := group_import_name $group }}
+{{- $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
     {{ $type_import_prefix }} "{{ group_import_path $group }}"
     {{ $controller_import_prefix }} "{{ controller_import_path $group }}"
 {{- end }}
 {{- range $group := $localGroups }}
-{{ $type_import_prefix := group_import_name $group }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- $type_import_prefix := group_import_name $group }}
+{{- $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
     {{ $type_import_prefix }} "{{ group_import_path $group }}"
     {{ $controller_import_prefix }} "{{ controller_import_path $group }}"
 {{- end }}

@@ -38,6 +38,9 @@ type SnapshotResources interface {
 
 // HomogenousSnapshotResources represents a set of snapshot resources read from a single source (either remote clusters or local cluster)
 type HomogenousSnapshotResources struct {
+	// indicates whether this snapshot will be used for the local or remote cluster
+	MultiCluster bool
+
 	// a map of the GVKs to the resources which we want to include in the input snapshot.
 	ResourcesToSelect map[schema.GroupVersion][]string
 }
@@ -48,6 +51,7 @@ func (r HomogenousSnapshotResources) makeTemplateFuncs(snapshotName, outputFilen
 		outputFilename,
 		selectFromGroups,
 		r.ResourcesToSelect,
+		r.MultiCluster,
 	)
 }
 
