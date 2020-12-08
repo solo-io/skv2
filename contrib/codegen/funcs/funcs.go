@@ -29,7 +29,7 @@ func MakeHomogenousSnapshotFuncs(
 	groups, groupImports := getImportedGroups(selectFromGroups, resourcesToSelect)
 
 	return template.FuncMap{
-		"snapshot_name": func() string { return snapshotName },
+		"snapshot_name":   func() string { return snapshotName },
 		"is_multicluster": func() bool { return multiCluster },
 		"package": func() string {
 			dirs := strings.Split(filepath.Dir(outputFile), string(filepath.Separator))
