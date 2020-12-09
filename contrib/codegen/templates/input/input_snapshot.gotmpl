@@ -80,15 +80,27 @@ type {{ $snapshotName }}Snapshot interface {
 {{- if $isMulticluster }}
     // update the status of all input objects which support
     // the Status subresource (across multiple clusters)
-    SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
+    SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts {{ $snapshotName }}SyncStatusOptions) error
 {{- else }}
     // update the status of all input objects which support
     // the Status subresource (in the local cluster)
-    SyncStatuses(ctx context.Context, c client.Client) error
+    SyncStatuses(ctx context.Context, c client.Client, opts {{ $snapshotName }}SyncStatusOptions) error
 {{- end }}
 {{- end }}
     // serialize the entire snapshot as JSON
     MarshalJSON() ([]byte, error)
+}
+
+// options for syncing input object statuses
+type {{ $snapshotName }}SyncStatusOptions struct {
+    {{/* generate fields of the real snapshot impl here */}}
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    // sync status of {{ $resource.Kind }} objects
+    {{ $resource.Kind }} bool
+    {{- end }}
+    {{- end }}
 }
 
 type snapshot{{ $snapshotName }} struct {
@@ -148,7 +160,8 @@ func (s snapshot{{ $snapshotName }}) {{ $kindPlural }}() {{ $set_import_prefix }
 {{- if $needs_sync_status }}
 {{- if $isMulticluster }}
 
-func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts {{ $snapshotName }}SyncStatusOptions) error {
+	var errs error
     {{/* generate calls to update status here */}}
     {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -157,24 +170,28 @@ func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Contex
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     {{- if $resource.Status }}
-    for _, obj := range s.{{ $kindPlural }}().List() {
-        clusterClient, err := mcClient.Cluster(obj.ClusterName)
-        if err != nil {
-            return err
-        }
-        if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-            return err
+    if opts.{{ $resource.Kind }} {
+        for _, obj := range s.{{ $kindPlural }}().List() {
+            clusterClient, err := mcClient.Cluster(obj.ClusterName)
+            if err != nil {
+                errs = multierror.Append(errs, err)
+                continue
+            }
+            if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+                errs = multierror.Append(errs, err)
+            }
         }
     }
     {{- end }}
     {{- end }}
     {{- end }}
-    return nil
+    return errs
 }
 
 {{- else }}
 
-func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.Client) error {
+func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.Client, opts {{ $snapshotName }}SyncStatusOptions) error {
+    var errs error
     {{/* generate calls to update status here */}}
     {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -183,15 +200,17 @@ func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     {{- if $resource.Status }}
-    for _, obj := range s.{{ $kindPlural }}().List() {
-        if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-            return err
+    if opts.{{ $resource.Kind }} {
+        for _, obj := range s.{{ $kindPlural }}().List() {
+            if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+                errs = multierror.Append(errs, err)
+            }
         }
     }
     {{- end }}
     {{- end }}
     {{- end }}
-    return nil
+    return errs
 }
 
 {{- end }}
