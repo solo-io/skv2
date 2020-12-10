@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	v1alpha1_providers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/providers"
 
@@ -42,11 +43,11 @@ type RegistrationOptions struct {
 	// If left empty will return error
 	ClusterName string
 
-	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// Namespace to write namespaced resources to in the "management" cluster
 	// If left empty will return error
 	Namespace string
 
-	// Namespace to write namespaced resources to in the "master" and "remote" clusters
+	// Namespace to write namespaced resources to in the "remote" cluster
 	// If left empty will return error
 	RemoteNamespace string
 
@@ -101,14 +102,14 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 	ctx context.Context,
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
 ) error {
-	masterRestCfg, remoteCfg, registrationOpts, registrant, err := opts.initialize(providerInfo)
+	mgmtRestCfg, remoteCfg, registrationOpts, registrant, err := opts.initialize(providerInfo)
 	if err != nil {
 		return err
 	}
 
 	return RegisterClusterFromConfig(
 		ctx,
-		masterRestCfg,
+		mgmtRestCfg,
 		remoteCfg,
 		registrationOpts,
 		registrant,
@@ -125,27 +126,30 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 func (opts RegistrationOptions) DeregisterCluster(
 	ctx context.Context,
 ) error {
-	masterRestCfg, remoteCfg, registrationOpts, registrant, err := opts.initialize(nil)
+	mgmtRestCfg, remoteCfg, registrationOpts, registrant, err := opts.initialize(nil)
 	if err != nil {
 		return err
 	}
-	return DeregisterClusterFromConfig(ctx, masterRestCfg, remoteCfg, registrationOpts, registrant)
+	return DeregisterClusterFromConfig(ctx, mgmtRestCfg, remoteCfg, registrationOpts, registrant)
 }
 
 // Initialize registration dependencies
 func (opts RegistrationOptions) initialize(
 	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
-) (masterRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, registrationOpts Options, registrant ClusterRegistrant, err error) {
-	masterRestCfg, err = opts.KubeCfg.ClientConfig()
+) (mgmtRestCfg *rest.Config, remoteCfg clientcmd.ClientConfig, registrationOpts Options, registrant ClusterRegistrant, err error) {
+	if opts.KubeCfg == nil || opts.RemoteKubeCfg == nil {
+		return mgmtRestCfg, remoteCfg, registrationOpts, registrant, eris.New("must pass in both kubecfg and remoteKubeCfg")
+	}
+	mgmtRestCfg, err = opts.KubeCfg.ClientConfig()
 	if err != nil {
-		return masterRestCfg, remoteCfg, registrationOpts, registrant, err
+		return mgmtRestCfg, remoteCfg, registrationOpts, registrant, err
 	}
 
 	remoteCfg = opts.RemoteKubeCfg
 
-	registrant, err = defaultRegistrant(masterRestCfg, opts.APIServerAddress)
+	registrant, err = defaultRegistrant(mgmtRestCfg, opts.APIServerAddress)
 	if err != nil {
-		return masterRestCfg, remoteCfg, registrationOpts, registrant, err
+		return mgmtRestCfg, remoteCfg, registrationOpts, registrant, err
 	}
 
 	rolePolicyRules, clusterRolePolicyRules := collectPolicyRules(opts.Roles, opts.ClusterRoles)
@@ -175,7 +179,7 @@ func (opts RegistrationOptions) initialize(
 		return nil, nil, Options{}, nil, err
 	}
 
-	return masterRestCfg, remoteCfg, registrationOpts, registrant, nil
+	return mgmtRestCfg, remoteCfg, registrationOpts, registrant, nil
 }
 
 // Iterate Roles and ClusterRoles to collect set of PolicyRules for each.
@@ -210,7 +214,7 @@ func collectPolicyRules(
 
 func RegisterClusterFromConfig(
 	ctx context.Context,
-	masterClusterCfg *rest.Config,
+	mgmtClusterCfg *rest.Config,
 	remoteCfg clientcmd.ClientConfig,
 	opts Options,
 	registrant ClusterRegistrant,
@@ -239,7 +243,7 @@ func RegisterClusterFromConfig(
 
 	return registrant.RegisterClusterWithToken(
 		ctx,
-		masterClusterCfg,
+		mgmtClusterCfg,
 		remoteCfg,
 		token,
 		opts,
@@ -248,14 +252,14 @@ func RegisterClusterFromConfig(
 
 func DeregisterClusterFromConfig(
 	ctx context.Context,
-	masterClusterCfg *rest.Config,
+	mgmtClusterCfg *rest.Config,
 	remoteCfg clientcmd.ClientConfig,
 	opts Options,
 	registrant ClusterRegistrant,
 ) error {
 	var multierr *multierror.Error
 
-	if err := registrant.DeregisterCluster(ctx, masterClusterCfg, opts); err != nil {
+	if err := registrant.DeregisterCluster(ctx, mgmtClusterCfg, opts); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 
