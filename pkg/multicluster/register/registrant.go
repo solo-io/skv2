@@ -301,7 +301,7 @@ func (c *clusterRegistrant) DeleteRemoteAccessResources(ctx context.Context,
 
 func (c *clusterRegistrant) RegisterClusterWithToken(
 	ctx context.Context,
-	masterClusterCfg *rest.Config,
+	mgmtClusterCfg *rest.Config,
 	remoteClientCfg clientcmd.ClientConfig,
 	token string,
 	opts Options,
@@ -359,7 +359,7 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 		opts.RegistrationMetadata.ClusterRolePolicyRules,
 	)
 
-	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
+	kubeClusterClient, err := c.kubeClusterFactory(mgmtClusterCfg)
 	if err != nil {
 		return err
 	}
@@ -372,7 +372,7 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 
 func (c *clusterRegistrant) DeregisterCluster(
 	ctx context.Context,
-	masterClusterCfg *rest.Config,
+	mgmtClusterCfg *rest.Config,
 	opts Options,
 ) error {
 	if err := (&opts).validate(); err != nil {
@@ -381,7 +381,7 @@ func (c *clusterRegistrant) DeregisterCluster(
 
 	kcSecretObjMeta := kubeconfig.SecretObjMeta(opts.Namespace, opts.ClusterName, nil)
 	kubeClusterObjMeta := kubeClusterObjMeta(kcSecretObjMeta.Name, kcSecretObjMeta.Namespace, nil)
-	kubeClusterClient, err := c.kubeClusterFactory(masterClusterCfg)
+	kubeClusterClient, err := c.kubeClusterFactory(mgmtClusterCfg)
 	if err != nil {
 		return err
 	}

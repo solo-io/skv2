@@ -4,12 +4,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// ClusterWatcher watches for KubeConfig secrets on the master cluster.
+// ClusterWatcher watches for KubeConfig secrets on the management cluster.
 // It is responsible for starting cluster managers and calling ClusterHandler functions.
 type ClusterWatcher interface {
 	// Run starts a watch for KubeConfig secrets on the cluster managed by the given manager.Manager.
 	// Note that Run will call Start on the given manager and run all registered ClusterHandlers.
-	Run(master manager.Manager) error
+	Run(management manager.Manager) error
 	// RegisterClusterHandler adds a ClusterHandler to the ClusterWatcher.
 	RegisterClusterHandler(handler ClusterHandler)
 }
