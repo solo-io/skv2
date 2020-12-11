@@ -76,7 +76,8 @@ func (r HybridSnapshotResources) makeTemplateFuncs(snapshotName, outputFilename 
 	)
 }
 
-func (p SnapshotTemplateParameters) constructTemplate(params SnapshotTemplateParameters, templatePath string) model.CustomTemplates {
+// NOTE(awang): to user your template in a separate repo, use this function and pass in your own templatePath
+func (p SnapshotTemplateParameters) ConstructTemplate(params SnapshotTemplateParameters, templatePath string) model.CustomTemplates {
 	templateContents, err := templatesBox.FindString(templatePath)
 	if err != nil {
 		panic(err)
@@ -102,7 +103,7 @@ const (
 
 // Returns the template for generating input snapshots.
 func InputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
-	return params.constructTemplate(params, InputSnapshotCustomTemplatePath)
+	return params.ConstructTemplate(params, InputSnapshotCustomTemplatePath)
 }
 
 /*
@@ -114,7 +115,7 @@ const (
 
 // Returns the template for generating input snapshots.
 func InputSnapshotManualBuilder(params SnapshotTemplateParameters) model.CustomTemplates {
-	return params.constructTemplate(params, InputSnapshotManualBuilderCustomTemplatePath)
+	return params.ConstructTemplate(params, InputSnapshotManualBuilderCustomTemplatePath)
 }
 
 /*
@@ -131,7 +132,7 @@ func InputReconciler(params SnapshotTemplateParameters) model.CustomTemplates {
 	if _, isHybrid := params.SnapshotResources.(HybridSnapshotResources); isHybrid {
 		templatePath = HybridInputReconcilerCustomTemplatePath
 	}
-	return params.constructTemplate(params, templatePath)
+	return params.ConstructTemplate(params, templatePath)
 }
 
 /*
@@ -143,5 +144,5 @@ const (
 
 // Returns the template for generating output snapshots.
 func OutputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
-	return params.constructTemplate(params, OutputSnapshotCustomTemplatePath)
+	return params.ConstructTemplate(params, OutputSnapshotCustomTemplatePath)
 }
