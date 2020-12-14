@@ -326,12 +326,18 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	remoteContext := rawRemoteCfg.Contexts[remoteContextName]
 	remoteCluster := rawRemoteCfg.Clusters[remoteContext.Cluster]
 
-	if err = c.respectApiServerOverride(remoteCluster); err != nil {
-		return err
-	}
-	// hacky step for running locally
-	if err = c.skipTLSVerificationForLocalTesting(remoteCluster); err != nil {
-		return err
+	if c.localAPIServerAddress != "" {
+		serverUrl, err := url.Parse(remoteCluster.Server)
+		if err != nil {
+			return err
+		}
+		if err = c.setApiServerOverride(remoteCluster, serverUrl); err != nil {
+			return err
+		}
+		// hacky step for running locally
+		if err = c.skipTLSVerificationForLocalTesting(remoteCluster, serverUrl); err != nil {
+			return err
+		}
 	}
 
 	if err = c.ensureRemoteNamespace(ctx, opts.Namespace, remoteCfg); err != nil {
@@ -631,13 +637,9 @@ func (c *clusterRegistrant) getTokenForSa(
 // this function call is a no-op if those conditions are not met
 func (c *clusterRegistrant) skipTLSVerificationForLocalTesting(
 	remoteCluster *api.Cluster,
+	serverUrl *url.URL,
 ) error {
-	serverUrl, err := url.Parse(remoteCluster.Server)
-	if err != nil {
-		return err
-	}
-
-	if c.localAPIServerAddress != "" && (serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") {
+	if serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost" {
 		remoteCluster.InsecureSkipTLSVerify = true
 		remoteCluster.CertificateAuthority = ""
 		remoteCluster.CertificateAuthorityData = []byte("")
@@ -653,20 +655,13 @@ func (c *clusterRegistrant) skipTLSVerificationForLocalTesting(
 // `--local-cluster-domain-override`, which resolves to the host machine of docker.
 // There are use cases where the address a user uses to communicate with kubernetes from
 // their local machine may differ from the one used by pods running in the cluster.
-func (c *clusterRegistrant) respectApiServerOverride(remoteCluster *api.Cluster) error {
-	serverUrl, err := url.Parse(remoteCluster.Server)
-	if err != nil {
-		return err
-	}
-
+func (c *clusterRegistrant) setApiServerOverride(remoteCluster *api.Cluster, serverUrl *url.URL) error {
 	port := serverUrl.Port()
-	if c.localAPIServerAddress != "" {
-		if host, newPort, err := net.SplitHostPort(c.localAPIServerAddress); err == nil {
-			c.localAPIServerAddress = host
-			port = newPort
-		}
-		remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localAPIServerAddress, port)
+	if host, newPort, err := net.SplitHostPort(c.localAPIServerAddress); err == nil {
+		c.localAPIServerAddress = host
+		port = newPort
 	}
+	remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localAPIServerAddress, port)
 
 	return nil
 }
