@@ -326,8 +326,11 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	remoteContext := rawRemoteCfg.Contexts[remoteContextName]
 	remoteCluster := rawRemoteCfg.Clusters[remoteContext.Cluster]
 
-	// hacky step for running locally in KIND
-	if err = c.hackClusterConfigForLocalTesting(remoteCluster); err != nil {
+	if err = c.respectApiServerOverride(remoteCluster); err != nil {
+		return err
+	}
+	// hacky step for running locally
+	if err = c.skipTLSVerificationForLocalTesting(remoteCluster); err != nil {
 		return err
 	}
 
@@ -622,13 +625,11 @@ func (c *clusterRegistrant) getTokenForSa(
 //   * the server appears to point to localhost, AND
 //   * the --local-cluster-domain-override flag is populated with a value
 //
-// then we rewrite the server config to communicate over the value of `--local-cluster-domain-override`, which
-// resolves to the host machine of docker. We also need to skip TLS verification
-// and zero-out the cert data, because the cert on the remote cluster's API server wasn't
-// issued for the domain contained in the value of `--local-cluster-domain-override`.
-//
+// then we need to skip TLS verification  and zero-out the cert data, because the cert
+// on the remote cluster's API server wasn't issued for the domain contained in the
+// value of `--local-cluster-domain-override`.
 // this function call is a no-op if those conditions are not met
-func (c *clusterRegistrant) hackClusterConfigForLocalTesting(
+func (c *clusterRegistrant) skipTLSVerificationForLocalTesting(
 	remoteCluster *api.Cluster,
 ) error {
 	serverUrl, err := url.Parse(remoteCluster.Server)
@@ -636,21 +637,36 @@ func (c *clusterRegistrant) hackClusterConfigForLocalTesting(
 		return err
 	}
 
-	if (serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") &&
-		c.localAPIServerAddress != "" {
-
-		port := serverUrl.Port()
-		if host, newPort, err := net.SplitHostPort(c.localAPIServerAddress); err == nil {
-			c.localAPIServerAddress = host
-			port = newPort
-		}
-		remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localAPIServerAddress, port)
+	if c.localAPIServerAddress != "" && (serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") {
 		remoteCluster.InsecureSkipTLSVerify = true
 		remoteCluster.CertificateAuthority = ""
 		remoteCluster.CertificateAuthorityData = []byte("")
 	}
 
 	return nil
+}
+
+// if:
+//   * the --local-cluster-domain-override flag is populated with a value
+//
+// then rewrite the server config to communicate over the value of
+// `--local-cluster-domain-override`, which resolves to the host machine of docker.
+// There are use cases where the address a user uses to communicate with kubernetes from
+// their local machine may differ from the one used by pods running in the cluster.
+func (c *clusterRegistrant) respectApiServerOverride(remoteCluster *api.Cluster) error {
+	serverUrl, err := url.Parse(remoteCluster.Server)
+	if err != nil {
+		return err
+	}
+
+	port := serverUrl.Port()
+	if c.localAPIServerAddress != "" {
+		if host, newPort, err := net.SplitHostPort(c.localAPIServerAddress); err == nil {
+			c.localAPIServerAddress = host
+			port = newPort
+		}
+		remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localAPIServerAddress, port)
+	}
 }
 
 func serviceAccountObjMeta(opts Options) metav1.ObjectMeta {
