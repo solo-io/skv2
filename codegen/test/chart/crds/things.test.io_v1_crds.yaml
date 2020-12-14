@@ -77,6 +77,9 @@ spec:
                   format: float
                   type: number
               type: object
+            myFavorite:
+              additionalProperties: true
+              type: object
             oil:
               properties:
                 fluid:
