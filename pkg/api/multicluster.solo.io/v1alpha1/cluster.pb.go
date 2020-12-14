@@ -5,10 +5,11 @@ package v1alpha1
 
 import (
 	fmt "fmt"
+	math "math"
+
 	proto "github.com/golang/protobuf/proto"
 	_ "github.com/solo-io/protoc-gen-ext/extproto"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
