@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"time"
 
+	types2 "github.com/gogo/protobuf/types"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/test/matchers"
 	"k8s.io/apimachinery/pkg/types"
@@ -41,7 +41,11 @@ func applyFile(file string, extraArgs ...string) error {
 }
 
 func newPaint(namespace, name string) *Paint {
-	serializedAnyValue, _ := proto.Marshal(&wrappers.StringValue{Value: "test"})
+	serializedAnyValue, _ := proto.Marshal(&types2.Struct{
+		Fields: map[string]*types2.Value{
+			"my": {Kind: &types2.Value_StringValue{StringValue: "favorite"}},
+		},
+	})
 
 	return &Paint{
 		ObjectMeta: v1.ObjectMeta{
