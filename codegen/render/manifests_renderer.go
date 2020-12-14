@@ -250,8 +250,8 @@ func removeProtoAnyValidation(d map[string]interface{}) {
 		delete(values, "properties")
 		// remove "required" value
 		delete(values, "required")
-		// add "additionalProperties" value to indicate an object with arbitrary fields
-		// see "Free-Form Objects" here https://swagger.io/docs/specification/data-models/dictionaries/
-		values["additionalProperties"] = true
+		// x-kubernetes-preserve-unknown-fields allows for unknown fields from a particular node
+		// see https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#specifying-a-structural-schema
+		values["x-kubernetes-preserve-unknown-fields"] = true
 	}
 }

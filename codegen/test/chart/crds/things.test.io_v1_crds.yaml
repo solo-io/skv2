@@ -14,92 +14,9 @@ spec:
     listKind: PaintList
     plural: paints
     singular: paint
-  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
-  validation:
-    openAPIV3Schema:
-      properties:
-        spec:
-          oneOf:
-          - not:
-              anyOf:
-              - required:
-                - acrylic
-              - properties:
-                  oil:
-                    oneOf:
-                    - not:
-                        anyOf:
-                        - required:
-                          - powder
-                        - required:
-                          - fluid
-                    - required:
-                      - powder
-                    - required:
-                      - fluid
-                required:
-                - oil
-          - required:
-            - acrylic
-          - properties:
-              oil:
-                oneOf:
-                - not:
-                    anyOf:
-                    - required:
-                      - powder
-                    - required:
-                      - fluid
-                - required:
-                  - powder
-                - required:
-                  - fluid
-            required:
-            - oil
-          properties:
-            acrylic:
-              properties:
-                body:
-                  enum:
-                  - Light
-                  - Medium
-                  - Heavy
-                  type: string
-              type: object
-            color:
-              properties:
-                hue:
-                  type: string
-                value:
-                  format: float
-                  type: number
-              type: object
-            myFavorite:
-              additionalProperties: true
-              type: object
-            oil:
-              properties:
-                fluid:
-                  type: string
-                powder:
-                  type: string
-                waterMixable:
-                  type: boolean
-              type: object
-          type: object
-        status:
-          properties:
-            observedGeneration:
-              format: int64
-              type: integer
-            percentRemaining:
-              format: int64
-              type: integer
-          type: object
-      type: object
   versions:
   - name: v1
     served: true
@@ -120,19 +37,8 @@ spec:
     listKind: ClusterResourceList
     plural: clusterresources
     singular: clusterresource
-  preserveUnknownFields: false
   scope: Cluster
   subresources: {}
-  validation:
-    openAPIV3Schema:
-      properties:
-        spec:
-          properties:
-            imported:
-              nullable: true
-              type: string
-          type: object
-      type: object
   versions:
   - name: v1
     served: true
