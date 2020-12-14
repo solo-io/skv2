@@ -1,10 +1,10 @@
 changelog:
-- type: NON_USER_FACING
+- type: FIX
   description: >
     Make SnapshotTemplateParameters ConstructTemplate take in a params templateContents string instead
     of a templatePath string.
   issueLink: https://github.com/solo-io/skv2/issues/184
-- type: NON_USER_FACING
+- type: NEW_FEATURE
   description: >
     Change hackClusterConfigForLocalTestingInKIND to just hackClusterConfigForLocalTesting, and remove
     the requirement that it be a KIND cluster. Respect the `--api-server-address` flag
