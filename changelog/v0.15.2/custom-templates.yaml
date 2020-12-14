@@ -2,7 +2,7 @@ changelog:
 - type: FIX
   description: >
     Make SnapshotTemplateParameters ConstructTemplate take in a params templateContents string instead
-    of a templatePath string.
+    of a templatePath string, as well as a mockgenDirective bool for additional customization.
   issueLink: https://github.com/solo-io/skv2/issues/184
 - type: NEW_FEATURE
   description: >

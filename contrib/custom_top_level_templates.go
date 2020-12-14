@@ -77,11 +77,11 @@ func (r HybridSnapshotResources) makeTemplateFuncs(snapshotName, outputFilename 
 	)
 }
 
-// NOTE(awang): to user your template in a separate repo, use this function and pass in your own templatePath
-func (p SnapshotTemplateParameters) ConstructTemplate(params SnapshotTemplateParameters, templateContents string) model.CustomTemplates {
+// NOTE(awang): to use your template in a separate repo, use this function and pass in your own mockgenDirective and templateContents
+func (p SnapshotTemplateParameters) ConstructTemplate(params SnapshotTemplateParameters, templateContents string, mockgenDirective bool) model.CustomTemplates {
 	crossGroupTemplate := model.CustomTemplates{
 		Templates:        map[string]string{params.OutputFilename: templateContents},
-		MockgenDirective: true,
+		MockgenDirective: mockgenDirective,
 		Funcs:            p.SnapshotResources.makeTemplateFuncs(p.SnapshotName, p.OutputFilename, p.SelectFromGroups),
 	}
 
@@ -104,7 +104,7 @@ func InputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
 		panic(err)
 	}
 	templateContents := string(templateContentsBytes)
-	return params.ConstructTemplate(params, templateContents)
+	return params.ConstructTemplate(params, templateContents, true)
 }
 
 /*
@@ -121,7 +121,7 @@ func InputSnapshotManualBuilder(params SnapshotTemplateParameters) model.CustomT
 		panic(err)
 	}
 	templateContents := string(templateContentsBytes)
-	return params.ConstructTemplate(params, templateContents)
+	return params.ConstructTemplate(params, templateContents, true)
 }
 
 /*
@@ -144,7 +144,7 @@ func InputReconciler(params SnapshotTemplateParameters) model.CustomTemplates {
 	}
 	templateContents := string(templateContentsBytes)
 
-	return params.ConstructTemplate(params, templateContents)
+	return params.ConstructTemplate(params, templateContents, true)
 }
 
 /*
@@ -161,5 +161,5 @@ func OutputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
 		panic(err)
 	}
 	templateContents := string(templateContentsBytes)
-	return params.ConstructTemplate(params, templateContents)
+	return params.ConstructTemplate(params, templateContents, true)
 }
