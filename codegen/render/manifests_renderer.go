@@ -219,7 +219,7 @@ func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1beta1.JSONS
 	}
 
 	// remove 'properties' and 'required' fields to prevent validating proto.Any fields
-	removeProtoAnyProperties(obj)
+	removeProtoAnyValidation(obj)
 
 	bytes, err := json.Marshal(obj)
 	if err != nil {
@@ -232,8 +232,8 @@ func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1beta1.JSONS
 	return jsonSchema, nil
 }
 
-// prevent k8s from validating proto.Any fields (since it's unstructured) by removing 'properties' and 'required' fields
-func removeProtoAnyProperties(d map[string]interface{}) {
+// prevent k8s from validating proto.Any fields (since it's unstructured)
+func removeProtoAnyValidation(d map[string]interface{}) {
 	for _, v := range d {
 		values, ok := v.(map[string]interface{})
 		if !ok {
@@ -243,12 +243,15 @@ func removeProtoAnyProperties(d map[string]interface{}) {
 		properties, isObj := desc.(map[string]interface{})
 		// detect proto.Any field from presence of "@type" as field under "properties"
 		if !ok || !isObj || properties["@type"] == nil {
-			removeProtoAnyProperties(values)
+			removeProtoAnyValidation(values)
 			continue
 		}
 		// remove "properties" value
 		delete(values, "properties")
 		// remove "required" value
 		delete(values, "required")
+		// add "additionalProperties" value to indicate an object with arbitrary fields
+		// see "Free-Form Objects" here https://swagger.io/docs/specification/data-models/dictionaries/
+		values["additionalProperties"] = true
 	}
 }
