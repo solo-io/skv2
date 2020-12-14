@@ -667,6 +667,8 @@ func (c *clusterRegistrant) respectApiServerOverride(remoteCluster *api.Cluster)
 		}
 		remoteCluster.Server = fmt.Sprintf("https://%s:%s", c.localAPIServerAddress, port)
 	}
+
+	return nil
 }
 
 func serviceAccountObjMeta(opts Options) metav1.ObjectMeta {
