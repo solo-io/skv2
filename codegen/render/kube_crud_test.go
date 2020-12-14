@@ -102,7 +102,7 @@ func mustCrud(ctx context.Context, clientSet Clientset, paint *Paint) {
 	}, time.Second).Should(matchers.MatchProto(&status))
 }
 
-var _ = FDescribe("Generated Code", func() {
+var _ = Describe("Generated Code", func() {
 	var (
 		ctx       context.Context
 		cancel    context.CancelFunc
