@@ -1,6 +1,7 @@
 package contrib
 
 import (
+	"io/ioutil"
 	"text/template"
 
 	"github.com/solo-io/skv2/codegen/model"
@@ -77,12 +78,7 @@ func (r HybridSnapshotResources) makeTemplateFuncs(snapshotName, outputFilename 
 }
 
 // NOTE(awang): to user your template in a separate repo, use this function and pass in your own templatePath
-func (p SnapshotTemplateParameters) ConstructTemplate(params SnapshotTemplateParameters, templatePath string) model.CustomTemplates {
-	templateContents, err := templatesBox.FindString(templatePath)
-	if err != nil {
-		panic(err)
-	}
-
+func (p SnapshotTemplateParameters) ConstructTemplate(params SnapshotTemplateParameters, templateContents string) model.CustomTemplates {
 	crossGroupTemplate := model.CustomTemplates{
 		Templates:        map[string]string{params.OutputFilename: templateContents},
 		MockgenDirective: true,
@@ -103,7 +99,12 @@ const (
 
 // Returns the template for generating input snapshots.
 func InputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
-	return params.ConstructTemplate(params, InputSnapshotCustomTemplatePath)
+	templateContentsBytes, err := ioutil.ReadFile(templatesDir + InputSnapshotCustomTemplatePath)
+	if err != nil {
+		panic(err)
+	}
+	templateContents := string(templateContentsBytes)
+	return params.ConstructTemplate(params, templateContents)
 }
 
 /*
@@ -115,7 +116,12 @@ const (
 
 // Returns the template for generating input snapshots.
 func InputSnapshotManualBuilder(params SnapshotTemplateParameters) model.CustomTemplates {
-	return params.ConstructTemplate(params, InputSnapshotManualBuilderCustomTemplatePath)
+	templateContentsBytes, err := ioutil.ReadFile(templatesDir + InputSnapshotManualBuilderCustomTemplatePath)
+	if err != nil {
+		panic(err)
+	}
+	templateContents := string(templateContentsBytes)
+	return params.ConstructTemplate(params, templateContents)
 }
 
 /*
@@ -132,7 +138,13 @@ func InputReconciler(params SnapshotTemplateParameters) model.CustomTemplates {
 	if _, isHybrid := params.SnapshotResources.(HybridSnapshotResources); isHybrid {
 		templatePath = HybridInputReconcilerCustomTemplatePath
 	}
-	return params.ConstructTemplate(params, templatePath)
+	templateContentsBytes, err := ioutil.ReadFile(templatesDir + templatePath)
+	if err != nil {
+		panic(err)
+	}
+	templateContents := string(templateContentsBytes)
+
+	return params.ConstructTemplate(params, templateContents)
 }
 
 /*
@@ -144,5 +156,10 @@ const (
 
 // Returns the template for generating output snapshots.
 func OutputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
-	return params.ConstructTemplate(params, OutputSnapshotCustomTemplatePath)
+	templateContentsBytes, err := ioutil.ReadFile(templatesDir + OutputSnapshotCustomTemplatePath)
+	if err != nil {
+		panic(err)
+	}
+	templateContents := string(templateContentsBytes)
+	return params.ConstructTemplate(params, templateContents)
 }

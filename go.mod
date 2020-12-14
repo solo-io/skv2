@@ -56,18 +56,15 @@ require (
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
-)
-
-replace (
 	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
 	// down. The github mirror should be used instead.
 	// Locking to a specific version (from 'go mod graph'):
 	git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
 	github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190605231540-b8a4faf68e36
+	// Remove when controller-tools v0.2.2 is released
+    // Required for the bugfix https://github.com/kubernetes-sigs/controller-tools/pull/322
+    sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.2.2-0.20190919011008-6ed4ff330711
+    github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 )
 
-// Remove when controller-tools v0.2.2 is released
-// Required for the bugfix https://github.com/kubernetes-sigs/controller-tools/pull/322
-replace sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.2.2-0.20190919011008-6ed4ff330711
 
-replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309

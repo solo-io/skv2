@@ -1,0 +1,6 @@
+changelog:
+- type: NON_USER_FACING
+  description: >
+    Make SnapshotTemplateParameters ConstructTemplate take in a params templateContents string instead
+    of a templatePath string.
+  issueLink: https://github.com/solo-io/skv2/issues/184
