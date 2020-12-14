@@ -1,8 +1,10 @@
 package contrib
 
 import (
-	"github.com/gobuffalo/packr"
+	"io/ioutil"
+
 	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/codegen/util"
 )
 
 /*
@@ -12,7 +14,7 @@ Define custom templates that live on the group level here.
 // use to get all group-level templates in contrib
 var AllGroupCustomTemplates []model.CustomTemplates
 
-var templatesBox = packr.NewBox("./codegen/templates")
+var templatesDir = util.MustGetThisDir() + "/codegen/templates/"
 
 // NOTE(ilackarms): to add your template, copy paste XXX custom template below
 
@@ -25,10 +27,11 @@ const (
 )
 
 var Sets = func() model.CustomTemplates {
-	templateContents, err := templatesBox.FindString(SetCustomTemplatePath)
+	templateContentsBytes, err := ioutil.ReadFile(templatesDir + SetCustomTemplatePath)
 	if err != nil {
 		panic(err)
 	}
+	templateContents := string(templateContentsBytes)
 	setsTemplates := model.CustomTemplates{
 		Templates: map[string]string{SetOutputFilename: templateContents},
 	}
@@ -47,10 +50,11 @@ const (
 )
 
 var ClientProviders = func() model.CustomTemplates {
-	templateContents, err := templatesBox.FindString(ClientProvidersCustomTemplatePath)
+	templateContentsBytes, err := ioutil.ReadFile(templatesDir + ClientProvidersCustomTemplatePath)
 	if err != nil {
 		panic(err)
 	}
+	templateContents := string(templateContentsBytes)
 	clientProvidersTemplate := model.CustomTemplates{
 		Templates: map[string]string{ClientProvidersOutputFilename: templateContents},
 	}
