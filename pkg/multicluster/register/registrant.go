@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -328,7 +327,7 @@ func (c *clusterRegistrant) RegisterClusterWithToken(
 	remoteCluster := rawRemoteCfg.Clusters[remoteContext.Cluster]
 
 	// hacky step for running locally in KIND
-	if err = c.hackClusterConfigForLocalTestingInKIND(remoteCluster, remoteContextName); err != nil {
+	if err = c.hackClusterConfigForLocalTesting(remoteCluster); err != nil {
 		return err
 	}
 
@@ -620,7 +619,6 @@ func (c *clusterRegistrant) getTokenForSa(
 }
 
 // if:
-//   * we are operating against a context named "kind-", AND
 //   * the server appears to point to localhost, AND
 //   * the --local-cluster-domain-override flag is populated with a value
 //
@@ -630,17 +628,15 @@ func (c *clusterRegistrant) getTokenForSa(
 // issued for the domain contained in the value of `--local-cluster-domain-override`.
 //
 // this function call is a no-op if those conditions are not met
-func (c *clusterRegistrant) hackClusterConfigForLocalTestingInKIND(
+func (c *clusterRegistrant) hackClusterConfigForLocalTesting(
 	remoteCluster *api.Cluster,
-	remoteContextName string,
 ) error {
 	serverUrl, err := url.Parse(remoteCluster.Server)
 	if err != nil {
 		return err
 	}
 
-	if strings.HasPrefix(remoteContextName, "kind-") &&
-		(serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") &&
+	if (serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") &&
 		c.localAPIServerAddress != "" {
 
 		port := serverUrl.Port()

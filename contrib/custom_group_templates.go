@@ -1,9 +1,10 @@
 package contrib
 
 import (
+	"io/ioutil"
+
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/util"
-	"io/ioutil"
 )
 
 /*
@@ -13,7 +14,7 @@ Define custom templates that live on the group level here.
 // use to get all group-level templates in contrib
 var AllGroupCustomTemplates []model.CustomTemplates
 
-var templatesDir =  util.MustGetThisDir() + "/codegen/templates/"
+var templatesDir = util.MustGetThisDir() + "/codegen/templates/"
 
 // NOTE(ilackarms): to add your template, copy paste XXX custom template below
 
