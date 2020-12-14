@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/any"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/test/matchers"
 	"k8s.io/apimachinery/pkg/types"
@@ -52,6 +53,10 @@ func newPaint(namespace, name string) *Paint {
 				Acrylic: &AcrylicType{
 					Body: AcrylicType_Heavy,
 				},
+			},
+			MyFavorite: &any.Any{
+				TypeUrl: "type.googleapis.com/google.protobuf.StringValue",
+				Value:   []byte("watercolor"),
 			},
 		},
 	}
