@@ -14,7 +14,6 @@ require (
 	github.com/go-logr/logr v0.1.0
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr v1.30.1
-	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3
 	github.com/gophercloud/gophercloud v0.2.0 // indirect

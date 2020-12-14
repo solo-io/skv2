@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"time"
 
-	types2 "github.com/gogo/protobuf/types"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
+	structpb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/test/matchers"
 	"k8s.io/apimachinery/pkg/types"
@@ -41,9 +41,9 @@ func applyFile(file string, extraArgs ...string) error {
 }
 
 func newPaint(namespace, name string) *Paint {
-	serializedAnyValue, _ := proto.Marshal(&types2.Struct{
-		Fields: map[string]*types2.Value{
-			"my": {Kind: &types2.Value_StringValue{StringValue: "favorite"}},
+	serializedAnyValue, _ := proto.Marshal(&structpb.Struct{
+		Fields: map[string]*structpb.Value{
+			"my": {Kind: &structpb.Value_StringValue{StringValue: "favorite"}},
 		},
 	})
 
@@ -102,7 +102,7 @@ func mustCrud(ctx context.Context, clientSet Clientset, paint *Paint) {
 	}, time.Second).Should(matchers.MatchProto(&status))
 }
 
-var _ = Describe("Generated Code", func() {
+var _ = FDescribe("Generated Code", func() {
 	var (
 		ctx       context.Context
 		cancel    context.CancelFunc
