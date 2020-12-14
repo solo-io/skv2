@@ -24,7 +24,7 @@ type SingleClusterReconcileFunc func(id ezkube.ResourceId) (bool, error)
 // the passed resource can either be a ref to a resource (caused by a deletion), or an actual resource itself. ClusterName will always be set on the object.
 type MultiClusterReconcileFunc func(id ezkube.ClusterResourceId) (bool, error)
 
-// the SingleClusterReconciler reconciles events for input resources in a single cluster
+// the InputReconciler reconciles events for input resources in a single cluster
 type InputReconciler interface {
 	// reconcile the generic resource type in the local cluster.
 	// this function is called from generated code.
