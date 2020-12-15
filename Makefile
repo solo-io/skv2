@@ -38,7 +38,7 @@ generated-code: clean install-go-tools
 # set TEST_PKG to run a specific test package
 .PHONY: run-tests
 run-tests:
-	ginkgo -r -failFast -trace -progress \
+	PATH=$(DEPSGOBIN):$$PATH ginkgo -r -failFast -trace -progress \
 		-progress \
 		-compilers=4 \
 		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG) \
