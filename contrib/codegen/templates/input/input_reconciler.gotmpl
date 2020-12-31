@@ -5,8 +5,8 @@
 // storage event is received for any of:
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-// * {{ $kindPlural }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+// * {{ $gvkPlural }}
 {{- end }}
 {{- end }}
 // for a given cluster or set of clusters.
@@ -42,9 +42,9 @@ type multiCluster{{ $snapshotName }}Reconciler interface {
 {{- range $group := $groups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     {{ $controller_import_prefix }}.Multicluster{{ $resource.Kind }}Reconciler
 {{- end }}
 {{- end }}
@@ -62,11 +62,11 @@ type {{ $snapshotName }}ReconcileOptions struct {
 {{- range $group := $groups }}
 {{ $client_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    // Options for reconciling {{ $kindPlural }}
-    {{ $kindPlural }} reconcile.Options
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+    // Options for reconciling {{ $gvkPlural }}
+    {{ $gvkPlural }} reconcile.Options
 {{- end }}
 {{- end }}
 }
@@ -98,11 +98,11 @@ func RegisterMultiCluster{{ $snapshotName }}Reconciler(
 {{- range $group := $groups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
-    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.{{ $kindPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, r, predicates...)
+    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.{{ $gvkPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, r, predicates...)
 
 
 {{- end }}
@@ -114,9 +114,9 @@ func RegisterMultiCluster{{ $snapshotName }}Reconciler(
 {{ $type_import_prefix := group_import_name $group }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
 func (r *multiCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     obj.ClusterName = clusterName
@@ -143,9 +143,9 @@ type singleCluster{{ $snapshotName }}Reconciler interface {
 {{- range $group := $groups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     {{ $controller_import_prefix }}.{{ $resource.Kind }}Reconciler
 {{- end }}
 {{- end }}
@@ -183,9 +183,9 @@ func RegisterSingleCluster{{ $snapshotName }}Reconciler(
 {{- range $group := $groups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options).Run{{ $resource.Kind }}Reconciler(ctx, r, predicates...); err != nil {
     	return nil, err
     }
@@ -199,9 +199,9 @@ func RegisterSingleCluster{{ $snapshotName }}Reconciler(
 {{ $type_import_prefix := group_import_name $group }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
 func (r *singleCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     return r.base.ReconcileLocalGeneric(obj)

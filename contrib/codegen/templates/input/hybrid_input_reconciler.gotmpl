@@ -35,8 +35,8 @@ import (
 {{- if gt (len $remoteGroups) 0 }}
 {{- range $group := $remoteGroups }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-// * {{ $kindPlural }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+// * {{ $gvkPlural }}
 {{- end }}
 {{- end }}
 // from a remote cluster.
@@ -44,8 +44,8 @@ import (
 {{- if gt (len $localGroups) 0 }}
 {{- range $group := $localGroups }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-// * {{ $kindPlural }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+// * {{ $gvkPlural }}
 {{- end }}
 {{- end }}
 // from the local cluster.
@@ -82,8 +82,6 @@ func Register{{ $snapshotName }}InputReconciler(
 	    {{- end }}
         options {{ $snapshotName }}ReconcileOptions,
 ) (input.InputReconciler, error) {
-// {{$remoteGroups}} {{gt 0 (len $remoteGroups)}} {{ len $remoteGroups }}
-// {{$localGroups}}
     {{- if eq 0 (len $remoteGroups) }}
     multiClusterReconcileFunc := input.MultiClusterReconcileFunc(nil)
     {{- end }}
@@ -102,11 +100,11 @@ func Register{{ $snapshotName }}InputReconciler(
 {{- range $group := $remoteGroups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    // initialize {{ $kindPlural }} reconcile loop for remote clusters
-    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.Remote.{{ $kindPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+    // initialize {{ $gvkPlural }} reconcile loop for remote clusters
+    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.Remote.{{ $gvkPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 
 {{- end }}
 {{- end }}
@@ -114,11 +112,11 @@ func Register{{ $snapshotName }}InputReconciler(
 {{- range $group := $localGroups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    // initialize {{ $kindPlural }} reconcile loop for local cluster
-    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options.Local.{{ $kindPlural }}).Run{{ $resource.Kind }}Reconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+    // initialize {{ $gvkPlural }} reconcile loop for local cluster
+    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options.Local.{{ $gvkPlural }}).Run{{ $resource.Kind }}Reconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
     	return nil, err
     }
 {{- end }}
@@ -134,11 +132,11 @@ type Remote{{ $snapshotName }}ReconcileOptions struct {
     {{- range $group := $remoteGroups }}
     {{ $client_import_prefix := group_import_name $group }}
     {{- range $resource := $group.Resources }}
-    {{- $kindPlural := pluralize $resource.Kind }}
-    {{- $kindLowerCamel := lower_camel $resource.Kind }}
-    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    // Options for reconciling {{ $kindPlural }}
-    {{ $kindPlural }} reconcile.Options
+    {{- $gvkPlural := pluralize (gvk $resource) }}
+    {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+    {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+    // Options for reconciling {{ $gvkPlural }}
+    {{ $gvkPlural }} reconcile.Options
     {{- end }}
     {{- end }}
 
@@ -154,9 +152,9 @@ type remote{{ $snapshotName }}InputReconciler struct {
 {{ $type_import_prefix := group_import_name $group }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
 func (r *remote{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     obj.ClusterName = clusterName
@@ -183,11 +181,11 @@ type Local{{ $snapshotName }}ReconcileOptions struct {
     {{- range $group := $localGroups }}
     {{ $client_import_prefix := group_import_name $group }}
     {{- range $resource := $group.Resources }}
-    {{- $kindPlural := pluralize $resource.Kind }}
-    {{- $kindLowerCamel := lower_camel $resource.Kind }}
-    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    // Options for reconciling {{ $kindPlural }}
-    {{ $kindPlural }} reconcile.Options
+    {{- $gvkPlural := pluralize (gvk $resource) }}
+    {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+    {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+    // Options for reconciling {{ $gvkPlural }}
+    {{ $gvkPlural }} reconcile.Options
     {{- end }}
     {{- end }}
 
@@ -203,9 +201,9 @@ type local{{ $snapshotName }}InputReconciler struct {
 {{ $type_import_prefix := group_import_name $group }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
 func (r *local{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     return r.base.ReconcileLocalGeneric(obj)

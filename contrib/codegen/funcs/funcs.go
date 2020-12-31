@@ -1,11 +1,13 @@
 package funcs
 
 import (
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
 
+	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/model"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -57,6 +59,7 @@ func MakeHomogenousSnapshotFuncs(
 			}
 			return clientImportPath(grp) + "/controller"
 		},
+		"gvk": gvk,
 	}
 }
 
@@ -128,7 +131,12 @@ func MakeHybridSnapshotFuncs(
 			}
 			return clientImportPath(grp) + "/controller"
 		},
+		"gvk": gvk,
 	}
+}
+
+func gvk(resource model.Resource) string {
+	return strcase.ToCamel(fmt.Sprintf("%s-%s", resource.GroupVersion.String(), resource.Kind))
 }
 
 // gets the go package for an imported group's clients

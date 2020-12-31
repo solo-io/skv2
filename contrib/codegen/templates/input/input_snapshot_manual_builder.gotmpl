@@ -22,9 +22,9 @@ name string
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 	{{- range $resource := $group.Resources }}
-		{{- $kindLowerCamel := lower_camel $resource.Kind }}
-		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-		{{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+		{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+		{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+		{{ $gvkLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
 	{{- end }}
 {{- end }}
 
@@ -36,10 +36,10 @@ name:               name,
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 	{{- range $resource := $group.Resources }}
-		{{- $kindPlural := pluralize $resource.Kind }}
-		{{- $kindLowerCamel := lower_camel $resource.Kind }}
-		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-		{{ $kindLowerCamelPlural }}: {{ $set_import_prefix }}.New{{ $resource.Kind }}Set(),
+		{{- $gvkPlural := pluralize (gvk $resource) }}
+		{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+		{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+		{{ $gvkLowerCamelPlural }}: {{ $set_import_prefix }}.New{{ $resource.Kind }}Set(),
 	{{- end }}
 {{- end }}
 }
@@ -51,10 +51,10 @@ i.name,
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 	{{- range $resource := $group.Resources }}
-		{{- $kindPlural := pluralize $resource.Kind }}
-		{{- $kindLowerCamel := lower_camel $resource.Kind }}
-		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-		i.{{ $kindLowerCamelPlural }},
+		{{- $gvkPlural := pluralize (gvk $resource) }}
+		{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+		{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+		i.{{ $gvkLowerCamelPlural }},
 	{{- end }}
 {{- end }}
 )
@@ -62,11 +62,11 @@ i.name,
 
 {{- range $group := $groups }}
 	{{- range $resource := $group.Resources }}
-		{{- $kindPlural := pluralize $resource.Kind }}
-		{{- $kindLowerCamel := lower_camel $resource.Kind }}
-		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-		func (i *Input{{ $snapshotName }}SnapshotManualBuilder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *Input{{ $snapshotName }}SnapshotManualBuilder {
-		i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
+		{{- $gvkPlural := pluralize (gvk $resource) }}
+		{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+		{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
+		func (i *Input{{ $snapshotName }}SnapshotManualBuilder) Add{{ $gvkPlural }}({{ $gvkLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *Input{{ $snapshotName }}SnapshotManualBuilder {
+		i.{{ $gvkLowerCamelPlural }}.Insert({{ $gvkLowerCamelPlural }}...)
 		return i
 		}
 	{{- end }}
