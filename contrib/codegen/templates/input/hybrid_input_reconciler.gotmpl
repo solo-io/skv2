@@ -104,7 +104,7 @@ func Register{{ $snapshotName }}InputReconciler(
 {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     // initialize {{ $gvkPlural }} reconcile loop for remote clusters
-    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.Remote.{{ $gvkPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.Remote.{{ $gvkPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, &remote{{ upper_camel $group.Group }}InputReconciler{base: base}, options.Remote.Predicates...)
 
 {{- end }}
 {{- end }}
@@ -116,7 +116,7 @@ func Register{{ $snapshotName }}InputReconciler(
 {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     // initialize {{ $gvkPlural }} reconcile loop for local cluster
-    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options.Local.{{ $gvkPlural }}).Run{{ $resource.Kind }}Reconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options.Local.{{ $gvkPlural }}).Run{{ $resource.Kind }}Reconciler(ctx, &local{{ upper_camel $group.Group }}InputReconciler{base: base}, options.Local.Predicates...); err != nil {
     	return nil, err
     }
 {{- end }}
@@ -144,24 +144,25 @@ type Remote{{ $snapshotName }}ReconcileOptions struct {
     Predicates []predicate.Predicate
 }
 
-type remote{{ $snapshotName }}InputReconciler struct {
-    base input.InputReconciler
-}
-
 {{- range $group := $remoteGroups }}
 {{ $type_import_prefix := group_import_name $group }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+
+type remote{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler struct {
+    base input.InputReconciler
+}
+
 {{- range $resource := $group.Resources }}
 {{- $gvkPlural := pluralize (gvk $resource) }}
 {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
-func (r *remote{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+func (r *remote{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     obj.ClusterName = clusterName
     return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remote{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
+func (r *remote{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
     ref := &sk_core_v1.ClusterObjectRef{
         Name:                 obj.Name,
         Namespace:            obj.Namespace,
@@ -193,23 +194,24 @@ type Local{{ $snapshotName }}ReconcileOptions struct {
     Predicates []predicate.Predicate
 }
 
-type local{{ $snapshotName }}InputReconciler struct {
-    base input.InputReconciler
-}
-
 {{- range $group := $localGroups }}
 {{ $type_import_prefix := group_import_name $group }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+
+type local{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler struct {
+    base input.InputReconciler
+}
+
 {{- range $resource := $group.Resources }}
 {{- $gvkPlural := pluralize (gvk $resource) }}
 {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
-func (r *local{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+func (r *local{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *local{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
+func (r *local{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
     ref := &sk_core_v1.ObjectRef{
         Name:                 obj.Name,
         Namespace:            obj.Namespace,
