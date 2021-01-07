@@ -6,6 +6,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes/any"
+	structpb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/test/matchers"
 	"k8s.io/apimachinery/pkg/types"
@@ -38,6 +41,12 @@ func applyFile(file string, extraArgs ...string) error {
 }
 
 func newPaint(namespace, name string) *Paint {
+	serializedAnyValue, _ := proto.Marshal(&structpb.Struct{
+		Fields: map[string]*structpb.Value{
+			"my": {Kind: &structpb.Value_StringValue{StringValue: "favorite-color"}},
+		},
+	})
+
 	return &Paint{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      name,
@@ -52,6 +61,10 @@ func newPaint(namespace, name string) *Paint {
 				Acrylic: &AcrylicType{
 					Body: AcrylicType_Heavy,
 				},
+			},
+			MyFavorite: &any.Any{
+				TypeUrl: "type.googleapis.com/google.protobuf.StringValue",
+				Value:   serializedAnyValue,
 			},
 		},
 	}
