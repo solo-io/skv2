@@ -28,7 +28,7 @@ func MakeHomogenousSnapshotFuncs(
 	groups, groupImports := getImportedGroups(selectFromGroups, resourcesToSelect)
 
 	return template.FuncMap{
-		"snapshot_name":   func() string { return snapshotName },
+		"snapshot_name": func() string { return snapshotName },
 		"package": func() string {
 			dirs := strings.Split(filepath.Dir(outputFile), string(filepath.Separator))
 			return dirs[len(dirs)-1] // last path element = package name
