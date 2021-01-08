@@ -168,7 +168,7 @@ func RegisterSingleCluster{{ $snapshotName }}Reconciler(
         predicates ...predicate.Predicate,
 ) (input.InputReconciler, error) {
 
-    base := input.NewInput{{ $snapshotName }}Reconciler(
+    base := input.NewInputReconciler(
         ctx,
         nil,
         reconcileFunc,

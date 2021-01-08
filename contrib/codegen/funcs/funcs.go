@@ -24,13 +24,11 @@ func MakeHomogenousSnapshotFuncs(
 	snapshotName, outputFile string,
 	selectFromGroups map[string][]model.Group,
 	resourcesToSelect map[schema.GroupVersion][]string,
-	multiCluster bool,
 ) template.FuncMap {
 	groups, groupImports := getImportedGroups(selectFromGroups, resourcesToSelect)
 
 	return template.FuncMap{
-		"snapshot_name":   func() string { return snapshotName },
-		"is_multicluster": func() bool { return multiCluster },
+		"snapshot_name": func() string { return snapshotName },
 		"package": func() string {
 			dirs := strings.Split(filepath.Dir(outputFile), string(filepath.Separator))
 			return dirs[len(dirs)-1] // last path element = package name

@@ -1,0 +1,5 @@
+changelog:
+- type: BREAKING_CHANGE
+  description: >
+    Always generate both single and multi cluster snapshots for homogenous snapshots. This change removes the MultiCluster option for `HomogenousSnapshotResources` and is therefore breaking.
+  issueLink: https://github.com/solo-io/skv2/issues/190
