@@ -190,7 +190,7 @@ func (s *certificateSigningRequestSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *certificateSigningRequestSet) Delta(newSet CertificateSigningRequestSet) sksets.ResourceDelta {

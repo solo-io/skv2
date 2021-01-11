@@ -596,12 +596,14 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     // calcualte delta between {{ $kindPlural }}
     {{ $kindLowerCamel }}Delta := b.Get{{ $kindPlural }}().Delta(other.Get{{ $kindPlural }}())
-    delta.AddInserted({{$type_import_prefix}}.{{ $resource.Kind }}GVK, {{ $kindLowerCamel }}Delta.Inserted)
-    delta.AddRemoved({{$type_import_prefix}}.{{ $resource.Kind }}GVK, {{ $kindLowerCamel }}Delta.Removed)
-    {{- end }}
-    {{- end }}
-    for _, cluster := range b.Clusters() {
-    	clone.AddCluster(cluster)
+    {{ $kindLowerCamel }}Gvk := schema.GroupVersionKind{
+		Group: "{{ $resource.Group.Group }}",
+		Version: "{{ $resource.Version }}",
+		Kind: "{{ $resource.Kind }}",
     }
-    return clone
+    delta.AddInserted({{ $kindLowerCamel }}Gvk, {{ $kindLowerCamel }}Delta.Inserted)
+    delta.AddRemoved({{ $kindLowerCamel }}Gvk, {{ $kindLowerCamel }}Delta.Removed)
+    {{- end }}
+    {{- end }}
+    return delta
 }

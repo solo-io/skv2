@@ -190,7 +190,7 @@ func (s *customResourceDefinitionSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *customResourceDefinitionSet) Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta {

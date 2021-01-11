@@ -190,7 +190,7 @@ func (s *roleSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *roleSet) Delta(newSet RoleSet) sksets.ResourceDelta {
@@ -379,7 +379,7 @@ func (s *roleBindingSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *roleBindingSet) Delta(newSet RoleBindingSet) sksets.ResourceDelta {
@@ -568,7 +568,7 @@ func (s *clusterRoleSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *clusterRoleSet) Delta(newSet ClusterRoleSet) sksets.ResourceDelta {
@@ -757,7 +757,7 @@ func (s *clusterRoleBindingSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *clusterRoleBindingSet) Delta(newSet ClusterRoleBindingSet) sksets.ResourceDelta {

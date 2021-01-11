@@ -193,7 +193,7 @@ func (s *{{ $kindLowerCamel }}Set) Generic() sksets.ResourceSet {
     if s == nil {
         return nil
     }
-    return s.Generic()
+    return s.set
 }
 
 func (s *{{ $kindLowerCamel }}Set) Delta(newSet {{ $resource.Kind }}Set) sksets.ResourceDelta {

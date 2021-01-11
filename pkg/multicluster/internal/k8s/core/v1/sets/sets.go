@@ -190,7 +190,7 @@ func (s *secretSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *secretSet) Delta(newSet SecretSet) sksets.ResourceDelta {
@@ -379,7 +379,7 @@ func (s *serviceAccountSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *serviceAccountSet) Delta(newSet ServiceAccountSet) sksets.ResourceDelta {
@@ -568,7 +568,7 @@ func (s *namespaceSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *namespaceSet) Delta(newSet NamespaceSet) sksets.ResourceDelta {

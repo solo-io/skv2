@@ -190,7 +190,7 @@ func (s *kubernetesClusterSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *kubernetesClusterSet) Delta(newSet KubernetesClusterSet) sksets.ResourceDelta {

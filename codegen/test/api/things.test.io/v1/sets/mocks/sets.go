@@ -10,8 +10,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	v1sets "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/sets"
+	sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
-	sets "k8s.io/apimachinery/pkg/util/sets"
+	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
 // MockPaintSet is a mock of PaintSet interface
@@ -38,10 +39,10 @@ func (m *MockPaintSet) EXPECT() *MockPaintSetMockRecorder {
 }
 
 // Keys mocks base method
-func (m *MockPaintSet) Keys() sets.String {
+func (m *MockPaintSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
-	ret0, _ := ret[0].(sets.String)
+	ret0, _ := ret[0].(sets0.String)
 	return ret0
 }
 
@@ -210,6 +211,34 @@ func (mr *MockPaintSetMockRecorder) Length() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockPaintSet)(nil).Length))
 }
 
+// Generic mocks base method
+func (m *MockPaintSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockPaintSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockPaintSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockPaintSet) Delta(newSet v1sets.PaintSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockPaintSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockPaintSet)(nil).Delta), newSet)
+}
+
 // MockClusterResourceSet is a mock of ClusterResourceSet interface
 type MockClusterResourceSet struct {
 	ctrl     *gomock.Controller
@@ -234,10 +263,10 @@ func (m *MockClusterResourceSet) EXPECT() *MockClusterResourceSetMockRecorder {
 }
 
 // Keys mocks base method
-func (m *MockClusterResourceSet) Keys() sets.String {
+func (m *MockClusterResourceSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
-	ret0, _ := ret[0].(sets.String)
+	ret0, _ := ret[0].(sets0.String)
 	return ret0
 }
 
@@ -404,4 +433,32 @@ func (m *MockClusterResourceSet) Length() int {
 func (mr *MockClusterResourceSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockClusterResourceSet)(nil).Length))
+}
+
+// Generic mocks base method
+func (m *MockClusterResourceSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockClusterResourceSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockClusterResourceSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockClusterResourceSet) Delta(newSet v1sets.ClusterResourceSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockClusterResourceSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockClusterResourceSet)(nil).Delta), newSet)
 }
