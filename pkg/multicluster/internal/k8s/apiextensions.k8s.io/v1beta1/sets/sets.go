@@ -38,6 +38,10 @@ type CustomResourceDefinitionSet interface {
 	Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another CustomResourceDefinitionSet
+	Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta
 }
 
 func makeGenericCustomResourceDefinitionSet(customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *customResourceDefinitionSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *customResourceDefinitionSet) List(filterResource ...func(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition {
@@ -83,7 +87,7 @@ func (s *customResourceDefinitionSet) List(filterResource ...func(*apiextensions
 	}
 
 	var customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
 	}
 	return customResourceDefinitionList
@@ -95,7 +99,7 @@ func (s *customResourceDefinitionSet) Map() map[string]*apiextensions_k8s_io_v1b
 	}
 
 	newMap := map[string]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *customResourceDefinitionSet) Insert(
 	}
 
 	for _, obj := range customResourceDefinitionList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *customResourceDefinitionSet) Has(customResourceDefinition ezkube.Resour
 	if s == nil {
 		return false
 	}
-	return s.set.Has(customResourceDefinition)
+	return s.Generic().Has(customResourceDefinition)
 }
 
 func (s *customResourceDefinitionSet) Equal(
@@ -126,14 +130,14 @@ func (s *customResourceDefinitionSet) Equal(
 	if s == nil {
 		return customResourceDefinitionSet == nil
 	}
-	return s.set.Equal(makeGenericCustomResourceDefinitionSet(customResourceDefinitionSet.List()))
+	return s.Generic().Equal(customResourceDefinitionSet.Generic())
 }
 
 func (s *customResourceDefinitionSet) Delete(CustomResourceDefinition ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(CustomResourceDefinition)
+	s.Generic().Delete(CustomResourceDefinition)
 }
 
 func (s *customResourceDefinitionSet) Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
@@ -147,7 +151,7 @@ func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericCustomResourceDefinitionSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &customResourceDefinitionSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *customResourceDefinitionSet) Intersection(set CustomResourceDefinitionS
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericCustomResourceDefinitionSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
 	for _, obj := range newSet.List() {
 		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
@@ -167,7 +171,7 @@ func (s *customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find CustomResourceDefinition %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, id)
+	obj, err := s.Generic().Find(&apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,5 +183,21 @@ func (s *customResourceDefinitionSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *customResourceDefinitionSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.Generic()
+}
+
+func (s *customResourceDefinitionSet) Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
