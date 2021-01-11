@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -16,8 +17,13 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func NewProtoCompiler(collector Collector, customImports, customGogoArgs, customPlugins []string,
-	descriptorOutDir string, wantCompile func(string) bool) *protoCompiler {
+func NewProtoCompiler(
+	collector Collector,
+	customImports, customGogoArgs, customPlugins []string,
+	descriptorOutDir string,
+	wantCompile func(string) bool,
+	protocOptions ProtocOptions,
+) *protoCompiler {
 	return &protoCompiler{
 		collector:        collector,
 		descriptorOutDir: descriptorOutDir,
@@ -25,11 +31,18 @@ func NewProtoCompiler(collector Collector, customImports, customGogoArgs, custom
 		customArgs:       customGogoArgs,
 		wantCompile:      wantCompile,
 		customPlugins:    customPlugins,
+		protocOptions:    protocOptions,
 	}
 }
 
 type ProtoCompiler interface {
 	CompileDescriptorsFromRoot(root string, skipDirs []string) ([]*DescriptorWithPath, error)
+}
+
+type ProtocOptions struct {
+	// declare mappings from proto files to full import paths of the corresponding generated Go code
+	// used when the source proto files don't define `go_package`
+	GoPackage map[string]string
 }
 
 type protoCompiler struct {
@@ -39,6 +52,7 @@ type protoCompiler struct {
 	customArgs       []string
 	wantCompile      func(string) bool
 	customPlugins    []string
+	protocOptions    ProtocOptions
 }
 
 func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []string) ([]*DescriptorWithPath, error) {
@@ -147,6 +161,13 @@ func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []str
 			"--go_out="+strings.Join(gogoArgs, ",")+":"+p.descriptorOutDir,
 			"--ext_out="+strings.Join(gogoArgs, ",")+":"+p.descriptorOutDir,
 		)
+
+		// Externally specify mappings between proto files and generated Go code, for proto source files that do not specify `go_package`
+		// reference: https://developers.google.com/protocol-buffers/docs/reference/go-generated#package
+		// NB: the documentation is bugged, the format is "--go_opt=M$FILENAME=$IMPORT_PATH"
+		for protoFile, goPackageImportPath := range p.protocOptions.GoPackage {
+			cmd.Args = append(cmd.Args, fmt.Sprintf("--go_opt=M%s=%s", protoFile, goPackageImportPath))
+		}
 
 		for _, plugin := range p.customPlugins {
 			cmd.Args = append(cmd.Args,
