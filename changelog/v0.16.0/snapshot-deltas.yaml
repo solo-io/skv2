@@ -1,0 +1,5 @@
+changelog:
+- type: NEW_FEATURE
+  description: >
+    Generated snapshots (and their constituent sets) are produced by translation loops idempotently. Sometimes we wish to take the 'diff' between two snapshots, for example to distribute snapshot updates over the network in an optimized fashion (using deltas). This change adds generated functions on our snapshots and sets to automatically produce these deltas.
+  issueLink: https://github.com/solo-io/skv2/issues/194

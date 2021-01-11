@@ -120,4 +120,36 @@ var _ = Describe("PaintSet", func() {
 		Expect(setA).To(Equal(setC))
 
 	})
+	It("should return set deltas", func() {
+		// update
+		oldPaintA := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{Name: "background", Namespace: "color"},
+			Spec:       v1.PaintSpec{Color: &v1.PaintColor{Hue: "orange"}},
+		}
+		newPaintA := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{Name: "background", Namespace: "color"},
+			Spec:       v1.PaintSpec{Color: &v1.PaintColor{Hue: "green"}},
+		}
+		// remove
+		oldPaintB := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{Name: "ugly", Namespace: "color"},
+		}
+		// add
+		newPaintC := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{Name: "beautiful", Namespace: "color"},
+		}
+		// no change
+		oldPaintD := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{Name: "decent", Namespace: "color"},
+		}
+		newPaintD := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{Name: "decent", Namespace: "color"},
+		}
+		setA.Insert(oldPaintA, oldPaintB, oldPaintD)
+		setB.Insert(newPaintA, newPaintC, newPaintD)
+		Expect(setA.Delta(setB)).To(Equal(sets.ResourceDelta{
+			Inserted: sets.NewResourceSet(newPaintA, newPaintC),
+			Removed:  sets.NewResourceSet(oldPaintB),
+		}))
+	})
 })

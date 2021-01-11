@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for Paint
+var PaintGVK = schema.GroupVersionKind{
+	Group:   "things.test.io",
+	Version: "v1",
+	Kind:    "Paint",
+}
+
 // Paint is the Schema for the paint API
 type Paint struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type Paint struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Paint) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "things.test.io",
-		Version: "v1",
-		Kind:    "Paint",
-	}
+	return PaintGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -45,6 +48,13 @@ type PaintList struct {
 // +k8s:openapi-gen=true
 // +genclient:noStatus
 
+// GroupVersionKind for ClusterResource
+var ClusterResourceGVK = schema.GroupVersionKind{
+	Group:   "things.test.io",
+	Version: "v1",
+	Kind:    "ClusterResource",
+}
+
 // ClusterResource is the Schema for the clusterResource API
 type ClusterResource struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -55,11 +65,7 @@ type ClusterResource struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (ClusterResource) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "things.test.io",
-		Version: "v1",
-		Kind:    "ClusterResource",
-	}
+	return ClusterResourceGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
