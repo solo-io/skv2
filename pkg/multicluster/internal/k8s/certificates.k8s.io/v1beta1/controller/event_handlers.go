@@ -88,7 +88,7 @@ type genericCertificateSigningRequestHandler struct {
     handler CertificateSigningRequestEventHandler
 }
 
-func (h genericCertificateSigningRequestHandler) Create(object runtime.Object) error {
+func (h genericCertificateSigningRequestHandler) Create(object client.Object) error {
     obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
     if !ok {
         return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericCertificateSigningRequestHandler) Create(object runtime.Object) e
     return h.handler.CreateCertificateSigningRequest(obj)
 }
 
-func (h genericCertificateSigningRequestHandler) Delete(object runtime.Object) error {
+func (h genericCertificateSigningRequestHandler) Delete(object client.Object) error {
     obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
     if !ok {
         return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericCertificateSigningRequestHandler) Delete(object runtime.Object) e
     return h.handler.DeleteCertificateSigningRequest(obj)
 }
 
-func (h genericCertificateSigningRequestHandler) Update(old, new runtime.Object) error {
+func (h genericCertificateSigningRequestHandler) Update(old, new client.Object) error {
     objOld, ok := old.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
     if !ok {
         return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericCertificateSigningRequestHandler) Update(old, new runtime.Object)
     return h.handler.UpdateCertificateSigningRequest(objOld, objNew)
 }
 
-func (h genericCertificateSigningRequestHandler) Generic(object runtime.Object) error {
+func (h genericCertificateSigningRequestHandler) Generic(object client.Object) error {
     obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
     if !ok {
         return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)

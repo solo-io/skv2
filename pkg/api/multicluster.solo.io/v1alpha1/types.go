@@ -8,7 +8,7 @@ import (
     "k8s.io/apimachinery/pkg/runtime/schema")
 
 // +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
@@ -33,7 +33,7 @@ func (KubernetesCluster)  GVK() schema.GroupVersionKind {
 	return KubernetesClusterGVK
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
 
 // KubernetesClusterList contains a list of KubernetesCluster
 type KubernetesClusterList struct {

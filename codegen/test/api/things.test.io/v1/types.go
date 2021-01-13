@@ -9,7 +9,7 @@ import (
 )
 
 // +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
@@ -34,7 +34,7 @@ func (Paint) GVK() schema.GroupVersionKind {
 	return PaintGVK
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
 
 // PaintList contains a list of Paint
 type PaintList struct {
@@ -44,7 +44,7 @@ type PaintList struct {
 }
 
 // +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
 // +k8s:openapi-gen=true
 // +genclient:noStatus
 
@@ -68,7 +68,7 @@ func (ClusterResource) GVK() schema.GroupVersionKind {
 	return ClusterResourceGVK
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
 
 // ClusterResourceList contains a list of ClusterResource
 type ClusterResourceList struct {

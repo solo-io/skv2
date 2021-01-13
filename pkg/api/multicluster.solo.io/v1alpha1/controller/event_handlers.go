@@ -88,7 +88,7 @@ type genericKubernetesClusterHandler struct {
     handler KubernetesClusterEventHandler
 }
 
-func (h genericKubernetesClusterHandler) Create(object runtime.Object) error {
+func (h genericKubernetesClusterHandler) Create(object client.Object) error {
     obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
     if !ok {
         return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericKubernetesClusterHandler) Create(object runtime.Object) error {
     return h.handler.CreateKubernetesCluster(obj)
 }
 
-func (h genericKubernetesClusterHandler) Delete(object runtime.Object) error {
+func (h genericKubernetesClusterHandler) Delete(object client.Object) error {
     obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
     if !ok {
         return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericKubernetesClusterHandler) Delete(object runtime.Object) error {
     return h.handler.DeleteKubernetesCluster(obj)
 }
 
-func (h genericKubernetesClusterHandler) Update(old, new runtime.Object) error {
+func (h genericKubernetesClusterHandler) Update(old, new client.Object) error {
     objOld, ok := old.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
     if !ok {
         return errors.Errorf("internal error: KubernetesCluster handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericKubernetesClusterHandler) Update(old, new runtime.Object) error {
     return h.handler.UpdateKubernetesCluster(objOld, objNew)
 }
 
-func (h genericKubernetesClusterHandler) Generic(object runtime.Object) error {
+func (h genericKubernetesClusterHandler) Generic(object client.Object) error {
     obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
     if !ok {
         return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)

@@ -177,7 +177,7 @@ func (c *validatingWebhookConfigurationClient) DeleteAllOfValidatingWebhookConfi
 }
 
 func (c *validatingWebhookConfigurationClient) UpsertValidatingWebhookConfiguration(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, transitionFuncs ...ValidatingWebhookConfigurationTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration), desired.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)); err != nil {
                 return err

@@ -175,7 +175,7 @@ func (c *kubernetesClusterClient) DeleteAllOfKubernetesCluster(ctx context.Conte
 }
 
 func (c *kubernetesClusterClient) UpsertKubernetesCluster(ctx context.Context, obj *KubernetesCluster, transitionFuncs ...KubernetesClusterTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*KubernetesCluster), desired.(*KubernetesCluster)); err != nil {
                 return err

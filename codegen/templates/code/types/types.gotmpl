@@ -15,7 +15,7 @@ import (
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 
 // +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
 // +k8s:openapi-gen=true
 {{- if $resource.Status }}
 // +kubebuilder:subresource:status
@@ -46,7 +46,7 @@ func ({{ $resource.Kind}})  GVK() schema.GroupVersionKind {
 	return {{ $resource.Kind }}GVK
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
 
 // {{ $resource.Kind}}List contains a list of {{ $resource.Kind}}
 type {{ $resource.Kind}}List struct {

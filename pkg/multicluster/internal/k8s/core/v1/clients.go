@@ -191,7 +191,7 @@ func (c *secretClient) DeleteAllOfSecret(ctx context.Context, opts ...client.Del
 }
 
 func (c *secretClient) UpsertSecret(ctx context.Context, obj *v1.Secret, transitionFuncs ...SecretTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*v1.Secret), desired.(*v1.Secret)); err != nil {
                 return err
@@ -335,7 +335,7 @@ func (c *serviceAccountClient) DeleteAllOfServiceAccount(ctx context.Context, op
 }
 
 func (c *serviceAccountClient) UpsertServiceAccount(ctx context.Context, obj *v1.ServiceAccount, transitionFuncs ...ServiceAccountTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*v1.ServiceAccount), desired.(*v1.ServiceAccount)); err != nil {
                 return err
@@ -481,7 +481,7 @@ func (c *namespaceClient) DeleteAllOfNamespace(ctx context.Context, opts ...clie
 }
 
 func (c *namespaceClient) UpsertNamespace(ctx context.Context, obj *v1.Namespace, transitionFuncs ...NamespaceTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*v1.Namespace), desired.(*v1.Namespace)); err != nil {
                 return err

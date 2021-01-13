@@ -32,7 +32,7 @@ func (in *KubernetesCluster) DeepCopy() *KubernetesCluster {
     return out
 }
 
-func (in *KubernetesCluster) DeepCopyObject() runtime.Object {
+func (in *KubernetesCluster) DeepCopyObject() client.Object {
     if c := in.DeepCopy(); c != nil {
         return c
     }
@@ -62,7 +62,7 @@ func (in *KubernetesClusterList) DeepCopy() *KubernetesClusterList {
     return out
 }
 
-func (in *KubernetesClusterList) DeepCopyObject() runtime.Object {
+func (in *KubernetesClusterList) DeepCopyObject() client.Object {
     if c := in.DeepCopy(); c != nil {
         return c
     }

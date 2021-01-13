@@ -198,7 +198,7 @@ func (c *roleClient) DeleteAllOfRole(ctx context.Context, opts ...client.DeleteA
 }
 
 func (c *roleClient) UpsertRole(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, transitionFuncs ...RoleTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*rbac_authorization_k8s_io_v1.Role), desired.(*rbac_authorization_k8s_io_v1.Role)); err != nil {
                 return err
@@ -342,7 +342,7 @@ func (c *roleBindingClient) DeleteAllOfRoleBinding(ctx context.Context, opts ...
 }
 
 func (c *roleBindingClient) UpsertRoleBinding(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, transitionFuncs ...RoleBindingTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*rbac_authorization_k8s_io_v1.RoleBinding), desired.(*rbac_authorization_k8s_io_v1.RoleBinding)); err != nil {
                 return err
@@ -488,7 +488,7 @@ func (c *clusterRoleClient) DeleteAllOfClusterRole(ctx context.Context, opts ...
 }
 
 func (c *clusterRoleClient) UpsertClusterRole(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, transitionFuncs ...ClusterRoleTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*rbac_authorization_k8s_io_v1.ClusterRole), desired.(*rbac_authorization_k8s_io_v1.ClusterRole)); err != nil {
                 return err
@@ -634,7 +634,7 @@ func (c *clusterRoleBindingClient) DeleteAllOfClusterRoleBinding(ctx context.Con
 }
 
 func (c *clusterRoleBindingClient) UpsertClusterRoleBinding(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, transitionFuncs ...ClusterRoleBindingTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding), desired.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding)); err != nil {
                 return err

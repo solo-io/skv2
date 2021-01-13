@@ -88,7 +88,7 @@ type genericCustomResourceDefinitionHandler struct {
     handler CustomResourceDefinitionEventHandler
 }
 
-func (h genericCustomResourceDefinitionHandler) Create(object runtime.Object) error {
+func (h genericCustomResourceDefinitionHandler) Create(object client.Object) error {
     obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
     if !ok {
         return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericCustomResourceDefinitionHandler) Create(object runtime.Object) er
     return h.handler.CreateCustomResourceDefinition(obj)
 }
 
-func (h genericCustomResourceDefinitionHandler) Delete(object runtime.Object) error {
+func (h genericCustomResourceDefinitionHandler) Delete(object client.Object) error {
     obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
     if !ok {
         return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericCustomResourceDefinitionHandler) Delete(object runtime.Object) er
     return h.handler.DeleteCustomResourceDefinition(obj)
 }
 
-func (h genericCustomResourceDefinitionHandler) Update(old, new runtime.Object) error {
+func (h genericCustomResourceDefinitionHandler) Update(old, new client.Object) error {
     objOld, ok := old.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
     if !ok {
         return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericCustomResourceDefinitionHandler) Update(old, new runtime.Object) 
     return h.handler.UpdateCustomResourceDefinition(objOld, objNew)
 }
 
-func (h genericCustomResourceDefinitionHandler) Generic(object runtime.Object) error {
+func (h genericCustomResourceDefinitionHandler) Generic(object client.Object) error {
     obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
     if !ok {
         return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)

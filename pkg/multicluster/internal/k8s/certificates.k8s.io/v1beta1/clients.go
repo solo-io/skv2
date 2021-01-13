@@ -177,7 +177,7 @@ func (c *certificateSigningRequestClient) DeleteAllOfCertificateSigningRequest(c
 }
 
 func (c *certificateSigningRequestClient) UpsertCertificateSigningRequest(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, transitionFuncs ...CertificateSigningRequestTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*certificates_k8s_io_v1beta1.CertificateSigningRequest), desired.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)); err != nil {
                 return err

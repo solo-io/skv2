@@ -212,7 +212,7 @@ func (c *{{ $kindLowerCamel }}Client) DeleteAllOf{{ $resource.Kind }}(ctx contex
 }
 
 func (c *{{ $kindLowerCamel }}Client) Upsert{{ $resource.Kind }}(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, transitionFuncs ...{{ $resource.Kind }}TransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*{{ $import_prefix }}{{ $resource.Kind }}), desired.(*{{ $import_prefix }}{{ $resource.Kind }})); err != nil {
                 return err

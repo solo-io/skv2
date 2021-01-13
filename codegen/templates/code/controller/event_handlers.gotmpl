@@ -88,7 +88,7 @@ type generic{{ $resource.Kind }}Handler struct {
     handler {{ $resource.Kind }}EventHandler
 }
 
-func (h generic{{ $resource.Kind }}Handler) Create(object runtime.Object) error {
+func (h generic{{ $resource.Kind }}Handler) Create(object client.Object) error {
     obj, ok := object.(*{{ group_import_name $ }}.{{ $resource.Kind }})
     if !ok {
         return errors.Errorf("internal error: {{ $resource.Kind }} handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h generic{{ $resource.Kind }}Handler) Create(object runtime.Object) error 
     return h.handler.Create{{ $resource.Kind }}(obj)
 }
 
-func (h generic{{ $resource.Kind }}Handler) Delete(object runtime.Object) error {
+func (h generic{{ $resource.Kind }}Handler) Delete(object client.Object) error {
     obj, ok := object.(*{{ group_import_name $ }}.{{ $resource.Kind }})
     if !ok {
         return errors.Errorf("internal error: {{ $resource.Kind }} handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h generic{{ $resource.Kind }}Handler) Delete(object runtime.Object) error 
     return h.handler.Delete{{ $resource.Kind }}(obj)
 }
 
-func (h generic{{ $resource.Kind }}Handler) Update(old, new runtime.Object) error {
+func (h generic{{ $resource.Kind }}Handler) Update(old, new client.Object) error {
     objOld, ok := old.(*{{ group_import_name $ }}.{{ $resource.Kind }})
     if !ok {
         return errors.Errorf("internal error: {{ $resource.Kind }} handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h generic{{ $resource.Kind }}Handler) Update(old, new runtime.Object) erro
     return h.handler.Update{{ $resource.Kind }}(objOld, objNew)
 }
 
-func (h generic{{ $resource.Kind }}Handler) Generic(object runtime.Object) error {
+func (h generic{{ $resource.Kind }}Handler) Generic(object client.Object) error {
     obj, ok := object.(*{{ group_import_name $ }}.{{ $resource.Kind }})
     if !ok {
         return errors.Errorf("internal error: {{ $resource.Kind }} handler received event for %T", object)

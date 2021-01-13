@@ -179,7 +179,7 @@ func (c *customResourceDefinitionClient) DeleteAllOfCustomResourceDefinition(ctx
 }
 
 func (c *customResourceDefinitionClient) UpsertCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, transitionFuncs ...CustomResourceDefinitionTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
+    genericTxFunc := func(existing, desired client.Object) error {
         for _, txFunc := range transitionFuncs {
             if err := txFunc(existing.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition), desired.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)); err != nil {
                 return err

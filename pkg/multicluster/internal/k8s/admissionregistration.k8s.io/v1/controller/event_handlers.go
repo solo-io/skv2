@@ -88,7 +88,7 @@ type genericValidatingWebhookConfigurationHandler struct {
     handler ValidatingWebhookConfigurationEventHandler
 }
 
-func (h genericValidatingWebhookConfigurationHandler) Create(object runtime.Object) error {
+func (h genericValidatingWebhookConfigurationHandler) Create(object client.Object) error {
     obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
     if !ok {
         return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericValidatingWebhookConfigurationHandler) Create(object runtime.Obje
     return h.handler.CreateValidatingWebhookConfiguration(obj)
 }
 
-func (h genericValidatingWebhookConfigurationHandler) Delete(object runtime.Object) error {
+func (h genericValidatingWebhookConfigurationHandler) Delete(object client.Object) error {
     obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
     if !ok {
         return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericValidatingWebhookConfigurationHandler) Delete(object runtime.Obje
     return h.handler.DeleteValidatingWebhookConfiguration(obj)
 }
 
-func (h genericValidatingWebhookConfigurationHandler) Update(old, new runtime.Object) error {
+func (h genericValidatingWebhookConfigurationHandler) Update(old, new client.Object) error {
     objOld, ok := old.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
     if !ok {
         return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericValidatingWebhookConfigurationHandler) Update(old, new runtime.Ob
     return h.handler.UpdateValidatingWebhookConfiguration(objOld, objNew)
 }
 
-func (h genericValidatingWebhookConfigurationHandler) Generic(object runtime.Object) error {
+func (h genericValidatingWebhookConfigurationHandler) Generic(object client.Object) error {
     obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
     if !ok {
         return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)

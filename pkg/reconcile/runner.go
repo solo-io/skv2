@@ -27,8 +27,7 @@ type Result = reconcile.Result
 type Reconciler interface {
 	// reconcile an object
 	// requeue the object if returning an error, or a non-zero "requeue-after" duration
-	//Reconcile(object ezkube.Object) (Result, error)
-	Reconcile(context.Context, Request) (Result, error)
+	Reconcile(object ezkube.Object) (Result, error)
 }
 
 type DeletionReconciler interface {
@@ -115,7 +114,7 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	}
 
 	ctl, err := controller.New(r.name, r.mgr, controller.Options{
-		Reconciler: reconciler,
+		Reconciler: rec,
 	})
 	if err != nil {
 		return err
@@ -137,7 +136,7 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	return nil
 }
 
-func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error) {
+func (ec *runnerReconciler) Reconcile(ctx context.Context, request Request) (reconcile.Result, error) {
 	logger := ec.logger.WithValues("event", request)
 	logger.V(2).Info("handling event", "event", request)
 
@@ -202,8 +201,7 @@ func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error)
 		}
 	}
 
-	result, err := ec.reconciler.Reconcile(ec.ctx, request)
-	//result, err := ec.reconciler.Reconcile(obj)
+	result, err := ec.reconciler.Reconcile(obj)
 	if err != nil {
 		logger.Error(err, "handler error. retrying")
 		return result, err
