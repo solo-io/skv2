@@ -71,6 +71,9 @@ type Command struct {
 	// will default vendor_any if empty
 	ProtoDir string
 
+	// protoc cmd line options
+	ProtocOptions collector.ProtocOptions
+
 	// the path to the root dir of the module on disk
 	// files will be written relative to this dir,
 	// except kube clientsets which
@@ -175,6 +178,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 		c.moduleRoot,
 		c.moduleName,
 		c.ProtoDir,
+		c.ProtocOptions,
 	)
 	if err != nil {
 		return nil, err
