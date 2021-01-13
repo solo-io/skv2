@@ -26,7 +26,6 @@ require (
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
-	github.com/pseudomuto/protoc-gen-doc v1.3.2 // indirect
 	github.com/rogpeppe/go-internal v1.6.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
@@ -47,12 +46,11 @@ require (
 	k8s.io/api v0.19.6
 	k8s.io/apiextensions-apiserver v0.19.6
 	k8s.io/apimachinery v0.19.6
-	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/client-go v0.19.6
 	k8s.io/code-generator v0.19.6
-	k8s.io/component-base v0.19.6 // indirect
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 	sigs.k8s.io/aws-iam-authenticator v0.5.0
-	sigs.k8s.io/controller-runtime v0.7.0 //v0.6.2
+	sigs.k8s.io/controller-runtime v0.7.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -66,5 +64,6 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 	github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190605231540-b8a4faf68e36
 	k8s.io/apimachinery => k8s.io/apimachinery v0.19.6
+	k8s.io/client-go => k8s.io/client-go v0.19.6
 	k8s.io/component-base => k8s.io/component-base v0.19.6
 )
