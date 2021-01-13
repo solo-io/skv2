@@ -2,6 +2,7 @@ package controllerutils
 
 import (
 	"context"
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -20,19 +21,19 @@ type TransitionFunc func(existing, desired runtime.Object) error
 // If the desired object (after applying transition funcs) is semantically equal
 // to the existing object, the update is skipped.
 func Upsert(ctx context.Context, c client.Client, obj client.Object, transitionFuncs ...TransitionFunc) (controllerutil.OperationResult, error) {
-	//key := client.ObjectKeyFromObject(obj)
+	key := client.ObjectKeyFromObject(obj)
 
 	existing := obj.DeepCopyObject()
 
-	//if err := c.Get(ctx, key, existing); err != nil {
-	//	if !errors.IsNotFound(err) {
-	//		return controllerutil.OperationResultNone, err
-	//	}
-	//	if err := c.Create(ctx, obj); err != nil {
-	//		return controllerutil.OperationResultNone, err
-	//	}
-	//	return controllerutil.OperationResultCreated, nil
-	//}
+	if err := c.Get(ctx, key, obj); err != nil {
+		if !errors.IsNotFound(err) {
+			return controllerutil.OperationResultNone, err
+		}
+		if err := c.Create(ctx, obj); err != nil {
+			return controllerutil.OperationResultNone, err
+		}
+		return controllerutil.OperationResultCreated, nil
+	}
 
 	if err := transition(existing, obj, transitionFuncs); err != nil {
 		return controllerutil.OperationResultNone, err
@@ -68,13 +69,13 @@ func transition(existing, desired runtime.Object, transitionFuncs []TransitionFu
 // If the desired object status is semantically equal
 // to the existing object status, the update is skipped.
 func UpdateStatus(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
-	//key := client.ObjectKeyFromObject(obj)
+	key := client.ObjectKeyFromObject(obj)
 
 	existing := obj.DeepCopyObject()
 
-	//if err := c.Get(ctx, key, existing); err != nil {
-	//	return controllerutil.OperationResultNone, err
-	//}
+	if err := c.Get(ctx, key, obj); err != nil {
+		return controllerutil.OperationResultNone, err
+	}
 
 	if ObjectStatusesEqual(existing, obj) {
 		return controllerutil.OperationResultNone, nil
