@@ -23,28 +23,28 @@ type eventType interface {
 type createEvent event.CreateEvent
 
 func (e createEvent) meta() metav1.Object {
-	return e.Meta
+	return e.meta()
 }
 func (e createEvent) isEvent() {}
 
 type updateEvent event.UpdateEvent
 
 func (e updateEvent) meta() metav1.Object {
-	return e.MetaNew
+	return e.meta()
 }
 func (e updateEvent) isEvent() {}
 
 type deleteEvent event.DeleteEvent
 
 func (e deleteEvent) meta() metav1.Object {
-	return e.Meta
+	return e.meta()
 }
 func (e deleteEvent) isEvent() {}
 
 type genericEvent event.GenericEvent
 
 func (e genericEvent) meta() metav1.Object {
-	return e.Meta
+	return e.meta()
 }
 func (e genericEvent) isEvent() {}
 

@@ -2,9 +2,9 @@ package events
 
 import (
 	"context"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -14,13 +14,13 @@ import (
 )
 
 type EventHandler interface {
-	Create(object runtime.Object) error
+	Create(object client.Object) error
 
-	Delete(object runtime.Object) error
+	Delete(object client.Object) error
 
-	Update(old, new runtime.Object) error
+	Update(old, new client.Object) error
 
-	Generic(object runtime.Object) error
+	Generic(object client.Object) error
 }
 
 // an EventWatcher is a controller-runtime reconciler that
@@ -36,10 +36,10 @@ type EventWatcher interface {
 type watcher struct {
 	name     string          // name of this watch/controller
 	mgr      manager.Manager // manager
-	resource runtime.Object  // resource type
+	resource client.Object  // resource type
 }
 
-func NewWatcher(name string, mgr manager.Manager, resource runtime.Object) *watcher {
+func NewWatcher(name string, mgr manager.Manager, resource client.Object) *watcher {
 	return &watcher{name: name, mgr: mgr, resource: resource}
 }
 
@@ -64,7 +64,7 @@ func (w *watcher) Watch(ctx context.Context, eventHandler EventHandler, predicat
 		return err
 	}
 
-	if synced := w.mgr.GetCache().WaitForCacheSync(ctx.Done()); !synced {
+	if synced := w.mgr.GetCache().WaitForCacheSync(ctx); !synced {
 		return errors.Errorf("waiting for cache sync failed")
 	}
 
@@ -76,7 +76,7 @@ type eventWatcher struct {
 	eventHandler EventHandler
 }
 
-func (w *eventWatcher) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (w *eventWatcher) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	// event key is stored in the request name
 	key := request.Name
 	log.Log.V(4).Info("event eventWatcher reconciling event", "key", key)
