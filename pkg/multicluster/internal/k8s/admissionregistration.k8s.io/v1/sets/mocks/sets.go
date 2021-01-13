@@ -5,14 +5,13 @@
 package mock_v1sets
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/admissionregistration.k8s.io/v1/sets"
 	v1 "k8s.io/api/admissionregistration/v1"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
+	reflect "reflect"
 )
 
 // MockValidatingWebhookConfigurationSet is a mock of ValidatingWebhookConfigurationSet interface

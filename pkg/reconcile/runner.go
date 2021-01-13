@@ -27,7 +27,8 @@ type Result = reconcile.Result
 type Reconciler interface {
 	// reconcile an object
 	// requeue the object if returning an error, or a non-zero "requeue-after" duration
-	Reconcile(object ezkube.Object) (Result, error)
+	//Reconcile(object ezkube.Object) (Result, error)
+	Reconcile(context.Context, Request) (Result, error)
 }
 
 type DeletionReconciler interface {
@@ -114,7 +115,7 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	}
 
 	ctl, err := controller.New(r.name, r.mgr, controller.Options{
-		Reconciler: rec,
+		Reconciler: reconciler,
 	})
 	if err != nil {
 		return err
@@ -128,7 +129,7 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	// Only wait for cache sync if specified in options
 	if r.options.WaitForCacheSync {
 		rec.logger.V(1).Info("waiting for cache sync...")
-		if synced := r.mgr.GetCache().WaitForCacheSync(ctx.Done()); !synced {
+		if synced := r.mgr.GetCache().WaitForCacheSync(ctx); !synced {
 			return errors.Errorf("waiting for cache sync failed")
 		}
 	}
@@ -201,7 +202,8 @@ func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error)
 		}
 	}
 
-	result, err := ec.reconciler.Reconcile(obj)
+	result, err := ec.reconciler.Reconcile(ec.ctx, request)
+	//result, err := ec.reconciler.Reconcile(obj)
 	if err != nil {
 		logger.Error(err, "handler error. retrying")
 		return result, err

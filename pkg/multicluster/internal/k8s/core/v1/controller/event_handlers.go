@@ -8,332 +8,332 @@ package controller
 import (
 	"context"
 
-	v1 "k8s.io/api/core/v1"
+    v1 "k8s.io/api/core/v1"
 
-	"github.com/pkg/errors"
-	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+    "github.com/pkg/errors"
+    "github.com/solo-io/skv2/pkg/events"
+    "k8s.io/apimachinery/pkg/runtime"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Handle events for the Secret Resource
 // DEPRECATED: Prefer reconciler pattern.
 type SecretEventHandler interface {
-	CreateSecret(obj *v1.Secret) error
-	UpdateSecret(old, new *v1.Secret) error
-	DeleteSecret(obj *v1.Secret) error
-	GenericSecret(obj *v1.Secret) error
+    CreateSecret(obj *v1.Secret) error
+    UpdateSecret(old, new *v1.Secret) error
+    DeleteSecret(obj *v1.Secret) error
+    GenericSecret(obj *v1.Secret) error
 }
 
 type SecretEventHandlerFuncs struct {
-	OnCreate  func(obj *v1.Secret) error
-	OnUpdate  func(old, new *v1.Secret) error
-	OnDelete  func(obj *v1.Secret) error
-	OnGeneric func(obj *v1.Secret) error
+    OnCreate  func(obj *v1.Secret) error
+    OnUpdate  func(old, new *v1.Secret) error
+    OnDelete  func(obj *v1.Secret) error
+    OnGeneric func(obj *v1.Secret) error
 }
 
 func (f *SecretEventHandlerFuncs) CreateSecret(obj *v1.Secret) error {
-	if f.OnCreate == nil {
-		return nil
-	}
-	return f.OnCreate(obj)
+    if f.OnCreate == nil {
+        return nil
+    }
+    return f.OnCreate(obj)
 }
 
 func (f *SecretEventHandlerFuncs) DeleteSecret(obj *v1.Secret) error {
-	if f.OnDelete == nil {
-		return nil
-	}
-	return f.OnDelete(obj)
+    if f.OnDelete == nil {
+        return nil
+    }
+    return f.OnDelete(obj)
 }
 
 func (f *SecretEventHandlerFuncs) UpdateSecret(objOld, objNew *v1.Secret) error {
-	if f.OnUpdate == nil {
-		return nil
-	}
-	return f.OnUpdate(objOld, objNew)
+    if f.OnUpdate == nil {
+        return nil
+    }
+    return f.OnUpdate(objOld, objNew)
 }
 
 func (f *SecretEventHandlerFuncs) GenericSecret(obj *v1.Secret) error {
-	if f.OnGeneric == nil {
-		return nil
-	}
-	return f.OnGeneric(obj)
+    if f.OnGeneric == nil {
+        return nil
+    }
+    return f.OnGeneric(obj)
 }
 
 type SecretEventWatcher interface {
-	AddEventHandler(ctx context.Context, h SecretEventHandler, predicates ...predicate.Predicate) error
+    AddEventHandler(ctx context.Context, h SecretEventHandler, predicates ...predicate.Predicate) error
 }
 
 type secretEventWatcher struct {
-	watcher events.EventWatcher
+    watcher events.EventWatcher
 }
 
 func NewSecretEventWatcher(name string, mgr manager.Manager) SecretEventWatcher {
-	return &secretEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &v1.Secret{}),
-	}
+    return &secretEventWatcher{
+        watcher: events.NewWatcher(name, mgr, &v1.Secret{}),
+    }
 }
 
 func (c *secretEventWatcher) AddEventHandler(ctx context.Context, h SecretEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericSecretHandler{handler: h}
-	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
-		return err
-	}
-	return nil
+    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
+        return err
+    }
+    return nil
 }
 
 // genericSecretHandler implements a generic events.EventHandler
 type genericSecretHandler struct {
-	handler SecretEventHandler
+    handler SecretEventHandler
 }
 
 func (h genericSecretHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*v1.Secret)
-	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T", object)
-	}
-	return h.handler.CreateSecret(obj)
+    obj, ok := object.(*v1.Secret)
+    if !ok {
+        return errors.Errorf("internal error: Secret handler received event for %T", object)
+    }
+    return h.handler.CreateSecret(obj)
 }
 
 func (h genericSecretHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*v1.Secret)
-	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T", object)
-	}
-	return h.handler.DeleteSecret(obj)
+    obj, ok := object.(*v1.Secret)
+    if !ok {
+        return errors.Errorf("internal error: Secret handler received event for %T", object)
+    }
+    return h.handler.DeleteSecret(obj)
 }
 
 func (h genericSecretHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*v1.Secret)
-	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T", old)
-	}
-	objNew, ok := new.(*v1.Secret)
-	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T", new)
-	}
-	return h.handler.UpdateSecret(objOld, objNew)
+    objOld, ok := old.(*v1.Secret)
+    if !ok {
+        return errors.Errorf("internal error: Secret handler received event for %T", old)
+    }
+    objNew, ok := new.(*v1.Secret)
+    if !ok {
+        return errors.Errorf("internal error: Secret handler received event for %T", new)
+    }
+    return h.handler.UpdateSecret(objOld, objNew)
 }
 
 func (h genericSecretHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*v1.Secret)
-	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T", object)
-	}
-	return h.handler.GenericSecret(obj)
+    obj, ok := object.(*v1.Secret)
+    if !ok {
+        return errors.Errorf("internal error: Secret handler received event for %T", object)
+    }
+    return h.handler.GenericSecret(obj)
 }
 
 // Handle events for the ServiceAccount Resource
 // DEPRECATED: Prefer reconciler pattern.
 type ServiceAccountEventHandler interface {
-	CreateServiceAccount(obj *v1.ServiceAccount) error
-	UpdateServiceAccount(old, new *v1.ServiceAccount) error
-	DeleteServiceAccount(obj *v1.ServiceAccount) error
-	GenericServiceAccount(obj *v1.ServiceAccount) error
+    CreateServiceAccount(obj *v1.ServiceAccount) error
+    UpdateServiceAccount(old, new *v1.ServiceAccount) error
+    DeleteServiceAccount(obj *v1.ServiceAccount) error
+    GenericServiceAccount(obj *v1.ServiceAccount) error
 }
 
 type ServiceAccountEventHandlerFuncs struct {
-	OnCreate  func(obj *v1.ServiceAccount) error
-	OnUpdate  func(old, new *v1.ServiceAccount) error
-	OnDelete  func(obj *v1.ServiceAccount) error
-	OnGeneric func(obj *v1.ServiceAccount) error
+    OnCreate  func(obj *v1.ServiceAccount) error
+    OnUpdate  func(old, new *v1.ServiceAccount) error
+    OnDelete  func(obj *v1.ServiceAccount) error
+    OnGeneric func(obj *v1.ServiceAccount) error
 }
 
 func (f *ServiceAccountEventHandlerFuncs) CreateServiceAccount(obj *v1.ServiceAccount) error {
-	if f.OnCreate == nil {
-		return nil
-	}
-	return f.OnCreate(obj)
+    if f.OnCreate == nil {
+        return nil
+    }
+    return f.OnCreate(obj)
 }
 
 func (f *ServiceAccountEventHandlerFuncs) DeleteServiceAccount(obj *v1.ServiceAccount) error {
-	if f.OnDelete == nil {
-		return nil
-	}
-	return f.OnDelete(obj)
+    if f.OnDelete == nil {
+        return nil
+    }
+    return f.OnDelete(obj)
 }
 
 func (f *ServiceAccountEventHandlerFuncs) UpdateServiceAccount(objOld, objNew *v1.ServiceAccount) error {
-	if f.OnUpdate == nil {
-		return nil
-	}
-	return f.OnUpdate(objOld, objNew)
+    if f.OnUpdate == nil {
+        return nil
+    }
+    return f.OnUpdate(objOld, objNew)
 }
 
 func (f *ServiceAccountEventHandlerFuncs) GenericServiceAccount(obj *v1.ServiceAccount) error {
-	if f.OnGeneric == nil {
-		return nil
-	}
-	return f.OnGeneric(obj)
+    if f.OnGeneric == nil {
+        return nil
+    }
+    return f.OnGeneric(obj)
 }
 
 type ServiceAccountEventWatcher interface {
-	AddEventHandler(ctx context.Context, h ServiceAccountEventHandler, predicates ...predicate.Predicate) error
+    AddEventHandler(ctx context.Context, h ServiceAccountEventHandler, predicates ...predicate.Predicate) error
 }
 
 type serviceAccountEventWatcher struct {
-	watcher events.EventWatcher
+    watcher events.EventWatcher
 }
 
 func NewServiceAccountEventWatcher(name string, mgr manager.Manager) ServiceAccountEventWatcher {
-	return &serviceAccountEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &v1.ServiceAccount{}),
-	}
+    return &serviceAccountEventWatcher{
+        watcher: events.NewWatcher(name, mgr, &v1.ServiceAccount{}),
+    }
 }
 
 func (c *serviceAccountEventWatcher) AddEventHandler(ctx context.Context, h ServiceAccountEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericServiceAccountHandler{handler: h}
-	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
-		return err
-	}
-	return nil
+    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
+        return err
+    }
+    return nil
 }
 
 // genericServiceAccountHandler implements a generic events.EventHandler
 type genericServiceAccountHandler struct {
-	handler ServiceAccountEventHandler
+    handler ServiceAccountEventHandler
 }
 
 func (h genericServiceAccountHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*v1.ServiceAccount)
-	if !ok {
-		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
-	}
-	return h.handler.CreateServiceAccount(obj)
+    obj, ok := object.(*v1.ServiceAccount)
+    if !ok {
+        return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
+    }
+    return h.handler.CreateServiceAccount(obj)
 }
 
 func (h genericServiceAccountHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*v1.ServiceAccount)
-	if !ok {
-		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
-	}
-	return h.handler.DeleteServiceAccount(obj)
+    obj, ok := object.(*v1.ServiceAccount)
+    if !ok {
+        return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
+    }
+    return h.handler.DeleteServiceAccount(obj)
 }
 
 func (h genericServiceAccountHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*v1.ServiceAccount)
-	if !ok {
-		return errors.Errorf("internal error: ServiceAccount handler received event for %T", old)
-	}
-	objNew, ok := new.(*v1.ServiceAccount)
-	if !ok {
-		return errors.Errorf("internal error: ServiceAccount handler received event for %T", new)
-	}
-	return h.handler.UpdateServiceAccount(objOld, objNew)
+    objOld, ok := old.(*v1.ServiceAccount)
+    if !ok {
+        return errors.Errorf("internal error: ServiceAccount handler received event for %T", old)
+    }
+    objNew, ok := new.(*v1.ServiceAccount)
+    if !ok {
+        return errors.Errorf("internal error: ServiceAccount handler received event for %T", new)
+    }
+    return h.handler.UpdateServiceAccount(objOld, objNew)
 }
 
 func (h genericServiceAccountHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*v1.ServiceAccount)
-	if !ok {
-		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
-	}
-	return h.handler.GenericServiceAccount(obj)
+    obj, ok := object.(*v1.ServiceAccount)
+    if !ok {
+        return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
+    }
+    return h.handler.GenericServiceAccount(obj)
 }
 
 // Handle events for the Namespace Resource
 // DEPRECATED: Prefer reconciler pattern.
 type NamespaceEventHandler interface {
-	CreateNamespace(obj *v1.Namespace) error
-	UpdateNamespace(old, new *v1.Namespace) error
-	DeleteNamespace(obj *v1.Namespace) error
-	GenericNamespace(obj *v1.Namespace) error
+    CreateNamespace(obj *v1.Namespace) error
+    UpdateNamespace(old, new *v1.Namespace) error
+    DeleteNamespace(obj *v1.Namespace) error
+    GenericNamespace(obj *v1.Namespace) error
 }
 
 type NamespaceEventHandlerFuncs struct {
-	OnCreate  func(obj *v1.Namespace) error
-	OnUpdate  func(old, new *v1.Namespace) error
-	OnDelete  func(obj *v1.Namespace) error
-	OnGeneric func(obj *v1.Namespace) error
+    OnCreate  func(obj *v1.Namespace) error
+    OnUpdate  func(old, new *v1.Namespace) error
+    OnDelete  func(obj *v1.Namespace) error
+    OnGeneric func(obj *v1.Namespace) error
 }
 
 func (f *NamespaceEventHandlerFuncs) CreateNamespace(obj *v1.Namespace) error {
-	if f.OnCreate == nil {
-		return nil
-	}
-	return f.OnCreate(obj)
+    if f.OnCreate == nil {
+        return nil
+    }
+    return f.OnCreate(obj)
 }
 
 func (f *NamespaceEventHandlerFuncs) DeleteNamespace(obj *v1.Namespace) error {
-	if f.OnDelete == nil {
-		return nil
-	}
-	return f.OnDelete(obj)
+    if f.OnDelete == nil {
+        return nil
+    }
+    return f.OnDelete(obj)
 }
 
 func (f *NamespaceEventHandlerFuncs) UpdateNamespace(objOld, objNew *v1.Namespace) error {
-	if f.OnUpdate == nil {
-		return nil
-	}
-	return f.OnUpdate(objOld, objNew)
+    if f.OnUpdate == nil {
+        return nil
+    }
+    return f.OnUpdate(objOld, objNew)
 }
 
 func (f *NamespaceEventHandlerFuncs) GenericNamespace(obj *v1.Namespace) error {
-	if f.OnGeneric == nil {
-		return nil
-	}
-	return f.OnGeneric(obj)
+    if f.OnGeneric == nil {
+        return nil
+    }
+    return f.OnGeneric(obj)
 }
 
 type NamespaceEventWatcher interface {
-	AddEventHandler(ctx context.Context, h NamespaceEventHandler, predicates ...predicate.Predicate) error
+    AddEventHandler(ctx context.Context, h NamespaceEventHandler, predicates ...predicate.Predicate) error
 }
 
 type namespaceEventWatcher struct {
-	watcher events.EventWatcher
+    watcher events.EventWatcher
 }
 
 func NewNamespaceEventWatcher(name string, mgr manager.Manager) NamespaceEventWatcher {
-	return &namespaceEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &v1.Namespace{}),
-	}
+    return &namespaceEventWatcher{
+        watcher: events.NewWatcher(name, mgr, &v1.Namespace{}),
+    }
 }
 
 func (c *namespaceEventWatcher) AddEventHandler(ctx context.Context, h NamespaceEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericNamespaceHandler{handler: h}
-	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
-		return err
-	}
-	return nil
+    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
+        return err
+    }
+    return nil
 }
 
 // genericNamespaceHandler implements a generic events.EventHandler
 type genericNamespaceHandler struct {
-	handler NamespaceEventHandler
+    handler NamespaceEventHandler
 }
 
 func (h genericNamespaceHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*v1.Namespace)
-	if !ok {
-		return errors.Errorf("internal error: Namespace handler received event for %T", object)
-	}
-	return h.handler.CreateNamespace(obj)
+    obj, ok := object.(*v1.Namespace)
+    if !ok {
+        return errors.Errorf("internal error: Namespace handler received event for %T", object)
+    }
+    return h.handler.CreateNamespace(obj)
 }
 
 func (h genericNamespaceHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*v1.Namespace)
-	if !ok {
-		return errors.Errorf("internal error: Namespace handler received event for %T", object)
-	}
-	return h.handler.DeleteNamespace(obj)
+    obj, ok := object.(*v1.Namespace)
+    if !ok {
+        return errors.Errorf("internal error: Namespace handler received event for %T", object)
+    }
+    return h.handler.DeleteNamespace(obj)
 }
 
 func (h genericNamespaceHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*v1.Namespace)
-	if !ok {
-		return errors.Errorf("internal error: Namespace handler received event for %T", old)
-	}
-	objNew, ok := new.(*v1.Namespace)
-	if !ok {
-		return errors.Errorf("internal error: Namespace handler received event for %T", new)
-	}
-	return h.handler.UpdateNamespace(objOld, objNew)
+    objOld, ok := old.(*v1.Namespace)
+    if !ok {
+        return errors.Errorf("internal error: Namespace handler received event for %T", old)
+    }
+    objNew, ok := new.(*v1.Namespace)
+    if !ok {
+        return errors.Errorf("internal error: Namespace handler received event for %T", new)
+    }
+    return h.handler.UpdateNamespace(objOld, objNew)
 }
 
 func (h genericNamespaceHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*v1.Namespace)
-	if !ok {
-		return errors.Errorf("internal error: Namespace handler received event for %T", object)
-	}
-	return h.handler.GenericNamespace(obj)
+    obj, ok := object.(*v1.Namespace)
+    if !ok {
+        return errors.Errorf("internal error: Namespace handler received event for %T", object)
+    }
+    return h.handler.GenericNamespace(obj)
 }

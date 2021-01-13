@@ -8,118 +8,118 @@ package controller
 import (
 	"context"
 
-	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+    multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
-	"github.com/pkg/errors"
-	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+    "github.com/pkg/errors"
+    "github.com/solo-io/skv2/pkg/events"
+    "k8s.io/apimachinery/pkg/runtime"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Handle events for the KubernetesCluster Resource
 // DEPRECATED: Prefer reconciler pattern.
 type KubernetesClusterEventHandler interface {
-	CreateKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
-	UpdateKubernetesCluster(old, new *multicluster_solo_io_v1alpha1.KubernetesCluster) error
-	DeleteKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
-	GenericKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    CreateKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    UpdateKubernetesCluster(old, new *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    DeleteKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    GenericKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
 }
 
 type KubernetesClusterEventHandlerFuncs struct {
-	OnCreate  func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
-	OnUpdate  func(old, new *multicluster_solo_io_v1alpha1.KubernetesCluster) error
-	OnDelete  func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
-	OnGeneric func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    OnCreate  func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    OnUpdate  func(old, new *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    OnDelete  func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    OnGeneric func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
 }
 
 func (f *KubernetesClusterEventHandlerFuncs) CreateKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error {
-	if f.OnCreate == nil {
-		return nil
-	}
-	return f.OnCreate(obj)
+    if f.OnCreate == nil {
+        return nil
+    }
+    return f.OnCreate(obj)
 }
 
 func (f *KubernetesClusterEventHandlerFuncs) DeleteKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error {
-	if f.OnDelete == nil {
-		return nil
-	}
-	return f.OnDelete(obj)
+    if f.OnDelete == nil {
+        return nil
+    }
+    return f.OnDelete(obj)
 }
 
 func (f *KubernetesClusterEventHandlerFuncs) UpdateKubernetesCluster(objOld, objNew *multicluster_solo_io_v1alpha1.KubernetesCluster) error {
-	if f.OnUpdate == nil {
-		return nil
-	}
-	return f.OnUpdate(objOld, objNew)
+    if f.OnUpdate == nil {
+        return nil
+    }
+    return f.OnUpdate(objOld, objNew)
 }
 
 func (f *KubernetesClusterEventHandlerFuncs) GenericKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error {
-	if f.OnGeneric == nil {
-		return nil
-	}
-	return f.OnGeneric(obj)
+    if f.OnGeneric == nil {
+        return nil
+    }
+    return f.OnGeneric(obj)
 }
 
 type KubernetesClusterEventWatcher interface {
-	AddEventHandler(ctx context.Context, h KubernetesClusterEventHandler, predicates ...predicate.Predicate) error
+    AddEventHandler(ctx context.Context, h KubernetesClusterEventHandler, predicates ...predicate.Predicate) error
 }
 
 type kubernetesClusterEventWatcher struct {
-	watcher events.EventWatcher
+    watcher events.EventWatcher
 }
 
 func NewKubernetesClusterEventWatcher(name string, mgr manager.Manager) KubernetesClusterEventWatcher {
-	return &kubernetesClusterEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &multicluster_solo_io_v1alpha1.KubernetesCluster{}),
-	}
+    return &kubernetesClusterEventWatcher{
+        watcher: events.NewWatcher(name, mgr, &multicluster_solo_io_v1alpha1.KubernetesCluster{}),
+    }
 }
 
 func (c *kubernetesClusterEventWatcher) AddEventHandler(ctx context.Context, h KubernetesClusterEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericKubernetesClusterHandler{handler: h}
-	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
-		return err
-	}
-	return nil
+    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
+        return err
+    }
+    return nil
 }
 
 // genericKubernetesClusterHandler implements a generic events.EventHandler
 type genericKubernetesClusterHandler struct {
-	handler KubernetesClusterEventHandler
+    handler KubernetesClusterEventHandler
 }
 
 func (h genericKubernetesClusterHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	if !ok {
-		return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
-	}
-	return h.handler.CreateKubernetesCluster(obj)
+    obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    if !ok {
+        return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
+    }
+    return h.handler.CreateKubernetesCluster(obj)
 }
 
 func (h genericKubernetesClusterHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	if !ok {
-		return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
-	}
-	return h.handler.DeleteKubernetesCluster(obj)
+    obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    if !ok {
+        return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
+    }
+    return h.handler.DeleteKubernetesCluster(obj)
 }
 
 func (h genericKubernetesClusterHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	if !ok {
-		return errors.Errorf("internal error: KubernetesCluster handler received event for %T", old)
-	}
-	objNew, ok := new.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	if !ok {
-		return errors.Errorf("internal error: KubernetesCluster handler received event for %T", new)
-	}
-	return h.handler.UpdateKubernetesCluster(objOld, objNew)
+    objOld, ok := old.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    if !ok {
+        return errors.Errorf("internal error: KubernetesCluster handler received event for %T", old)
+    }
+    objNew, ok := new.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    if !ok {
+        return errors.Errorf("internal error: KubernetesCluster handler received event for %T", new)
+    }
+    return h.handler.UpdateKubernetesCluster(objOld, objNew)
 }
 
 func (h genericKubernetesClusterHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	if !ok {
-		return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
-	}
-	return h.handler.GenericKubernetesCluster(obj)
+    obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    if !ok {
+        return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
+    }
+    return h.handler.GenericKubernetesCluster(obj)
 }
