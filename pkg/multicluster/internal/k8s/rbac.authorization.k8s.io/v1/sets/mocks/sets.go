@@ -8,10 +8,11 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/sets"
 	v1 "k8s.io/api/rbac/v1"
-	sets "k8s.io/apimachinery/pkg/util/sets"
+	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
 // MockRoleSet is a mock of RoleSet interface
@@ -38,10 +39,10 @@ func (m *MockRoleSet) EXPECT() *MockRoleSetMockRecorder {
 }
 
 // Keys mocks base method
-func (m *MockRoleSet) Keys() sets.String {
+func (m *MockRoleSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
-	ret0, _ := ret[0].(sets.String)
+	ret0, _ := ret[0].(sets0.String)
 	return ret0
 }
 
@@ -210,6 +211,34 @@ func (mr *MockRoleSetMockRecorder) Length() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRoleSet)(nil).Length))
 }
 
+// Generic mocks base method
+func (m *MockRoleSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockRoleSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockRoleSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockRoleSet) Delta(newSet v1sets.RoleSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockRoleSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRoleSet)(nil).Delta), newSet)
+}
+
 // MockRoleBindingSet is a mock of RoleBindingSet interface
 type MockRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -234,10 +263,10 @@ func (m *MockRoleBindingSet) EXPECT() *MockRoleBindingSetMockRecorder {
 }
 
 // Keys mocks base method
-func (m *MockRoleBindingSet) Keys() sets.String {
+func (m *MockRoleBindingSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
-	ret0, _ := ret[0].(sets.String)
+	ret0, _ := ret[0].(sets0.String)
 	return ret0
 }
 
@@ -406,6 +435,34 @@ func (mr *MockRoleBindingSetMockRecorder) Length() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRoleBindingSet)(nil).Length))
 }
 
+// Generic mocks base method
+func (m *MockRoleBindingSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockRoleBindingSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockRoleBindingSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockRoleBindingSet) Delta(newSet v1sets.RoleBindingSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockRoleBindingSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRoleBindingSet)(nil).Delta), newSet)
+}
+
 // MockClusterRoleSet is a mock of ClusterRoleSet interface
 type MockClusterRoleSet struct {
 	ctrl     *gomock.Controller
@@ -430,10 +487,10 @@ func (m *MockClusterRoleSet) EXPECT() *MockClusterRoleSetMockRecorder {
 }
 
 // Keys mocks base method
-func (m *MockClusterRoleSet) Keys() sets.String {
+func (m *MockClusterRoleSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
-	ret0, _ := ret[0].(sets.String)
+	ret0, _ := ret[0].(sets0.String)
 	return ret0
 }
 
@@ -602,6 +659,34 @@ func (mr *MockClusterRoleSetMockRecorder) Length() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockClusterRoleSet)(nil).Length))
 }
 
+// Generic mocks base method
+func (m *MockClusterRoleSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockClusterRoleSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockClusterRoleSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockClusterRoleSet) Delta(newSet v1sets.ClusterRoleSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockClusterRoleSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockClusterRoleSet)(nil).Delta), newSet)
+}
+
 // MockClusterRoleBindingSet is a mock of ClusterRoleBindingSet interface
 type MockClusterRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -626,10 +711,10 @@ func (m *MockClusterRoleBindingSet) EXPECT() *MockClusterRoleBindingSetMockRecor
 }
 
 // Keys mocks base method
-func (m *MockClusterRoleBindingSet) Keys() sets.String {
+func (m *MockClusterRoleBindingSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
-	ret0, _ := ret[0].(sets.String)
+	ret0, _ := ret[0].(sets0.String)
 	return ret0
 }
 
@@ -796,4 +881,32 @@ func (m *MockClusterRoleBindingSet) Length() int {
 func (mr *MockClusterRoleBindingSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Length))
+}
+
+// Generic mocks base method
+func (m *MockClusterRoleBindingSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockClusterRoleBindingSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockClusterRoleBindingSet) Delta(newSet v1sets.ClusterRoleBindingSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockClusterRoleBindingSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Delta), newSet)
 }

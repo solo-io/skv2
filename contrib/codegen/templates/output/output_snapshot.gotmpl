@@ -6,7 +6,8 @@ package {{ package }}
 import (
 	"context"
     "encoding/json"
-	"sort"
+    "k8s.io/apimachinery/pkg/runtime/schema"
+    "sort"
 
     "github.com/solo-io/go-utils/contextutils"
     "github.com/solo-io/skv2/pkg/multicluster"
@@ -464,6 +465,10 @@ type Builder interface {
 
     // create a clone of this builder (deepcopying all resources)
     Clone() Builder
+
+    // return the difference between the snapshot in this builder's and another
+    Delta(newSnap Builder) output.SnapshotDelta
+
 }
 
 {{- range $group := $groups }}
@@ -576,4 +581,29 @@ func (b *builder) Clone() Builder {
     	clone.AddCluster(cluster)
     }
     return clone
+}
+
+func (b *builder) Delta(other Builder) output.SnapshotDelta {
+    delta := output.SnapshotDelta{}
+	if b == nil {
+		return delta
+    }
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    // calcualte delta between {{ $kindPlural }}
+    {{ $kindLowerCamel }}Delta := b.Get{{ $kindPlural }}().Delta(other.Get{{ $kindPlural }}())
+    {{ $kindLowerCamel }}Gvk := schema.GroupVersionKind{
+		Group: "{{ $resource.Group.Group }}",
+		Version: "{{ $resource.Version }}",
+		Kind: "{{ $resource.Kind }}",
+    }
+    delta.AddInserted({{ $kindLowerCamel }}Gvk, {{ $kindLowerCamel }}Delta.Inserted)
+    delta.AddRemoved({{ $kindLowerCamel }}Gvk, {{ $kindLowerCamel }}Delta.Removed)
+    {{- end }}
+    {{- end }}
+    return delta
 }

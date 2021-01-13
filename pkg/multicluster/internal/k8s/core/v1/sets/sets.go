@@ -38,6 +38,10 @@ type SecretSet interface {
 	Find(id ezkube.ResourceId) (*v1.Secret, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another SecretSet
+	Delta(newSet SecretSet) sksets.ResourceDelta
 }
 
 func makeGenericSecretSet(secretList []*v1.Secret) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *secretSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *secretSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
@@ -83,7 +87,7 @@ func (s *secretSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
 	}
 
 	var secretList []*v1.Secret
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		secretList = append(secretList, obj.(*v1.Secret))
 	}
 	return secretList
@@ -95,7 +99,7 @@ func (s *secretSet) Map() map[string]*v1.Secret {
 	}
 
 	newMap := map[string]*v1.Secret{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*v1.Secret)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *secretSet) Insert(
 	}
 
 	for _, obj := range secretList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *secretSet) Has(secret ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(secret)
+	return s.Generic().Has(secret)
 }
 
 func (s *secretSet) Equal(
@@ -126,14 +130,14 @@ func (s *secretSet) Equal(
 	if s == nil {
 		return secretSet == nil
 	}
-	return s.set.Equal(makeGenericSecretSet(secretSet.List()))
+	return s.Generic().Equal(secretSet.Generic())
 }
 
 func (s *secretSet) Delete(Secret ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(Secret)
+	s.Generic().Delete(Secret)
 }
 
 func (s *secretSet) Union(set SecretSet) SecretSet {
@@ -147,7 +151,7 @@ func (s *secretSet) Difference(set SecretSet) SecretSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericSecretSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &secretSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *secretSet) Intersection(set SecretSet) SecretSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericSecretSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var secretList []*v1.Secret
 	for _, obj := range newSet.List() {
 		secretList = append(secretList, obj.(*v1.Secret))
@@ -167,7 +171,7 @@ func (s *secretSet) Find(id ezkube.ResourceId) (*v1.Secret, error) {
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find Secret %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&v1.Secret{}, id)
+	obj, err := s.Generic().Find(&v1.Secret{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +183,23 @@ func (s *secretSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *secretSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *secretSet) Delta(newSet SecretSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type ServiceAccountSet interface {
@@ -207,6 +227,10 @@ type ServiceAccountSet interface {
 	Find(id ezkube.ResourceId) (*v1.ServiceAccount, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another ServiceAccountSet
+	Delta(newSet ServiceAccountSet) sksets.ResourceDelta
 }
 
 func makeGenericServiceAccountSet(serviceAccountList []*v1.ServiceAccount) sksets.ResourceSet {
@@ -237,7 +261,7 @@ func (s *serviceAccountSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *serviceAccountSet) List(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
@@ -252,7 +276,7 @@ func (s *serviceAccountSet) List(filterResource ...func(*v1.ServiceAccount) bool
 	}
 
 	var serviceAccountList []*v1.ServiceAccount
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
 	}
 	return serviceAccountList
@@ -264,7 +288,7 @@ func (s *serviceAccountSet) Map() map[string]*v1.ServiceAccount {
 	}
 
 	newMap := map[string]*v1.ServiceAccount{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*v1.ServiceAccount)
 	}
 	return newMap
@@ -278,7 +302,7 @@ func (s *serviceAccountSet) Insert(
 	}
 
 	for _, obj := range serviceAccountList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -286,7 +310,7 @@ func (s *serviceAccountSet) Has(serviceAccount ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(serviceAccount)
+	return s.Generic().Has(serviceAccount)
 }
 
 func (s *serviceAccountSet) Equal(
@@ -295,14 +319,14 @@ func (s *serviceAccountSet) Equal(
 	if s == nil {
 		return serviceAccountSet == nil
 	}
-	return s.set.Equal(makeGenericServiceAccountSet(serviceAccountSet.List()))
+	return s.Generic().Equal(serviceAccountSet.Generic())
 }
 
 func (s *serviceAccountSet) Delete(ServiceAccount ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(ServiceAccount)
+	s.Generic().Delete(ServiceAccount)
 }
 
 func (s *serviceAccountSet) Union(set ServiceAccountSet) ServiceAccountSet {
@@ -316,7 +340,7 @@ func (s *serviceAccountSet) Difference(set ServiceAccountSet) ServiceAccountSet 
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericServiceAccountSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &serviceAccountSet{set: newSet}
 }
 
@@ -324,7 +348,7 @@ func (s *serviceAccountSet) Intersection(set ServiceAccountSet) ServiceAccountSe
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericServiceAccountSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var serviceAccountList []*v1.ServiceAccount
 	for _, obj := range newSet.List() {
 		serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
@@ -336,7 +360,7 @@ func (s *serviceAccountSet) Find(id ezkube.ResourceId) (*v1.ServiceAccount, erro
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find ServiceAccount %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&v1.ServiceAccount{}, id)
+	obj, err := s.Generic().Find(&v1.ServiceAccount{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +372,23 @@ func (s *serviceAccountSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *serviceAccountSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *serviceAccountSet) Delta(newSet ServiceAccountSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type NamespaceSet interface {
@@ -376,6 +416,10 @@ type NamespaceSet interface {
 	Find(id ezkube.ResourceId) (*v1.Namespace, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another NamespaceSet
+	Delta(newSet NamespaceSet) sksets.ResourceDelta
 }
 
 func makeGenericNamespaceSet(namespaceList []*v1.Namespace) sksets.ResourceSet {
@@ -406,7 +450,7 @@ func (s *namespaceSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *namespaceSet) List(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace {
@@ -421,7 +465,7 @@ func (s *namespaceSet) List(filterResource ...func(*v1.Namespace) bool) []*v1.Na
 	}
 
 	var namespaceList []*v1.Namespace
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		namespaceList = append(namespaceList, obj.(*v1.Namespace))
 	}
 	return namespaceList
@@ -433,7 +477,7 @@ func (s *namespaceSet) Map() map[string]*v1.Namespace {
 	}
 
 	newMap := map[string]*v1.Namespace{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*v1.Namespace)
 	}
 	return newMap
@@ -447,7 +491,7 @@ func (s *namespaceSet) Insert(
 	}
 
 	for _, obj := range namespaceList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -455,7 +499,7 @@ func (s *namespaceSet) Has(namespace ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(namespace)
+	return s.Generic().Has(namespace)
 }
 
 func (s *namespaceSet) Equal(
@@ -464,14 +508,14 @@ func (s *namespaceSet) Equal(
 	if s == nil {
 		return namespaceSet == nil
 	}
-	return s.set.Equal(makeGenericNamespaceSet(namespaceSet.List()))
+	return s.Generic().Equal(namespaceSet.Generic())
 }
 
 func (s *namespaceSet) Delete(Namespace ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(Namespace)
+	s.Generic().Delete(Namespace)
 }
 
 func (s *namespaceSet) Union(set NamespaceSet) NamespaceSet {
@@ -485,7 +529,7 @@ func (s *namespaceSet) Difference(set NamespaceSet) NamespaceSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericNamespaceSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &namespaceSet{set: newSet}
 }
 
@@ -493,7 +537,7 @@ func (s *namespaceSet) Intersection(set NamespaceSet) NamespaceSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericNamespaceSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var namespaceList []*v1.Namespace
 	for _, obj := range newSet.List() {
 		namespaceList = append(namespaceList, obj.(*v1.Namespace))
@@ -505,7 +549,7 @@ func (s *namespaceSet) Find(id ezkube.ResourceId) (*v1.Namespace, error) {
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find Namespace %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&v1.Namespace{}, id)
+	obj, err := s.Generic().Find(&v1.Namespace{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -517,5 +561,21 @@ func (s *namespaceSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *namespaceSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *namespaceSet) Delta(newSet NamespaceSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

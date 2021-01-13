@@ -38,6 +38,10 @@ type KubernetesClusterSet interface {
 	Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another KubernetesClusterSet
+	Delta(newSet KubernetesClusterSet) sksets.ResourceDelta
 }
 
 func makeGenericKubernetesClusterSet(kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *kubernetesClusterSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *kubernetesClusterSet) List(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
@@ -83,7 +87,7 @@ func (s *kubernetesClusterSet) List(filterResource ...func(*multicluster_solo_io
 	}
 
 	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 	}
 	return kubernetesClusterList
@@ -95,7 +99,7 @@ func (s *kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.K
 	}
 
 	newMap := map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *kubernetesClusterSet) Insert(
 	}
 
 	for _, obj := range kubernetesClusterList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *kubernetesClusterSet) Has(kubernetesCluster ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(kubernetesCluster)
+	return s.Generic().Has(kubernetesCluster)
 }
 
 func (s *kubernetesClusterSet) Equal(
@@ -126,14 +130,14 @@ func (s *kubernetesClusterSet) Equal(
 	if s == nil {
 		return kubernetesClusterSet == nil
 	}
-	return s.set.Equal(makeGenericKubernetesClusterSet(kubernetesClusterSet.List()))
+	return s.Generic().Equal(kubernetesClusterSet.Generic())
 }
 
 func (s *kubernetesClusterSet) Delete(KubernetesCluster ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(KubernetesCluster)
+	s.Generic().Delete(KubernetesCluster)
 }
 
 func (s *kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
@@ -147,7 +151,7 @@ func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesCl
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericKubernetesClusterSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &kubernetesClusterSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *kubernetesClusterSet) Intersection(set KubernetesClusterSet) Kubernetes
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericKubernetesClusterSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range newSet.List() {
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
@@ -167,7 +171,7 @@ func (s *kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find KubernetesCluster %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&multicluster_solo_io_v1alpha1.KubernetesCluster{}, id)
+	obj, err := s.Generic().Find(&multicluster_solo_io_v1alpha1.KubernetesCluster{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,5 +183,21 @@ func (s *kubernetesClusterSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *kubernetesClusterSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *kubernetesClusterSet) Delta(newSet KubernetesClusterSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

@@ -40,6 +40,10 @@ type {{ $resource.Kind }}Set interface {
     Find(id ezkube.ResourceId) (*{{ $import_prefix }}.{{ $resource.Kind }}, error)
     // Get the length of the set
     Length() int
+    // returns the generic implementation of the set
+    Generic() sksets.ResourceSet
+    // returns the delta between this and and another {{ $resource.Kind }}Set
+    Delta(newSet {{ $resource.Kind }}Set) sksets.ResourceDelta
 }
 
 func makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}) sksets.ResourceSet {
@@ -70,7 +74,7 @@ func (s *{{ $kindLowerCamel }}Set) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
     }
-    return s.set.Keys()
+    return s.Generic().Keys()
 }
 
 func (s *{{ $kindLowerCamel }}Set) List(filterResource ... func(*{{ $import_prefix }}.{{ $resource.Kind }}) bool) []*{{ $import_prefix }}.{{ $resource.Kind }} {
@@ -85,7 +89,7 @@ func (s *{{ $kindLowerCamel }}Set) List(filterResource ... func(*{{ $import_pref
     }
 
     var {{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}
-    for _, obj := range s.set.List(genericFilters...) {
+    for _, obj := range s.Generic().List(genericFilters...) {
         {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
     }
     return {{ $kindLowerCamel }}List
@@ -97,7 +101,7 @@ func (s *{{ $kindLowerCamel }}Set) Map() map[string]*{{ $import_prefix }}.{{ $re
     }
 
     newMap := map[string]*{{ $import_prefix }}.{{ $resource.Kind }}{}
-    for k, v := range s.set.Map() {
+    for k, v := range s.Generic().Map() {
         newMap[k] = v.(*{{ $import_prefix }}.{{ $resource.Kind }})
     }
     return newMap
@@ -111,7 +115,7 @@ func (s *{{ $kindLowerCamel }}Set) Insert(
     }
 
     for _, obj := range {{ $kindLowerCamel }}List {
-        s.set.Insert(obj)
+        s.Generic().Insert(obj)
     }
 }
 
@@ -119,7 +123,7 @@ func (s *{{ $kindLowerCamel }}Set) Has({{ $kindLowerCamel }} ezkube.ResourceId) 
     if s == nil {
         return false
     }
-    return s.set.Has({{ $kindLowerCamel }})
+    return s.Generic().Has({{ $kindLowerCamel }})
 }
 
 func (s *{{ $kindLowerCamel }}Set) Equal(
@@ -128,14 +132,14 @@ func (s *{{ $kindLowerCamel }}Set) Equal(
     if s == nil {
         return {{ $kindLowerCamel }}Set == nil
     }
-    return s.set.Equal(makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}Set.List()))
+    return s.Generic().Equal({{ $kindLowerCamel }}Set.Generic())
 }
 
 func (s *{{ $kindLowerCamel }}Set) Delete({{ $resource.Kind }} ezkube.ResourceId) {
     if s == nil {
         return
     }
-    s.set.Delete({{ $resource.Kind }})
+    s.Generic().Delete({{ $resource.Kind }})
 }
 
 func (s *{{ $kindLowerCamel }}Set) Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
@@ -149,7 +153,7 @@ func (s *{{ $kindLowerCamel }}Set) Difference(set {{ $resource.Kind }}Set) {{ $r
     if s == nil {
         return set
     }
-    newSet := s.set.Difference(makeGeneric{{ $resource.Kind }}Set(set.List()))
+    newSet := s.Generic().Difference(set.Generic())
     return &{{ $kindLowerCamel }}Set{set: newSet}
 }
 
@@ -157,7 +161,7 @@ func (s *{{ $kindLowerCamel }}Set) Intersection(set {{ $resource.Kind }}Set) {{ 
     if s == nil {
         return nil
     }
-    newSet := s.set.Intersection(makeGeneric{{ $resource.Kind }}Set(set.List()))
+    newSet := s.Generic().Intersection(set.Generic())
     var {{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}
     for _, obj := range newSet.List() {
         {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
@@ -170,7 +174,7 @@ func (s *{{ $kindLowerCamel }}Set) Find(id ezkube.ResourceId) (*{{ $import_prefi
     if s == nil {
         return nil, eris.Errorf("empty set, cannot find {{ $resource.Kind }} %v", sksets.Key(id))
     }
-	obj, err := s.set.Find(&{{ $import_prefix }}.{{ $resource.Kind }}{}, id)
+	obj, err := s.Generic().Find(&{{ $import_prefix }}.{{ $resource.Kind }}{}, id)
 	if err != nil {
 		return nil, err
     }
@@ -182,7 +186,23 @@ func (s *{{ $kindLowerCamel }}Set) Length() int {
     if s == nil {
         return 0
     }
-    return s.set.Length()
+    return s.Generic().Length()
+}
+
+func (s *{{ $kindLowerCamel }}Set) Generic() sksets.ResourceSet {
+    if s == nil {
+        return nil
+    }
+    return s.set
+}
+
+func (s *{{ $kindLowerCamel }}Set) Delta(newSet {{ $resource.Kind }}Set) sksets.ResourceDelta {
+    if s == nil {
+        return sksets.ResourceDelta{
+            Inserted: newSet.Generic(),
+        }
+    }
+    return s.Generic().Delta(newSet.Generic())
 }
 
 {{- end }}
