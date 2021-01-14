@@ -146,7 +146,7 @@ func (ec *runnerReconciler) Reconcile(ctx context.Context, request Request) (rec
 	obj := ec.resource.DeepCopyObject().(ezkube.Object)
 	obj.SetName(request.Name)
 	obj.SetNamespace(request.Namespace)
-	if err := restClient.Get(ec.ctx, obj); err != nil {
+	if err := restClient.Get(ctx, obj); err != nil {
 		if err := client.IgnoreNotFound(err); err != nil {
 			return reconcile.Result{}, err
 		}
@@ -174,7 +174,7 @@ func (ec *runnerReconciler) Reconcile(ctx context.Context, request Request) (rec
 					finalizers,
 					finalizerName,
 				))
-				if err := restClient.Update(context.Background(), obj); err != nil {
+				if err := restClient.Update(ctx, obj); err != nil {
 					return reconcile.Result{}, err
 				}
 			}
@@ -191,7 +191,7 @@ func (ec *runnerReconciler) Reconcile(ctx context.Context, request Request) (rec
 
 				// remove our finalizer from the list and update it.
 				obj.SetFinalizers(utils.RemoveString(finalizers, finalizerName))
-				if err := restClient.Update(context.Background(), obj); err != nil {
+				if err := restClient.Update(ctx, obj); err != nil {
 					return reconcile.Result{}, err
 				}
 			}

@@ -33,7 +33,7 @@ func (in *Paint) DeepCopy() *Paint {
 }
 
 func (in *Paint) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopyObject(); c != nil {
+	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
@@ -63,7 +63,7 @@ func (in *PaintList) DeepCopy() *PaintList {
 }
 
 func (in *PaintList) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopyObject(); c != nil {
+	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil

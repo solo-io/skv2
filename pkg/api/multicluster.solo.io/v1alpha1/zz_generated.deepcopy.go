@@ -33,7 +33,7 @@ func (in *KubernetesCluster) DeepCopy() *KubernetesCluster {
 }
 
 func (in *KubernetesCluster) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopyObject(); c != nil {
+	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
@@ -63,7 +63,7 @@ func (in *KubernetesClusterList) DeepCopy() *KubernetesClusterList {
 }
 
 func (in *KubernetesClusterList) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopyObject(); c != nil {
+	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
