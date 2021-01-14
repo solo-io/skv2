@@ -4,44 +4,45 @@
 package v1alpha1
 
 import (
-    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    "k8s.io/apimachinery/pkg/runtime/schema")
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+)
 
 // +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
 // GroupVersionKind for KubernetesCluster
 var KubernetesClusterGVK = schema.GroupVersionKind{
-    Group: "multicluster.solo.io",
-    Version: "v1alpha1",
-    Kind: "KubernetesCluster",
+	Group:   "multicluster.solo.io",
+	Version: "v1alpha1",
+	Kind:    "KubernetesCluster",
 }
 
 // KubernetesCluster is the Schema for the kubernetesCluster API
 type KubernetesCluster struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec KubernetesClusterSpec `json:"spec,omitempty"`
-    Status KubernetesClusterStatus `json:"status,omitempty"`
+	Spec   KubernetesClusterSpec   `json:"spec,omitempty"`
+	Status KubernetesClusterStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (KubernetesCluster)  GVK() schema.GroupVersionKind {
+func (KubernetesCluster) GVK() schema.GroupVersionKind {
 	return KubernetesClusterGVK
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // KubernetesClusterList contains a list of KubernetesCluster
 type KubernetesClusterList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []KubernetesCluster `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []KubernetesCluster `json:"items"`
 }
 
 func init() {
-    SchemeBuilder.Register(&KubernetesCluster{}, &KubernetesClusterList{})
+	SchemeBuilder.Register(&KubernetesCluster{}, &KubernetesClusterList{})
 }

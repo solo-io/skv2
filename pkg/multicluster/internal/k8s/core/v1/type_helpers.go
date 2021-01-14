@@ -4,7 +4,7 @@
 package v1
 
 import (
-    . "k8s.io/api/core/v1"
+	. "k8s.io/api/core/v1"
 )
 
 // SecretSlice represents a slice of *Secret

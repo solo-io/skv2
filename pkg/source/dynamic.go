@@ -82,7 +82,7 @@ func (s *DynamicSource) Start(h handler.EventHandler, i workqueue.RateLimitingIn
 
 	for _, src := range s.cache {
 
-		if err := src.source.Start(h, i, ps...); err != nil {
+		if err := src.source.Start(s.ctx, h, i, ps...); err != nil {
 			return err
 		}
 	}
@@ -111,7 +111,7 @@ func (s *DynamicSource) Add(id string, src Stoppable) error {
 	}
 
 	if s.started != nil {
-		if err := src.Start(s.started.h, s.started.i, s.started.ps...); err != nil {
+		if err := src.Start(s.ctx, s.started.h, s.started.i, s.started.ps...); err != nil {
 			return errors.Wrapf(err, "failed to start source %v", id)
 		}
 	}

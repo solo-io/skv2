@@ -6,11 +6,12 @@ package mock_discovery
 
 import (
 	context "context"
+	reflect "reflect"
+
 	eks "github.com/aws/aws-sdk-go/service/eks"
 	gomock "github.com/golang/mock/gomock"
 	container "google.golang.org/genproto/googleapis/container/v1"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
-	reflect "reflect"
 )
 
 // MockGkeConfigBuilder is a mock of GkeConfigBuilder interface

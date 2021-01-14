@@ -2,7 +2,9 @@ package controllerutils
 
 import (
 	"context"
+
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -10,7 +12,7 @@ import (
 )
 
 // TransitionFunc performs a comparison of the the existing object with the desired object before a desired object is Upserted to kube storage.
-type TransitionFunc func(existing, desired client.Object) error
+type TransitionFunc func(existing, desired runtime.Object) error
 
 // Easily Upsert a desired object to the cluster.
 //
@@ -48,7 +50,7 @@ func Upsert(ctx context.Context, c client.Client, obj client.Object, transitionF
 	return controllerutil.OperationResultUpdated, nil
 }
 
-func transition(existing, desired client.Object, transitionFuncs []TransitionFunc) error {
+func transition(existing, desired runtime.Object, transitionFuncs []TransitionFunc) error {
 	for _, txFunc := range transitionFuncs {
 		if err := txFunc(existing, desired); err != nil {
 			return err

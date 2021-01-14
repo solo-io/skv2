@@ -8,9 +8,9 @@ import (
 
     "github.com/pkg/errors"
     "github.com/solo-io/skv2/pkg/events"
-    "k8s.io/apimachinery/pkg/runtime"
     "sigs.k8s.io/controller-runtime/pkg/manager"
     "sigs.k8s.io/controller-runtime/pkg/predicate"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 {{- range $resource := $.Resources }}

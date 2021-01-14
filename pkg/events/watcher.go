@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/pkg/errors"
@@ -36,7 +37,7 @@ type EventWatcher interface {
 type watcher struct {
 	name     string          // name of this watch/controller
 	mgr      manager.Manager // manager
-	resource client.Object  // resource type
+	resource client.Object   // resource type
 }
 
 func NewWatcher(name string, mgr manager.Manager, resource client.Object) *watcher {

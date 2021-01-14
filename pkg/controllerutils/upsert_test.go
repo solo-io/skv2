@@ -3,6 +3,8 @@ package controllerutils_test
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/runtime"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,7 +14,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -51,7 +52,7 @@ var _ = Describe("Upsert", func() {
 		client.EXPECT().Get(ctx, resource.ToClientKey(desired), desired).Return(nil)
 		client.EXPECT().Update(ctx, desired).Return(nil)
 
-		result, err := Upsert(ctx, client, desired, func(existing, desired client.Object) error {
+		result, err := Upsert(ctx, client, desired, func(existing, desired runtime.Object) error {
 			called = true
 
 			// necessary to ensure there is a diff between existing and desired

@@ -3,7 +3,7 @@ package {{ .Version }}
 
 import (
     metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    "k8s.io/apimachinery/pkg/runtime/schema"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 
 {{- range $import := imports_for_group . }}
     . "{{ $import }}"
@@ -15,7 +15,7 @@ import (
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 
 // +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
 {{- if $resource.Status }}
 // +kubebuilder:subresource:status
@@ -46,7 +46,7 @@ func ({{ $resource.Kind}})  GVK() schema.GroupVersionKind {
 	return {{ $resource.Kind }}GVK
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/client.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // {{ $resource.Kind}}List contains a list of {{ $resource.Kind}}
 type {{ $resource.Kind}}List struct {

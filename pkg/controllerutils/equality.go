@@ -3,10 +3,10 @@ package controllerutils
 import (
 	"fmt"
 	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/solo-io/skv2/pkg/equalityutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // returns true if "relevant" parts of obj1 and obj2 have equal:
@@ -16,7 +16,7 @@ import (
 // - non-metadata, non-status fields
 // Note that Status fields are not compared.
 // To compare status fields, use ObjectStatusesEqual
-func ObjectsEqual(obj1, obj2 client.Object) bool {
+func ObjectsEqual(obj1, obj2 runtime.Object) bool {
 	value1, value2 := reflect.ValueOf(obj1), reflect.ValueOf(obj2)
 
 	if value1.Type() != value2.Type() {
@@ -75,7 +75,7 @@ func ObjectMetasEqual(obj1, obj2 metav1.Object) bool {
 
 // returns true if the Status of obj1 and obj2 are equal.
 // The objects should have a field named Status or this function will panic.
-func ObjectStatusesEqual(obj1, obj2 client.Object) bool {
+func ObjectStatusesEqual(obj1, obj2 runtime.Object) bool {
 	value1, value2 := reflect.ValueOf(obj1), reflect.ValueOf(obj2)
 
 	if value1.Type() != value2.Type() {

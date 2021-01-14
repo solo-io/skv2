@@ -4,7 +4,9 @@
 
 package v1
 
-import "sigs.k8s.io/controller-runtime/pkg/client"
+import (
+	runtime "k8s.io/apimachinery/pkg/runtime"
+)
 
 // Generated Deepcopy methods for Paint
 
@@ -30,8 +32,8 @@ func (in *Paint) DeepCopy() *Paint {
 	return out
 }
 
-func (in *Paint) DeepCopyObject() client.Object {
-	if c := in.DeepCopy(); c != nil {
+func (in *Paint) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopyObject(); c != nil {
 		return c
 	}
 	return nil
@@ -60,8 +62,8 @@ func (in *PaintList) DeepCopy() *PaintList {
 	return out
 }
 
-func (in *PaintList) DeepCopyObject() client.Object {
-	if c := in.DeepCopy(); c != nil {
+func (in *PaintList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopyObject(); c != nil {
 		return c
 	}
 	return nil
@@ -89,8 +91,8 @@ func (in *ClusterResource) DeepCopy() *ClusterResource {
 	return out
 }
 
-func (in *ClusterResource) DeepCopyObject() client.Object {
-	if c := in.DeepCopy(); c != nil {
+func (in *ClusterResource) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopyObject(); c != nil {
 		return c
 	}
 	return nil
@@ -119,8 +121,8 @@ func (in *ClusterResourceList) DeepCopy() *ClusterResourceList {
 	return out
 }
 
-func (in *ClusterResourceList) DeepCopyObject() client.Object {
-	if c := in.DeepCopy(); c != nil {
+func (in *ClusterResourceList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopyObject(); c != nil {
 		return c
 	}
 	return nil

@@ -45,8 +45,8 @@ func (in *{{ $resource.Kind }}) DeepCopy() *{{ $resource.Kind }} {
     return out
 }
 
-func (in *{{ $resource.Kind }}) DeepCopyObject() client.Object {
-    if c := in.DeepCopy(); c != nil {
+func (in *{{ $resource.Kind }}) DeepCopyObject() runtime.Object {
+    if c := in.DeepCopyObject(); c != nil {
         return c
     }
     return nil
@@ -75,8 +75,8 @@ func (in *{{ $resource.Kind }}List) DeepCopy() *{{ $resource.Kind }}List {
     return out
 }
 
-func (in *{{ $resource.Kind }}List) DeepCopyObject() client.Object {
-    if c := in.DeepCopy(); c != nil {
+func (in *{{ $resource.Kind }}List) DeepCopyObject() runtime.Object {
+    if c := in.DeepCopyObject(); c != nil {
         return c
     }
     return nil

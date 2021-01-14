@@ -9,6 +9,7 @@ import (
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -176,7 +177,7 @@ func (c *paintClient) DeleteAllOfPaint(ctx context.Context, opts ...client.Delet
 }
 
 func (c *paintClient) UpsertPaint(ctx context.Context, obj *Paint, transitionFuncs ...PaintTransitionFunction) error {
-	genericTxFunc := func(existing, desired client.Object) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
 			if err := txFunc(existing.(*Paint), desired.(*Paint)); err != nil {
 				return err
@@ -320,7 +321,7 @@ func (c *clusterResourceClient) DeleteAllOfClusterResource(ctx context.Context, 
 }
 
 func (c *clusterResourceClient) UpsertClusterResource(ctx context.Context, obj *ClusterResource, transitionFuncs ...ClusterResourceTransitionFunction) error {
-	genericTxFunc := func(existing, desired client.Object) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
 			if err := txFunc(existing.(*ClusterResource), desired.(*ClusterResource)); err != nil {
 				return err

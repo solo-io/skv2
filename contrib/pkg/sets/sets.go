@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/solo-io/skv2/pkg/controllerutils"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -206,7 +206,7 @@ func (oldSet *resourceSet) Delta(newSet ResourceSet) ResourceDelta {
 		case err != nil:
 			// obj removed
 			removed.Insert(oldObj)
-		case !controllerutils.ObjectsEqual(oldObj.(runtime.Object), newObj.(runtime.Object)):
+		case !controllerutils.ObjectsEqual(oldObj.(client.Object), newObj.(client.Object)):
 			// obj updated
 			updated.Insert(newObj)
 		default:

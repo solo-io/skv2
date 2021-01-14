@@ -6,11 +6,12 @@ package mock_cloud
 
 import (
 	context "context"
+	reflect "reflect"
+
 	eks "github.com/aws/aws-sdk-go/service/eks"
 	gomock "github.com/golang/mock/gomock"
 	oauth2 "golang.org/x/oauth2"
 	container "google.golang.org/genproto/googleapis/container/v1"
-	reflect "reflect"
 	token "sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
 

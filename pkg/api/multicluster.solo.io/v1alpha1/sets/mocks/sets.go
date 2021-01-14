@@ -5,13 +5,14 @@
 package mock_v1alpha1sets
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
-	reflect "reflect"
 )
 
 // MockKubernetesClusterSet is a mock of KubernetesClusterSet interface

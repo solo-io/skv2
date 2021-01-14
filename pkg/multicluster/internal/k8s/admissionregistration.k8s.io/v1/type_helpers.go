@@ -4,7 +4,7 @@
 package v1
 
 import (
-    . "k8s.io/api/admissionregistration/v1"
+	. "k8s.io/api/admissionregistration/v1"
 )
 
 // ValidatingWebhookConfigurationSlice represents a slice of *ValidatingWebhookConfiguration
