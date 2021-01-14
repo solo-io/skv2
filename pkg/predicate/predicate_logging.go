@@ -16,21 +16,21 @@ type EventLogger struct {
 }
 
 func (h EventLogger) Create(e event.CreateEvent) bool {
-	h.Logger.Info(fmt.Sprintf("create %T: %v.%v", e.Object, e.Meta.GetName(), e.Meta.GetNamespace()))
+	h.Logger.Info(fmt.Sprintf("create %T: %v.%v", e.Object, e.Object.GetName(), e.Object.GetNamespace()))
 	return true
 }
 
 func (h EventLogger) Delete(e event.DeleteEvent) bool {
-	h.Logger.Info(fmt.Sprintf("delete %T: %v.%v", e.Object, e.Meta.GetName(), e.Meta.GetNamespace()))
+	h.Logger.Info(fmt.Sprintf("delete %T: %v.%v", e.Object, e.Object.GetName(), e.Object.GetNamespace()))
 	return true
 }
 
 func (h EventLogger) Update(e event.UpdateEvent) bool {
-	h.Logger.Info(fmt.Sprintf("update %T: %v.%v", e.ObjectNew, e.MetaNew.GetName(), e.MetaNew.GetNamespace()))
+	h.Logger.Info(fmt.Sprintf("update %T: %v.%v", e.ObjectNew, e.ObjectNew.GetName(), e.ObjectNew.GetNamespace()))
 	return true
 }
 
 func (h EventLogger) Generic(e event.GenericEvent) bool {
-	h.Logger.Info(fmt.Sprintf("generic %T: %v.%v", e.Object, e.Meta.GetName(), e.Meta.GetNamespace()))
+	h.Logger.Info(fmt.Sprintf("generic %T: %v.%v", e.Object, e.Object.GetName(), e.Object.GetNamespace()))
 	return true
 }
