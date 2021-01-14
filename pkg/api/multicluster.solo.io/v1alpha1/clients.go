@@ -9,6 +9,7 @@ import (
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -169,7 +170,7 @@ func (c *kubernetesClusterClient) DeleteAllOfKubernetesCluster(ctx context.Conte
 }
 
 func (c *kubernetesClusterClient) UpsertKubernetesCluster(ctx context.Context, obj *KubernetesCluster, transitionFuncs ...KubernetesClusterTransitionFunction) error {
-	genericTxFunc := func(existing, desired client.Object) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
 			if err := txFunc(existing.(*KubernetesCluster), desired.(*KubernetesCluster)); err != nil {
 				return err

@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -172,7 +173,7 @@ func (c *customResourceDefinitionClient) DeleteAllOfCustomResourceDefinition(ctx
 }
 
 func (c *customResourceDefinitionClient) UpsertCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, transitionFuncs ...CustomResourceDefinitionTransitionFunction) error {
-	genericTxFunc := func(existing, desired client.Object) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
 			if err := txFunc(existing.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition), desired.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)); err != nil {
 				return err
