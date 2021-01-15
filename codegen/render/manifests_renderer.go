@@ -119,8 +119,8 @@ func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, er
 			continue
 		}
 
-		if builtInstance.Err != nil {
-			return nil, err
+		if err = builtInstance.Err; err != nil {
+			return nil, eris.Errorf("Cue instance failed to build for %s: %+v", grp.Group, err)
 		}
 		if err = builtInstance.Value().Validate(); err != nil {
 			return nil, eris.Errorf("Cue instance validation failed for %s: %+v", grp.Group, err)
