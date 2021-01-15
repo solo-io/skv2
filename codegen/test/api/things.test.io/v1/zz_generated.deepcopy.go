@@ -92,7 +92,7 @@ func (in *ClusterResource) DeepCopy() *ClusterResource {
 }
 
 func (in *ClusterResource) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopyObject(); c != nil {
+	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
@@ -122,7 +122,7 @@ func (in *ClusterResourceList) DeepCopy() *ClusterResourceList {
 }
 
 func (in *ClusterResourceList) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopyObject(); c != nil {
+	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
