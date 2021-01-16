@@ -49,8 +49,8 @@ func ObjectsEqual(obj1, obj2 runtime.Object) bool {
 			continue
 		}
 
-		field1 := value1.Field(i).Interface()
-		field2 := value2.Field(i).Interface()
+		field1 := mkPointer(value1.Field(i).Interface())
+		field2 := mkPointer(value2.Field(i).Interface())
 
 		// assert DeepEquality any other fields
 		if !equalityutils.DeepEqual(field1, field2) {
@@ -59,6 +59,22 @@ func ObjectsEqual(obj1, obj2 runtime.Object) bool {
 	}
 
 	return true
+}
+
+// if i is a pointer, just return the value.
+// if i is addressable, return that.
+// Otherwise, make a new instance of the type and copy the contents to that and return it.
+func mkPointer(i interface{}) interface{} {
+	val := reflect.ValueOf(i)
+	if val.Kind() == reflect.Ptr {
+		return i
+	}
+	if val.CanAddr() {
+		return val.Addr().Interface()
+	}
+	nv := reflect.New(reflect.TypeOf(i))
+	nv.Elem().Set(val)
+	return nv.Interface()
 }
 
 // returns true if "relevant" parts of obj1 and obj2 have equal:
