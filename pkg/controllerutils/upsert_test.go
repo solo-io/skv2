@@ -2,7 +2,6 @@ package controllerutils_test
 
 import (
 	"context"
-
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/golang/mock/gomock"
@@ -52,16 +51,21 @@ var _ = Describe("Upsert", func() {
 		client.EXPECT().Get(ctx, resource.ToClientKey(desired), desired).Return(nil)
 		client.EXPECT().Update(ctx, desired).Return(nil)
 
+		existingTest := desired.DeepCopyObject().(*v1.ConfigMap)
+
 		result, err := Upsert(ctx, client, desired, func(existing, desired runtime.Object) error {
 			called = true
 
 			// necessary to ensure there is a diff between existing and desired
-			existing.(*v1.ConfigMap).Data = nil
+			desired.(*v1.ConfigMap).Data = map[string]string{"some": "otherdata"}
 			return nil
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
 		Expect(called).To(BeTrue())
+		// object gets updated by transition function correctly
+		Expect(existingTest).ToNot(Equal(desired))
+		Expect(desired.Data).To(Equal(map[string]string{"some": "otherdata"}))
 	})
 })
 
