@@ -19,7 +19,7 @@ import (
 
 func NewProtoCompiler(
 	collector Collector,
-	customImports, customGogoArgs, customPlugins []string,
+	customImports, customGoArgs, customPlugins []string,
 	descriptorOutDir string,
 	wantCompile func(string) bool,
 	protocOptions ProtocOptions,
@@ -28,7 +28,7 @@ func NewProtoCompiler(
 		collector:        collector,
 		descriptorOutDir: descriptorOutDir,
 		customImports:    customImports,
-		customArgs:       customGogoArgs,
+		customArgs:       customGoArgs,
 		wantCompile:      wantCompile,
 		customPlugins:    customPlugins,
 		protocOptions:    protocOptions,
