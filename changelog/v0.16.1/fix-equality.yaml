@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: >
+      Fix the case where proto.Message types are passed in by value rather than by pointer.
+    issueLink: https://github.com/solo-io/skv2/issues/199
