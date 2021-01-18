@@ -63,7 +63,8 @@ func ObjectsEqual(obj1, obj2 runtime.Object) bool {
 
 // if i is a pointer, just return the value.
 // if i is addressable, return that.
-// Otherwise, make a new instance of the type and copy the contents to that and return it.
+// if i is a struct passed in by value, make a new instance of the type and copy the contents to that and return
+// the pointer to that.
 func mkPointer(i interface{}) interface{} {
 	val := reflect.ValueOf(i)
 	if val.Kind() == reflect.Ptr {
@@ -72,9 +73,12 @@ func mkPointer(i interface{}) interface{} {
 	if val.CanAddr() {
 		return val.Addr().Interface()
 	}
-	nv := reflect.New(reflect.TypeOf(i))
-	nv.Elem().Set(val)
-	return nv.Interface()
+	if val.Kind() == reflect.Struct {
+		nv := reflect.New(reflect.TypeOf(i))
+		nv.Elem().Set(val)
+		return nv.Interface()
+	}
+	return i
 }
 
 // returns true if "relevant" parts of obj1 and obj2 have equal:
