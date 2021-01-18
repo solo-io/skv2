@@ -63,7 +63,4 @@ replace (
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 	github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190605231540-b8a4faf68e36
-	k8s.io/apimachinery => k8s.io/apimachinery v0.19.6
-	k8s.io/client-go => k8s.io/client-go v0.19.6
-	k8s.io/component-base => k8s.io/component-base v0.19.6
 )
