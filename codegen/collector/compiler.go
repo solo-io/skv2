@@ -19,7 +19,7 @@ import (
 
 func NewProtoCompiler(
 	collector Collector,
-	customImports, customGogoArgs, customPlugins []string,
+	customImports, customGoArgs, customPlugins []string,
 	descriptorOutDir string,
 	wantCompile func(string) bool,
 	protocOptions ProtocOptions,
@@ -28,7 +28,7 @@ func NewProtoCompiler(
 		collector:        collector,
 		descriptorOutDir: descriptorOutDir,
 		customImports:    customImports,
-		customArgs:       customGogoArgs,
+		customArgs:       customGoArgs,
 		wantCompile:      wantCompile,
 		customPlugins:    customPlugins,
 		protocOptions:    protocOptions,
@@ -146,7 +146,6 @@ func (p *protoCompiler) addDescriptorsForFile(addDescriptor func(f DescriptorWit
 
 var defaultGogoArgs = []string{
 	"plugins=grpc",
-	"Mgithub.com/solo-io/solo-kit/api/external/envoy/api/v2/discovery.proto=github.com/envoyproxy/go-control-plane/envoy/api/v2",
 }
 
 func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []string, compileProtos bool) error {
