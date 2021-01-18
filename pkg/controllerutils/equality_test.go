@@ -81,6 +81,32 @@ var _ = Describe("ObjectsEqual", func() {
 		equal := ObjectsEqual(obj1, obj2)
 		Expect(equal).To(BeFalse())
 	})
+
+	It("asserts equality on two proto.Message objects even if they are passed in by value", func() {
+		obj1 := &things_test_io_v1.Paint{
+			Spec: things_test_io_v1.PaintSpec{
+				Color: &things_test_io_v1.PaintColor{
+					Hue: "red",
+				},
+				PaintType: &things_test_io_v1.PaintSpec_Oil{
+					Oil: nil,
+				},
+			},
+		}
+		obj1.Spec.ProtoReflect().SetUnknown([]byte(""))
+		obj2 := &things_test_io_v1.Paint{
+			Spec: things_test_io_v1.PaintSpec{
+				Color: &things_test_io_v1.PaintColor{
+					Hue: "red",
+				},
+				PaintType: &things_test_io_v1.PaintSpec_Oil{
+					Oil: nil,
+				},
+			},
+		}
+		equal := ObjectsEqual(obj1, obj2)
+		Expect(equal).To(BeTrue())
+	})
 })
 
 var _ = Describe("ObjectStatusesEqual", func() {
