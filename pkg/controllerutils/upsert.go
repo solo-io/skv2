@@ -24,9 +24,10 @@ type TransitionFunc func(existing, desired runtime.Object) error
 func Upsert(ctx context.Context, c client.Client, obj client.Object, transitionFuncs ...TransitionFunc) (controllerutil.OperationResult, error) {
 	key := client.ObjectKeyFromObject(obj)
 
-	desired := obj.DeepCopyObject()
+	// Always valid because obj is client.Object
+	existing := obj.DeepCopyObject().(client.Object)
 
-	if err := c.Get(ctx, key, obj); err != nil {
+	if err := c.Get(ctx, key, existing); err != nil {
 		if !errors.IsNotFound(err) {
 			return controllerutil.OperationResultNone, err
 		}
@@ -36,11 +37,11 @@ func Upsert(ctx context.Context, c client.Client, obj client.Object, transitionF
 		return controllerutil.OperationResultCreated, nil
 	}
 
-	if err := transition(obj, desired, transitionFuncs); err != nil {
+	if err := transition(existing, obj, transitionFuncs); err != nil {
 		return controllerutil.OperationResultNone, err
 	}
 
-	if ObjectsEqual(desired, obj) {
+	if ObjectsEqual(existing, obj) {
 		return controllerutil.OperationResultNone, nil
 	}
 
