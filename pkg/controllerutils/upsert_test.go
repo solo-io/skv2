@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	controller_client "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -67,6 +69,50 @@ var _ = Describe("Upsert", func() {
 		// object gets updated by transition function correctly
 		Expect(existingTest).ToNot(Equal(desired))
 		Expect(desired.Data).To(Equal(map[string]string{"some": "otherdata"}))
+	})
+})
+
+var _ = Describe("Update Status", func() {
+	var (
+		client controller_client.Client
+		ctx    = context.Background()
+	)
+	BeforeEach(func() {
+		var err error
+
+		client = fake.NewClientBuilder().Build()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(client).NotTo(BeNil())
+	})
+	It("updates status when resource is found", func() {
+		// Create new config map
+		cm := &v1.PersistentVolume{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-cm",
+				Namespace: "ns",
+			},
+			Status: v1.PersistentVolumeStatus{
+				Message: "Test1",
+			},
+		}
+
+		var cl controller_client.Client
+		cl = fake.NewClientBuilder().
+			WithObjects(cm).
+			Build()
+
+		cm.Status = v1.PersistentVolumeStatus{
+			Message: "Test2",
+		}
+
+		// update status
+		result, err := UpdateStatus(ctx, cl, cm)
+		Expect(err).To(BeNil())
+		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
 	})
 })
 

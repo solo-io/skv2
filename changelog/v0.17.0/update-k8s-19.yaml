@@ -1,0 +1,5 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Update to k8s 0.19. Methods that previously took runtime.Object and type-asserted to metav1.Object now take client.Object
+    issueLink: https://github.com/solo-io/gloo/issues/3582
+    resolvesIssue: false
