@@ -24,7 +24,7 @@ type TransitionFunc func(existing, desired runtime.Object) error
 func Upsert(ctx context.Context, c client.Client, obj client.Object, transitionFuncs ...TransitionFunc) (controllerutil.OperationResult, error) {
 	key := client.ObjectKeyFromObject(obj)
 
-	// Always valid because obj is client.Object 
+	// Always valid because obj is client.Object
 	existing := obj.DeepCopyObject().(client.Object)
 
 	if err := c.Get(ctx, key, existing); err != nil {
@@ -73,9 +73,10 @@ func transition(existing, desired runtime.Object, transitionFuncs []TransitionFu
 func UpdateStatus(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
 	key := client.ObjectKeyFromObject(obj)
 
-	existing := obj.DeepCopyObject()
+	// Always valid because obj is client.Object
+	existing := obj.DeepCopyObject().(client.Object)
 
-	if err := c.Get(ctx, key, obj); err != nil {
+	if err := c.Get(ctx, key, existing); err != nil {
 		return controllerutil.OperationResultNone, err
 	}
 
