@@ -21,11 +21,11 @@ type MultiClusterRequestTracker struct {
 }
 
 func (h *MultiClusterRequestTracker) Create(evt event.CreateEvent, queue workqueue.RateLimitingInterface) {
-	h.Requests.Append(h.Cluster, RequestForObject(evt.Meta))
+	h.Requests.Append(h.Cluster, RequestForObject(evt.Object))
 }
 
 func (h *MultiClusterRequestTracker) Delete(evt event.DeleteEvent, queue workqueue.RateLimitingInterface) {
-	h.Requests.Remove(h.Cluster, RequestForObject(evt.Meta))
+	h.Requests.Remove(h.Cluster, RequestForObject(evt.Object))
 }
 
 func (h *MultiClusterRequestTracker) Update(event.UpdateEvent, workqueue.RateLimitingInterface) {}

@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	meta "k8s.io/apimachinery/pkg/api/meta"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +38,7 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 }
 
 // Get mocks base method
-func (m *MockClient) Get(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
+func (m *MockClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, key, obj)
 	ret0, _ := ret[0].(error)
@@ -51,7 +52,7 @@ func (mr *MockClientMockRecorder) Get(ctx, key, obj interface{}) *gomock.Call {
 }
 
 // List mocks base method
-func (m *MockClient) List(ctx context.Context, list runtime.Object, opts ...client.ListOption) error {
+func (m *MockClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, list}
 	for _, a := range opts {
@@ -70,7 +71,7 @@ func (mr *MockClientMockRecorder) List(ctx, list interface{}, opts ...interface{
 }
 
 // Create mocks base method
-func (m *MockClient) Create(ctx context.Context, obj runtime.Object, opts ...client.CreateOption) error {
+func (m *MockClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -89,7 +90,7 @@ func (mr *MockClientMockRecorder) Create(ctx, obj interface{}, opts ...interface
 }
 
 // Delete mocks base method
-func (m *MockClient) Delete(ctx context.Context, obj runtime.Object, opts ...client.DeleteOption) error {
+func (m *MockClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -108,7 +109,7 @@ func (mr *MockClientMockRecorder) Delete(ctx, obj interface{}, opts ...interface
 }
 
 // Update mocks base method
-func (m *MockClient) Update(ctx context.Context, obj runtime.Object, opts ...client.UpdateOption) error {
+func (m *MockClient) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -127,7 +128,7 @@ func (mr *MockClientMockRecorder) Update(ctx, obj interface{}, opts ...interface
 }
 
 // Patch mocks base method
-func (m *MockClient) Patch(ctx context.Context, obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockClient) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -146,7 +147,7 @@ func (mr *MockClientMockRecorder) Patch(ctx, obj, patch interface{}, opts ...int
 }
 
 // DeleteAllOf mocks base method
-func (m *MockClient) DeleteAllOf(ctx context.Context, obj runtime.Object, opts ...client.DeleteAllOfOption) error {
+func (m *MockClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -176,4 +177,32 @@ func (m *MockClient) Status() client.StatusWriter {
 func (mr *MockClientMockRecorder) Status() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockClient)(nil).Status))
+}
+
+// Scheme mocks base method
+func (m *MockClient) Scheme() *runtime.Scheme {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Scheme")
+	ret0, _ := ret[0].(*runtime.Scheme)
+	return ret0
+}
+
+// Scheme indicates an expected call of Scheme
+func (mr *MockClientMockRecorder) Scheme() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scheme", reflect.TypeOf((*MockClient)(nil).Scheme))
+}
+
+// RESTMapper mocks base method
+func (m *MockClient) RESTMapper() meta.RESTMapper {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RESTMapper")
+	ret0, _ := ret[0].(meta.RESTMapper)
+	return ret0
+}
+
+// RESTMapper indicates an expected call of RESTMapper
+func (mr *MockClientMockRecorder) RESTMapper() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RESTMapper", reflect.TypeOf((*MockClient)(nil).RESTMapper))
 }

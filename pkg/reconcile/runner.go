@@ -128,7 +128,7 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	// Only wait for cache sync if specified in options
 	if r.options.WaitForCacheSync {
 		rec.logger.V(1).Info("waiting for cache sync...")
-		if synced := r.mgr.GetCache().WaitForCacheSync(ctx.Done()); !synced {
+		if synced := r.mgr.GetCache().WaitForCacheSync(ctx); !synced {
 			return errors.Errorf("waiting for cache sync failed")
 		}
 	}
@@ -136,7 +136,7 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	return nil
 }
 
-func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error) {
+func (ec *runnerReconciler) Reconcile(ctx context.Context, request Request) (reconcile.Result, error) {
 	logger := ec.logger.WithValues("event", request)
 	logger.V(2).Info("handling event", "event", request)
 
@@ -146,7 +146,7 @@ func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error)
 	obj := ec.resource.DeepCopyObject().(ezkube.Object)
 	obj.SetName(request.Name)
 	obj.SetNamespace(request.Namespace)
-	if err := restClient.Get(ec.ctx, obj); err != nil {
+	if err := restClient.Get(ctx, obj); err != nil {
 		if err := client.IgnoreNotFound(err); err != nil {
 			return reconcile.Result{}, err
 		}
@@ -174,7 +174,7 @@ func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error)
 					finalizers,
 					finalizerName,
 				))
-				if err := restClient.Update(context.Background(), obj); err != nil {
+				if err := restClient.Update(ctx, obj); err != nil {
 					return reconcile.Result{}, err
 				}
 			}
@@ -191,7 +191,7 @@ func (ec *runnerReconciler) Reconcile(request Request) (reconcile.Result, error)
 
 				// remove our finalizer from the list and update it.
 				obj.SetFinalizers(utils.RemoveString(finalizers, finalizerName))
-				if err := restClient.Update(context.Background(), obj); err != nil {
+				if err := restClient.Update(ctx, obj); err != nil {
 					return reconcile.Result{}, err
 				}
 			}
