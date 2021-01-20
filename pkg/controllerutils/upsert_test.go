@@ -3,6 +3,10 @@ package controllerutils_test
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/runtime"
+	controller_client "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,7 +16,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -51,16 +54,65 @@ var _ = Describe("Upsert", func() {
 		client.EXPECT().Get(ctx, resource.ToClientKey(desired), desired).Return(nil)
 		client.EXPECT().Update(ctx, desired).Return(nil)
 
+		existingTest := desired.DeepCopyObject().(*v1.ConfigMap)
+
 		result, err := Upsert(ctx, client, desired, func(existing, desired runtime.Object) error {
 			called = true
 
 			// necessary to ensure there is a diff between existing and desired
-			existing.(*v1.ConfigMap).Data = nil
+			desired.(*v1.ConfigMap).Data = map[string]string{"some": "otherdata"}
 			return nil
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
 		Expect(called).To(BeTrue())
+		// object gets updated by transition function correctly
+		Expect(existingTest).ToNot(Equal(desired))
+		Expect(desired.Data).To(Equal(map[string]string{"some": "otherdata"}))
+	})
+})
+
+var _ = Describe("Update Status", func() {
+	var (
+		client controller_client.Client
+		ctx    = context.Background()
+	)
+	BeforeEach(func() {
+		var err error
+
+		client = fake.NewClientBuilder().Build()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(client).NotTo(BeNil())
+	})
+	It("updates status when resource is found", func() {
+		// Create new config map
+		cm := &v1.PersistentVolume{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-cm",
+				Namespace: "ns",
+			},
+			Status: v1.PersistentVolumeStatus{
+				Message: "Test1",
+			},
+		}
+
+		var cl controller_client.Client
+		cl = fake.NewClientBuilder().
+			WithObjects(cm).
+			Build()
+
+		cm.Status = v1.PersistentVolumeStatus{
+			Message: "Test2",
+		}
+
+		// update status
+		result, err := UpdateStatus(ctx, cl, cm)
+		Expect(err).To(BeNil())
+		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
 	})
 })
 

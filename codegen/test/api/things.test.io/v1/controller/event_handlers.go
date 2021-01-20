@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericPaintHandler struct {
 	handler PaintEventHandler
 }
 
-func (h genericPaintHandler) Create(object runtime.Object) error {
+func (h genericPaintHandler) Create(object client.Object) error {
 	obj, ok := object.(*things_test_io_v1.Paint)
 	if !ok {
 		return errors.Errorf("internal error: Paint handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericPaintHandler) Create(object runtime.Object) error {
 	return h.handler.CreatePaint(obj)
 }
 
-func (h genericPaintHandler) Delete(object runtime.Object) error {
+func (h genericPaintHandler) Delete(object client.Object) error {
 	obj, ok := object.(*things_test_io_v1.Paint)
 	if !ok {
 		return errors.Errorf("internal error: Paint handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericPaintHandler) Delete(object runtime.Object) error {
 	return h.handler.DeletePaint(obj)
 }
 
-func (h genericPaintHandler) Update(old, new runtime.Object) error {
+func (h genericPaintHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*things_test_io_v1.Paint)
 	if !ok {
 		return errors.Errorf("internal error: Paint handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericPaintHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdatePaint(objOld, objNew)
 }
 
-func (h genericPaintHandler) Generic(object runtime.Object) error {
+func (h genericPaintHandler) Generic(object client.Object) error {
 	obj, ok := object.(*things_test_io_v1.Paint)
 	if !ok {
 		return errors.Errorf("internal error: Paint handler received event for %T", object)
@@ -195,7 +195,7 @@ type genericClusterResourceHandler struct {
 	handler ClusterResourceEventHandler
 }
 
-func (h genericClusterResourceHandler) Create(object runtime.Object) error {
+func (h genericClusterResourceHandler) Create(object client.Object) error {
 	obj, ok := object.(*things_test_io_v1.ClusterResource)
 	if !ok {
 		return errors.Errorf("internal error: ClusterResource handler received event for %T", object)
@@ -203,7 +203,7 @@ func (h genericClusterResourceHandler) Create(object runtime.Object) error {
 	return h.handler.CreateClusterResource(obj)
 }
 
-func (h genericClusterResourceHandler) Delete(object runtime.Object) error {
+func (h genericClusterResourceHandler) Delete(object client.Object) error {
 	obj, ok := object.(*things_test_io_v1.ClusterResource)
 	if !ok {
 		return errors.Errorf("internal error: ClusterResource handler received event for %T", object)
@@ -211,7 +211,7 @@ func (h genericClusterResourceHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteClusterResource(obj)
 }
 
-func (h genericClusterResourceHandler) Update(old, new runtime.Object) error {
+func (h genericClusterResourceHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*things_test_io_v1.ClusterResource)
 	if !ok {
 		return errors.Errorf("internal error: ClusterResource handler received event for %T", old)
@@ -223,7 +223,7 @@ func (h genericClusterResourceHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateClusterResource(objOld, objNew)
 }
 
-func (h genericClusterResourceHandler) Generic(object runtime.Object) error {
+func (h genericClusterResourceHandler) Generic(object client.Object) error {
 	obj, ok := object.(*things_test_io_v1.ClusterResource)
 	if !ok {
 		return errors.Errorf("internal error: ClusterResource handler received event for %T", object)

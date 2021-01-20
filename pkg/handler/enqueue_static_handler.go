@@ -29,7 +29,7 @@ type BroadcastRequests struct {
 
 // Create implements EventHandler
 func (e *BroadcastRequests) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
-	if evt.Meta == nil {
+	if evt.Object == nil {
 		enqueueMultiClusterLog.Error(nil, "CreateEvent received with no metadata", "event", evt)
 		return
 	}
@@ -38,13 +38,13 @@ func (e *BroadcastRequests) Create(evt event.CreateEvent, q workqueue.RateLimiti
 
 // Update implements EventHandler
 func (e *BroadcastRequests) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
-	if evt.MetaOld != nil {
+	if evt.ObjectOld != nil {
 		e.enqueueRequestsAllClusters()
 	} else {
 		enqueueMultiClusterLog.Error(nil, "UpdateEvent received with no old metadata", "event", evt)
 	}
 
-	if evt.MetaNew != nil {
+	if evt.ObjectNew != nil {
 		e.enqueueRequestsAllClusters()
 	} else {
 		enqueueMultiClusterLog.Error(nil, "UpdateEvent received with no new metadata", "event", evt)
@@ -53,7 +53,7 @@ func (e *BroadcastRequests) Update(evt event.UpdateEvent, q workqueue.RateLimiti
 
 // Delete implements EventHandler
 func (e *BroadcastRequests) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
-	if evt.Meta == nil {
+	if evt.Object == nil {
 		enqueueMultiClusterLog.Error(nil, "DeleteEvent received with no metadata", "event", evt)
 		return
 	}
@@ -62,7 +62,7 @@ func (e *BroadcastRequests) Delete(evt event.DeleteEvent, q workqueue.RateLimiti
 
 // Generic implements EventHandler
 func (e *BroadcastRequests) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
-	if evt.Meta == nil {
+	if evt.Object == nil {
 		enqueueMultiClusterLog.Error(nil, "GenericEvent received with no metadata", "event", evt)
 		return
 	}

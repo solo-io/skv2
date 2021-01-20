@@ -4,8 +4,9 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -20,13 +21,11 @@ type TransitionFunc func(existing, desired runtime.Object) error
 //
 // If the desired object (after applying transition funcs) is semantically equal
 // to the existing object, the update is skipped.
-func Upsert(ctx context.Context, c client.Client, obj runtime.Object, transitionFuncs ...TransitionFunc) (controllerutil.OperationResult, error) {
-	key, err := client.ObjectKeyFromObject(obj)
-	if err != nil {
-		return controllerutil.OperationResultNone, err
-	}
+func Upsert(ctx context.Context, c client.Client, obj client.Object, transitionFuncs ...TransitionFunc) (controllerutil.OperationResult, error) {
+	key := client.ObjectKeyFromObject(obj)
 
-	existing := obj.DeepCopyObject()
+	// Always valid because obj is client.Object
+	existing := obj.DeepCopyObject().(client.Object)
 
 	if err := c.Get(ctx, key, existing); err != nil {
 		if !errors.IsNotFound(err) {
@@ -71,13 +70,11 @@ func transition(existing, desired runtime.Object, transitionFuncs []TransitionFu
 //
 // If the desired object status is semantically equal
 // to the existing object status, the update is skipped.
-func UpdateStatus(ctx context.Context, c client.Client, obj runtime.Object) (controllerutil.OperationResult, error) {
-	key, err := client.ObjectKeyFromObject(obj)
-	if err != nil {
-		return controllerutil.OperationResultNone, err
-	}
+func UpdateStatus(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
+	key := client.ObjectKeyFromObject(obj)
 
-	existing := obj.DeepCopyObject()
+	// Always valid because obj is client.Object
+	existing := obj.DeepCopyObject().(client.Object)
 
 	if err := c.Get(ctx, key, existing); err != nil {
 		return controllerutil.OperationResultNone, err

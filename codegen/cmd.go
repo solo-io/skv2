@@ -74,6 +74,9 @@ type Command struct {
 	// protoc cmd line options
 	ProtocOptions collector.ProtocOptions
 
+	// Custom go arguments used while compiling protos
+	CustomGoArgs []string
+
 	// the path to the root dir of the module on disk
 	// files will be written relative to this dir,
 	// except kube clientsets which
@@ -179,6 +182,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 		c.moduleName,
 		c.ProtoDir,
 		c.ProtocOptions,
+		c.CustomGoArgs,
 	)
 	if err != nil {
 		return nil, err

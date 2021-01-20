@@ -92,7 +92,7 @@ func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
 	ctx, cancel := context.WithCancel(
 		contextutils.WithLoggerValues(context.WithValue(c.ctx, "cluster", clusterName), zap.String("cluster", clusterName)))
 	go func() {
-		err := mgr.Start(ctx.Done())
+		err := mgr.Start(ctx)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).DPanicf("manager start failed for cluster %v: %v", clusterName, err)
 		}

@@ -14,7 +14,7 @@ import (
 
 // make sure the pkg matches the go_package option in the proto
 // TODO: validate this
-func CompileProtos(goModule, moduleName, protoDir string, protocOptions collector.ProtocOptions) ([]*collector.DescriptorWithPath, error) {
+func CompileProtos(goModule, moduleName, protoDir string, protocOptions collector.ProtocOptions, customGoArgs []string) ([]*collector.DescriptorWithPath, error) {
 	log.Printf("Compiling protos in %v", protoDir)
 
 	// need to be in module root so protoc runs on the expecte
@@ -40,7 +40,7 @@ func CompileProtos(goModule, moduleName, protoDir string, protocOptions collecto
 	descriptors, err := collector.NewProtoCompiler(
 		coll,
 		[]string{protoDir}, // import the inputs dir
-		nil,
+		customGoArgs,
 		[]string{},
 		protoOutDir,
 		func(file string) bool {
