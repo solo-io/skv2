@@ -146,8 +146,10 @@ func makeMasterManager(opts Options, schemes runtime.SchemeBuilder) (manager.Man
 		return nil, err
 	}
 
-	if err := schemes.AddToScheme(mgr.GetScheme()); err != nil {
-		return nil, err
+	if schemes != nil {
+		if err := schemes.AddToScheme(mgr.GetScheme()); err != nil {
+			return nil, err
+		}
 	}
 	return mgr, nil
 }
