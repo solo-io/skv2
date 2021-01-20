@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+
 	"github.com/solo-io/skv2/pkg/stats"
 	"k8s.io/apimachinery/pkg/runtime"
 
