@@ -6,6 +6,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/rotisserie/eris"
+
 	"github.com/solo-io/skv2/codegen/model"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -25,7 +27,7 @@ func MakeHomogenousSnapshotFuncs(
 	selectFromGroups map[string][]model.Group,
 	resourcesToSelect map[schema.GroupVersion][]string,
 ) template.FuncMap {
-	groups, groupImports := getImportedGroups(selectFromGroups, resourcesToSelect)
+	groups, groupImports, err := getImportedGroups(selectFromGroups, resourcesToSelect)
 
 	return template.FuncMap{
 		"snapshot_name": func() string { return snapshotName },
@@ -33,7 +35,7 @@ func MakeHomogenousSnapshotFuncs(
 			dirs := strings.Split(filepath.Dir(outputFile), string(filepath.Separator))
 			return dirs[len(dirs)-1] // last path element = package name
 		},
-		"imported_groups": func() []model.Group { return groups },
+		"imported_groups": func() ([]model.Group, error) { return groups, err },
 		"client_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
@@ -58,8 +60,11 @@ func MakeHomogenousSnapshotFuncs(
 	}
 }
 
-func getImportedGroups(selectFromGroups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) ([]model.Group, map[schema.GroupVersion]importedGroup) {
-	importedGroups := selectResources(selectFromGroups, resourcesToSelect)
+func getImportedGroups(selectFromGroups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) ([]model.Group, map[schema.GroupVersion]importedGroup, error) {
+	importedGroups, err := selectResources(selectFromGroups, resourcesToSelect)
+	if err != nil {
+		return nil, nil, err
+	}
 	var groups []model.Group
 	groupImports := map[schema.GroupVersion]importedGroup{}
 
@@ -69,7 +74,7 @@ func getImportedGroups(selectFromGroups map[string][]model.Group, resourcesToSel
 		groupImports[grp.GroupVersion] = grp
 	}
 
-	return groups, groupImports
+	return groups, groupImports, nil
 }
 
 // make funcs for "Top Level" templates, i.e.: templates which
@@ -82,8 +87,8 @@ func MakeHybridSnapshotFuncs(
 	selectFromGroups map[string][]model.Group,
 	localResourcesToSelect, remoteResourcesToSelect map[schema.GroupVersion][]string,
 ) template.FuncMap {
-	localGroups, localGroupImports := getImportedGroups(selectFromGroups, localResourcesToSelect)
-	remoteGroups, remoteGroupImports := getImportedGroups(selectFromGroups, remoteResourcesToSelect)
+	localGroups, localGroupImports, localGroupsErr := getImportedGroups(selectFromGroups, localResourcesToSelect)
+	remoteGroups, remoteGroupImports, remoteGroupsErr := getImportedGroups(selectFromGroups, remoteResourcesToSelect)
 
 	groups := append([]model.Group{}, localGroups...)
 	groups = append([]model.Group{}, remoteGroups...)
@@ -102,9 +107,11 @@ func MakeHybridSnapshotFuncs(
 			dirs := strings.Split(filepath.Dir(outputFile), string(filepath.Separator))
 			return dirs[len(dirs)-1] // last path element = package name
 		},
-		"imported_groups":        func() []model.Group { return groups },
-		"local_imported_groups":  func() []model.Group { return localGroups },
-		"remote_imported_groups": func() []model.Group { return remoteGroups },
+		"imported_groups": func() ([]model.Group, error) {
+			return groups, eris.Errorf("invalid groups: local: %v, remote: %v", localGroupsErr, remoteGroupsErr)
+		},
+		"local_imported_groups":  func() ([]model.Group, error) { return localGroups, localGroupsErr },
+		"remote_imported_groups": func() ([]model.Group, error) { return remoteGroups, remoteGroupsErr },
 		"client_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
@@ -154,7 +161,7 @@ func clientImportPath(grp importedGroup) string {
 }
 
 // pass empty string if clients live in the same go module as the type definitions
-func selectResources(groups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) []importedGroup {
+func selectResources(groups map[string][]model.Group, resourcesToSelect map[schema.GroupVersion][]string) ([]importedGroup, error) {
 	var selectedResources []importedGroup
 	for clientModule, groups := range groups {
 		for _, group := range groups {
@@ -188,9 +195,30 @@ func selectResources(groups map[string][]model.Group, resourcesToSelect map[sche
 		}
 	}
 
+	// ensure nothing was missed
+	for groupVersion, kinds := range resourcesToSelect {
+		for _, kind := range kinds {
+			var kindFound bool
+			for _, selectedGroup := range selectedResources {
+				if selectedGroup.GroupVersion != groupVersion {
+					continue
+				}
+				for _, resource := range selectedGroup.Resources {
+					if resource.Kind == kind {
+						kindFound = true
+						break
+					}
+				}
+			}
+			if !kindFound {
+				return nil, eris.Errorf("resource %v/%v selected, but not found in %v", groupVersion, kind, groups)
+			}
+		}
+	}
+
 	sort.SliceStable(selectedResources, func(i, j int) bool {
 		return selectedResources[i].GoModule < selectedResources[j].GoModule
 	})
 
-	return selectedResources
+	return selectedResources, nil
 }
