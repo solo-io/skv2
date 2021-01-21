@@ -12,6 +12,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v0.3.0
+	github.com/go-logr/zapr v0.2.0
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr v1.30.1
 	github.com/golang/mock v1.4.4
@@ -33,6 +34,7 @@ require (
 	github.com/solo-io/go-utils v0.20.0
 	github.com/solo-io/k8s-utils v0.0.1
 	github.com/solo-io/protoc-gen-ext v0.0.13
+	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
