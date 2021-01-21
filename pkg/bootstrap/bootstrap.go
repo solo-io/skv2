@@ -27,7 +27,6 @@ import (
 
 // StartParameters specify paramters for starting a generic controller which may need access to its local cluster as well as remote (multicluster) clients and managers
 type StartParameters struct {
-	Ctx             context.Context
 	MasterManager   manager.Manager
 	McClient        multicluster.Client    // nil if running in agent mode
 	Clusters        multicluster.Interface // nil if running in agent mode
@@ -40,6 +39,7 @@ type StartParameters struct {
 
 // the start function that will be called with the initialized parameters
 type StartFunc func(
+	ctx context.Context,
 	parameters StartParameters,
 ) error
 
@@ -107,7 +107,6 @@ func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options
 	}
 
 	params := StartParameters{
-		Ctx:             ctx,
 		MasterManager:   mgr,
 		McClient:        mcClient,
 		Clusters:        clusterWatcher,
@@ -116,7 +115,7 @@ func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options
 		SettingsRef:     opts.SettingsRef,
 	}
 
-	if err := start(params); err != nil {
+	if err := start(ctx, params); err != nil {
 		return err
 	}
 
