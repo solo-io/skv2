@@ -23,6 +23,7 @@ import (
     "encoding/json"
 
     "k8s.io/apimachinery/pkg/runtime/schema"
+    "github.com/solo-io/skv2/pkg/resource"
     "github.com/solo-io/skv2/pkg/verifier"
 
     "github.com/hashicorp/go-multierror"
@@ -43,7 +44,9 @@ import (
 
 {{- range $group := $groups }}
 {{ $client_import_prefix := group_import_name $group }}
+{{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
+    {{ $types_import_prefix }} "{{ group_import_path $group }}"
     {{ $client_import_prefix }} "{{ client_import_path $group }}"
     {{ $set_import_prefix }} "{{ set_import_path $group }}"
 {{- end }}
@@ -134,6 +137,57 @@ func New{{ $snapshotName }}Snapshot(
 {{- end }}
 {{- end }}
     }
+}
+
+func New{{ $snapshotName }}SnapshotFromGeneric(
+	name string,
+    genericSnapshot resource.ClusterSnapshot,
+) {{ $snapshotName }}Snapshot {
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    {{- end }}
+    {{- end }}
+
+	for _, snapshot := range genericSnapshot {
+
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
+
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} := snapshot[schema.GroupVersionKind{
+        Group: "{{ $resource.Group.Group }}",
+        Version: "{{ $resource.Version }}",
+        Kind: "{{ $resource.Kind }}",
+    }]
+
+    for _, {{ $kindLowerCamel }} := range {{ $kindLowerCamelPlural }} {
+        {{ $kindLowerCamel }}Set.Insert({{ $kindLowerCamel }}.(*{{ $types_import_prefix }}.{{ $resource.Kind }}))
+    }
+
+
+    {{- end }}
+    {{- end }}
+
+    }
+    return New{{ $snapshotName }}Snapshot(
+    	name,
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamel }}Set,
+{{- end }}
+{{- end }}
+    )
 }
 
 {{/* generate getters here */}}
