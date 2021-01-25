@@ -26,6 +26,8 @@ import (
     "github.com/solo-io/skv2/pkg/resource"
     "github.com/solo-io/skv2/pkg/verifier"
 
+    "k8s.io/apimachinery/pkg/types"
+
     "github.com/hashicorp/go-multierror"
 {{ $needsControllerUtils := false }}
 {{- range $group := $groups }}
@@ -52,6 +54,23 @@ import (
 {{- end }}
 
 )
+
+// SnapshotGVKs is a list of the GVKs included in this snapshot
+var {{ $snapshotName }}SnapshotGVKs = []schema.GroupVersionKind{
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    schema.GroupVersionKind{
+        Group: "{{ $resource.Group.Group }}",
+        Version: "{{ $resource.Version }}",
+        Kind: "{{ $resource.Kind }}",
+    },
+    {{- end }}
+    {{- end }}
+}
 
 {{/* determine if snapshot contains status resources */}}
 {{ $needs_sync_status := false }}
@@ -152,6 +171,7 @@ func New{{ $snapshotName }}SnapshotFromGeneric(
     {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
     {{- end }}
     {{- end }}
+
 
 	for _, snapshot := range genericSnapshot {
 
@@ -531,3 +551,65 @@ func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx co
 
 {{- end }}
 {{- end }}
+
+
+// build a snapshot from resources in a single cluster
+type inMemory{{ $snapshotName }}Builder struct {
+    getSnapshot func() (resource.ClusterSnapshot, error)
+}
+
+// Produces snapshots of resources read from the manager for the given cluster
+func NewInMemory{{ $snapshotName }}Builder(
+        getSnapshot func() (resource.ClusterSnapshot, error),
+) {{ $snapshotName }}Builder {
+    return &inMemory{{ $snapshotName }}Builder{
+        getSnapshot: getSnapshot,
+    }
+}
+
+func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, name string, opts {{ $snapshotName }}BuildOptions) ({{ $snapshotName }}Snapshot, error) {
+    genericSnap, err := i.getSnapshot()
+    if err != nil {
+        return nil, err
+    }
+
+    {{- range $group := $groups }}
+    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    {{- end }}
+    {{- end }}
+
+    genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
+        switch obj := obj.(type) {
+    {{- range $group := $groups }}
+    {{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
+    {{- $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        // insert {{ $kindPlural }}
+        case *{{ $types_import_prefix }}.{{ $resource.Kind }}:
+            {{ $kindLowerCamelPlural }}.Insert(obj)
+    {{- end }}
+    {{- end }}
+        }
+    })
+
+    return New{{ $snapshotName }}Snapshot(
+        name,
+        {{/* generate params for snapshot constructor here */}}
+        {{- range $group := $groups }}
+        {{- range $resource := $group.Resources }}
+        {{- $kindLowerCamel := lower_camel $resource.Kind }}
+        {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+        {{$kindLowerCamelPlural}},
+        {{- end }}
+        {{- end }}
+    ), nil
+}
+

@@ -6,12 +6,13 @@ package {{ package }}
 import (
 	"context"
     "encoding/json"
-    "k8s.io/apimachinery/pkg/runtime/schema"
     "sort"
 
     "github.com/solo-io/go-utils/contextutils"
     "github.com/solo-io/skv2/pkg/multicluster"
     "github.com/solo-io/skv2/pkg/resource"
+    "k8s.io/apimachinery/pkg/runtime/schema"
+    "k8s.io/apimachinery/pkg/types"
 
     "github.com/rotisserie/eris"
     "github.com/solo-io/skv2/contrib/pkg/sets"
@@ -643,28 +644,17 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     for _, obj := range b.Get{{ $kindPlural }}().List() {
-        {{ $kindLowerCamel }}Gvk := schema.GroupVersionKind{
+        cluster := obj.GetClusterName()
+        gvk := schema.GroupVersionKind{
             Group: "{{ $resource.Group.Group }}",
             Version: "{{ $resource.Version }}",
             Kind: "{{ $resource.Kind }}",
         }
-        cluster := obj.GetClusterName()
-        snapshot, ok := clusterSnapshots[cluster]
-        if !ok {
-            snapshot = resource.Snapshot{}
-        }
-        {{ $kindLowerCamelPlural }} , ok := snapshot[{{ $kindLowerCamel }}Gvk]
-        if !ok {
-            {{ $kindLowerCamelPlural }}  = map[types.NamespacedName]client.Object{}
-        }
-
-        {{ $kindLowerCamelPlural }} [types.NamespacedName{
+        ref := types.NamespacedName{
             Name:      obj.GetName(),
             Namespace: obj.GetNamespace(),
-        }] = obj
-
-        snapshot[{{ $kindLowerCamel }}Gvk] = {{ $kindLowerCamelPlural }}
-        clusterSnapshots[cluster] = snapshot
+        }
+        clusterSnapshots.Insert(cluster, gvk, ref, obj)
     }
 
     {{- end }}

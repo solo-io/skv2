@@ -9,13 +9,41 @@ import (
 // Snapshot represents a generic snapshot of client.Objects scoped to a single cluster
 type Snapshot map[schema.GroupVersionKind]map[types.NamespacedName]client.Object
 
-func (s Snapshot) Insert(gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
+func (s Snapshot) Insert(gvk schema.GroupVersionKind, obj client.Object) {
 	objects, ok := s[gvk]
 	if !ok {
 		objects = map[types.NamespacedName]client.Object{}
 	}
-	objects[ref] = obj
+	objects[types.NamespacedName{
+		Namespace: obj.GetNamespace(),
+		Name:      obj.GetName(),
+	}] = obj
 	s[gvk] = objects
+}
+
+func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object)) {
+	for gvk, objs := range s {
+		for ref, obj := range objs {
+			handleObject(gvk, ref, obj)
+		}
+	}
+}
+
+func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object)) {
+	for cluster, snap := range s {
+		snap.ForEachObject(func(gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
+			handleObject(cluster, gvk, ref, obj)
+		})
+	}
+}
+
+func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
+	snapshot, ok := cs[cluster]
+	if !ok {
+		snapshot = Snapshot{}
+	}
+	snapshot.Insert(gvk, obj)
+	cs[cluster] = snapshot
 }
 
 // ClusterSnapshot represents a set of snapshots partitioned by cluster
