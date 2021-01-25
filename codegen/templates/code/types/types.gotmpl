@@ -23,6 +23,13 @@ import (
 // +genclient:noStatus
 {{- end }}
 
+// GroupVersionKind for {{ $resource.Kind }}
+var {{ $resource.Kind }}GVK = schema.GroupVersionKind{
+    Group: "{{ $resource.Group.Group }}",
+    Version: "{{ $resource.Version }}",
+    Kind: "{{ $resource.Kind }}",
+}
+
 // {{ $resource.Kind }} is the Schema for the {{ $kindLowerCamel }} API
 type {{ $resource.Kind }} struct {
     metav1.TypeMeta   `json:",inline"`
@@ -36,11 +43,7 @@ type {{ $resource.Kind }} struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func ({{ $resource.Kind}})  GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group: "{{ $resource.Group.Group }}",
-		Version: "{{ $resource.Version }}",
-		Kind: "{{ $resource.Kind }}",
-    }
+	return {{ $resource.Kind }}GVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

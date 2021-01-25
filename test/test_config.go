@@ -46,11 +46,11 @@ func ManagerWithOpts(ctx context.Context, cfg *rest.Config, opts manager.Options
 
 	go func() {
 		defer ginkgo.GinkgoRecover()
-		err = mgr.Start(ctx.Done())
+		err = mgr.Start(ctx)
 		Expect(err).NotTo(HaveOccurred())
 	}()
 
-	mgr.GetCache().WaitForCacheSync(ctx.Done())
+	mgr.GetCache().WaitForCacheSync(ctx)
 
 	return mgr
 }

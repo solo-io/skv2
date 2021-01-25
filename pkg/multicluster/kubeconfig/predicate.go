@@ -3,8 +3,9 @@ package kubeconfig
 import (
 	"reflect"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -29,7 +30,7 @@ var Predicate = predicate.Funcs{
 	},
 }
 
-func isKubeConfigSecret(obj runtime.Object) bool {
+func isKubeConfigSecret(obj client.Object) bool {
 	if s, ok := obj.(*corev1.Secret); ok {
 		return s.Type == SecretType
 	}

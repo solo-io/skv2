@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericSecretHandler struct {
 	handler SecretEventHandler
 }
 
-func (h genericSecretHandler) Create(object runtime.Object) error {
+func (h genericSecretHandler) Create(object client.Object) error {
 	obj, ok := object.(*v1.Secret)
 	if !ok {
 		return errors.Errorf("internal error: Secret handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericSecretHandler) Create(object runtime.Object) error {
 	return h.handler.CreateSecret(obj)
 }
 
-func (h genericSecretHandler) Delete(object runtime.Object) error {
+func (h genericSecretHandler) Delete(object client.Object) error {
 	obj, ok := object.(*v1.Secret)
 	if !ok {
 		return errors.Errorf("internal error: Secret handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericSecretHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteSecret(obj)
 }
 
-func (h genericSecretHandler) Update(old, new runtime.Object) error {
+func (h genericSecretHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*v1.Secret)
 	if !ok {
 		return errors.Errorf("internal error: Secret handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericSecretHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateSecret(objOld, objNew)
 }
 
-func (h genericSecretHandler) Generic(object runtime.Object) error {
+func (h genericSecretHandler) Generic(object client.Object) error {
 	obj, ok := object.(*v1.Secret)
 	if !ok {
 		return errors.Errorf("internal error: Secret handler received event for %T", object)
@@ -195,7 +195,7 @@ type genericServiceAccountHandler struct {
 	handler ServiceAccountEventHandler
 }
 
-func (h genericServiceAccountHandler) Create(object runtime.Object) error {
+func (h genericServiceAccountHandler) Create(object client.Object) error {
 	obj, ok := object.(*v1.ServiceAccount)
 	if !ok {
 		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
@@ -203,7 +203,7 @@ func (h genericServiceAccountHandler) Create(object runtime.Object) error {
 	return h.handler.CreateServiceAccount(obj)
 }
 
-func (h genericServiceAccountHandler) Delete(object runtime.Object) error {
+func (h genericServiceAccountHandler) Delete(object client.Object) error {
 	obj, ok := object.(*v1.ServiceAccount)
 	if !ok {
 		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
@@ -211,7 +211,7 @@ func (h genericServiceAccountHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteServiceAccount(obj)
 }
 
-func (h genericServiceAccountHandler) Update(old, new runtime.Object) error {
+func (h genericServiceAccountHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*v1.ServiceAccount)
 	if !ok {
 		return errors.Errorf("internal error: ServiceAccount handler received event for %T", old)
@@ -223,7 +223,7 @@ func (h genericServiceAccountHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateServiceAccount(objOld, objNew)
 }
 
-func (h genericServiceAccountHandler) Generic(object runtime.Object) error {
+func (h genericServiceAccountHandler) Generic(object client.Object) error {
 	obj, ok := object.(*v1.ServiceAccount)
 	if !ok {
 		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
@@ -302,7 +302,7 @@ type genericNamespaceHandler struct {
 	handler NamespaceEventHandler
 }
 
-func (h genericNamespaceHandler) Create(object runtime.Object) error {
+func (h genericNamespaceHandler) Create(object client.Object) error {
 	obj, ok := object.(*v1.Namespace)
 	if !ok {
 		return errors.Errorf("internal error: Namespace handler received event for %T", object)
@@ -310,7 +310,7 @@ func (h genericNamespaceHandler) Create(object runtime.Object) error {
 	return h.handler.CreateNamespace(obj)
 }
 
-func (h genericNamespaceHandler) Delete(object runtime.Object) error {
+func (h genericNamespaceHandler) Delete(object client.Object) error {
 	obj, ok := object.(*v1.Namespace)
 	if !ok {
 		return errors.Errorf("internal error: Namespace handler received event for %T", object)
@@ -318,7 +318,7 @@ func (h genericNamespaceHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteNamespace(obj)
 }
 
-func (h genericNamespaceHandler) Update(old, new runtime.Object) error {
+func (h genericNamespaceHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*v1.Namespace)
 	if !ok {
 		return errors.Errorf("internal error: Namespace handler received event for %T", old)
@@ -330,7 +330,7 @@ func (h genericNamespaceHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateNamespace(objOld, objNew)
 }
 
-func (h genericNamespaceHandler) Generic(object runtime.Object) error {
+func (h genericNamespaceHandler) Generic(object client.Object) error {
 	obj, ok := object.(*v1.Namespace)
 	if !ok {
 		return errors.Errorf("internal error: Namespace handler received event for %T", object)

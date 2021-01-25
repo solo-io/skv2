@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Import boostrap and stats utils from gloo-mesh.
+    issueLink: https://github.com/solo-io/skv2/issues/203

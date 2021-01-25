@@ -22,17 +22,17 @@ func (p LabelMatcher) matches(meta v1.Object) bool {
 }
 
 func (p LabelMatcher) Create(e event.CreateEvent) bool {
-	return p.matches(e.Meta)
+	return p.matches(e.Object)
 }
 
 func (p LabelMatcher) Delete(e event.DeleteEvent) bool {
-	return p.matches(e.Meta)
+	return p.matches(e.Object)
 }
 
 func (p LabelMatcher) Update(e event.UpdateEvent) bool {
-	return p.matches(e.MetaOld) || p.matches(e.MetaNew)
+	return p.matches(e.ObjectOld) || p.matches(e.ObjectNew)
 }
 
 func (p LabelMatcher) Generic(e event.GenericEvent) bool {
-	return p.matches(e.Meta)
+	return p.matches(e.Object)
 }

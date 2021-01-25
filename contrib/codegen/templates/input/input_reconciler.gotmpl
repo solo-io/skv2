@@ -56,7 +56,7 @@ type multiCluster{{ $snapshotName }}ReconcilerImpl struct {
     base input.InputReconciler
 }
 
-// Options for reconcileing a snapshot
+// Options for reconciling a snapshot
 type {{ $snapshotName }}ReconcileOptions struct {
 {{/* generate reconcile options here */}}
 {{- range $group := $groups }}
@@ -168,7 +168,7 @@ func RegisterSingleCluster{{ $snapshotName }}Reconciler(
         predicates ...predicate.Predicate,
 ) (input.InputReconciler, error) {
 
-    base := input.NewInput{{ $snapshotName }}Reconciler(
+    base := input.NewInputReconciler(
         ctx,
         nil,
         reconcileFunc,

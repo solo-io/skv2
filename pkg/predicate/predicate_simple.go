@@ -26,17 +26,17 @@ type SimplePredicate struct {
 }
 
 func (p SimplePredicate) Create(e event.CreateEvent) bool {
-	return !p.Filter.FilterEvent(e.Meta)
+	return !p.Filter.FilterEvent(e.Object)
 }
 
 func (p SimplePredicate) Delete(e event.DeleteEvent) bool {
-	return !p.Filter.FilterEvent(e.Meta)
+	return !p.Filter.FilterEvent(e.Object)
 }
 
 func (p SimplePredicate) Update(e event.UpdateEvent) bool {
-	return !p.Filter.FilterEvent(e.MetaNew)
+	return !p.Filter.FilterEvent(e.ObjectNew)
 }
 
 func (p SimplePredicate) Generic(e event.GenericEvent) bool {
-	return !p.Filter.FilterEvent(e.Meta)
+	return !p.Filter.FilterEvent(e.Object)
 }

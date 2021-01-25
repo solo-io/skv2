@@ -38,6 +38,10 @@ type ValidatingWebhookConfigurationSet interface {
 	Find(id ezkube.ResourceId) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another ValidatingWebhookConfigurationSet
+	Delta(newSet ValidatingWebhookConfigurationSet) sksets.ResourceDelta
 }
 
 func makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *validatingWebhookConfigurationSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *validatingWebhookConfigurationSet) List(filterResource ...func(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool) []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
@@ -83,7 +87,7 @@ func (s *validatingWebhookConfigurationSet) List(filterResource ...func(*admissi
 	}
 
 	var validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 	}
 	return validatingWebhookConfigurationList
@@ -95,7 +99,7 @@ func (s *validatingWebhookConfigurationSet) Map() map[string]*admissionregistrat
 	}
 
 	newMap := map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *validatingWebhookConfigurationSet) Insert(
 	}
 
 	for _, obj := range validatingWebhookConfigurationList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *validatingWebhookConfigurationSet) Has(validatingWebhookConfiguration e
 	if s == nil {
 		return false
 	}
-	return s.set.Has(validatingWebhookConfiguration)
+	return s.Generic().Has(validatingWebhookConfiguration)
 }
 
 func (s *validatingWebhookConfigurationSet) Equal(
@@ -126,14 +130,14 @@ func (s *validatingWebhookConfigurationSet) Equal(
 	if s == nil {
 		return validatingWebhookConfigurationSet == nil
 	}
-	return s.set.Equal(makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationSet.List()))
+	return s.Generic().Equal(validatingWebhookConfigurationSet.Generic())
 }
 
 func (s *validatingWebhookConfigurationSet) Delete(ValidatingWebhookConfiguration ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(ValidatingWebhookConfiguration)
+	s.Generic().Delete(ValidatingWebhookConfiguration)
 }
 
 func (s *validatingWebhookConfigurationSet) Union(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
@@ -147,7 +151,7 @@ func (s *validatingWebhookConfigurationSet) Difference(set ValidatingWebhookConf
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericValidatingWebhookConfigurationSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &validatingWebhookConfigurationSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *validatingWebhookConfigurationSet) Intersection(set ValidatingWebhookCo
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericValidatingWebhookConfigurationSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
 	for _, obj := range newSet.List() {
 		validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
@@ -167,7 +171,7 @@ func (s *validatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*admissi
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find ValidatingWebhookConfiguration %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}, id)
+	obj, err := s.Generic().Find(&admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,5 +183,21 @@ func (s *validatingWebhookConfigurationSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *validatingWebhookConfigurationSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *validatingWebhookConfigurationSet) Delta(newSet ValidatingWebhookConfigurationSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

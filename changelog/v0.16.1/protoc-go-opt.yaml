@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Expose protoc's cmd line flag "go_opt" in skv2's top level Command in order to specify mappings between proto files and corresponding generated Go code.
+    issueLink: https://github.com/solo-io/skv2/issues/192

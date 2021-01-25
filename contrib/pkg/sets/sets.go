@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"sync"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -39,6 +42,16 @@ type ResourceSet interface {
 	Intersection(set ResourceSet) ResourceSet
 	Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error)
 	Length() int
+	// returns the delta between this and and another ResourceSet
+	Delta(newSet ResourceSet) ResourceDelta
+}
+
+// ResourceDelta represents the set of changes between two ResourceSets.
+type ResourceDelta struct {
+	// the resources inserted into the set
+	Inserted ResourceSet
+	// the resources removed from the set
+	Removed ResourceSet
 }
 
 type resourceSet struct {
@@ -180,4 +193,39 @@ func (s *resourceSet) Length() int {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	return len(s.mapping)
+}
+
+// note that this function will currently panic if called for a ResourceSet containing non-runtime.Objects
+func (oldSet *resourceSet) Delta(newSet ResourceSet) ResourceDelta {
+	updated, removed := NewResourceSet(), NewResourceSet()
+
+	// find objects updated or removed
+	oldSet.List(func(oldObj ezkube.ResourceId) bool {
+		newObj, err := newSet.Find(oldObj, oldObj)
+		switch {
+		case err != nil:
+			// obj removed
+			removed.Insert(oldObj)
+		case !controllerutils.ObjectsEqual(oldObj.(client.Object), newObj.(client.Object)):
+			// obj updated
+			updated.Insert(newObj)
+		default:
+			// obj the same
+		}
+		return true // return value ignored
+	})
+
+	// find objects added
+	newSet.List(func(newObj ezkube.ResourceId) bool {
+		if _, err := oldSet.Find(newObj, newObj); err != nil {
+			// obj added
+			updated.Insert(newObj)
+		}
+		return true // return value ignored
+	})
+	return ResourceDelta{
+		Inserted: updated,
+		Removed:  removed,
+	}
+
 }

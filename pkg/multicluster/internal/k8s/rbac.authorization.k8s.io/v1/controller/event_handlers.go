@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericRoleHandler struct {
 	handler RoleEventHandler
 }
 
-func (h genericRoleHandler) Create(object runtime.Object) error {
+func (h genericRoleHandler) Create(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.Role)
 	if !ok {
 		return errors.Errorf("internal error: Role handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericRoleHandler) Create(object runtime.Object) error {
 	return h.handler.CreateRole(obj)
 }
 
-func (h genericRoleHandler) Delete(object runtime.Object) error {
+func (h genericRoleHandler) Delete(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.Role)
 	if !ok {
 		return errors.Errorf("internal error: Role handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericRoleHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteRole(obj)
 }
 
-func (h genericRoleHandler) Update(old, new runtime.Object) error {
+func (h genericRoleHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*rbac_authorization_k8s_io_v1.Role)
 	if !ok {
 		return errors.Errorf("internal error: Role handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericRoleHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateRole(objOld, objNew)
 }
 
-func (h genericRoleHandler) Generic(object runtime.Object) error {
+func (h genericRoleHandler) Generic(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.Role)
 	if !ok {
 		return errors.Errorf("internal error: Role handler received event for %T", object)
@@ -195,7 +195,7 @@ type genericRoleBindingHandler struct {
 	handler RoleBindingEventHandler
 }
 
-func (h genericRoleBindingHandler) Create(object runtime.Object) error {
+func (h genericRoleBindingHandler) Create(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.RoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: RoleBinding handler received event for %T", object)
@@ -203,7 +203,7 @@ func (h genericRoleBindingHandler) Create(object runtime.Object) error {
 	return h.handler.CreateRoleBinding(obj)
 }
 
-func (h genericRoleBindingHandler) Delete(object runtime.Object) error {
+func (h genericRoleBindingHandler) Delete(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.RoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: RoleBinding handler received event for %T", object)
@@ -211,7 +211,7 @@ func (h genericRoleBindingHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteRoleBinding(obj)
 }
 
-func (h genericRoleBindingHandler) Update(old, new runtime.Object) error {
+func (h genericRoleBindingHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*rbac_authorization_k8s_io_v1.RoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: RoleBinding handler received event for %T", old)
@@ -223,7 +223,7 @@ func (h genericRoleBindingHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateRoleBinding(objOld, objNew)
 }
 
-func (h genericRoleBindingHandler) Generic(object runtime.Object) error {
+func (h genericRoleBindingHandler) Generic(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.RoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: RoleBinding handler received event for %T", object)
@@ -302,7 +302,7 @@ type genericClusterRoleHandler struct {
 	handler ClusterRoleEventHandler
 }
 
-func (h genericClusterRoleHandler) Create(object runtime.Object) error {
+func (h genericClusterRoleHandler) Create(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.ClusterRole)
 	if !ok {
 		return errors.Errorf("internal error: ClusterRole handler received event for %T", object)
@@ -310,7 +310,7 @@ func (h genericClusterRoleHandler) Create(object runtime.Object) error {
 	return h.handler.CreateClusterRole(obj)
 }
 
-func (h genericClusterRoleHandler) Delete(object runtime.Object) error {
+func (h genericClusterRoleHandler) Delete(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.ClusterRole)
 	if !ok {
 		return errors.Errorf("internal error: ClusterRole handler received event for %T", object)
@@ -318,7 +318,7 @@ func (h genericClusterRoleHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteClusterRole(obj)
 }
 
-func (h genericClusterRoleHandler) Update(old, new runtime.Object) error {
+func (h genericClusterRoleHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*rbac_authorization_k8s_io_v1.ClusterRole)
 	if !ok {
 		return errors.Errorf("internal error: ClusterRole handler received event for %T", old)
@@ -330,7 +330,7 @@ func (h genericClusterRoleHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateClusterRole(objOld, objNew)
 }
 
-func (h genericClusterRoleHandler) Generic(object runtime.Object) error {
+func (h genericClusterRoleHandler) Generic(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.ClusterRole)
 	if !ok {
 		return errors.Errorf("internal error: ClusterRole handler received event for %T", object)
@@ -409,7 +409,7 @@ type genericClusterRoleBindingHandler struct {
 	handler ClusterRoleBindingEventHandler
 }
 
-func (h genericClusterRoleBindingHandler) Create(object runtime.Object) error {
+func (h genericClusterRoleBindingHandler) Create(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: ClusterRoleBinding handler received event for %T", object)
@@ -417,7 +417,7 @@ func (h genericClusterRoleBindingHandler) Create(object runtime.Object) error {
 	return h.handler.CreateClusterRoleBinding(obj)
 }
 
-func (h genericClusterRoleBindingHandler) Delete(object runtime.Object) error {
+func (h genericClusterRoleBindingHandler) Delete(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: ClusterRoleBinding handler received event for %T", object)
@@ -425,7 +425,7 @@ func (h genericClusterRoleBindingHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteClusterRoleBinding(obj)
 }
 
-func (h genericClusterRoleBindingHandler) Update(old, new runtime.Object) error {
+func (h genericClusterRoleBindingHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: ClusterRoleBinding handler received event for %T", old)
@@ -437,7 +437,7 @@ func (h genericClusterRoleBindingHandler) Update(old, new runtime.Object) error 
 	return h.handler.UpdateClusterRoleBinding(objOld, objNew)
 }
 
-func (h genericClusterRoleBindingHandler) Generic(object runtime.Object) error {
+func (h genericClusterRoleBindingHandler) Generic(object client.Object) error {
 	obj, ok := object.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: ClusterRoleBinding handler received event for %T", object)

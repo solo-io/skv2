@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for KubernetesCluster
+var KubernetesClusterGVK = schema.GroupVersionKind{
+	Group:   "multicluster.solo.io",
+	Version: "v1alpha1",
+	Kind:    "KubernetesCluster",
+}
+
 // KubernetesCluster is the Schema for the kubernetesCluster API
 type KubernetesCluster struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type KubernetesCluster struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (KubernetesCluster) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "multicluster.solo.io",
-		Version: "v1alpha1",
-		Kind:    "KubernetesCluster",
-	}
+	return KubernetesClusterGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
