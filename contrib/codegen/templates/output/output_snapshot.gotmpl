@@ -61,7 +61,7 @@ type snapshot struct {
 {{/* generate fields of the real snapshot impl here */}}
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
-{{- $gvk := pluralize (gvk $resource) }}
+{{- $gvk := (gvk $resource) }}
 {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     {{ $gvkLowerCamelPlural }} []Labeled{{ $gvk }}Set
@@ -75,7 +75,7 @@ func NewSnapshot(
 {{/* generate constructor params here */}}
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
-{{- $gvk := pluralize (gvk $resource) }}
+{{- $gvk := (gvk $resource) }}
 {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     {{ $gvkLowerCamelPlural }} []Labeled{{ $gvk }}Set,
@@ -164,7 +164,7 @@ func NewSinglePartitionedSnapshot(
 {{- $gvkPlural := pluralize (gvk $resource) }}
 {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
-    labeled{{ $gvkPlural }}, err := NewLabeled{{ $gvk }}Set({{ $gvkLowerCamelPlural }}, snapshotLabels)
+    labeled{{ $gvk }}, err := NewLabeled{{ $gvk }}Set({{ $gvkLowerCamelPlural }}, snapshotLabels)
     if err != nil {
     	return nil, err
     }
@@ -180,7 +180,7 @@ func NewSinglePartitionedSnapshot(
 {{- $gvkPlural := pluralize (gvk $resource) }}
 {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
-        []Labeled{{ $gvk }}Set{labeled{{ $gvkPlural }}},
+        []Labeled{{ $gvk }}Set{labeled{{ $gvk }}},
 {{- end }}
 {{- end }}
         clusters...,
@@ -600,17 +600,17 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     {{- $kindPlural := pluralize $resource.Kind }}
-    {{- $kindLowerCamel := lower_camel $resource.Kind }}
-    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    // calcualte delta between {{ $kindPlural }}
-    {{ $kindLowerCamel }}Delta := b.Get{{ $kindPlural }}().Delta(other.Get{{ $kindPlural }}())
-    {{ $kindLowerCamel }}Gvk := schema.GroupVersionKind{
+    {{- $gvkPlural := pluralize (gvk $resource) }}
+    {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+    // calculate delta between {{ $kindPlural }}
+    {{ $gvkLowerCamel }}Delta := b.Get{{ $gvkPlural }}().Delta(other.Get{{ $gvkPlural }}())
+    {{ $gvkLowerCamel }}Gvk := schema.GroupVersionKind{
 		Group: "{{ $resource.Group.Group }}",
 		Version: "{{ $resource.Version }}",
 		Kind: "{{ $resource.Kind }}",
     }
-    delta.AddInserted({{ $kindLowerCamel }}Gvk, {{ $kindLowerCamel }}Delta.Inserted)
-    delta.AddRemoved({{ $kindLowerCamel }}Gvk, {{ $kindLowerCamel }}Delta.Removed)
+    delta.AddInserted({{ $gvkLowerCamel }}Gvk, {{ $gvkLowerCamel }}Delta.Inserted)
+    delta.AddRemoved({{ $gvkLowerCamel }}Gvk, {{ $gvkLowerCamel }}Delta.Removed)
     {{- end }}
     {{- end }}
     return delta
