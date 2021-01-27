@@ -21,18 +21,18 @@ func (s Snapshot) Insert(gvk schema.GroupVersionKind, obj client.Object) {
 	s[gvk] = objects
 }
 
-func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object)) {
+func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj client.Object)) {
 	for gvk, objs := range s {
-		for ref, obj := range objs {
-			handleObject(gvk, ref, obj)
+		for _, obj := range objs {
+			handleObject(gvk, obj)
 		}
 	}
 }
 
-func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object)) {
+func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, obj client.Object)) {
 	for cluster, snap := range s {
-		snap.ForEachObject(func(gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
-			handleObject(cluster, gvk, ref, obj)
+		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj client.Object) {
+			handleObject(cluster, gvk, obj)
 		})
 	}
 }

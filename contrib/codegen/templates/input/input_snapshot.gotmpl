@@ -26,8 +26,6 @@ import (
     "github.com/solo-io/skv2/pkg/resource"
     "github.com/solo-io/skv2/pkg/verifier"
 
-    "k8s.io/apimachinery/pkg/types"
-
     "github.com/hashicorp/go-multierror"
 {{ $needsControllerUtils := false }}
 {{- range $group := $groups }}
@@ -583,7 +581,7 @@ func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, 
     {{- end }}
     {{- end }}
 
-    genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
+    genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
         switch obj := obj.(type) {
     {{- range $group := $groups }}
     {{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}

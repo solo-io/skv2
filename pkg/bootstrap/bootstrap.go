@@ -2,9 +2,11 @@ package bootstrap
 
 import (
 	"context"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/solo-io/skv2/pkg/stats"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog/v2"
 
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,9 +81,13 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 // Start a controller with the given reconciler. Handles bootstrapping local manager + multicluster watches.
 // localMode will start the controller as an "local" only configured to do i/o to local cluster.
 func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
+	return StartMulti(ctx, rootLogger, []StartFunc{start}, opts, schemes, localMode)
+}
+
+// Like Start, but runs multiple StartFuncs concurrently
+func StartMulti(ctx context.Context, rootLogger string, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
 	setupLogging(opts.VerboseMode)
 
-	ctx = contextutils.WithLogger(ctx, rootLogger)
 	mgr, err := makeMasterManager(opts, schemes)
 	if err != nil {
 		return err
@@ -115,19 +121,29 @@ func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options
 		SettingsRef:     opts.SettingsRef,
 	}
 
-	if err := start(ctx, params); err != nil {
-		return err
+	eg, ctx := errgroup.WithContext(ctx)
+
+	for _, start := range startFuncs {
+		start := start // pike
+		eg.Go(func() error {
+			return start(ctx, params)
+		})
 	}
 
 	if clusterWatcher != nil {
 		// start multicluster watches
-		if err := clusterWatcher.Run(mgr); err != nil {
-			return err
-		}
+		eg.Go(func() error {
+			return clusterWatcher.Run(mgr)
+		})
 	}
 
-	contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
-	return mgr.Start(ctx)
+	eg.Go(func() error {
+		// start the local manager
+		contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
+		return mgr.Start(ctx)
+	})
+
+	return eg.Wait()
 }
 
 // get the manager for the local cluster; we will use this as our "master" cluster
@@ -168,8 +184,12 @@ func setupLogging(verboseMode bool) {
 
 	// klog
 	zap.ReplaceGlobals(baseLogger)
+
 	// controller-runtime
-	log.SetLogger(zapr.NewLogger(baseLogger))
+	zapLogger := zapr.NewLogger(baseLogger)
+	log.SetLogger(zapLogger)
+	klog.SetLogger(zapLogger)
+
 	// go-utils
 	contextutils.SetFallbackLogger(baseLogger.Sugar())
 }
