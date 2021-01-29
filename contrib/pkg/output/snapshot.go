@@ -3,6 +3,7 @@ package output
 import (
 	"context"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
@@ -324,13 +325,15 @@ func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Obje
 
 		return err
 	}
-	contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", sets.TypedKey(obj))
+	if result != controllerutil.OperationResultNone {
+		contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", sets.TypedKey(obj))
 
-	incrementResourcesSyncedTotal(
-		s.Name,
-		string(result),
-		obj,
-	)
+		incrementResourcesSyncedTotal(
+			s.Name,
+			string(result),
+			obj,
+		)
+	}
 
 	return nil
 }

@@ -121,7 +121,7 @@ func StartMulti(ctx context.Context, rootLogger string, startFuncs []StartFunc, 
 		SettingsRef:     opts.SettingsRef,
 	}
 
-	eg, ctx := errgroup.WithContext(ctx)
+	eg := &errgroup.Group{}
 
 	for _, start := range startFuncs {
 		start := start // pike

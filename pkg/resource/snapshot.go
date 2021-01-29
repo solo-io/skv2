@@ -21,6 +21,15 @@ func (s Snapshot) Insert(gvk schema.GroupVersionKind, obj client.Object) {
 	s[gvk] = objects
 }
 
+func (s Snapshot) Delete(gvk schema.GroupVersionKind, id types.NamespacedName) {
+	resources, ok := s[gvk]
+	if !ok {
+		return
+	}
+	delete(resources, id)
+	s[gvk] = resources
+}
+
 func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj client.Object)) {
 	for gvk, objs := range s {
 		for _, obj := range objs {
@@ -43,6 +52,15 @@ func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, ob
 		snapshot = Snapshot{}
 	}
 	snapshot.Insert(gvk, obj)
+	cs[cluster] = snapshot
+}
+
+func (cs ClusterSnapshot) Delete(cluster string, gvk schema.GroupVersionKind, id types.NamespacedName) {
+	snapshot, ok := cs[cluster]
+	if !ok {
+		snapshot = Snapshot{}
+	}
+	snapshot.Delete(gvk, id)
 	cs[cluster] = snapshot
 }
 
