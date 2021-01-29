@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/avast/retry-go v2.2.0+incompatible
 	github.com/aws/aws-sdk-go v1.30.15
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/envoyproxy/protoc-gen-validate v0.3.0-java
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v0.3.0
 	github.com/go-logr/zapr v0.2.0
