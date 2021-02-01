@@ -1,11 +1,6 @@
 package kubeconfig
 
 import (
-	"fmt"
-	"os"
-	"os/user"
-	"path"
-
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -13,21 +8,16 @@ import (
 
 // Fetch ClientConfig. If kubeConfigPath is not specified, retrieve the kubeconfig from environment in which this is invoked.
 // Override the API Server URL and current context if specified.
-// Copied and modified from https://github.com/kubernetes-sigs/controller-runtime/blob/cb7f85860a8cde7259b35bb84af1fdcb02c098f2/pkg/client/config/config.go#L135
 func GetClientConfigWithContext(kubeConfigPath, kubeContext, apiServerUrl string) (clientcmd.ClientConfig, error) {
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 
+	// default loading rules checks for KUBECONFIG env var
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	// also check recommended default kubeconfig file locations
+	loadingRules.Precedence = append(loadingRules.Precedence, clientcmd.RecommendedHomeFile)
+
+	// explicit path overrides all loading rules, will error if not found
 	if kubeConfigPath != "" {
 		loadingRules.ExplicitPath = kubeConfigPath
-	} else {
-		// Fetch kubeconfig from environment in which this is invoked
-		if _, ok := os.LookupEnv("HOME"); !ok {
-			u, err := user.Current()
-			if err != nil {
-				return nil, fmt.Errorf("could not get current user: %v", err)
-			}
-			loadingRules.Precedence = append(loadingRules.Precedence, path.Join(u.HomeDir, clientcmd.RecommendedHomeDir, clientcmd.RecommendedFileName))
-		}
 	}
 
 	overrides := &clientcmd.ConfigOverrides{}
