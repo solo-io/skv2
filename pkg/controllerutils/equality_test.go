@@ -1,14 +1,17 @@
 package controllerutils_test
 
 import (
+	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+	"istio.io/client-go/pkg/apis/networking/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	rbac_authorization_k8s_io_v1 "k8s.io/api/rbac/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/solo-io/skv2/pkg/controllerutils"
+	networkingv1beta1 "istio.io/api/networking/v1beta1"
 )
 
 var _ = Describe("ObjectsEqual", func() {
@@ -142,6 +145,39 @@ var _ = Describe("ObjectsEqual", func() {
 				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "Role",
 				Name:     "sample-controller",
+			},
+		}
+		equal := ObjectsEqual(obj1, obj2)
+		Expect(equal).To(BeTrue())
+	})
+
+	It("asserts equality on two gogo proto messages", func() {
+		obj1 := &v1beta1.DestinationRule{
+			ObjectMeta: k8s_meta.ObjectMeta{
+				Name:      "sample-destination-rule",
+				Namespace: "default",
+				Labels:    map[string]string{"k": "v"},
+			}, Spec: networkingv1beta1.DestinationRule{
+				Host: "solo.io",
+				TrafficPolicy: &networkingv1beta1.TrafficPolicy{
+					OutlierDetection: &networkingv1beta1.OutlierDetection{
+						BaseEjectionTime: &types.Duration{Seconds: 5},
+					},
+				},
+			},
+		}
+		obj2 := &v1beta1.DestinationRule{
+			ObjectMeta: k8s_meta.ObjectMeta{
+				Name:      "sample-destination-rule",
+				Namespace: "default",
+				Labels:    map[string]string{"k": "v"},
+			}, Spec: networkingv1beta1.DestinationRule{
+				Host: "solo.io",
+				TrafficPolicy: &networkingv1beta1.TrafficPolicy{
+					OutlierDetection: &networkingv1beta1.OutlierDetection{
+						BaseEjectionTime: &types.Duration{Seconds: 5},
+					},
+				},
 			},
 		}
 		equal := ObjectsEqual(obj1, obj2)
