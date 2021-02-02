@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+
 	"golang.org/x/sync/errgroup"
 
 	"github.com/solo-io/skv2/pkg/stats"
@@ -61,6 +62,9 @@ type Options struct {
 	// enables verbose mode
 	VerboseMode bool
 
+	// enables json logger (instead of table logger)
+	JSONLogger bool
+
 	// ManagementContext if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster.
 	ManagementContext string
 
@@ -86,7 +90,7 @@ func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options
 
 // Like Start, but runs multiple StartFuncs concurrently
 func StartMulti(ctx context.Context, rootLogger string, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
-	setupLogging(opts.VerboseMode)
+	setupLogging(opts.VerboseMode, opts.JSONLogger)
 
 	mgr, err := makeMasterManager(opts, schemes)
 	if err != nil {
@@ -121,7 +125,7 @@ func StartMulti(ctx context.Context, rootLogger string, startFuncs []StartFunc, 
 		SettingsRef:     opts.SettingsRef,
 	}
 
-	eg := &errgroup.Group{}
+	eg, ctx := errgroup.WithContext(ctx)
 
 	for _, start := range startFuncs {
 		start := start // pike
@@ -169,18 +173,23 @@ func makeMasterManager(opts Options, schemes runtime.SchemeBuilder) (manager.Man
 	return mgr, nil
 }
 
-func setupLogging(verboseMode bool) {
+func setupLogging(verboseMode, jsonLogging bool) {
 	level := zapcore.InfoLevel
 	if verboseMode {
 		level = zapcore.DebugLevel
 	}
 	atomicLevel := zap.NewAtomicLevelAt(level)
-	baseLogger := zaputil.NewRaw(
+	zapOpts := []zaputil.Opts{
 		zaputil.Level(&atomicLevel),
-		// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
-		// to use any json parsing tools for the log. Should only be enabled explicitly
-		zaputil.UseDevMode(verboseMode),
-	)
+	}
+	if !jsonLogging {
+		zapOpts = append(zapOpts,
+			// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
+			// to use any json parsing tools for the log. Should only be enabled explicitly
+			zaputil.UseDevMode(true),
+		)
+	}
+	baseLogger := zaputil.NewRaw(zapOpts...)
 
 	// klog
 	zap.ReplaceGlobals(baseLogger)

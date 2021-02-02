@@ -130,7 +130,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 		requeue bool
 		err     error
 	)
-	if isRemoteCluster {
+	if isRemoteCluster && r.multiClusterReconcileFunc != nil {
 		requeue, err = r.multiClusterReconcileFunc(key.(ezkube.ClusterResourceId))
 	} else {
 		requeue, err = r.singleClusterReconcileFunc(key.(ezkube.ResourceId))

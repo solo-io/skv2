@@ -3,6 +3,7 @@ package output
 import (
 	"context"
 	"fmt"
+
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/solo-io/skv2/contrib/pkg/sets"
