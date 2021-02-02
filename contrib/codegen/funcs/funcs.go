@@ -1,7 +1,6 @@
 package funcs
 
 import (
-	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -141,7 +140,14 @@ func MakeHybridSnapshotFuncs(
 }
 
 func gvk(resource model.Resource) string {
-	return strcase.ToCamel(fmt.Sprintf("%s-%s", resource.GroupVersion.String(), resource.Kind))
+	group := strcase.ToCamel(resource.GroupVersion.Group)
+	version := strcase.ToCamel(resource.Version)
+	kind := strcase.ToCamel(resource.Kind)
+
+	if group == "" {
+		return strings.Join(append([]string{}, version, kind), "_")
+	}
+	return strings.Join(append([]string{}, group, version, kind), "_")
 }
 
 // gets the go package for an imported group's clients
