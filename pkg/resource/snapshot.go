@@ -6,13 +6,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Snapshot represents a generic snapshot of client.Objects scoped to a single cluster
-type Snapshot map[schema.GroupVersionKind]map[types.NamespacedName]client.Object
+// a typed object is a client.Object with a TypeMeta
+type TypedObject interface {
+	client.Object
+	SetGroupVersionKind(gvk schema.GroupVersionKind)
+}
 
-func (s Snapshot) Insert(gvk schema.GroupVersionKind, obj client.Object) {
+// Snapshot represents a generic snapshot of client.Objects scoped to a single cluster
+type Snapshot map[schema.GroupVersionKind]map[types.NamespacedName]TypedObject
+
+func (s Snapshot) Insert(gvk schema.GroupVersionKind, obj TypedObject) {
 	objects, ok := s[gvk]
 	if !ok {
-		objects = map[types.NamespacedName]client.Object{}
+		objects = map[types.NamespacedName]TypedObject{}
 	}
 	objects[types.NamespacedName{
 		Namespace: obj.GetNamespace(),
@@ -30,7 +36,7 @@ func (s Snapshot) Delete(gvk schema.GroupVersionKind, id types.NamespacedName) {
 	s[gvk] = resources
 }
 
-func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj client.Object)) {
+func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj TypedObject)) {
 	for gvk, objs := range s {
 		for _, obj := range objs {
 			handleObject(gvk, obj)
@@ -38,15 +44,15 @@ func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, o
 	}
 }
 
-func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, obj client.Object)) {
+func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, obj TypedObject)) {
 	for cluster, snap := range s {
-		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj client.Object) {
+		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj TypedObject) {
 			handleObject(cluster, gvk, obj)
 		})
 	}
 }
 
-func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
+func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, obj TypedObject) {
 	snapshot, ok := cs[cluster]
 	if !ok {
 		snapshot = Snapshot{}
@@ -75,8 +81,8 @@ func (s Snapshot) Clone() Snapshot {
 	return clone
 }
 
-func copyNnsMap(m map[types.NamespacedName]client.Object) map[types.NamespacedName]client.Object {
-	nnsMapCopy := map[types.NamespacedName]client.Object{}
+func copyNnsMap(m map[types.NamespacedName]TypedObject) map[types.NamespacedName]TypedObject {
+	nnsMapCopy := map[types.NamespacedName]TypedObject{}
 	for k, v := range m {
 		nnsMapCopy[k] = v
 	}
