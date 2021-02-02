@@ -58,7 +58,7 @@ func MakeHomogenousSnapshotFuncs(
 			}
 			return clientImportPath(grp) + "/controller"
 		},
-		"gvk": gvk,
+		"gvkCamelSnake": gvkCamelSnake,
 	}
 }
 
@@ -135,11 +135,11 @@ func MakeHybridSnapshotFuncs(
 			}
 			return clientImportPath(grp) + "/controller"
 		},
-		"gvk": gvk,
+		"gvkCamelSnake": gvkCamelSnake,
 	}
 }
 
-func gvk(resource model.Resource) string {
+func gvkCamelSnake(resource model.Resource) string {
 	group := strcase.ToCamel(resource.GroupVersion.Group)
 	version := strcase.ToCamel(resource.Version)
 	kind := strcase.ToCamel(resource.Kind)

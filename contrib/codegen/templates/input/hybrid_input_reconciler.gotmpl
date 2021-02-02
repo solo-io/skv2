@@ -35,7 +35,7 @@ import (
 {{- if gt (len $remoteGroups) 0 }}
 {{- range $group := $remoteGroups }}
 {{- range $resource := $group.Resources }}
-{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
 // * {{ $gvkPlural }}
 {{- end }}
 {{- end }}
@@ -44,7 +44,7 @@ import (
 {{- if gt (len $localGroups) 0 }}
 {{- range $group := $localGroups }}
 {{- range $resource := $group.Resources }}
-{{- $gvkPlural := pluralize (gvk $resource) }}
+{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
 // * {{ $gvkPlural }}
 {{- end }}
 {{- end }}
@@ -100,8 +100,8 @@ func Register{{ $snapshotName }}InputReconciler(
 {{- range $group := $remoteGroups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $gvkPlural := pluralize (gvk $resource) }}
-{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     // initialize {{ $gvkPlural }} reconcile loop for remote clusters
     {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.Remote.{{ $gvkPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, &remote{{ upper_camel $group.Group }}InputReconciler{base: base}, options.Remote.Predicates...)
@@ -112,8 +112,8 @@ func Register{{ $snapshotName }}InputReconciler(
 {{- range $group := $localGroups }}
 {{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
 {{- range $resource := $group.Resources }}
-{{- $gvkPlural := pluralize (gvk $resource) }}
-{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     // initialize {{ $gvkPlural }} reconcile loop for local cluster
     if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options.Local.{{ $gvkPlural }}).Run{{ $resource.Kind }}Reconciler(ctx, &local{{ upper_camel $group.Group }}InputReconciler{base: base}, options.Local.Predicates...); err != nil {
@@ -132,8 +132,8 @@ type Remote{{ $snapshotName }}ReconcileOptions struct {
     {{- range $group := $remoteGroups }}
     {{ $client_import_prefix := group_import_name $group }}
     {{- range $resource := $group.Resources }}
-    {{- $gvkPlural := pluralize (gvk $resource) }}
-    {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+    {{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+    {{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
     {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     // Options for reconciling {{ $gvkPlural }}
     {{ $gvkPlural }} reconcile.Options
@@ -153,8 +153,8 @@ type remote{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler stru
 }
 
 {{- range $resource := $group.Resources }}
-{{- $gvkPlural := pluralize (gvk $resource) }}
-{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
 func (r *remote{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
@@ -182,8 +182,8 @@ type Local{{ $snapshotName }}ReconcileOptions struct {
     {{- range $group := $localGroups }}
     {{ $client_import_prefix := group_import_name $group }}
     {{- range $resource := $group.Resources }}
-    {{- $gvkPlural := pluralize (gvk $resource) }}
-    {{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+    {{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+    {{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
     {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
     // Options for reconciling {{ $gvkPlural }}
     {{ $gvkPlural }} reconcile.Options
@@ -203,8 +203,8 @@ type local{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler struc
 }
 
 {{- range $resource := $group.Resources }}
-{{- $gvkPlural := pluralize (gvk $resource) }}
-{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+{{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
 {{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 
 func (r *local{{ upper_camel $group.Group }}{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {

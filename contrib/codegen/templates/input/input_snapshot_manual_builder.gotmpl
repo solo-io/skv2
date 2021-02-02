@@ -22,7 +22,7 @@ name string
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 	{{- range $resource := $group.Resources }}
-		{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+		{{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
 		{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 		{{ $gvkLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
 	{{- end }}
@@ -36,8 +36,8 @@ name:               name,
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 	{{- range $resource := $group.Resources }}
-		{{- $gvkPlural := pluralize (gvk $resource) }}
-		{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+		{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+		{{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
 		{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 		{{ $gvkLowerCamelPlural }}: {{ $set_import_prefix }}.New{{ $resource.Kind }}Set(),
 	{{- end }}
@@ -51,8 +51,8 @@ i.name,
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 	{{- range $resource := $group.Resources }}
-		{{- $gvkPlural := pluralize (gvk $resource) }}
-		{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+		{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+		{{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
 		{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 		i.{{ $gvkLowerCamelPlural }},
 	{{- end }}
@@ -62,8 +62,8 @@ i.name,
 
 {{- range $group := $groups }}
 	{{- range $resource := $group.Resources }}
-		{{- $gvkPlural := pluralize (gvk $resource) }}
-		{{- $gvkLowerCamel := lower_camel (gvk $resource) }}
+		{{- $gvkPlural := pluralize (gvkCamelSnake $resource) }}
+		{{- $gvkLowerCamel := lower_camel (gvkCamelSnake $resource) }}
 		{{- $gvkLowerCamelPlural := pluralize $gvkLowerCamel }}
 		func (i *Input{{ $snapshotName }}SnapshotManualBuilder) Add{{ $gvkPlural }}({{ $gvkLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *Input{{ $snapshotName }}SnapshotManualBuilder {
 		i.{{ $gvkLowerCamelPlural }}.Insert({{ $gvkLowerCamelPlural }}...)
