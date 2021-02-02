@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/207
+    description: >-
+      Fix equality for protos, since we were using the `proto.Equals` on k8s resources that implemented the interface
+      but should have been using reflection.
