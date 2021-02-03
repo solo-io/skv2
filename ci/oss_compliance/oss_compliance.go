@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	glooPackages := []string{
+	packages := []string{
 		"github.com/solo-io/skv2/pkg/resource",
 		"github.com/solo-io/skv2/pkg/utils",
 		"github.com/solo-io/skv2/pkg/source",
@@ -24,7 +24,7 @@ func main() {
 		"golang.org/x/sys/unix",
 	}
 
-	app := license.Cli(glooPackages, macOnlyDependencies)
+	app := license.Cli(packages, macOnlyDependencies)
 	if err := app.Execute(); err != nil {
 		fmt.Errorf("unable to run oss compliance check: %v\n", err)
 		os.Exit(1)
