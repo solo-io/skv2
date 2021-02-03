@@ -31,7 +31,8 @@ require (
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.1
-	github.com/solo-io/go-utils v0.20.0
+	github.com/solo-io/go-list-licenses v0.0.4
+	github.com/solo-io/go-utils v0.20.2
 	github.com/solo-io/k8s-utils v0.0.1
 	github.com/solo-io/protoc-gen-ext v0.0.13
 	github.com/spf13/pflag v1.0.5
