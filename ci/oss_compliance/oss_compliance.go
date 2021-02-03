@@ -9,8 +9,6 @@ import (
 
 func main() {
 	glooPackages := []string{
-		//"github.com/solo-io/skv2/pkg/reconcile",
-		//"github.com/solo-io/skv2/pkg/request",
 		"github.com/solo-io/skv2/pkg/resource",
 		"github.com/solo-io/skv2/pkg/utils",
 		"github.com/solo-io/skv2/pkg/source",
