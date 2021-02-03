@@ -9,8 +9,6 @@ import (
 
 func main() {
 	glooPackages := []string{
-		"github.com/solo-io/skv2/builder",
-		"github.com/solo-io/skv2/codegen",
 		"github.com/solo-io/skv2/pkg/bootstrap",
 		"github.com/solo-io/skv2/pkg/controllerutils",
 	}
