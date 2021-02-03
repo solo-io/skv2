@@ -10,8 +10,8 @@ import (
 func main() {
 	glooPackages := []string{
 		"github.com/solo-io/skv2/pkg/events",
-		"github.com/solo-io/skv2/pkg/ezkube",
-		"github.com/solo-io/skv2/pkg/handler",
+		//"github.com/solo-io/skv2/pkg/ezkube",
+		//"github.com/solo-io/skv2/pkg/handler",
 		//"github.com/solo-io/skv2/pkg/predicate",
 		//"github.com/solo-io/skv2/pkg/multicluster",
 		//"github.com/solo-io/skv2/pkg/reconcile",

@@ -13,10 +13,8 @@ Name|Version|License
 [google/gofuzz](https://github.com/google/gofuzz)|v1.1.0|Apache License 2.0
 [google/uuid](https://github.com/google/uuid)|v1.1.1|BSD 3-clause "New" or "Revised" License
 [googleapis/gnostic](https://github.com/googleapis/gnostic)|v0.5.1|Apache License 2.0
-[imdario/mergo](https://github.com/imdario/mergo)|v0.3.10|BSD 3-clause "New" or "Revised" License
 [json-iterator/go](https://github.com/json-iterator/go)|v1.1.10|MIT License
 [golang_protobuf_extensions/pbutil](https://github.com/matttproud/golang_protobuf_extensions)|v1.0.2-0.20181231171920-c182affec369|Apache License 2.0
-[mitchellh/hashstructure](https://github.com/mitchellh/hashstructure)|v1.0.0|MIT License
 [modern-go/concurrent](https://github.com/modern-go/concurrent)|v0.0.0-20180306012644-bacd9c7ef1dd|Apache License 2.0
 [modern-go/reflect2](https://github.com/modern-go/reflect2)|v1.0.1|Apache License 2.0
 [pborman/uuid](https://github.com/pborman/uuid)|v1.2.0|BSD 3-clause "New" or "Revised" License
@@ -26,7 +24,6 @@ Name|Version|License
 [prometheus/common](https://github.com/prometheus/common)|v0.10.0|Apache License 2.0
 [procfs/internal](https://github.com/prometheus/procfs)|v0.1.3|Apache License 2.0
 [rotisserie/eris](https://github.com/rotisserie/eris)|v0.1.1|MIT License
-[spf13/pflag](https://github.com/spf13/pflag)|v1.0.5|BSD 3-clause "New" or "Revised" License
 [go.uber.org/atomic](https://go.uber.org/atomic)|v1.6.0|MIT License
 [go.uber.org/multierr](https://go.uber.org/multierr)|v1.5.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.15.0|MIT License
@@ -42,7 +39,6 @@ Name|Version|License
 [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)|v2.3.0|Apache License 2.0
 [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)|v3.0.0-20200615113413-eeeca48fe776|MIT License
 [k8s.io/api](https://k8s.io/api)|v0.19.6|Apache License 2.0
-[apiextensions/v1beta1](https://k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1)|v0.19.6|Apache License 2.0
 [k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.19.6|Apache License 2.0
 [k8s.io/client-go](https://k8s.io/client-go)|v0.19.6|Apache License 2.0
 [config/v1alpha1](https://k8s.io/component-base/config/v1alpha1)|v0.19.6|Apache License 2.0
