@@ -23,7 +23,7 @@ install-go-tools: mod-download
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
-generated-code: clean install-go-tools
+generated-code: clean install-go-tools update-licenses
 	PATH=$(DEPSGOBIN):$$PATH go run api/generate.go
 	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
 	PATH=$(DEPSGOBIN):$$PATH go generate -v ./...
@@ -47,6 +47,17 @@ run-tests:
 		-randomizeSuites \
 		-keepGoing
 	goimports -w .
+
+#----------------------------------------------------------------------------------
+# Third Party License Management
+#----------------------------------------------------------------------------------
+.PHONY: update-licenses
+update-licenses:
+	# check for GPL licenses, if there are any, this will fail
+	cd ci/oss_compliance; GO111MODULE=on go run oss_compliance.go osagen -c "GNU General Public License v2.0,GNU General Public License v3.0,GNU Lesser General Public License v2.1,GNU Lesser General Public License v3.0,GNU Affero General Public License v3.0"
+
+	cd ci/oss_compliance; GO111MODULE=on go run oss_compliance.go osagen -s "Mozilla Public License 2.0,GNU General Public License v2.0,GNU General Public License v3.0,GNU Lesser General Public License v2.1,GNU Lesser General Public License v3.0,GNU Affero General Public License v3.0" > osa_provided.md
+	cd ci/oss_compliance; GO111MODULE=on go run oss_compliance.go osagen -i "Mozilla Public License 2.0" > osa_included.md
 
 #----------------------------------------------------------------------------------
 # Clean
