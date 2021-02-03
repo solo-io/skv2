@@ -9,7 +9,6 @@ import (
 
 func main() {
 	glooPackages := []string{
-		"github.com/solo-io/skv2/pkg/equalityutils",
 		"github.com/solo-io/skv2/pkg/events",
 		"github.com/solo-io/skv2/pkg/ezkube",
 		"github.com/solo-io/skv2/pkg/handler",
