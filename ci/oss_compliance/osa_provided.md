@@ -19,6 +19,7 @@ Name|Version|License
 [mitchellh/hashstructure](https://github.com/mitchellh/hashstructure)|v1.0.0|MIT License
 [modern-go/concurrent](https://github.com/modern-go/concurrent)|v0.0.0-20180306012644-bacd9c7ef1dd|Apache License 2.0
 [modern-go/reflect2](https://github.com/modern-go/reflect2)|v1.0.1|Apache License 2.0
+[pborman/uuid](https://github.com/pborman/uuid)|v1.2.0|BSD 3-clause "New" or "Revised" License
 [pkg/errors](https://github.com/pkg/errors)|v0.9.1|BSD 2-clause "Simplified" License
 [client_golang/prometheus](https://github.com/prometheus/client_golang)|v1.7.1|Apache License 2.0
 [client_model/go](https://github.com/prometheus/client_model)|v0.2.0|Apache License 2.0
