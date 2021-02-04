@@ -24,9 +24,9 @@ Name|Version|License
 [go.uber.org/multierr](https://go.uber.org/multierr)|v1.5.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.15.0|MIT License
 [ssh/terminal](https://golang.org/x/crypto/ssh/terminal)|v0.0.0-20200622213623-75b288015ac9|BSD 3-clause "New" or "Revised" License
-[x/net](https://golang.org/x/net)|v0.0.0-20201224014010-6772e930b67b|BSD 3-clause "New" or "Revised" License
+[x/net](https://golang.org/x/net)|v0.0.0-20210119194325-5f4716e94777|BSD 3-clause "New" or "Revised" License
 [oauth2/internal](https://golang.org/x/oauth2/internal)|v0.0.0-20200107190931-bf48bf16ab8d|BSD 3-clause "New" or "Revised" License
-[x/sys](https://golang.org/x/sys)|v0.0.0-20210112091331-59c308dcf3cc|BSD 3-clause "New" or "Revised" License
+[x/sys](https://golang.org/x/sys)|v0.0.0-20210124154548-22da62e12c0c|BSD 3-clause "New" or "Revised" License
 [x/text](https://golang.org/x/text)|v0.3.5|BSD 3-clause "New" or "Revised" License
 [time/rate](https://golang.org/x/time/rate)|v0.0.0-20200630173020-3af7569d3a1e|BSD 3-clause "New" or "Revised" License
 [google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.25.0|BSD 3-clause "New" or "Revised" License

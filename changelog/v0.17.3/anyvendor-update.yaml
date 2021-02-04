@@ -1,0 +1,6 @@
+changelog:
+- dependencyOwner: solo-io
+  dependencyRepo: anyvendor
+  dependencyTag: v0.0.3
+  description: Update anyvendor to pick up codegen flake fix.
+  type: DEPENDENCY_BUMP
