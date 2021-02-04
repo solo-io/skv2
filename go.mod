@@ -30,7 +30,7 @@ require (
 	github.com/rogpeppe/go-internal v1.6.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
-	github.com/solo-io/anyvendor v0.0.3-0.20210204152733-c2076edcd9b4
+	github.com/solo-io/anyvendor v0.0.3
 	github.com/solo-io/go-list-licenses v0.0.4
 	github.com/solo-io/go-utils v0.20.2
 	github.com/solo-io/k8s-utils v0.0.1
