@@ -164,6 +164,10 @@ type ResourceList struct {
 	// if this function is nil, no garbage collection will be done.
 	ListFunc func(ctx context.Context, cli client.Client) ([]ezkube.Object, error)
 
+	// indicates whether the resources in the list should have their status updated to the cluster.
+	// if true, resources will not be upserted or garbage collected.
+	StatusUpdate bool
+
 	// name of resource Kind, used for debugging only
 	ResourceKind string
 }
@@ -215,11 +219,11 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHa
 			Resources:    listForLocalCluster,
 			ListFunc:     list.ListFunc,
 			ResourceKind: list.ResourceKind,
+			StatusUpdate: list.StatusUpdate,
 		}
 
 		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, errHandler)
 	}
-
 }
 
 // sync the output snapshot to storage across multiple clusters.
@@ -258,16 +262,23 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 // clientCluster represents the cluster to which the resources are being written.
 // garbage collects every resource turned by the list.ListFunc which is no longer desired.
 // any resources written for a different clientCluster will not be garbage collected.
-func (s Snapshot) syncList(ctx context.Context, clientCluster string, cli client.Client, list ResourceList, errHandler ErrorHandler) {
+func (s Snapshot) syncList(
+	ctx context.Context,
+	clientCluster string,
+	cli client.Client,
+	list ResourceList,
+	errHandler ErrorHandler,
+) {
 	for _, obj := range list.Resources {
 
 		// upsert all desired resources
-		if err := s.upsert(ctx, cli, obj); err != nil {
+		if err := s.upsert(ctx, cli, obj, list.StatusUpdate); err != nil {
 			errHandler.HandleWriteError(obj, err)
 		}
 	}
 
-	if list.ListFunc == nil {
+	if list.ListFunc == nil || list.StatusUpdate {
+		// no garbage collection on status updates
 		return
 	}
 
@@ -312,22 +323,30 @@ func (s Snapshot) syncList(ctx context.Context, clientCluster string, cli client
 	}
 }
 
-func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Object) error {
+func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Object, statusUpdate bool) error {
 	// add cluster label to object
 	obj.SetLabels(
 		AddClusterLabels(obj.GetClusterName(), obj.GetLabels()),
 	)
 
-	result, err := controllerutils.Upsert(ctx, cli, obj)
+	var (
+		result controllerutil.OperationResult
+		err    error
+	)
+	if statusUpdate {
+		result, err = controllerutils.UpdateStatus(ctx, cli, obj)
+	} else {
+		result, err = controllerutils.Upsert(ctx, cli, obj)
+	}
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Errorw("failed upserting resource", "resource", sets.TypedKey(obj), "err", err)
+		contextutils.LoggerFrom(ctx).Errorw("failed upserting resource", "resource", sets.TypedKey(obj), "status_update", statusUpdate, "err", err)
 
 		incrementResourcesWriteFailsTotal(s.Name, "upsert", obj)
 
 		return err
 	}
 	if result != controllerutil.OperationResultNone {
-		contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", sets.TypedKey(obj))
+		contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", sets.TypedKey(obj), "result", result, "status_update", statusUpdate)
 
 		incrementResourcesSyncedTotal(
 			s.Name,

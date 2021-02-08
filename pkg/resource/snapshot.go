@@ -37,6 +37,9 @@ func (s Snapshot) Delete(gvk schema.GroupVersionKind, id types.NamespacedName) {
 }
 
 func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj TypedObject)) {
+	if s == nil {
+		return
+	}
 	for gvk, objs := range s {
 		for _, obj := range objs {
 			handleObject(gvk, obj)
@@ -45,6 +48,9 @@ func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, o
 }
 
 func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, obj TypedObject)) {
+	if s == nil {
+		return
+	}
 	for cluster, snap := range s {
 		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj TypedObject) {
 			handleObject(cluster, gvk, obj)
