@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Implement interoperability with Relay (skv2-enterprise).
+    issueLink: https://github.com/solo-io/skv2/issues/213
