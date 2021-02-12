@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMulticlusterCertificateSigningRequestReconciler is a mock of MulticlusterCertificateSigningRequestReconciler interface
+// MockMulticlusterCertificateSigningRequestReconciler is a mock of MulticlusterCertificateSigningRequestReconciler interface.
 type MockMulticlusterCertificateSigningRequestReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterCertificateSigningRequestReconcilerMockRecorder
 }
 
-// MockMulticlusterCertificateSigningRequestReconcilerMockRecorder is the mock recorder for MockMulticlusterCertificateSigningRequestReconciler
+// MockMulticlusterCertificateSigningRequestReconcilerMockRecorder is the mock recorder for MockMulticlusterCertificateSigningRequestReconciler.
 type MockMulticlusterCertificateSigningRequestReconcilerMockRecorder struct {
 	mock *MockMulticlusterCertificateSigningRequestReconciler
 }
 
-// NewMockMulticlusterCertificateSigningRequestReconciler creates a new mock instance
+// NewMockMulticlusterCertificateSigningRequestReconciler creates a new mock instance.
 func NewMockMulticlusterCertificateSigningRequestReconciler(ctrl *gomock.Controller) *MockMulticlusterCertificateSigningRequestReconciler {
 	mock := &MockMulticlusterCertificateSigningRequestReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterCertificateSigningRequestReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterCertificateSigningRequestReconciler) EXPECT() *MockMulticlusterCertificateSigningRequestReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileCertificateSigningRequest mocks base method
+// ReconcileCertificateSigningRequest mocks base method.
 func (m *MockMulticlusterCertificateSigningRequestReconciler) ReconcileCertificateSigningRequest(clusterName string, obj *v1beta1.CertificateSigningRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateSigningRequest", clusterName, obj)
@@ -47,36 +47,36 @@ func (m *MockMulticlusterCertificateSigningRequestReconciler) ReconcileCertifica
 	return ret0, ret1
 }
 
-// ReconcileCertificateSigningRequest indicates an expected call of ReconcileCertificateSigningRequest
+// ReconcileCertificateSigningRequest indicates an expected call of ReconcileCertificateSigningRequest.
 func (mr *MockMulticlusterCertificateSigningRequestReconcilerMockRecorder) ReconcileCertificateSigningRequest(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateSigningRequest", reflect.TypeOf((*MockMulticlusterCertificateSigningRequestReconciler)(nil).ReconcileCertificateSigningRequest), clusterName, obj)
 }
 
-// MockMulticlusterCertificateSigningRequestDeletionReconciler is a mock of MulticlusterCertificateSigningRequestDeletionReconciler interface
+// MockMulticlusterCertificateSigningRequestDeletionReconciler is a mock of MulticlusterCertificateSigningRequestDeletionReconciler interface.
 type MockMulticlusterCertificateSigningRequestDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterCertificateSigningRequestDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterCertificateSigningRequestDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterCertificateSigningRequestDeletionReconciler
+// MockMulticlusterCertificateSigningRequestDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterCertificateSigningRequestDeletionReconciler.
 type MockMulticlusterCertificateSigningRequestDeletionReconcilerMockRecorder struct {
 	mock *MockMulticlusterCertificateSigningRequestDeletionReconciler
 }
 
-// NewMockMulticlusterCertificateSigningRequestDeletionReconciler creates a new mock instance
+// NewMockMulticlusterCertificateSigningRequestDeletionReconciler creates a new mock instance.
 func NewMockMulticlusterCertificateSigningRequestDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterCertificateSigningRequestDeletionReconciler {
 	mock := &MockMulticlusterCertificateSigningRequestDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterCertificateSigningRequestDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterCertificateSigningRequestDeletionReconciler) EXPECT() *MockMulticlusterCertificateSigningRequestDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileCertificateSigningRequestDeletion mocks base method
+// ReconcileCertificateSigningRequestDeletion mocks base method.
 func (m *MockMulticlusterCertificateSigningRequestDeletionReconciler) ReconcileCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateSigningRequestDeletion", clusterName, req)
@@ -84,36 +84,36 @@ func (m *MockMulticlusterCertificateSigningRequestDeletionReconciler) ReconcileC
 	return ret0
 }
 
-// ReconcileCertificateSigningRequestDeletion indicates an expected call of ReconcileCertificateSigningRequestDeletion
+// ReconcileCertificateSigningRequestDeletion indicates an expected call of ReconcileCertificateSigningRequestDeletion.
 func (mr *MockMulticlusterCertificateSigningRequestDeletionReconcilerMockRecorder) ReconcileCertificateSigningRequestDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateSigningRequestDeletion", reflect.TypeOf((*MockMulticlusterCertificateSigningRequestDeletionReconciler)(nil).ReconcileCertificateSigningRequestDeletion), clusterName, req)
 }
 
-// MockMulticlusterCertificateSigningRequestReconcileLoop is a mock of MulticlusterCertificateSigningRequestReconcileLoop interface
+// MockMulticlusterCertificateSigningRequestReconcileLoop is a mock of MulticlusterCertificateSigningRequestReconcileLoop interface.
 type MockMulticlusterCertificateSigningRequestReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterCertificateSigningRequestReconcileLoopMockRecorder
 }
 
-// MockMulticlusterCertificateSigningRequestReconcileLoopMockRecorder is the mock recorder for MockMulticlusterCertificateSigningRequestReconcileLoop
+// MockMulticlusterCertificateSigningRequestReconcileLoopMockRecorder is the mock recorder for MockMulticlusterCertificateSigningRequestReconcileLoop.
 type MockMulticlusterCertificateSigningRequestReconcileLoopMockRecorder struct {
 	mock *MockMulticlusterCertificateSigningRequestReconcileLoop
 }
 
-// NewMockMulticlusterCertificateSigningRequestReconcileLoop creates a new mock instance
+// NewMockMulticlusterCertificateSigningRequestReconcileLoop creates a new mock instance.
 func NewMockMulticlusterCertificateSigningRequestReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterCertificateSigningRequestReconcileLoop {
 	mock := &MockMulticlusterCertificateSigningRequestReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterCertificateSigningRequestReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterCertificateSigningRequestReconcileLoop) EXPECT() *MockMulticlusterCertificateSigningRequestReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterCertificateSigningRequestReconciler mocks base method
+// AddMulticlusterCertificateSigningRequestReconciler mocks base method.
 func (m *MockMulticlusterCertificateSigningRequestReconcileLoop) AddMulticlusterCertificateSigningRequestReconciler(ctx context.Context, rec controller.MulticlusterCertificateSigningRequestReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -123,7 +123,7 @@ func (m *MockMulticlusterCertificateSigningRequestReconcileLoop) AddMulticluster
 	m.ctrl.Call(m, "AddMulticlusterCertificateSigningRequestReconciler", varargs...)
 }
 
-// AddMulticlusterCertificateSigningRequestReconciler indicates an expected call of AddMulticlusterCertificateSigningRequestReconciler
+// AddMulticlusterCertificateSigningRequestReconciler indicates an expected call of AddMulticlusterCertificateSigningRequestReconciler.
 func (mr *MockMulticlusterCertificateSigningRequestReconcileLoopMockRecorder) AddMulticlusterCertificateSigningRequestReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)

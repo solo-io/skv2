@@ -13,30 +13,30 @@ import (
 	api "k8s.io/client-go/tools/clientcmd/api"
 )
 
-// MockKubeLoader is a mock of KubeLoader interface
+// MockKubeLoader is a mock of KubeLoader interface.
 type MockKubeLoader struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubeLoaderMockRecorder
 }
 
-// MockKubeLoaderMockRecorder is the mock recorder for MockKubeLoader
+// MockKubeLoaderMockRecorder is the mock recorder for MockKubeLoader.
 type MockKubeLoaderMockRecorder struct {
 	mock *MockKubeLoader
 }
 
-// NewMockKubeLoader creates a new mock instance
+// NewMockKubeLoader creates a new mock instance.
 func NewMockKubeLoader(ctrl *gomock.Controller) *MockKubeLoader {
 	mock := &MockKubeLoader{ctrl: ctrl}
 	mock.recorder = &MockKubeLoaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockKubeLoader) EXPECT() *MockKubeLoaderMockRecorder {
 	return m.recorder
 }
 
-// GetRestConfigForContext mocks base method
+// GetRestConfigForContext mocks base method.
 func (m *MockKubeLoader) GetRestConfigForContext(path, context string) (*rest.Config, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRestConfigForContext", path, context)
@@ -45,13 +45,13 @@ func (m *MockKubeLoader) GetRestConfigForContext(path, context string) (*rest.Co
 	return ret0, ret1
 }
 
-// GetRestConfigForContext indicates an expected call of GetRestConfigForContext
+// GetRestConfigForContext indicates an expected call of GetRestConfigForContext.
 func (mr *MockKubeLoaderMockRecorder) GetRestConfigForContext(path, context interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestConfigForContext", reflect.TypeOf((*MockKubeLoader)(nil).GetRestConfigForContext), path, context)
 }
 
-// GetRawConfigForContext mocks base method
+// GetRawConfigForContext mocks base method.
 func (m *MockKubeLoader) GetRawConfigForContext(path, context string) (api.Config, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRawConfigForContext", path, context)
@@ -60,13 +60,13 @@ func (m *MockKubeLoader) GetRawConfigForContext(path, context string) (api.Confi
 	return ret0, ret1
 }
 
-// GetRawConfigForContext indicates an expected call of GetRawConfigForContext
+// GetRawConfigForContext indicates an expected call of GetRawConfigForContext.
 func (mr *MockKubeLoaderMockRecorder) GetRawConfigForContext(path, context interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRawConfigForContext", reflect.TypeOf((*MockKubeLoader)(nil).GetRawConfigForContext), path, context)
 }
 
-// GetClientConfigForContext mocks base method
+// GetClientConfigForContext mocks base method.
 func (m *MockKubeLoader) GetClientConfigForContext(path, context string) (clientcmd.ClientConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClientConfigForContext", path, context)
@@ -75,13 +75,13 @@ func (m *MockKubeLoader) GetClientConfigForContext(path, context string) (client
 	return ret0, ret1
 }
 
-// GetClientConfigForContext indicates an expected call of GetClientConfigForContext
+// GetClientConfigForContext indicates an expected call of GetClientConfigForContext.
 func (mr *MockKubeLoaderMockRecorder) GetClientConfigForContext(path, context interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClientConfigForContext", reflect.TypeOf((*MockKubeLoader)(nil).GetClientConfigForContext), path, context)
 }
 
-// GetRestConfigFromBytes mocks base method
+// GetRestConfigFromBytes mocks base method.
 func (m *MockKubeLoader) GetRestConfigFromBytes(config []byte) (*rest.Config, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRestConfigFromBytes", config)
@@ -90,7 +90,7 @@ func (m *MockKubeLoader) GetRestConfigFromBytes(config []byte) (*rest.Config, er
 	return ret0, ret1
 }
 
-// GetRestConfigFromBytes indicates an expected call of GetRestConfigFromBytes
+// GetRestConfigFromBytes indicates an expected call of GetRestConfigFromBytes.
 func (mr *MockKubeLoaderMockRecorder) GetRestConfigFromBytes(config interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestConfigFromBytes", reflect.TypeOf((*MockKubeLoader)(nil).GetRestConfigFromBytes), config)

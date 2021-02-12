@@ -14,30 +14,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockKubernetesClusterEventHandler is a mock of KubernetesClusterEventHandler interface
+// MockKubernetesClusterEventHandler is a mock of KubernetesClusterEventHandler interface.
 type MockKubernetesClusterEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterEventHandlerMockRecorder
 }
 
-// MockKubernetesClusterEventHandlerMockRecorder is the mock recorder for MockKubernetesClusterEventHandler
+// MockKubernetesClusterEventHandlerMockRecorder is the mock recorder for MockKubernetesClusterEventHandler.
 type MockKubernetesClusterEventHandlerMockRecorder struct {
 	mock *MockKubernetesClusterEventHandler
 }
 
-// NewMockKubernetesClusterEventHandler creates a new mock instance
+// NewMockKubernetesClusterEventHandler creates a new mock instance.
 func NewMockKubernetesClusterEventHandler(ctrl *gomock.Controller) *MockKubernetesClusterEventHandler {
 	mock := &MockKubernetesClusterEventHandler{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockKubernetesClusterEventHandler) EXPECT() *MockKubernetesClusterEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateKubernetesCluster mocks base method
+// CreateKubernetesCluster mocks base method.
 func (m *MockKubernetesClusterEventHandler) CreateKubernetesCluster(obj *v1alpha1.KubernetesCluster) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateKubernetesCluster", obj)
@@ -45,13 +45,13 @@ func (m *MockKubernetesClusterEventHandler) CreateKubernetesCluster(obj *v1alpha
 	return ret0
 }
 
-// CreateKubernetesCluster indicates an expected call of CreateKubernetesCluster
+// CreateKubernetesCluster indicates an expected call of CreateKubernetesCluster.
 func (mr *MockKubernetesClusterEventHandlerMockRecorder) CreateKubernetesCluster(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterEventHandler)(nil).CreateKubernetesCluster), obj)
 }
 
-// UpdateKubernetesCluster mocks base method
+// UpdateKubernetesCluster mocks base method.
 func (m *MockKubernetesClusterEventHandler) UpdateKubernetesCluster(old, new *v1alpha1.KubernetesCluster) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateKubernetesCluster", old, new)
@@ -59,13 +59,13 @@ func (m *MockKubernetesClusterEventHandler) UpdateKubernetesCluster(old, new *v1
 	return ret0
 }
 
-// UpdateKubernetesCluster indicates an expected call of UpdateKubernetesCluster
+// UpdateKubernetesCluster indicates an expected call of UpdateKubernetesCluster.
 func (mr *MockKubernetesClusterEventHandlerMockRecorder) UpdateKubernetesCluster(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterEventHandler)(nil).UpdateKubernetesCluster), old, new)
 }
 
-// DeleteKubernetesCluster mocks base method
+// DeleteKubernetesCluster mocks base method.
 func (m *MockKubernetesClusterEventHandler) DeleteKubernetesCluster(obj *v1alpha1.KubernetesCluster) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteKubernetesCluster", obj)
@@ -73,13 +73,13 @@ func (m *MockKubernetesClusterEventHandler) DeleteKubernetesCluster(obj *v1alpha
 	return ret0
 }
 
-// DeleteKubernetesCluster indicates an expected call of DeleteKubernetesCluster
+// DeleteKubernetesCluster indicates an expected call of DeleteKubernetesCluster.
 func (mr *MockKubernetesClusterEventHandlerMockRecorder) DeleteKubernetesCluster(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterEventHandler)(nil).DeleteKubernetesCluster), obj)
 }
 
-// GenericKubernetesCluster mocks base method
+// GenericKubernetesCluster mocks base method.
 func (m *MockKubernetesClusterEventHandler) GenericKubernetesCluster(obj *v1alpha1.KubernetesCluster) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenericKubernetesCluster", obj)
@@ -87,36 +87,36 @@ func (m *MockKubernetesClusterEventHandler) GenericKubernetesCluster(obj *v1alph
 	return ret0
 }
 
-// GenericKubernetesCluster indicates an expected call of GenericKubernetesCluster
+// GenericKubernetesCluster indicates an expected call of GenericKubernetesCluster.
 func (mr *MockKubernetesClusterEventHandlerMockRecorder) GenericKubernetesCluster(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterEventHandler)(nil).GenericKubernetesCluster), obj)
 }
 
-// MockKubernetesClusterEventWatcher is a mock of KubernetesClusterEventWatcher interface
+// MockKubernetesClusterEventWatcher is a mock of KubernetesClusterEventWatcher interface.
 type MockKubernetesClusterEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterEventWatcherMockRecorder
 }
 
-// MockKubernetesClusterEventWatcherMockRecorder is the mock recorder for MockKubernetesClusterEventWatcher
+// MockKubernetesClusterEventWatcherMockRecorder is the mock recorder for MockKubernetesClusterEventWatcher.
 type MockKubernetesClusterEventWatcherMockRecorder struct {
 	mock *MockKubernetesClusterEventWatcher
 }
 
-// NewMockKubernetesClusterEventWatcher creates a new mock instance
+// NewMockKubernetesClusterEventWatcher creates a new mock instance.
 func NewMockKubernetesClusterEventWatcher(ctrl *gomock.Controller) *MockKubernetesClusterEventWatcher {
 	mock := &MockKubernetesClusterEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockKubernetesClusterEventWatcher) EXPECT() *MockKubernetesClusterEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockKubernetesClusterEventWatcher) AddEventHandler(ctx context.Context, h controller.KubernetesClusterEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -128,7 +128,7 @@ func (m *MockKubernetesClusterEventWatcher) AddEventHandler(ctx context.Context,
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockKubernetesClusterEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)

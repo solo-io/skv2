@@ -15,30 +15,30 @@ import (
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockValidatingWebhookConfigurationSet is a mock of ValidatingWebhookConfigurationSet interface
+// MockValidatingWebhookConfigurationSet is a mock of ValidatingWebhookConfigurationSet interface.
 type MockValidatingWebhookConfigurationSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockValidatingWebhookConfigurationSetMockRecorder
 }
 
-// MockValidatingWebhookConfigurationSetMockRecorder is the mock recorder for MockValidatingWebhookConfigurationSet
+// MockValidatingWebhookConfigurationSetMockRecorder is the mock recorder for MockValidatingWebhookConfigurationSet.
 type MockValidatingWebhookConfigurationSetMockRecorder struct {
 	mock *MockValidatingWebhookConfigurationSet
 }
 
-// NewMockValidatingWebhookConfigurationSet creates a new mock instance
+// NewMockValidatingWebhookConfigurationSet creates a new mock instance.
 func NewMockValidatingWebhookConfigurationSet(ctrl *gomock.Controller) *MockValidatingWebhookConfigurationSet {
 	mock := &MockValidatingWebhookConfigurationSet{ctrl: ctrl}
 	mock.recorder = &MockValidatingWebhookConfigurationSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockValidatingWebhookConfigurationSet) EXPECT() *MockValidatingWebhookConfigurationSetMockRecorder {
 	return m.recorder
 }
 
-// Keys mocks base method
+// Keys mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -46,13 +46,13 @@ func (m *MockValidatingWebhookConfigurationSet) Keys() sets0.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys
+// Keys indicates an expected call of Keys.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Keys))
 }
 
-// List mocks base method
+// List mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) List(filterResource ...func(*v1.ValidatingWebhookConfiguration) bool) []*v1.ValidatingWebhookConfiguration {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -64,13 +64,13 @@ func (m *MockValidatingWebhookConfigurationSet) List(filterResource ...func(*v1.
 	return ret0
 }
 
-// List indicates an expected call of List
+// List indicates an expected call of List.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).List), filterResource...)
 }
 
-// Map mocks base method
+// Map mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Map() map[string]*v1.ValidatingWebhookConfiguration {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
@@ -78,13 +78,13 @@ func (m *MockValidatingWebhookConfigurationSet) Map() map[string]*v1.ValidatingW
 	return ret0
 }
 
-// Map indicates an expected call of Map
+// Map indicates an expected call of Map.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Map() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Map))
 }
 
-// Insert mocks base method
+// Insert mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Insert(validatingWebhookConfiguration ...*v1.ValidatingWebhookConfiguration) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -94,13 +94,13 @@ func (m *MockValidatingWebhookConfigurationSet) Insert(validatingWebhookConfigur
 	m.ctrl.Call(m, "Insert", varargs...)
 }
 
-// Insert indicates an expected call of Insert
+// Insert indicates an expected call of Insert.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Insert(validatingWebhookConfiguration ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Insert), validatingWebhookConfiguration...)
 }
 
-// Equal mocks base method
+// Equal mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Equal(validatingWebhookConfigurationSet v1sets.ValidatingWebhookConfigurationSet) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Equal", validatingWebhookConfigurationSet)
@@ -108,13 +108,13 @@ func (m *MockValidatingWebhookConfigurationSet) Equal(validatingWebhookConfigura
 	return ret0
 }
 
-// Equal indicates an expected call of Equal
+// Equal indicates an expected call of Equal.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Equal(validatingWebhookConfigurationSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Equal), validatingWebhookConfigurationSet)
 }
 
-// Has mocks base method
+// Has mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Has(validatingWebhookConfiguration ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", validatingWebhookConfiguration)
@@ -122,25 +122,25 @@ func (m *MockValidatingWebhookConfigurationSet) Has(validatingWebhookConfigurati
 	return ret0
 }
 
-// Has indicates an expected call of Has
+// Has indicates an expected call of Has.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Has(validatingWebhookConfiguration interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Has), validatingWebhookConfiguration)
 }
 
-// Delete mocks base method
+// Delete mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Delete(validatingWebhookConfiguration ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", validatingWebhookConfiguration)
 }
 
-// Delete indicates an expected call of Delete
+// Delete indicates an expected call of Delete.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Delete(validatingWebhookConfiguration interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Delete), validatingWebhookConfiguration)
 }
 
-// Union mocks base method
+// Union mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Union(set v1sets.ValidatingWebhookConfigurationSet) v1sets.ValidatingWebhookConfigurationSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Union", set)
@@ -148,13 +148,13 @@ func (m *MockValidatingWebhookConfigurationSet) Union(set v1sets.ValidatingWebho
 	return ret0
 }
 
-// Union indicates an expected call of Union
+// Union indicates an expected call of Union.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Union(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Union), set)
 }
 
-// Difference mocks base method
+// Difference mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Difference(set v1sets.ValidatingWebhookConfigurationSet) v1sets.ValidatingWebhookConfigurationSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Difference", set)
@@ -162,13 +162,13 @@ func (m *MockValidatingWebhookConfigurationSet) Difference(set v1sets.Validating
 	return ret0
 }
 
-// Difference indicates an expected call of Difference
+// Difference indicates an expected call of Difference.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Difference(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Difference), set)
 }
 
-// Intersection mocks base method
+// Intersection mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Intersection(set v1sets.ValidatingWebhookConfigurationSet) v1sets.ValidatingWebhookConfigurationSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Intersection", set)
@@ -176,13 +176,13 @@ func (m *MockValidatingWebhookConfigurationSet) Intersection(set v1sets.Validati
 	return ret0
 }
 
-// Intersection indicates an expected call of Intersection
+// Intersection indicates an expected call of Intersection.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Intersection), set)
 }
 
-// Find mocks base method
+// Find mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*v1.ValidatingWebhookConfiguration, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", id)
@@ -191,13 +191,13 @@ func (m *MockValidatingWebhookConfigurationSet) Find(id ezkube.ResourceId) (*v1.
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find
+// Find indicates an expected call of Find.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Find), id)
 }
 
-// Length mocks base method
+// Length mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Length() int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Length")
@@ -205,13 +205,13 @@ func (m *MockValidatingWebhookConfigurationSet) Length() int {
 	return ret0
 }
 
-// Length indicates an expected call of Length
+// Length indicates an expected call of Length.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Length))
 }
 
-// Generic mocks base method
+// Generic mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Generic() sets.ResourceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -219,13 +219,13 @@ func (m *MockValidatingWebhookConfigurationSet) Generic() sets.ResourceSet {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic
+// Generic indicates an expected call of Generic.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Generic))
 }
 
-// Delta mocks base method
+// Delta mocks base method.
 func (m *MockValidatingWebhookConfigurationSet) Delta(newSet v1sets.ValidatingWebhookConfigurationSet) sets.ResourceDelta {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delta", newSet)
@@ -233,7 +233,7 @@ func (m *MockValidatingWebhookConfigurationSet) Delta(newSet v1sets.ValidatingWe
 	return ret0
 }
 
-// Delta indicates an expected call of Delta
+// Delta indicates an expected call of Delta.
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Delta), newSet)
