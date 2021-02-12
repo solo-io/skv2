@@ -130,7 +130,8 @@ func (r *inputReconciler) processNextWorkItem() bool {
 		requeue bool
 		err     error
 	)
-	if isRemoteCluster {
+	// TODO (ilackarms): this is a workaround for an issue where Relay sets the clusterName field of an object, but the underlying reconciler is a single-cluster reconciler.
+	if isRemoteCluster && r.multiClusterReconcileFunc != nil {
 		requeue, err = r.multiClusterReconcileFunc(key.(ezkube.ClusterResourceId))
 	} else {
 		requeue, err = r.singleClusterReconcileFunc(key.(ezkube.ResourceId))

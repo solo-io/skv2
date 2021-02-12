@@ -3,8 +3,11 @@ package bootstrap
 import (
 	"context"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/solo-io/skv2/pkg/stats"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog/v2"
 
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,6 +62,9 @@ type Options struct {
 	// enables verbose mode
 	VerboseMode bool
 
+	// enables json logger (instead of table logger)
+	JSONLogger bool
+
 	// ManagementContext if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster.
 	ManagementContext string
 
@@ -76,12 +82,15 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&opts.SettingsRef.Namespace, "settings-namespace", opts.SettingsRef.Namespace, "The namespace of the Settings object this controller should use.")
 }
 
-// Start a controller with the given reconciler. Handles bootstrapping local manager + multicluster watches.
-// localMode will start the controller as an "local" only configured to do i/o to local cluster.
+// Start a controller with the given start func. The StartFunc will be called with a bootstrapped local manager. If localMode is false, the StartParameters will include initialized multicluster components.
 func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
-	setupLogging(opts.VerboseMode)
+	return StartMulti(ctx, rootLogger, []StartFunc{start}, opts, schemes, localMode)
+}
 
-	ctx = contextutils.WithLogger(ctx, rootLogger)
+// Like Start, but runs multiple StartFuncs concurrently
+func StartMulti(ctx context.Context, rootLogger string, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
+	setupLogging(opts.VerboseMode, opts.JSONLogger)
+
 	mgr, err := makeMasterManager(opts, schemes)
 	if err != nil {
 		return err
@@ -115,19 +124,29 @@ func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options
 		SettingsRef:     opts.SettingsRef,
 	}
 
-	if err := start(ctx, params); err != nil {
-		return err
+	eg, ctx := errgroup.WithContext(ctx)
+
+	for _, start := range startFuncs {
+		start := start // pike
+		eg.Go(func() error {
+			return start(ctx, params)
+		})
 	}
 
 	if clusterWatcher != nil {
 		// start multicluster watches
-		if err := clusterWatcher.Run(mgr); err != nil {
-			return err
-		}
+		eg.Go(func() error {
+			return clusterWatcher.Run(mgr)
+		})
 	}
 
-	contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
-	return mgr.Start(ctx)
+	eg.Go(func() error {
+		// start the local manager
+		contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
+		return mgr.Start(ctx)
+	})
+
+	return eg.Wait()
 }
 
 // get the manager for the local cluster; we will use this as our "master" cluster
@@ -153,23 +172,32 @@ func makeMasterManager(opts Options, schemes runtime.SchemeBuilder) (manager.Man
 	return mgr, nil
 }
 
-func setupLogging(verboseMode bool) {
+func setupLogging(verboseMode, jsonLogging bool) {
 	level := zapcore.InfoLevel
 	if verboseMode {
 		level = zapcore.DebugLevel
 	}
 	atomicLevel := zap.NewAtomicLevelAt(level)
-	baseLogger := zaputil.NewRaw(
+	zapOpts := []zaputil.Opts{
 		zaputil.Level(&atomicLevel),
-		// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
-		// to use any json parsing tools for the log. Should only be enabled explicitly
-		zaputil.UseDevMode(verboseMode),
-	)
+	}
+	if !jsonLogging {
+		zapOpts = append(zapOpts,
+			// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
+			// to use any json parsing tools for the log. Should only be enabled explicitly
+			zaputil.UseDevMode(true),
+		)
+	}
+	baseLogger := zaputil.NewRaw(zapOpts...)
 
 	// klog
 	zap.ReplaceGlobals(baseLogger)
+
 	// controller-runtime
-	log.SetLogger(zapr.NewLogger(baseLogger))
+	zapLogger := zapr.NewLogger(baseLogger)
+	log.SetLogger(zapLogger)
+	klog.SetLogger(zapLogger)
+
 	// go-utils
 	contextutils.SetFallbackLogger(baseLogger.Sugar())
 }

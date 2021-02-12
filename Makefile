@@ -23,7 +23,7 @@ install-go-tools: mod-download
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
-generated-code: clean install-go-tools update-licenses
+generated-code: install-go-tools update-licenses
 	PATH=$(DEPSGOBIN):$$PATH go run api/generate.go
 	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
 	PATH=$(DEPSGOBIN):$$PATH go generate -v ./...

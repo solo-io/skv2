@@ -1,7 +1,6 @@
 package controllerutils
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/solo-io/skv2/pkg/equalityutils"
@@ -107,13 +106,16 @@ func ObjectStatusesEqual(obj1, obj2 runtime.Object) bool {
 		value2 = value2.Elem()
 	}
 
-	status1 := value1.FieldByName("Status")
+	statusField1 := value1.FieldByName("Status")
+	statusField2 := value2.FieldByName("Status")
 
-	if !status1.IsValid() {
-		panic(fmt.Sprintf("cannot compare statuses of object type %T, missing status field", obj1))
+	if !statusField1.IsValid() && !statusField2.IsValid() {
+		// no status
+		return true
 	}
 
-	status2 := value2.FieldByName("Status")
+	status1 := mkPointer(statusField1.Interface())
+	status2 := mkPointer(statusField2.Interface())
 
-	return reflect.DeepEqual(status1.Interface(), status2.Interface())
+	return equalityutils.DeepEqual(status1, status2)
 }
