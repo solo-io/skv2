@@ -82,8 +82,7 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&opts.SettingsRef.Namespace, "settings-namespace", opts.SettingsRef.Namespace, "The namespace of the Settings object this controller should use.")
 }
 
-// Start a controller with the given reconciler. Handles bootstrapping local manager + multicluster watches.
-// localMode will start the controller as an "local" only configured to do i/o to local cluster.
+// Start a controller with the given start func. The StartFunc will be called with a bootstrapped local manager. If localMode is false, the StartParameters will include initialized multicluster components.
 func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
 	return StartMulti(ctx, rootLogger, []StartFunc{start}, opts, schemes, localMode)
 }

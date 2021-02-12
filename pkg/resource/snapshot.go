@@ -70,7 +70,7 @@ func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, ob
 func (cs ClusterSnapshot) Delete(cluster string, gvk schema.GroupVersionKind, id types.NamespacedName) {
 	snapshot, ok := cs[cluster]
 	if !ok {
-		snapshot = Snapshot{}
+		return
 	}
 	snapshot.Delete(gvk, id)
 	cs[cluster] = snapshot
