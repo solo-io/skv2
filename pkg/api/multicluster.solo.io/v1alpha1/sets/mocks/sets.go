@@ -15,30 +15,30 @@ import (
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockKubernetesClusterSet is a mock of KubernetesClusterSet interface.
+// MockKubernetesClusterSet is a mock of KubernetesClusterSet interface
 type MockKubernetesClusterSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterSetMockRecorder
 }
 
-// MockKubernetesClusterSetMockRecorder is the mock recorder for MockKubernetesClusterSet.
+// MockKubernetesClusterSetMockRecorder is the mock recorder for MockKubernetesClusterSet
 type MockKubernetesClusterSetMockRecorder struct {
 	mock *MockKubernetesClusterSet
 }
 
-// NewMockKubernetesClusterSet creates a new mock instance.
+// NewMockKubernetesClusterSet creates a new mock instance
 func NewMockKubernetesClusterSet(ctrl *gomock.Controller) *MockKubernetesClusterSet {
 	mock := &MockKubernetesClusterSet{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockKubernetesClusterSet) EXPECT() *MockKubernetesClusterSetMockRecorder {
 	return m.recorder
 }
 
-// Keys mocks base method.
+// Keys mocks base method
 func (m *MockKubernetesClusterSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -46,13 +46,13 @@ func (m *MockKubernetesClusterSet) Keys() sets0.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys.
+// Keys indicates an expected call of Keys
 func (mr *MockKubernetesClusterSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Keys))
 }
 
-// List mocks base method.
+// List mocks base method
 func (m *MockKubernetesClusterSet) List(filterResource ...func(*v1alpha1.KubernetesCluster) bool) []*v1alpha1.KubernetesCluster {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -64,13 +64,13 @@ func (m *MockKubernetesClusterSet) List(filterResource ...func(*v1alpha1.Kuberne
 	return ret0
 }
 
-// List indicates an expected call of List.
+// List indicates an expected call of List
 func (mr *MockKubernetesClusterSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockKubernetesClusterSet)(nil).List), filterResource...)
 }
 
-// Map mocks base method.
+// Map mocks base method
 func (m *MockKubernetesClusterSet) Map() map[string]*v1alpha1.KubernetesCluster {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
@@ -78,13 +78,13 @@ func (m *MockKubernetesClusterSet) Map() map[string]*v1alpha1.KubernetesCluster 
 	return ret0
 }
 
-// Map indicates an expected call of Map.
+// Map indicates an expected call of Map
 func (mr *MockKubernetesClusterSetMockRecorder) Map() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Map))
 }
 
-// Insert mocks base method.
+// Insert mocks base method
 func (m *MockKubernetesClusterSet) Insert(kubernetesCluster ...*v1alpha1.KubernetesCluster) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -94,13 +94,13 @@ func (m *MockKubernetesClusterSet) Insert(kubernetesCluster ...*v1alpha1.Kuberne
 	m.ctrl.Call(m, "Insert", varargs...)
 }
 
-// Insert indicates an expected call of Insert.
+// Insert indicates an expected call of Insert
 func (mr *MockKubernetesClusterSetMockRecorder) Insert(kubernetesCluster ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Insert), kubernetesCluster...)
 }
 
-// Equal mocks base method.
+// Equal mocks base method
 func (m *MockKubernetesClusterSet) Equal(kubernetesClusterSet v1alpha1sets.KubernetesClusterSet) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Equal", kubernetesClusterSet)
@@ -108,13 +108,13 @@ func (m *MockKubernetesClusterSet) Equal(kubernetesClusterSet v1alpha1sets.Kuber
 	return ret0
 }
 
-// Equal indicates an expected call of Equal.
+// Equal indicates an expected call of Equal
 func (mr *MockKubernetesClusterSetMockRecorder) Equal(kubernetesClusterSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Equal), kubernetesClusterSet)
 }
 
-// Has mocks base method.
+// Has mocks base method
 func (m *MockKubernetesClusterSet) Has(kubernetesCluster ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", kubernetesCluster)
@@ -122,25 +122,25 @@ func (m *MockKubernetesClusterSet) Has(kubernetesCluster ezkube.ResourceId) bool
 	return ret0
 }
 
-// Has indicates an expected call of Has.
+// Has indicates an expected call of Has
 func (mr *MockKubernetesClusterSetMockRecorder) Has(kubernetesCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Has), kubernetesCluster)
 }
 
-// Delete mocks base method.
+// Delete mocks base method
 func (m *MockKubernetesClusterSet) Delete(kubernetesCluster ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", kubernetesCluster)
 }
 
-// Delete indicates an expected call of Delete.
+// Delete indicates an expected call of Delete
 func (mr *MockKubernetesClusterSetMockRecorder) Delete(kubernetesCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Delete), kubernetesCluster)
 }
 
-// Union mocks base method.
+// Union mocks base method
 func (m *MockKubernetesClusterSet) Union(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Union", set)
@@ -148,13 +148,13 @@ func (m *MockKubernetesClusterSet) Union(set v1alpha1sets.KubernetesClusterSet) 
 	return ret0
 }
 
-// Union indicates an expected call of Union.
+// Union indicates an expected call of Union
 func (mr *MockKubernetesClusterSetMockRecorder) Union(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Union), set)
 }
 
-// Difference mocks base method.
+// Difference mocks base method
 func (m *MockKubernetesClusterSet) Difference(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Difference", set)
@@ -162,13 +162,13 @@ func (m *MockKubernetesClusterSet) Difference(set v1alpha1sets.KubernetesCluster
 	return ret0
 }
 
-// Difference indicates an expected call of Difference.
+// Difference indicates an expected call of Difference
 func (mr *MockKubernetesClusterSetMockRecorder) Difference(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Difference), set)
 }
 
-// Intersection mocks base method.
+// Intersection mocks base method
 func (m *MockKubernetesClusterSet) Intersection(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Intersection", set)
@@ -176,13 +176,13 @@ func (m *MockKubernetesClusterSet) Intersection(set v1alpha1sets.KubernetesClust
 	return ret0
 }
 
-// Intersection indicates an expected call of Intersection.
+// Intersection indicates an expected call of Intersection
 func (mr *MockKubernetesClusterSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Intersection), set)
 }
 
-// Find mocks base method.
+// Find mocks base method
 func (m *MockKubernetesClusterSet) Find(id ezkube.ResourceId) (*v1alpha1.KubernetesCluster, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", id)
@@ -191,13 +191,13 @@ func (m *MockKubernetesClusterSet) Find(id ezkube.ResourceId) (*v1alpha1.Kuberne
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find.
+// Find indicates an expected call of Find
 func (mr *MockKubernetesClusterSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Find), id)
 }
 
-// Length mocks base method.
+// Length mocks base method
 func (m *MockKubernetesClusterSet) Length() int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Length")
@@ -205,13 +205,13 @@ func (m *MockKubernetesClusterSet) Length() int {
 	return ret0
 }
 
-// Length indicates an expected call of Length.
+// Length indicates an expected call of Length
 func (mr *MockKubernetesClusterSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Length))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockKubernetesClusterSet) Generic() sets.ResourceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -219,13 +219,13 @@ func (m *MockKubernetesClusterSet) Generic() sets.ResourceSet {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockKubernetesClusterSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Generic))
 }
 
-// Delta mocks base method.
+// Delta mocks base method
 func (m *MockKubernetesClusterSet) Delta(newSet v1alpha1sets.KubernetesClusterSet) sets.ResourceDelta {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delta", newSet)
@@ -233,7 +233,7 @@ func (m *MockKubernetesClusterSet) Delta(newSet v1alpha1sets.KubernetesClusterSe
 	return ret0
 }
 
-// Delta indicates an expected call of Delta.
+// Delta indicates an expected call of Delta
 func (mr *MockKubernetesClusterSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Delta), newSet)
