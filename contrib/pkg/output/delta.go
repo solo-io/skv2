@@ -5,7 +5,7 @@ import (
 
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
-
+// TODO remove
 // represents a generic delta between two snapshots
 type SnapshotDelta struct {
 	Inserted map[schema.GroupVersionKind]sets.ResourceSet

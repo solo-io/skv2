@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"github.com/rotisserie/eris"
 
 	"golang.org/x/sync/errgroup"
 
@@ -83,12 +84,12 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 }
 
 // Start a controller with the given start func. The StartFunc will be called with a bootstrapped local manager. If localMode is false, the StartParameters will include initialized multicluster components.
-func Start(ctx context.Context, rootLogger string, start StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
-	return StartMulti(ctx, rootLogger, []StartFunc{start}, opts, schemes, localMode)
+func Start(ctx context.Context, start StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
+	return StartMulti(ctx, []StartFunc{start}, opts, schemes, localMode)
 }
 
 // Like Start, but runs multiple StartFuncs concurrently
-func StartMulti(ctx context.Context, rootLogger string, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
+func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
 	setupLogging(opts.VerboseMode, opts.JSONLogger)
 
 	mgr, err := makeMasterManager(opts, schemes)
@@ -129,11 +130,17 @@ func StartMulti(ctx context.Context, rootLogger string, startFuncs []StartFunc, 
 	for _, start := range startFuncs {
 		start := start // pike
 		eg.Go(func() error {
+			if synced := params.MasterManager.GetCache().WaitForCacheSync(ctx); !synced {
+				return eris.Errorf("caches failed to sync")
+			}
 			return start(ctx, params)
 		})
 	}
 
 	if clusterWatcher != nil {
+		if synced := params.MasterManager.GetCache().WaitForCacheSync(ctx); !synced {
+			return eris.Errorf("caches failed to sync")
+		}
 		// start multicluster watches
 		eg.Go(func() error {
 			return clusterWatcher.Run(mgr)
