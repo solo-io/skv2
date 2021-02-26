@@ -58,6 +58,22 @@ func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk sch
 	}
 }
 
+func (s Snapshot) Clone() Snapshot {
+	clone := Snapshot{}
+	for k, v := range s {
+		clone[k] = copyNnsMap(v)
+	}
+	return clone
+}
+
+func copyNnsMap(m map[types.NamespacedName]TypedObject) map[types.NamespacedName]TypedObject {
+	nnsMapCopy := map[types.NamespacedName]TypedObject{}
+	for k, v := range m {
+		nnsMapCopy[k] = v
+	}
+	return nnsMapCopy
+}
+
 func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, obj TypedObject) {
 	snapshot, ok := cs[cluster]
 	if !ok {
@@ -76,21 +92,13 @@ func (cs ClusterSnapshot) Delete(cluster string, gvk schema.GroupVersionKind, id
 	cs[cluster] = snapshot
 }
 
-// ClusterSnapshot represents a set of snapshots partitioned by cluster
-type ClusterSnapshot map[string]Snapshot
-
-func (s Snapshot) Clone() Snapshot {
-	clone := Snapshot{}
-	for k, v := range s {
-		clone[k] = copyNnsMap(v)
+func (cs ClusterSnapshot) Clone() ClusterSnapshot {
+	clone := ClusterSnapshot{}
+	for k, v := range cs {
+		clone[k] = v.Clone()
 	}
 	return clone
 }
 
-func copyNnsMap(m map[types.NamespacedName]TypedObject) map[types.NamespacedName]TypedObject {
-	nnsMapCopy := map[types.NamespacedName]TypedObject{}
-	for k, v := range m {
-		nnsMapCopy[k] = v
-	}
-	return nnsMapCopy
-}
+// ClusterSnapshot represents a set of snapshots partitioned by cluster
+type ClusterSnapshot map[string]Snapshot
