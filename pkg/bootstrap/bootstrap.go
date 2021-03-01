@@ -139,11 +139,11 @@ func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schem
 	}
 
 	if clusterWatcher != nil {
-		if synced := params.MasterManager.GetCache().WaitForCacheSync(ctx); !synced {
-			return eris.Errorf("caches failed to sync")
-		}
 		// start multicluster watches
 		eg.Go(func() error {
+			if synced := params.MasterManager.GetCache().WaitForCacheSync(ctx); !synced {
+				return eris.Errorf("caches failed to sync")
+			}
 			return clusterWatcher.Run(mgr)
 		})
 	}
