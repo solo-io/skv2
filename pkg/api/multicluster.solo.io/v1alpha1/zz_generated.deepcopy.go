@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for KubernetesCluster
 
 func (in *KubernetesCluster) DeepCopyInto(out *KubernetesCluster) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 

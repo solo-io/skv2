@@ -26,6 +26,9 @@ func (h *SnapshotHistory) SetInput(latestInput json.Marshaler) {
 func (h *SnapshotHistory) GetInput() ([]byte, error) {
 	h.lock.RLock()
 	defer h.lock.RUnlock()
+	if h.latestInput == nil {
+		return []byte{}, nil
+	}
 	return h.latestInput.MarshalJSON()
 }
 
@@ -38,6 +41,9 @@ func (h *SnapshotHistory) SetOutput(latestOutput json.Marshaler) {
 func (h *SnapshotHistory) GetOutput() ([]byte, error) {
 	h.lock.RLock()
 	defer h.lock.RUnlock()
+	if h.latestOutput == nil {
+		return []byte{}, nil
+	}
 	return h.latestOutput.MarshalJSON()
 }
 
