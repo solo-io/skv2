@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/218
+    description: Add `condition` to Helm dependency struct.
