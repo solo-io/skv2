@@ -90,10 +90,6 @@ func Start(ctx context.Context, start StartFunc, opts Options, schemes runtime.S
 	return StartMulti(ctx, []StartFunc{start}, opts, schemes, localMode)
 }
 
-type StartParams struct {
-
-}
-
 // Like Start, but runs multiple StartFuncs concurrently
 func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool, addStatsHandlers ...func(mux *http.ServeMux, profiles map[string]string)) error {
 	setupLogging(opts.VerboseMode, opts.JSONLogger)
