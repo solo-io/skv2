@@ -6,9 +6,9 @@ import (
 	"net/http"
 )
 
-func MustStartServerBackground(snapshotHistory *SnapshotHistory, port uint32) {
+func MustStartServerBackground(snapshotHistory *SnapshotHistory, port uint32, addHandlers ...func(mux *http.ServeMux, profiles map[string]string)) {
 	go func() {
-		if err := StartServer(snapshotHistory, port); err != nil {
+		if err := StartServer(snapshotHistory, port, addHandlers...); err != nil {
 			log.Fatal(err)
 		}
 	}()
