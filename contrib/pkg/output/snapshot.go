@@ -101,9 +101,9 @@ var (
 	incrementResourcesSyncedTotal = func(snapshot, result string, obj ezkube.Object) {
 		resourcesSyncedTotal.WithLabelValues(
 			snapshot,
+			string(result),
 			fmt.Sprintf("%T", obj),
 			obj.GetNamespace()+"/"+obj.GetName(),
-			string(result),
 		).Inc()
 	}
 
