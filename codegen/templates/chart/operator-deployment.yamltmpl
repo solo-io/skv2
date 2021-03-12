@@ -106,7 +106,7 @@ metadata:
 spec:
   selector:
     app: [[ $operator.Name ]]
-  type: [[ $operator.Service.Type ]]
+  type: {{ $[[ $operatorVar ]].serviceType }}
   ports:
   [[- range $port := $operator.Service.Ports ]]
   - name: [[ $port.Name ]]

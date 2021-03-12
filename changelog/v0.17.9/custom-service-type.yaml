@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/220
+    description: Expose the service type on generated helm charts such that it can be configured by user helm values.

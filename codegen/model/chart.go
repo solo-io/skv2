@@ -78,6 +78,7 @@ type Dependency struct {
 	Name       string `json:"name,omitempty"`
 	Version    string `json:"version,omitempty"`
 	Repository string `json:"repository,omitempty"`
+	Condition  string `json:"condition,omitempty"`
 }
 
 type Data struct {

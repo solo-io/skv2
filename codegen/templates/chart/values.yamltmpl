@@ -6,6 +6,7 @@
 [[ lower_camel $operator.Name ]]:
 [[ toYaml $operator.Deployment | indent 2 ]]
 [[- if gt (len $operator.Service.Ports) 0 ]]
+  serviceType: [[ $operator.Service.Type ]]
   ports:
 [[- range $port := $operator.Service.Ports ]]
     [[ $port.Name ]]: [[ $port.DefaultPort ]]
