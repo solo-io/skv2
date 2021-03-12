@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/rotisserie/eris"
 
@@ -90,7 +91,7 @@ func Start(ctx context.Context, start StartFunc, opts Options, schemes runtime.S
 }
 
 // Like Start, but runs multiple StartFuncs concurrently
-func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
+func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool, addStatsHandlers ...func(mux *http.ServeMux, profiles map[string]string)) error {
 	setupLogging(opts.VerboseMode, opts.JSONLogger)
 
 	mgr, err := makeMasterManager(opts, schemes)
@@ -100,7 +101,7 @@ func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schem
 
 	snapshotHistory := stats.NewSnapshotHistory()
 
-	stats.MustStartServerBackground(snapshotHistory, opts.MetricsBindPort)
+	stats.MustStartServerBackground(snapshotHistory, opts.MetricsBindPort, addStatsHandlers...)
 
 	var (
 		clusterWatcher multicluster.Interface
