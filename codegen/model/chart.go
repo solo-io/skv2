@@ -63,18 +63,18 @@ type Service struct {
 }
 type ServicePort struct {
 	// The name of this port within the service.
-	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name" desc:"The name of this port within the service."`
 
 	// The default port that will be exposed by this service.
-	DefaultPort int32 `json:"port" protobuf:"varint,3,opt,name=port"`
+	DefaultPort int32 `json:"port" protobuf:"varint,3,opt,name=port" desc:"The default port that will be exposed by this service."`
 }
 
 type Image struct {
-	Tag        string        `json:"tag,omitempty"  desc:"tag for the container"`
-	Repository string        `json:"repository,omitempty"  desc:"image name (repository) for the container."`
-	Registry   string        `json:"registry,omitempty" desc:"image prefix/registry e.g. (quay.io/solo-io)"`
-	PullPolicy v1.PullPolicy `json:"pullPolicy,omitempty"  desc:"image pull policy for the container"`
-	PullSecret string        `json:"pullSecret,omitempty" desc:"image pull policy for the container "`
+	Tag        string        `json:"tag,omitempty"  desc:"Tag for the container."`
+	Repository string        `json:"repository,omitempty"  desc:"Image name (repository)."`
+	Registry   string        `json:"registry,omitempty" desc:"Image registry."`
+	PullPolicy v1.PullPolicy `json:"pullPolicy,omitempty"  desc:"Image pull policy."`
+	PullSecret string        `json:"pullSecret,omitempty" desc:"Image pull policy. "`
 }
 
 // Helm chart dependency
@@ -103,11 +103,11 @@ type HelmValues struct {
 }
 
 type OperatorHelmValues struct {
-	Image        Image                    `json:"image" desc:"Specify the deployment image"`
-	Resources    *v1.ResourceRequirements `json:"resources" desc:"Specify deployment resource requirements"`
-	ServiceType  v1.ServiceType           `json:"serviceType" desc:"Specify the service type"`
-	ServicePorts []ServicePort            `json:"ports" desc:"Specify service ports"`
-	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment"`
+	Image        Image                    `json:"image" desc:"Specify the deployment image."`
+	Resources    *v1.ResourceRequirements `json:"resources" desc:"Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details." omitChildren:"true"`
+	ServiceType  v1.ServiceType           `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
+	ServicePorts []ServicePort            `json:"ports" desc:"Specify service ports."`
+	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
 }
 
 func (c Chart) BuildChartValues() HelmValues {

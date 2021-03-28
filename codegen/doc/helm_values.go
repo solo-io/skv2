@@ -1,11 +1,15 @@
 package doc
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
 	"strings"
 	"unicode"
+
+	"github.com/solo-io/go-utils/contextutils"
 )
 
 const (
@@ -19,6 +23,7 @@ const (
 	// the field description
 	descTag = "desc"
 
+	// markdown file header
 	header = `
 ---
 title: "%s"
@@ -76,7 +81,7 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 	case reflect.Map:
 
 		// add entry for map itself
-		addValue(HelmValue{Key: strings.Join(path, "."), Type: typ.Kind().String(), DefaultValue: valToString(val), Description: desc})
+		addValue(HelmValue{Key: strings.Join(path, "."), Type: getMapType(typ), DefaultValue: valToString(val), Description: desc})
 
 		if typ.Key().Kind() == reflect.String {
 			docReflect(addValue, append(path, "<MAP_KEY>"), desc, typ.Elem(), reflect.Value{})
@@ -105,6 +110,10 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 	case reflect.Slice:
 		lst := len(path) - 1
 		path[lst] = path[lst] + "[]"
+
+		// add entry for slice field itself
+		addValue(HelmValue{Key: strings.Join(path, "."), Type: "[]" + typ.Elem().Kind().String(), DefaultValue: valToString(val), Description: desc})
+
 		docReflect(addValue, path, desc, typ.Elem(), reflect.Value{})
 	case reflect.Struct:
 
@@ -135,9 +144,18 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 				fieldVal = val.Field(i)
 			}
 
-			// ignore the children of fields that are marked as such
+			// ignore the children of fields that are marked as such (i.e. don't recurse down)
 			if _, ok := field.Tag.Lookup(omitChildrenTag); ok {
-				addValue(HelmValue{Key: strings.Join(append(path, field.Name), "."), Type: typ.Kind().String(), DefaultValue: valToString(val), Description: desc})
+				path := strings.Join(append(path, field.Name), ".")
+				kind := field.Type.Kind()
+				if kind == reflect.Slice {
+					path += "[]"
+				} else if kind == reflect.Ptr {
+					// get the underlying type of pointer types
+					kind = fieldVal.Elem().Kind()
+				}
+				// add a HelmValue for the struct field whose children are ignored
+				addValue(HelmValue{Key: path, Type: kind.String(), DefaultValue: valToString(fieldVal), Description: desc})
 				continue
 			}
 
@@ -160,6 +178,14 @@ func valToString(val reflect.Value) string {
 			valStr = fmt.Sprint(val.Int())
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			valStr = fmt.Sprint(val.Uint())
+		case reflect.Ptr:
+			return valToString(val.Elem())
+		case reflect.Slice, reflect.Struct:
+			j, err := json.Marshal(val.Interface())
+			if err != nil {
+				contextutils.LoggerFrom(context.Background()).Warnf("failed to marshal value to json: %v", err)
+			}
+			valStr = string(j)
 		}
 	}
 	// needed for correct markdown table formatting (can't have "||")
@@ -167,4 +193,18 @@ func valToString(val reflect.Value) string {
 		valStr = " "
 	}
 	return valStr
+}
+
+// get string representation of map type in the form "map[keyType, valType]"
+func getMapType(val reflect.Type) string {
+	elemType := val.Elem().Kind().String()
+	if val.Elem().Kind() == reflect.Ptr {
+		elemType = val.Elem().Elem().Kind().String()
+	}
+
+	return fmt.Sprintf(
+		"map[%s, %s]",
+		val.Key().Kind().String(),
+		elemType,
+	)
 }
