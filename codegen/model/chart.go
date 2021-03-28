@@ -1,6 +1,10 @@
 package model
 
 import (
+	"fmt"
+
+	"github.com/iancoleman/strcase"
+	"github.com/solo-io/skv2/codegen/doc"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 )
@@ -90,4 +94,55 @@ type Data struct {
 	Icon         string       `json:"icon,omitempty"`
 	Sources      []string     `json:"sources,omitempty"`
 	Dependencies []Dependency `json:"dependencies,omitempty"`
+}
+
+// fields exposed as Helm values
+type HelmValues struct {
+	Operators    map[string]OperatorHelmValues
+	CustomValues interface{}
+}
+
+type OperatorHelmValues struct {
+	Image        Image                    `json:"image" desc:"Specify the deployment image"`
+	Resources    *v1.ResourceRequirements `json:"resources" desc:"Specify deployment resource requirements"`
+	ServiceType  v1.ServiceType           `json:"serviceType" desc:"Specify the service type"`
+	ServicePorts []ServicePort            `json:"ports" desc:"Specify service ports"`
+	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment"`
+}
+
+func (c Chart) BuildChartValues() HelmValues {
+	values := HelmValues{}
+	values.CustomValues = c.Values
+	values.Operators = map[string]OperatorHelmValues{}
+
+	for _, operator := range c.Operators {
+		values.Operators[operator.Name] = OperatorHelmValues{
+			Image:        operator.Deployment.Image,
+			Resources:    operator.Deployment.Resources,
+			ServiceType:  operator.Service.Type,
+			ServicePorts: operator.Service.Ports,
+			Env:          operator.Env,
+		}
+	}
+
+	return values
+}
+
+func (c Chart) GenerateHelmDoc(title string) string {
+	helmValues := c.BuildChartValues()
+
+	// generate documentation for custom values
+	helmValuesForDoc := doc.GenerateHelmValuesDoc(helmValues.CustomValues, "", "")
+
+	// generate documentation for operator values
+	for name, values := range helmValues.Operators {
+		name = strcase.ToLowerCamel(name)
+
+		// clear image tag so it doesn't show build time commit hashes
+		values.Image.Tag = ""
+
+		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
+	}
+
+	return helmValuesForDoc.ToMarkdown(title)
 }
