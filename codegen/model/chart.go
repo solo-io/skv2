@@ -106,7 +106,7 @@ type OperatorHelmValues struct {
 	Image        Image                    `json:"image" desc:"Specify the deployment image."`
 	Resources    *v1.ResourceRequirements `json:"resources" desc:"Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details." omitChildren:"true"`
 	ServiceType  v1.ServiceType           `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts []ServicePort            `json:"ports" desc:"Specify service ports."`
+	ServicePorts map[string]uint32        `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
 }
 
@@ -116,11 +116,16 @@ func (c Chart) BuildChartValues() HelmValues {
 	values.Operators = map[string]OperatorHelmValues{}
 
 	for _, operator := range c.Operators {
+		servicePorts := map[string]uint32{}
+		for _, port := range operator.Service.Ports {
+			servicePorts[port.Name] = uint32(port.DefaultPort)
+		}
+
 		values.Operators[operator.Name] = OperatorHelmValues{
 			Image:        operator.Deployment.Image,
 			Resources:    operator.Deployment.Resources,
 			ServiceType:  operator.Service.Type,
-			ServicePorts: operator.Service.Ports,
+			ServicePorts: servicePorts,
 			Env:          operator.Env,
 		}
 	}

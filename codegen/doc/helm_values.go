@@ -94,15 +94,15 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 				})
 
 				for _, k := range sortedKeys {
-					path = append(path, k.String())
+					elemPath := append(path, k.String())
 					defaultVal := val.MapIndex(k)
 					if typ.Elem().Kind() <= reflect.Float64 || typ.Elem().Kind() == reflect.String {
 						// primitive type, print it as default value
 						valStr := valToString(defaultVal)
-						addValue(HelmValue{Key: strings.Join(path, "."), Type: typ.Elem().Kind().String(), DefaultValue: valStr, Description: desc})
+						addValue(HelmValue{Key: strings.Join(elemPath, "."), Type: typ.Elem().Kind().String(), DefaultValue: valStr, Description: desc})
 					} else {
 						// non primitive type, descend
-						docReflect(addValue, path, desc, typ.Elem(), defaultVal)
+						docReflect(addValue, elemPath, desc, typ.Elem(), defaultVal)
 					}
 				}
 			}
