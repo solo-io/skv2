@@ -426,9 +426,9 @@ func (b *multiCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}FromClus
     }
 
     for _, item := range {{ $kindLowerCamel }}List.Items {
-        item := item               // pike
+        item := item.DeepCopy()             // pike + own
         item.ClusterName = cluster // set cluster for in-memory processing
-        {{ $kindLowerCamelPlural }}.Insert(&item)
+        {{ $kindLowerCamelPlural }}.Insert(item)
     }
 
     return nil
@@ -539,9 +539,9 @@ func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx co
     }
 
     for _, item := range {{ $kindLowerCamel }}List.Items {
-        item := item               // pike
+        item := item.DeepCopy()               // pike + own the item.
         item.ClusterName = b.clusterName
-        {{ $kindLowerCamelPlural }}.Insert(&item)
+        {{ $kindLowerCamelPlural }}.Insert(item)
     }
 
     return nil
