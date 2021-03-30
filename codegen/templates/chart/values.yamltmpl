@@ -1,19 +1,8 @@
-[[- if .Values ]]
-[[ toYaml .Values ]]
-[[- end ]]
+[[- $values := .BuildChartValues ]]
 
-[[- range $operator := $.Operators ]]
-[[ lower_camel $operator.Name ]]:
-[[ toYaml $operator.Deployment | indent 2 ]]
-[[- if gt (len $operator.Service.Ports) 0 ]]
-  serviceType: [[ $operator.Service.Type ]]
-  ports:
-[[- range $port := $operator.Service.Ports ]]
-    [[ $port.Name ]]: [[ $port.DefaultPort ]]
-[[- end ]]
-[[- end ]]
-[[- if gt (len $operator.Env) 0 ]]
-  env:
-[[ toYaml $operator.Env | indent 4 ]]
-[[- end ]]
+[[- toYaml $values.CustomValues ]]
+
+[[ range $name, $values := $values.Operators ]]
+[[ lower_camel $name ]]:
+[[ toYaml $values | indent 2]]
 [[- end ]]
