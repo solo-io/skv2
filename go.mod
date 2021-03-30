@@ -27,6 +27,7 @@ require (
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
+	github.com/pseudomuto/protoc-gen-doc v1.4.1
 	github.com/rogpeppe/go-internal v1.6.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0

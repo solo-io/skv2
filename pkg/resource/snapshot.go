@@ -69,7 +69,7 @@ func (s Snapshot) Clone() Snapshot {
 func copyNnsMap(m map[types.NamespacedName]TypedObject) map[types.NamespacedName]TypedObject {
 	nnsMapCopy := map[types.NamespacedName]TypedObject{}
 	for k, v := range m {
-		nnsMapCopy[k] = v
+		nnsMapCopy[k] = v.DeepCopyObject().(TypedObject)
 	}
 	return nnsMapCopy
 }
