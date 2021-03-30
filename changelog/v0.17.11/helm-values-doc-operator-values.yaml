@@ -1,5 +1,5 @@
 changelog:
-  - type: FIX
+  - type: NEW_FEATURE
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1361
     description: Add generation of documentation for Helm values.
     resolvesIssue: false
