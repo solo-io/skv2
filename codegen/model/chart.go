@@ -98,11 +98,16 @@ type Data struct {
 
 // fields exposed as Helm values
 type HelmValues struct {
-	Operators    map[string]OperatorHelmValues
+	Operators    []OperatorValues
 	CustomValues interface{}
 }
 
-type OperatorHelmValues struct {
+type OperatorValues struct {
+	Name   string
+	Values Values
+}
+
+type Values struct {
 	Image        Image                    `json:"image" desc:"Specify the deployment image."`
 	Resources    *v1.ResourceRequirements `json:"resources" desc:"Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details." omitChildren:"true"`
 	ServiceType  v1.ServiceType           `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
@@ -113,7 +118,6 @@ type OperatorHelmValues struct {
 func (c Chart) BuildChartValues() HelmValues {
 	values := HelmValues{}
 	values.CustomValues = c.Values
-	values.Operators = map[string]OperatorHelmValues{}
 
 	for _, operator := range c.Operators {
 		servicePorts := map[string]uint32{}
@@ -121,13 +125,16 @@ func (c Chart) BuildChartValues() HelmValues {
 			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
 
-		values.Operators[operator.Name] = OperatorHelmValues{
-			Image:        operator.Deployment.Image,
-			Resources:    operator.Deployment.Resources,
-			ServiceType:  operator.Service.Type,
-			ServicePorts: servicePorts,
-			Env:          operator.Env,
-		}
+		values.Operators = append(values.Operators, OperatorValues{
+			Name: operator.Name,
+			Values: Values{
+				Image:        operator.Deployment.Image,
+				Resources:    operator.Deployment.Resources,
+				ServiceType:  operator.Service.Type,
+				ServicePorts: servicePorts,
+				Env:          operator.Env,
+			},
+		})
 	}
 
 	return values
@@ -140,8 +147,9 @@ func (c Chart) GenerateHelmDoc(title string) string {
 	helmValuesForDoc := doc.GenerateHelmValuesDoc(helmValues.CustomValues, "", "")
 
 	// generate documentation for operator values
-	for name, values := range helmValues.Operators {
-		name = strcase.ToLowerCamel(name)
+	for _, operatorWithValues := range helmValues.Operators {
+		name := strcase.ToLowerCamel(operatorWithValues.Name)
+		values := operatorWithValues.Values
 
 		// clear image tag so it doesn't show build time commit hashes
 		values.Image.Tag = ""

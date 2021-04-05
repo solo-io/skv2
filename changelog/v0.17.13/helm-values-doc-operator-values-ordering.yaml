@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/226
+    description: Make ordering of operator values deterministic.
