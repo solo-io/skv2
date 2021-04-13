@@ -70,6 +70,24 @@ func (mr *MockSecretSetMockRecorder) List(filterResource ...interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSecretSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockSecretSet) UnsortedList(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Secret)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockSecretSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockSecretSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockSecretSet) Map() map[string]*v1.Secret {
 	m.ctrl.T.Helper()
@@ -294,6 +312,24 @@ func (mr *MockServiceAccountSetMockRecorder) List(filterResource ...interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockServiceAccountSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockServiceAccountSet) UnsortedList(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.ServiceAccount)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockServiceAccountSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockServiceAccountSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockServiceAccountSet) Map() map[string]*v1.ServiceAccount {
 	m.ctrl.T.Helper()
@@ -516,6 +552,24 @@ func (m *MockNamespaceSet) List(filterResource ...func(*v1.Namespace) bool) []*v
 func (mr *MockNamespaceSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockNamespaceSet)(nil).List), filterResource...)
+}
+
+// UnsortedList mocks base method
+func (m *MockNamespaceSet) UnsortedList(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Namespace)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockNamespaceSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockNamespaceSet)(nil).UnsortedList), filterResource...)
 }
 
 // Map mocks base method

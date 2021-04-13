@@ -18,6 +18,8 @@ type CustomResourceDefinitionSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
 	// Return the Set as a map of key to resource.
 	Map() map[string]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
 	// Insert a resource into the set.
@@ -88,6 +90,24 @@ func (s *customResourceDefinitionSet) List(filterResource ...func(*apiextensions
 
 	var customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
 	for _, obj := range s.Generic().List(genericFilters...) {
+		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
+	}
+	return customResourceDefinitionList
+}
+
+func (s *customResourceDefinitionSet) UnsortedList(filterResource ...func(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
+		})
+	}
+
+	var customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
 	}
 	return customResourceDefinitionList

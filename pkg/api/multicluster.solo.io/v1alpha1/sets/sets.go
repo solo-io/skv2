@@ -18,6 +18,8 @@ type KubernetesClusterSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
 	// Return the Set as a map of key to resource.
 	Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster
 	// Insert a resource into the set.
@@ -88,6 +90,24 @@ func (s *kubernetesClusterSet) List(filterResource ...func(*multicluster_solo_io
 
 	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range s.Generic().List(genericFilters...) {
+		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+	}
+	return kubernetesClusterList
+}
+
+func (s *kubernetesClusterSet) UnsortedList(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+		})
+	}
+
+	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 	}
 	return kubernetesClusterList

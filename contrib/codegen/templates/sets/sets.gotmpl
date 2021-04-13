@@ -20,6 +20,8 @@ type {{ $resource.Kind }}Set interface {
     Keys() sets.String
     // List of resources stored in the set. Pass an optional filter function to filter on the list.
     List(filterResource ... func(*{{ $import_prefix }}.{{ $resource.Kind }}) bool) []*{{ $import_prefix }}.{{ $resource.Kind }}
+    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+    UnsortedList(filterResource ... func(*{{ $import_prefix }}.{{ $resource.Kind }}) bool) []*{{ $import_prefix }}.{{ $resource.Kind }}
     // Return the Set as a map of key to resource.
     Map() map[string]*{{ $import_prefix }}.{{ $resource.Kind }}
     // Insert a resource into the set.
@@ -90,6 +92,24 @@ func (s *{{ $kindLowerCamel }}Set) List(filterResource ... func(*{{ $import_pref
 
     var {{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}
     for _, obj := range s.Generic().List(genericFilters...) {
+        {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
+    }
+    return {{ $kindLowerCamel }}List
+}
+
+func (s *{{ $kindLowerCamel }}Set) UnsortedList(filterResource ... func(*{{ $import_prefix }}.{{ $resource.Kind }}) bool) []*{{ $import_prefix }}.{{ $resource.Kind }} {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
+        })
+    }
+
+    var {{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}
+    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
         {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
     }
     return {{ $kindLowerCamel }}List
