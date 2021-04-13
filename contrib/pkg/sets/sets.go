@@ -101,8 +101,11 @@ func (s *resourceSet) List(filterResource ...func(ezkube.ResourceId) bool) []ezk
 func (s *resourceSet) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	var resources []ezkube.ResourceId
-	for _, key := range s.set.UnsortedList() {
+
+	keys := s.set.UnsortedList()
+	resources := make([]ezkube.ResourceId, 0, len(keys))
+
+	for _, key := range keys {
 		var filtered bool
 		for _, filter := range filterResource {
 			if filter(s.mapping[key]) {

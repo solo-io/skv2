@@ -88,8 +88,9 @@ func (s *certificateSigningRequestSet) List(filterResource ...func(*certificates
 		})
 	}
 
-	var certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	certificateSigningRequestList := make([]*certificates_k8s_io_v1beta1.CertificateSigningRequest, 0, len(objs))
+	for _, obj := range objs {
 		certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 	}
 	return certificateSigningRequestList

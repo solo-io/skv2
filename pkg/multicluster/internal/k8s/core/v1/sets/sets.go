@@ -88,8 +88,9 @@ func (s *secretSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
 		})
 	}
 
-	var secretList []*v1.Secret
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	secretList := make([]*v1.Secret, 0, len(objs))
+	for _, obj := range objs {
 		secretList = append(secretList, obj.(*v1.Secret))
 	}
 	return secretList
@@ -297,8 +298,9 @@ func (s *serviceAccountSet) List(filterResource ...func(*v1.ServiceAccount) bool
 		})
 	}
 
-	var serviceAccountList []*v1.ServiceAccount
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	serviceAccountList := make([]*v1.ServiceAccount, 0, len(objs))
+	for _, obj := range objs {
 		serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
 	}
 	return serviceAccountList
@@ -506,8 +508,9 @@ func (s *namespaceSet) List(filterResource ...func(*v1.Namespace) bool) []*v1.Na
 		})
 	}
 
-	var namespaceList []*v1.Namespace
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	namespaceList := make([]*v1.Namespace, 0, len(objs))
+	for _, obj := range objs {
 		namespaceList = append(namespaceList, obj.(*v1.Namespace))
 	}
 	return namespaceList

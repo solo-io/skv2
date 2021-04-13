@@ -88,8 +88,9 @@ func (s *roleSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.Role
 		})
 	}
 
-	var roleList []*rbac_authorization_k8s_io_v1.Role
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	roleList := make([]*rbac_authorization_k8s_io_v1.Role, 0, len(objs))
+	for _, obj := range objs {
 		roleList = append(roleList, obj.(*rbac_authorization_k8s_io_v1.Role))
 	}
 	return roleList
@@ -297,8 +298,9 @@ func (s *roleBindingSet) List(filterResource ...func(*rbac_authorization_k8s_io_
 		})
 	}
 
-	var roleBindingList []*rbac_authorization_k8s_io_v1.RoleBinding
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	roleBindingList := make([]*rbac_authorization_k8s_io_v1.RoleBinding, 0, len(objs))
+	for _, obj := range objs {
 		roleBindingList = append(roleBindingList, obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 	}
 	return roleBindingList
@@ -506,8 +508,9 @@ func (s *clusterRoleSet) List(filterResource ...func(*rbac_authorization_k8s_io_
 		})
 	}
 
-	var clusterRoleList []*rbac_authorization_k8s_io_v1.ClusterRole
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	clusterRoleList := make([]*rbac_authorization_k8s_io_v1.ClusterRole, 0, len(objs))
+	for _, obj := range objs {
 		clusterRoleList = append(clusterRoleList, obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 	}
 	return clusterRoleList
@@ -715,8 +718,9 @@ func (s *clusterRoleBindingSet) List(filterResource ...func(*rbac_authorization_
 		})
 	}
 
-	var clusterRoleBindingList []*rbac_authorization_k8s_io_v1.ClusterRoleBinding
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	clusterRoleBindingList := make([]*rbac_authorization_k8s_io_v1.ClusterRoleBinding, 0, len(objs))
+	for _, obj := range objs {
 		clusterRoleBindingList = append(clusterRoleBindingList, obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 	}
 	return clusterRoleBindingList

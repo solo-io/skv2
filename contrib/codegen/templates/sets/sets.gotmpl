@@ -90,8 +90,9 @@ func (s *{{ $kindLowerCamel }}Set) List(filterResource ... func(*{{ $import_pref
         })
     }
 
-    var {{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}
-    for _, obj := range s.Generic().List(genericFilters...) {
+    objs := s.Generic().List(genericFilters...)
+    {{ $kindLowerCamel }}List := make([]*{{ $import_prefix }}.{{ $resource.Kind }}, 0, len(objs))
+    for _, obj := range objs {
         {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
     }
     return {{ $kindLowerCamel }}List

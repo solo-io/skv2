@@ -88,8 +88,9 @@ func (s *customResourceDefinitionSet) List(filterResource ...func(*apiextensions
 		})
 	}
 
-	var customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	customResourceDefinitionList := make([]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, 0, len(objs))
+	for _, obj := range objs {
 		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition))
 	}
 	return customResourceDefinitionList
