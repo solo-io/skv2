@@ -1,6 +1,9 @@
 package controllerutils_test
 
 import (
+	"context"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
@@ -167,5 +170,36 @@ var _ = Describe("ObjectStatusesEqual", func() {
 		obj2.Status.PercentRemaining = 5
 		equal = ObjectStatusesEqual(obj1, obj2)
 		Expect(equal).To(BeFalse())
+	})
+
+	It("doesnt fail with deep copy in paralel", func() {
+		// this was discovered by race detector
+		// and this test will only fail with race detector on.
+		obj1 := &things_test_io_v1.Paint{
+			Status: things_test_io_v1.PaintStatus{
+				PercentRemaining: 50,
+			},
+		}
+		obj2 := &things_test_io_v1.Paint{
+			Status: things_test_io_v1.PaintStatus{
+				PercentRemaining: 50,
+			},
+		}
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		go func() {
+			for ctx.Err() == nil {
+				ObjectsEqual(obj1, obj2)
+			}
+		}()
+		go func() {
+			for ctx.Err() == nil {
+				obj1.DeepCopyObject()
+				obj2.DeepCopyObject()
+			}
+		}()
+
+		time.Sleep(time.Second)
+		// if we got here without race detector crash, we're good
 	})
 })
