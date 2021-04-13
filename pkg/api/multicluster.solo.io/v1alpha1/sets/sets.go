@@ -88,8 +88,9 @@ func (s *kubernetesClusterSet) List(filterResource ...func(*multicluster_solo_io
 		})
 	}
 
-	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	kubernetesClusterList := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(objs))
+	for _, obj := range objs {
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 	}
 	return kubernetesClusterList

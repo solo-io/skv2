@@ -88,8 +88,9 @@ func (s *validatingWebhookConfigurationSet) List(filterResource ...func(*admissi
 		})
 	}
 
-	var validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	validatingWebhookConfigurationList := make([]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, 0, len(objs))
+	for _, obj := range objs {
 		validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 	}
 	return validatingWebhookConfigurationList
