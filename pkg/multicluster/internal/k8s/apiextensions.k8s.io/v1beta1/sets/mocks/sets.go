@@ -70,6 +70,24 @@ func (mr *MockCustomResourceDefinitionSetMockRecorder) List(filterResource ...in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCustomResourceDefinitionSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockCustomResourceDefinitionSet) UnsortedList(filterResource ...func(*v1beta1.CustomResourceDefinition) bool) []*v1beta1.CustomResourceDefinition {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1beta1.CustomResourceDefinition)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockCustomResourceDefinitionSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockCustomResourceDefinitionSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockCustomResourceDefinitionSet) Map() map[string]*v1beta1.CustomResourceDefinition {
 	m.ctrl.T.Helper()

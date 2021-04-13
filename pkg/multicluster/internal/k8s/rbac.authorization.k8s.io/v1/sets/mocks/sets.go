@@ -70,6 +70,24 @@ func (mr *MockRoleSetMockRecorder) List(filterResource ...interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockRoleSet) UnsortedList(filterResource ...func(*v1.Role) bool) []*v1.Role {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Role)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockRoleSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockRoleSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockRoleSet) Map() map[string]*v1.Role {
 	m.ctrl.T.Helper()
@@ -292,6 +310,24 @@ func (m *MockRoleBindingSet) List(filterResource ...func(*v1.RoleBinding) bool) 
 func (mr *MockRoleBindingSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleBindingSet)(nil).List), filterResource...)
+}
+
+// UnsortedList mocks base method
+func (m *MockRoleBindingSet) UnsortedList(filterResource ...func(*v1.RoleBinding) bool) []*v1.RoleBinding {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.RoleBinding)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockRoleBindingSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockRoleBindingSet)(nil).UnsortedList), filterResource...)
 }
 
 // Map mocks base method
@@ -518,6 +554,24 @@ func (mr *MockClusterRoleSetMockRecorder) List(filterResource ...interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterRoleSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockClusterRoleSet) UnsortedList(filterResource ...func(*v1.ClusterRole) bool) []*v1.ClusterRole {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.ClusterRole)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockClusterRoleSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockClusterRoleSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockClusterRoleSet) Map() map[string]*v1.ClusterRole {
 	m.ctrl.T.Helper()
@@ -740,6 +794,24 @@ func (m *MockClusterRoleBindingSet) List(filterResource ...func(*v1.ClusterRoleB
 func (mr *MockClusterRoleBindingSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).List), filterResource...)
+}
+
+// UnsortedList mocks base method
+func (m *MockClusterRoleBindingSet) UnsortedList(filterResource ...func(*v1.ClusterRoleBinding) bool) []*v1.ClusterRoleBinding {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.ClusterRoleBinding)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockClusterRoleBindingSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).UnsortedList), filterResource...)
 }
 
 // Map mocks base method

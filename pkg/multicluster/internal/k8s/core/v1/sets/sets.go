@@ -18,6 +18,8 @@ type SecretSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*v1.Secret) bool) []*v1.Secret
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*v1.Secret) bool) []*v1.Secret
 	// Return the Set as a map of key to resource.
 	Map() map[string]*v1.Secret
 	// Insert a resource into the set.
@@ -88,6 +90,24 @@ func (s *secretSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
 
 	var secretList []*v1.Secret
 	for _, obj := range s.Generic().List(genericFilters...) {
+		secretList = append(secretList, obj.(*v1.Secret))
+	}
+	return secretList
+}
+
+func (s *secretSet) UnsortedList(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*v1.Secret))
+		})
+	}
+
+	var secretList []*v1.Secret
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		secretList = append(secretList, obj.(*v1.Secret))
 	}
 	return secretList
@@ -207,6 +227,8 @@ type ServiceAccountSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
 	// Return the Set as a map of key to resource.
 	Map() map[string]*v1.ServiceAccount
 	// Insert a resource into the set.
@@ -277,6 +299,24 @@ func (s *serviceAccountSet) List(filterResource ...func(*v1.ServiceAccount) bool
 
 	var serviceAccountList []*v1.ServiceAccount
 	for _, obj := range s.Generic().List(genericFilters...) {
+		serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
+	}
+	return serviceAccountList
+}
+
+func (s *serviceAccountSet) UnsortedList(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*v1.ServiceAccount))
+		})
+	}
+
+	var serviceAccountList []*v1.ServiceAccount
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
 	}
 	return serviceAccountList
@@ -396,6 +436,8 @@ type NamespaceSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace
 	// Return the Set as a map of key to resource.
 	Map() map[string]*v1.Namespace
 	// Insert a resource into the set.
@@ -466,6 +508,24 @@ func (s *namespaceSet) List(filterResource ...func(*v1.Namespace) bool) []*v1.Na
 
 	var namespaceList []*v1.Namespace
 	for _, obj := range s.Generic().List(genericFilters...) {
+		namespaceList = append(namespaceList, obj.(*v1.Namespace))
+	}
+	return namespaceList
+}
+
+func (s *namespaceSet) UnsortedList(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*v1.Namespace))
+		})
+	}
+
+	var namespaceList []*v1.Namespace
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		namespaceList = append(namespaceList, obj.(*v1.Namespace))
 	}
 	return namespaceList
