@@ -1,3 +1,4 @@
 changelog:
-  - type: NON_USER_FACING
-    description: Utils/Changes that allow resolving races in downstream projects.
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/229
+    description: Add UnsortedList to sets.
