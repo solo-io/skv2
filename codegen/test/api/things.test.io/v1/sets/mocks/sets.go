@@ -70,6 +70,24 @@ func (mr *MockPaintSetMockRecorder) List(filterResource ...interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPaintSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockPaintSet) UnsortedList(filterResource ...func(*v1.Paint) bool) []*v1.Paint {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Paint)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockPaintSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockPaintSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockPaintSet) Map() map[string]*v1.Paint {
 	m.ctrl.T.Helper()
@@ -292,6 +310,24 @@ func (m *MockClusterResourceSet) List(filterResource ...func(*v1.ClusterResource
 func (mr *MockClusterResourceSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClusterResourceSet)(nil).List), filterResource...)
+}
+
+// UnsortedList mocks base method
+func (m *MockClusterResourceSet) UnsortedList(filterResource ...func(*v1.ClusterResource) bool) []*v1.ClusterResource {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.ClusterResource)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockClusterResourceSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockClusterResourceSet)(nil).UnsortedList), filterResource...)
 }
 
 // Map mocks base method

@@ -18,6 +18,8 @@ type PaintSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
 	// Return the Set as a map of key to resource.
 	Map() map[string]*things_test_io_v1.Paint
 	// Insert a resource into the set.
@@ -86,8 +88,27 @@ func (s *paintSet) List(filterResource ...func(*things_test_io_v1.Paint) bool) [
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	paintList := make([]*things_test_io_v1.Paint, 0, len(objs))
+	for _, obj := range objs {
+		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
+	}
+	return paintList
+}
+
+func (s *paintSet) UnsortedList(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*things_test_io_v1.Paint))
+		})
+	}
+
 	var paintList []*things_test_io_v1.Paint
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
 	}
 	return paintList
@@ -207,6 +228,8 @@ type ClusterResourceSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
 	// Return the Set as a map of key to resource.
 	Map() map[string]*things_test_io_v1.ClusterResource
 	// Insert a resource into the set.
@@ -275,8 +298,27 @@ func (s *clusterResourceSet) List(filterResource ...func(*things_test_io_v1.Clus
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	clusterResourceList := make([]*things_test_io_v1.ClusterResource, 0, len(objs))
+	for _, obj := range objs {
+		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
+	}
+	return clusterResourceList
+}
+
+func (s *clusterResourceSet) UnsortedList(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*things_test_io_v1.ClusterResource))
+		})
+	}
+
 	var clusterResourceList []*things_test_io_v1.ClusterResource
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
 	}
 	return clusterResourceList
