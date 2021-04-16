@@ -241,7 +241,7 @@ func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Contex
                 errs = multierror.Append(errs, err)
                 continue
             }
-            if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+            if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
                 errs = multierror.Append(errs, err)
             }
         }
@@ -265,7 +265,7 @@ func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.
     {{- if $resource.Status }}
     if opts.{{ $resource.Kind }} {
         for _, obj := range s.{{ $kindPlural }}().List() {
-            if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+            if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
                 errs = multierror.Append(errs, err)
             }
         }

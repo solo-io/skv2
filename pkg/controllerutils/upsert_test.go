@@ -76,6 +76,8 @@ var _ = Describe("Update Status", func() {
 	var (
 		client controller_client.Client
 		ctx    = context.Background()
+		pv     *v1.PersistentVolume
+		cl     controller_client.Client
 	)
 	BeforeEach(func() {
 		var err error
@@ -83,36 +85,41 @@ var _ = Describe("Update Status", func() {
 		client = fake.NewClientBuilder().Build()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(client).NotTo(BeNil())
-	})
-	It("updates status when resource is found", func() {
-		// Create new config map
-		cm := &v1.PersistentVolume{
+		pv = &v1.PersistentVolume{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "v1",
-				Kind:       "ConfigMap",
+				Kind:       "PersistentVolume",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "test-cm",
+				Name:      "test-pv",
 				Namespace: "ns",
 			},
 			Status: v1.PersistentVolumeStatus{
 				Message: "Test1",
 			},
 		}
-
-		var cl controller_client.Client
 		cl = fake.NewClientBuilder().
-			WithObjects(cm).
+			WithObjects(pv).
 			Build()
-
-		cm.Status = v1.PersistentVolumeStatus{
+		pv.Status = v1.PersistentVolumeStatus{
 			Message: "Test2",
 		}
-
+	})
+	It("updates status when resource is found", func() {
 		// update status
-		result, err := UpdateStatus(ctx, cl, cm)
+		result, err := UpdateStatus(ctx, cl, pv)
 		Expect(err).To(BeNil())
 		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
+		// make sure object was updated
+		Expect(pv.ResourceVersion).NotTo(Equal(""))
+	})
+	It("updates status when resource is found; but not the object", func() {
+		// update status
+		result, err := UpdateStatusImmutable(ctx, cl, pv)
+		Expect(err).To(BeNil())
+		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
+		// make sure object was not updated
+		Expect(pv.ResourceVersion).To(Equal(""))
 	})
 })
 

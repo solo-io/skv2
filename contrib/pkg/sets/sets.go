@@ -32,6 +32,7 @@ func TypedKey(id ezkube.ResourceId) string {
 type ResourceSet interface {
 	Keys() sets.String
 	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
+	UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	Map() map[string]ezkube.ResourceId
 	Insert(resource ...ezkube.ResourceId)
 	Equal(set ResourceSet) bool
@@ -83,6 +84,28 @@ func (s *resourceSet) List(filterResource ...func(ezkube.ResourceId) bool) []ezk
 	defer s.lock.RUnlock()
 	var resources []ezkube.ResourceId
 	for _, key := range s.set.List() {
+		var filtered bool
+		for _, filter := range filterResource {
+			if filter(s.mapping[key]) {
+				filtered = true
+				break
+			}
+		}
+		if !filtered {
+			resources = append(resources, s.mapping[key])
+		}
+	}
+	return resources
+}
+
+func (s *resourceSet) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	keys := s.set.UnsortedList()
+	resources := make([]ezkube.ResourceId, 0, len(keys))
+
+	for _, key := range keys {
 		var filtered bool
 		for _, filter := range filterResource {
 			if filter(s.mapping[key]) {

@@ -2,6 +2,7 @@ package controllerutils
 
 import (
 	"context"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -71,19 +72,47 @@ func transition(existing, desired runtime.Object, transitionFuncs []TransitionFu
 // If the desired object status is semantically equal
 // to the existing object status, the update is skipped.
 func UpdateStatus(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
-	key := client.ObjectKeyFromObject(obj)
-
-	// Always valid because obj is client.Object
-	existing := obj.DeepCopyObject().(client.Object)
-
-	if err := c.Get(ctx, key, existing); err != nil {
+	updateNeeded, err := needUpdate(ctx, c, obj)
+	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
 	}
 
-	if ObjectStatusesEqual(existing, obj) {
-		return controllerutil.OperationResultNone, nil
+	return update(ctx, c, obj)
+}
+
+// Easily Update the Status of a desired object in the cluster.
+// Requires that the object already exists (will only attempt to update).
+//
+// If the desired object status is semantically equal
+// to the existing object status, the update is skipped.
+// Unlike the method above, this method does not update obj.
+func UpdateStatusImmutable(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
+	updateNeeded, err := needUpdate(ctx, c, obj)
+	if err != nil || !updateNeeded {
+		return controllerutil.OperationResultNone, err
 	}
 
+	// Always valid because obj is client.Object
+	copyOfObj := obj.DeepCopyObject().(client.Object)
+	return update(ctx, c, copyOfObj)
+}
+
+func needUpdate(ctx context.Context, c client.Client, obj client.Object) (bool, error) {
+	key := client.ObjectKeyFromObject(obj)
+
+	// create empty object of the same type so that Get will work
+	existing := reflect.New(reflect.TypeOf(obj).Elem()).Interface().(client.Object)
+	if err := c.Get(ctx, key, existing); err != nil {
+		return false, err
+	}
+
+	if ObjectStatusesEqual(existing, obj) {
+		return false, nil
+	}
+	return true, nil
+}
+
+func update(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
 	if err := c.Status().Update(ctx, obj); err != nil {
 		return controllerutil.OperationResultNone, err
 	}

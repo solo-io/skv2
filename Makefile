@@ -26,6 +26,8 @@ install-go-tools: mod-download
 generated-code: install-go-tools update-licenses
 	PATH=$(DEPSGOBIN):$$PATH go run api/generate.go
 	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
+# this re-gens test protos
+	PATH=$(DEPSGOBIN):$$PATH go test ./codegen
 	PATH=$(DEPSGOBIN):$$PATH go generate -v ./...
 	PATH=$(DEPSGOBIN):$$PATH goimports -w .
 	go mod tidy

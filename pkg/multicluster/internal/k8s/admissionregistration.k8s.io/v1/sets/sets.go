@@ -18,6 +18,8 @@ type ValidatingWebhookConfigurationSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool) []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool) []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
 	// Return the Set as a map of key to resource.
 	Map() map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
 	// Insert a resource into the set.
@@ -86,8 +88,27 @@ func (s *validatingWebhookConfigurationSet) List(filterResource ...func(*admissi
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	validatingWebhookConfigurationList := make([]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, 0, len(objs))
+	for _, obj := range objs {
+		validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
+	}
+	return validatingWebhookConfigurationList
+}
+
+func (s *validatingWebhookConfigurationSet) UnsortedList(filterResource ...func(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool) []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
+		})
+	}
+
 	var validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 	}
 	return validatingWebhookConfigurationList

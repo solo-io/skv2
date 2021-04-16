@@ -18,6 +18,8 @@ type CertificateSigningRequestSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest
 	// Return the Set as a map of key to resource.
 	Map() map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest
 	// Insert a resource into the set.
@@ -86,8 +88,27 @@ func (s *certificateSigningRequestSet) List(filterResource ...func(*certificates
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	certificateSigningRequestList := make([]*certificates_k8s_io_v1beta1.CertificateSigningRequest, 0, len(objs))
+	for _, obj := range objs {
+		certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
+	}
+	return certificateSigningRequestList
+}
+
+func (s *certificateSigningRequestSet) UnsortedList(filterResource ...func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
+		})
+	}
+
 	var certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 	}
 	return certificateSigningRequestList

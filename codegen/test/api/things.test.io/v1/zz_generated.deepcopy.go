@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for Paint
 
 func (in *Paint) DeepCopyInto(out *Paint) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -72,7 +71,6 @@ func (in *PaintList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for ClusterResource
 
 func (in *ClusterResource) DeepCopyInto(out *ClusterResource) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
