@@ -6,6 +6,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/solo-io/skv2/codegen/metrics"
 
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/anyvendor/anyvendor"
@@ -92,6 +95,9 @@ type Command struct {
 
 // function to execute skv2 code gen from another repository
 func (c Command) Execute() error {
+	metrics.NewSink()
+	defer metrics.MeasureElapsed("command-execution-time", time.Now())
+
 	c.ctx = context.Background()
 	c.moduleRoot = util.GetModuleRoot()
 	c.moduleName = util.GetGoModule()
@@ -135,7 +141,8 @@ func (c Command) Execute() error {
 			return err
 		}
 	}
-	return nil
+
+	return metrics.Flush(os.Stdout)
 }
 
 func (c Command) generateChart() error {
@@ -192,6 +199,8 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 }
 
 func (c Command) generateGroup(grp model.Group, descriptors []*collector.DescriptorWithPath) error {
+	defer metrics.MeasureElapsed("generate-group", time.Now())
+
 	c.addDescriptorsToGroup(&grp, descriptors)
 
 	fileWriter := &writer.DefaultFileWriter{
