@@ -155,10 +155,12 @@ var defaultGogoArgs = []string{
 
 func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []string, compileProtos bool) error {
 	cmd := exec.Command("protoc")
-	for i := range imports {
-		imports[i] = "-I" + imports[i]
+
+	var cmdImports []string
+	for _, i := range imports {
+		cmdImports = append(cmdImports, fmt.Sprintf("-I%s", i))
 	}
-	cmd.Args = append(cmd.Args, imports...)
+	cmd.Args = append(cmd.Args, cmdImports...)
 	gogoArgs := append(defaultGogoArgs, p.customArgs...)
 
 	if compileProtos {

@@ -199,8 +199,6 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 }
 
 func (c Command) generateGroup(grp model.Group, descriptors []*collector.DescriptorWithPath) error {
-	defer metrics.MeasureElapsed("generate-group", time.Now())
-
 	c.addDescriptorsToGroup(&grp, descriptors)
 
 	fileWriter := &writer.DefaultFileWriter{
