@@ -94,7 +94,7 @@ type Command struct {
 
 // function to execute skv2 code gen from another repository
 func (c Command) Execute() error {
-	metrics.NewSink()
+	metrics.NewAggregator()
 
 	c.ctx = context.Background()
 	c.moduleRoot = util.GetModuleRoot()

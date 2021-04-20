@@ -9,19 +9,19 @@ import (
 )
 
 var (
-	sink *metricSink
+	aggregator *metricAggregator
 )
 
-func NewSink() {
-	sink = newMetricSink()
+func NewAggregator() {
+	aggregator = newMetricAggregator()
 }
 
 func MeasureElapsed(key string, startTime time.Time) {
-	sink.setDurationMetric(keyWithGlobalNamespace(key), time.Since(startTime).String())
+	aggregator.setDurationMetric(keyWithGlobalNamespace(key), time.Since(startTime).String())
 }
 
 func IncrementFrequency(key string) {
-	sink.incrementFrequencyMetric(keyWithGlobalNamespace(key))
+	aggregator.incrementFrequencyMetric(keyWithGlobalNamespace(key))
 }
 
 func keyWithGlobalNamespace(key string) string {
@@ -30,7 +30,7 @@ func keyWithGlobalNamespace(key string) string {
 }
 
 func Flush(writer io.Writer) error {
-	byt, err := sink.getMetrics()
+	byt, err := aggregator.getMetrics()
 	if err != nil {
 		return err
 	}
@@ -41,27 +41,27 @@ func Flush(writer io.Writer) error {
 // This is a primitive implementation for compiling performance measurements of code-gen
 // If we need it, we could substitute this with something more heavy handed like:
 //	https://github.com/armon/go-metrics
-type metricSink struct {
+type metricAggregator struct {
 	metricsMu sync.Mutex
 
 	DurationMetrics  map[string]string `json:"duration"`
 	FrequencyMetrics map[string]int64  `json:"frequency"`
 }
 
-func newMetricSink() *metricSink {
-	return &metricSink{
+func newMetricAggregator() *metricAggregator {
+	return &metricAggregator{
 		DurationMetrics:  map[string]string{},
 		FrequencyMetrics: map[string]int64{},
 	}
 }
 
-func (m *metricSink) setDurationMetric(key, value string) {
+func (m *metricAggregator) setDurationMetric(key, value string) {
 	m.metricsMu.Lock()
 	defer m.metricsMu.Unlock()
 	m.DurationMetrics[key] = value
 }
 
-func (m *metricSink) incrementFrequencyMetric(key string) {
+func (m *metricAggregator) incrementFrequencyMetric(key string) {
 	m.metricsMu.Lock()
 	defer m.metricsMu.Unlock()
 	v, ok := m.FrequencyMetrics[key]
@@ -72,7 +72,7 @@ func (m *metricSink) incrementFrequencyMetric(key string) {
 	}
 }
 
-func (m *metricSink) getMetrics() ([]byte, error) {
+func (m *metricAggregator) getMetrics() ([]byte, error) {
 	m.metricsMu.Lock()
 	defer m.metricsMu.Unlock()
 
