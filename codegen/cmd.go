@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/solo-io/skv2/codegen/metrics"
 
@@ -96,7 +95,6 @@ type Command struct {
 // function to execute skv2 code gen from another repository
 func (c Command) Execute() error {
 	metrics.NewSink()
-	defer metrics.MeasureElapsed("command-execution-time", time.Now())
 
 	c.ctx = context.Background()
 	c.moduleRoot = util.GetModuleRoot()
