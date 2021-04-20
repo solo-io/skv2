@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/solo-io/skv2/codegen/metrics"
+
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/anyvendor/anyvendor"
 	"github.com/solo-io/anyvendor/pkg/manager"
@@ -92,6 +94,8 @@ type Command struct {
 
 // function to execute skv2 code gen from another repository
 func (c Command) Execute() error {
+	metrics.NewAggregator()
+
 	c.ctx = context.Background()
 	c.moduleRoot = util.GetModuleRoot()
 	c.moduleName = util.GetGoModule()
@@ -135,7 +139,8 @@ func (c Command) Execute() error {
 			return err
 		}
 	}
-	return nil
+
+	return metrics.Flush(os.Stdout)
 }
 
 func (c Command) generateChart() error {

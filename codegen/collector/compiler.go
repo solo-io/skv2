@@ -9,6 +9,9 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/solo-io/skv2/codegen/metrics"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
@@ -56,6 +59,8 @@ type protoCompiler struct {
 }
 
 func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []string) ([]*DescriptorWithPath, error) {
+	defer metrics.MeasureElapsed("proto-compiler", time.Now())
+
 	var descriptors []*DescriptorWithPath
 	var mutex sync.Mutex
 	addDescriptor := func(f DescriptorWithPath) {
@@ -150,10 +155,12 @@ var defaultGogoArgs = []string{
 
 func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []string, compileProtos bool) error {
 	cmd := exec.Command("protoc")
-	for i := range imports {
-		imports[i] = "-I" + imports[i]
+
+	var cmdImports []string
+	for _, i := range imports {
+		cmdImports = append(cmdImports, fmt.Sprintf("-I%s", i))
 	}
-	cmd.Args = append(cmd.Args, imports...)
+	cmd.Args = append(cmd.Args, cmdImports...)
 	gogoArgs := append(defaultGogoArgs, p.customArgs...)
 
 	if compileProtos {

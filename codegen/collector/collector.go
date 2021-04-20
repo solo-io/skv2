@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/solo-io/skv2/codegen/metrics"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/log"
 	"github.com/solo-io/go-utils/stringutils"
@@ -19,23 +21,33 @@ type Collector interface {
 
 func NewCollector(customImports, commonImports []string) *collector {
 	return &collector{
-		customImports: customImports,
-		commonImports: commonImports,
+		customImports:    customImports,
+		commonImports:    commonImports,
+		importsExtractor: NewSynchronizedImportsExtractor(),
 	}
 }
 
 type collector struct {
 	customImports []string
 	commonImports []string
+
+	// The collector traverses a tree of files, opening and parsing each one.
+	// These are costly operations that are often duplicated (ie fileA and fileB both import fileC)
+	// The importsExtractor allows us to separate *how* to fetch imports from a file
+	// from *when* to fetch imports from a file. This allows us to define a caching layer
+	// in the importsExtractor and the collector doesn't have to be aware of it.
+	importsExtractor ImportsExtractor
 }
 
 func (c *collector) CollectImportsForFile(root, protoFile string) ([]string, error) {
-	return c.importsForProtoFile(root, protoFile, c.customImports)
+	return c.synchronizedImportsForProtoFile(root, protoFile, c.customImports)
 }
 
 var protoImportStatementRegex = regexp.MustCompile(`.*import "(.*)";.*`)
 
 func (c *collector) detectImportsForFile(file string) ([]string, error) {
+	metrics.IncrementFrequency("collector-opened-files")
+
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -55,6 +67,15 @@ func (c *collector) detectImportsForFile(file string) ([]string, error) {
 	return protoImports, nil
 }
 
+func (c *collector) synchronizedImportsForProtoFile(absoluteRoot, protoFile string, customImports []string) ([]string, error) {
+	// Define how we will extract the imports for the proto file
+	importsFetcher := func(protoFileName string) ([]string, error) {
+		return c.importsForProtoFile(absoluteRoot, protoFileName, customImports)
+	}
+
+	return c.importsExtractor.FetchImportsForFile(protoFile, importsFetcher)
+}
+
 func (c *collector) importsForProtoFile(absoluteRoot, protoFile string, customImports []string) ([]string, error) {
 	importStatements, err := c.detectImportsForFile(protoFile)
 	if err != nil {
@@ -67,7 +88,7 @@ func (c *collector) importsForProtoFile(absoluteRoot, protoFile string, customIm
 			return nil, err
 		}
 		dependency := filepath.Join(importPath, importedProto)
-		dependencyImports, err := c.importsForProtoFile(absoluteRoot, dependency, customImports)
+		dependencyImports, err := c.synchronizedImportsForProtoFile(absoluteRoot, dependency, customImports)
 		if err != nil {
 			return nil, eris.Wrapf(err, "getting imports for dependency")
 		}
