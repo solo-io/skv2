@@ -71,7 +71,11 @@ func (r *inputReconciler) ReconcileLocalGeneric(id ezkube.ResourceId) (reconcile
 		return reconcile.Result{}, eris.Errorf("internal error: no single-cluster reconcile func provided; cannot reconcile %v", sets.Key(id))
 	}
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "id", sets.Key(id))
-	r.queue.AddRateLimited(id)
+	// never queue more than one event
+	if r.queue.Len() < 2 {
+		contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "id", sets.Key(id))
+		r.queue.AddRateLimited(id)
+	}
 
 	return reconcile.Result{}, nil
 }
@@ -84,7 +88,11 @@ func (r *inputReconciler) ReconcileRemoteGeneric(id ezkube.ClusterResourceId) (r
 		return reconcile.Result{}, eris.Errorf("internal error: no multi-cluster reconcile func provided; cannot reconcile %v", sets.Key(id))
 	}
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", id.GetClusterName(), "id", sets.Key(id))
-	r.queue.AddRateLimited(id)
+	// never queue more than one event
+	if r.queue.Len() < 2 {
+		contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", id.GetClusterName(), "id", sets.Key(id))
+		r.queue.AddRateLimited(id)
+	}
 
 	return reconcile.Result{}, nil
 }

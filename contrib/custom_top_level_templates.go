@@ -124,8 +124,9 @@ func InputSnapshotManualBuilder(params SnapshotTemplateParameters) model.CustomT
 InputReconciler custom templates
 */
 const (
-	HomogenousInputReconcilerCustomTemplatePath = "input/input_reconciler.gotmpl"
-	HybridInputReconcilerCustomTemplatePath     = "input/hybrid_input_reconciler.gotmpl"
+	HomogenousInputReconcilerCustomTemplatePath       = "input/input_reconciler.gotmpl"
+	HybridInputReconcilerCustomTemplatePath           = "input/hybrid_input_reconciler.gotmpl"
+	HybridEventBasedInputReconcilerCustomTemplatePath = "input/hybrid_event_input_reconciler.gotmpl"
 )
 
 // Returns the template for generating input reconcilers.
@@ -134,6 +135,18 @@ func InputReconciler(params SnapshotTemplateParameters) model.CustomTemplates {
 	if _, isHybrid := params.SnapshotResources.(HybridSnapshotResources); isHybrid {
 		templatePath = HybridInputReconcilerCustomTemplatePath
 	}
+	templateContentsBytes, err := ioutil.ReadFile(templatesDir + templatePath)
+	if err != nil {
+		panic(err)
+	}
+	templateContents := string(templateContentsBytes)
+
+	return params.ConstructTemplate(params, templateContents, true)
+}
+
+// Returns the template for generating input reconcilers.
+func HybridEventBasedInputReconciler(params SnapshotTemplateParameters) model.CustomTemplates {
+	templatePath := HybridEventBasedInputReconcilerCustomTemplatePath
 	templateContentsBytes, err := ioutil.ReadFile(templatesDir + templatePath)
 	if err != nil {
 		panic(err)

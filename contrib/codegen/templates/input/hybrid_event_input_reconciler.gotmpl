@@ -1,0 +1,215 @@
+{{ $snapshotName := snapshot_name }}
+{{ $localGroups := local_imported_groups }}
+{{ $remoteGroups := remote_imported_groups }}
+
+package {{ package }}
+
+import (
+    "context"
+    "time"
+
+    "github.com/solo-io/skv2/contrib/pkg/input"
+    sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+    "github.com/solo-io/skv2/pkg/multicluster"
+    "github.com/solo-io/skv2/pkg/reconcile"
+
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
+
+{{- range $group := $remoteGroups }}
+{{- $type_import_prefix := group_import_name $group }}
+{{- $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+    {{ $type_import_prefix }} "{{ group_import_path $group }}"
+    {{ $controller_import_prefix }} "{{ controller_import_path $group }}"
+{{- end }}
+{{- range $group := $localGroups }}
+{{- $type_import_prefix := group_import_name $group }}
+{{- $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+    {{ $type_import_prefix }} "{{ group_import_path $group }}"
+    {{ $controller_import_prefix }} "{{ controller_import_path $group }}"
+{{- end }}
+)
+
+// The Input Reconciler calls a simple func(id) error whenever a
+// storage event is received for any of:
+{{- if gt (len $remoteGroups) 0 }}
+{{- range $group := $remoteGroups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+// * {{ $kindPlural }}
+{{- end }}
+{{- end }}
+// from a remote cluster.
+{{- end }}
+{{- if gt (len $localGroups) 0 }}
+{{- range $group := $localGroups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+// * {{ $kindPlural }}
+{{- end }}
+{{- end }}
+// from the local cluster.
+{{- end }}
+
+type {{ $snapshotName }}ReconcileOptions struct {
+    {{- if gt (len $remoteGroups) 0 }}
+    Remote Remote{{ $snapshotName }}ReconcileOptions
+    {{- end }}
+    {{- if gt (len $localGroups) 0 }}
+    Local Local{{ $snapshotName }}ReconcileOptions
+    {{- end }}
+
+    // the ReconcileInterval, if greater than 0, will limit the number of reconciles
+    // to one per interval.
+    ReconcileInterval time.Duration
+}
+
+{{- if gt (len $remoteGroups) 0 }}
+// register the given multi cluster reconcile func with the cluster watcher
+{{- end }}
+{{- if gt (len $localGroups) 0 }}
+// register the given single cluster reconcile func with the local manager
+{{- end }}
+func Register{{ $snapshotName }}EventBasedInputReconciler(
+        ctx context.Context,
+        {{- if gt (len $remoteGroups) 0 }}
+        clusters multicluster.ClusterWatcher,
+	      {{- end }}
+	      {{- if gt (len $localGroups) 0 }}
+        mgr manager.Manager,
+	      {{- end }}
+        reconcileFunc input.EventBasedReconcileFunc,
+        options {{ $snapshotName }}ReconcileOptions,
+) (input.InputReconciler, error) {
+// {{$remoteGroups}} {{gt 0 (len $remoteGroups)}} {{ len $remoteGroups }}
+// {{$localGroups}}
+    base := input.NewEventBasedInputReconciler(
+        ctx,
+        reconcileFunc,
+        options.ReconcileInterval,
+    )
+
+// initialize reconcile loops
+{{- range $group := $remoteGroups }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    // initialize {{ $kindPlural }} reconcile loop for remote clusters
+    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.Remote.{{ $kindPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
+
+{{- end }}
+{{- end }}
+
+{{- range $group := $localGroups }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    // initialize {{ $kindPlural }} reconcile loop for local cluster
+    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options.Local.{{ $kindPlural }}).Run{{ $resource.Kind }}Reconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+    	return nil, err
+    }
+{{- end }}
+{{- end }}
+
+  return base, nil
+}
+
+{{- if gt (len $remoteGroups) 0 }}
+// Options for reconciling a snapshot in remote clusters
+type Remote{{ $snapshotName }}ReconcileOptions struct {
+    {{/* generate reconcile options here */}}
+    {{- range $group := $remoteGroups }}
+    {{ $client_import_prefix := group_import_name $group }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    // Options for reconciling {{ $kindPlural }}
+    {{ $kindPlural }} reconcile.Options
+    {{- end }}
+    {{- end }}
+
+    // optional predicates for filtering remote events
+    Predicates []predicate.Predicate
+}
+
+type remote{{ $snapshotName }}EventBasedInputReconciler struct {
+    base input.InputReconciler
+}
+
+{{- range $group := $remoteGroups }}
+{{ $type_import_prefix := group_import_name $group }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+func (r *remote{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
+}
+
+func (r *remote{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
+}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- if gt (len $localGroups) 0 }}
+// Options for reconciling a snapshot in remote clusters
+type Local{{ $snapshotName }}ReconcileOptions struct {
+    {{/* generate reconcile options here */}}
+    {{- range $group := $localGroups }}
+    {{ $client_import_prefix := group_import_name $group }}
+    {{- range $resource := $group.Resources }}
+    {{- $kindPlural := pluralize $resource.Kind }}
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    // Options for reconciling {{ $kindPlural }}
+    {{ $kindPlural }} reconcile.Options
+    {{- end }}
+    {{- end }}
+
+    // optional predicates for filtering local events
+    Predicates []predicate.Predicate
+}
+
+type local{{ $snapshotName }}EventBasedInputReconciler struct {
+    base input.InputReconciler
+}
+
+{{- range $group := $localGroups }}
+{{ $type_import_prefix := group_import_name $group }}
+{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+func (r *local{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+    return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *local{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
+}
+{{- end }}
+{{- end }}
+{{- end }}
