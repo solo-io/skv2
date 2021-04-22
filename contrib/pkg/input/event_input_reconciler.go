@@ -11,6 +11,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -21,9 +22,20 @@ import (
 // reconcile resources from local and remote clusters.
 // the passed resources can either be refs to a resource (caused by a deletion), or actual resources themselves.
 type EventBasedReconcileFunc func(
-	localEventObjs []ezkube.ResourceId,
-	remoteEventObjs []ezkube.ClusterResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 ) (bool, error)
+
+// the InputReconciler reconciles events for input resources in a single cluster
+type EventBasedInputReconciler interface {
+	// reconcile the generic resource type in the local cluster.
+	// this function is called from generated code.
+	ReconcileLocalGeneric(gvk schema.GroupVersionKind, id ezkube.ResourceId) (reconcile.Result, error)
+
+	// reconcile the generic resource type in a remote cluster.
+	// this function is called from generated code.
+	ReconcileRemoteGeneric(gvk schema.GroupVersionKind, id ezkube.ClusterResourceId) (reconcile.Result, error)
+}
 
 // input reconciler implements both the single and multi cluster reconcilers, for convenience.
 type eventBasedInputReconciler struct {
@@ -31,10 +43,10 @@ type eventBasedInputReconciler struct {
 	queue         workqueue.RateLimitingInterface
 	reconcileFunc EventBasedReconcileFunc
 
-	localEventCache map[string]ezkube.ResourceId
+	localEventCache map[schema.GroupVersionKind]sets.ResourceSet
 	localLock       sync.RWMutex
 
-	remoteEventCache map[string]ezkube.ClusterResourceId
+	remoteEventCache map[schema.GroupVersionKind]sets.ResourceSet
 	remoteLock       sync.RWMutex
 }
 
@@ -46,20 +58,20 @@ func NewEventBasedInputReconciler(
 	ctx context.Context,
 	reconcileFunc EventBasedReconcileFunc,
 	reconcileInterval time.Duration,
-) InputReconciler {
+) EventBasedInputReconciler {
 	r := &eventBasedInputReconciler{
 		ctx:              ctx,
 		queue:            workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
 		reconcileFunc:    reconcileFunc,
-		localEventCache:  map[string]ezkube.ResourceId{},
-		remoteEventCache: map[string]ezkube.ClusterResourceId{},
+		localEventCache:  map[schema.GroupVersionKind]sets.ResourceSet{},
+		remoteEventCache: map[schema.GroupVersionKind]sets.ResourceSet{},
 	}
 	go r.reconcileEventsForever(reconcileInterval)
 	return r
 }
 
 // handle an event from the k8s event stream by adding to queue and localEventCache
-func (r *eventBasedInputReconciler) ReconcileLocalGeneric(obj ezkube.ResourceId) (reconcile.Result, error) {
+func (r *eventBasedInputReconciler) ReconcileLocalGeneric(gvk schema.GroupVersionKind, obj ezkube.ResourceId) (reconcile.Result, error) {
 	if r.ctx == nil {
 		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
 	}
@@ -69,7 +81,7 @@ func (r *eventBasedInputReconciler) ReconcileLocalGeneric(obj ezkube.ResourceId)
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", sets.Key(obj))
 
 	// add local event to cache
-	r.addLocalEventObj(obj)
+	r.addLocalEventObj(gvk, obj)
 
 	// never queue more than one event
 	if r.queue.Len() < 2 {
@@ -81,7 +93,7 @@ func (r *eventBasedInputReconciler) ReconcileLocalGeneric(obj ezkube.ResourceId)
 }
 
 // handle an event from the k8s event stream by adding to queue and localEventCache
-func (r *eventBasedInputReconciler) ReconcileRemoteGeneric(obj ezkube.ClusterResourceId) (reconcile.Result, error) {
+func (r *eventBasedInputReconciler) ReconcileRemoteGeneric(gvk schema.GroupVersionKind, obj ezkube.ClusterResourceId) (reconcile.Result, error) {
 	if r.ctx == nil {
 		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
 	}
@@ -91,7 +103,7 @@ func (r *eventBasedInputReconciler) ReconcileRemoteGeneric(obj ezkube.ClusterRes
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", obj.GetClusterName(), "obj", sets.Key(obj))
 
 	// add remote event to cache
-	r.addRemoteEventObj(obj)
+	r.addRemoteEventObj(gvk, obj)
 
 	// never queue more than one event
 	if r.queue.Len() < 2 {
@@ -128,8 +140,8 @@ func (r *eventBasedInputReconciler) processNextWorkItem() bool {
 		err     error
 	)
 
-	localEventObjs, localEventKeys := r.getAllLocalEventObjs()
-	remoteEventObjs, remoteEventKeys := r.getAllRemoteEventObjs()
+	localEventObjs := r.getAllLocalEventObjs()
+	remoteEventObjs := r.getAllRemoteEventObjs()
 
 	requeue, err = r.reconcileFunc(localEventObjs, remoteEventObjs)
 
@@ -140,8 +152,8 @@ func (r *eventBasedInputReconciler) processNextWorkItem() bool {
 	case requeue:
 		r.queue.AddRateLimited(key)
 	default:
-		r.deleteLocalEventObjs(localEventKeys)
-		r.deleteRemoteEventObjs(remoteEventKeys)
+		r.deleteLocalEventObjs(localEventObjs)
+		r.deleteRemoteEventObjs(remoteEventObjs)
 		r.queue.Forget(key)
 	}
 
@@ -149,74 +161,103 @@ func (r *eventBasedInputReconciler) processNextWorkItem() bool {
 }
 
 // add a new object into the local event cache
-func (r *eventBasedInputReconciler) addLocalEventObj(id ezkube.ResourceId) {
+func (r *eventBasedInputReconciler) addLocalEventObj(gvk schema.GroupVersionKind, id ezkube.ResourceId) {
 	// only add k8s objects
 	if obj, ok := id.(client.Object); ok {
 		r.localLock.Lock()
 		defer r.localLock.Unlock()
-		r.localEventCache[uniqueId(obj)] = obj
+
+		cachedObjs, ok := r.localEventCache[gvk]
+		if !ok {
+			r.localEventCache[gvk] = sets.NewResourceSet()
+			cachedObjs = sets.NewResourceSet()
+		}
+		cachedObjs.Insert(obj)
 	}
 }
 
 // add a new object into the remote event cache
-func (r *eventBasedInputReconciler) addRemoteEventObj(id ezkube.ClusterResourceId) {
+func (r *eventBasedInputReconciler) addRemoteEventObj(gvk schema.GroupVersionKind, id ezkube.ClusterResourceId) {
 	if obj, ok := id.(client.Object); ok {
 		r.remoteLock.Lock()
 		defer r.remoteLock.Unlock()
-		r.remoteEventCache[uniqueId(obj)] = obj
+
+		cachedObjs, ok := r.remoteEventCache[gvk]
+		if !ok {
+			r.remoteEventCache[gvk] = sets.NewResourceSet()
+			cachedObjs = sets.NewResourceSet()
+		}
+		cachedObjs.Insert(obj)
 	}
 }
 
 // retrieve all objects from the local event cache, as well as their associated keys
-func (r *eventBasedInputReconciler) getAllLocalEventObjs() ([]ezkube.ResourceId, []string) {
+func (r *eventBasedInputReconciler) getAllLocalEventObjs() map[schema.GroupVersionKind][]ezkube.ResourceId {
 	r.localLock.RLock()
 	defer r.localLock.RUnlock()
 
-	var eventObjs []ezkube.ResourceId
-	var keys []string
-	for key, obj := range r.localEventCache {
-		eventObjs = append(eventObjs, obj)
-		keys = append(keys, key)
+	eventObjs := map[schema.GroupVersionKind][]ezkube.ResourceId{}
+
+	for gvk, objs := range r.localEventCache {
+		for _, obj := range objs.List() {
+			eventObjs[gvk] = append(eventObjs[gvk], obj)
+		}
 	}
 
-	return eventObjs, keys
+	return eventObjs
 }
 
 // retrieve all objects from the event cache, as well as their associated keys
-func (r *eventBasedInputReconciler) getAllRemoteEventObjs() ([]ezkube.ClusterResourceId, []string) {
+func (r *eventBasedInputReconciler) getAllRemoteEventObjs() map[schema.GroupVersionKind][]ezkube.ClusterResourceId {
 	r.remoteLock.RLock()
 	defer r.remoteLock.RUnlock()
 
-	var remoteEventObjs []ezkube.ClusterResourceId
-	var keys []string
-	for key, obj := range r.remoteEventCache {
-		remoteEventObjs = append(remoteEventObjs, obj)
-		keys = append(keys, key)
+	eventObjs := map[schema.GroupVersionKind][]ezkube.ClusterResourceId{}
+
+	for gvk, objs := range r.remoteEventCache {
+		for _, obj := range objs.List() {
+			// all objects in remote event cache are guaranteed to be of type ezkube.ClusterResourceId
+			eventObjs[gvk] = append(eventObjs[gvk], obj.(ezkube.ClusterResourceId))
+		}
 	}
 
-	return remoteEventObjs, keys
+	return eventObjs
 }
 
 // deletes the local objects specified by its key from the event cache, signifying successful processing of those objects
-func (r *eventBasedInputReconciler) deleteLocalEventObjs(keys []string) {
+func (r *eventBasedInputReconciler) deleteLocalEventObjs(typedObjs map[schema.GroupVersionKind][]ezkube.ResourceId) {
 	r.localLock.Lock()
 	defer r.localLock.Unlock()
-	for _, key := range keys {
-		delete(r.localEventCache, key)
+
+	for gvk, objs := range typedObjs {
+		cachedObjs, ok := r.localEventCache[gvk]
+
+		if !ok {
+			contextutils.LoggerFrom(r.ctx).DPanicf("deleting object with GVK that does not exist in cache: %v", gvk)
+			continue
+		}
+
+		for _, obj := range objs {
+			cachedObjs.Delete(obj)
+		}
 	}
 }
 
 // deletes the remote objects specified by its key from the event cache, signifying successful processing of those objects
-func (r *eventBasedInputReconciler) deleteRemoteEventObjs(keys []string) {
+func (r *eventBasedInputReconciler) deleteRemoteEventObjs(typedObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId) {
 	r.remoteLock.Lock()
 	defer r.remoteLock.Unlock()
-	for _, key := range keys {
-		delete(r.remoteEventCache, key)
-	}
-}
 
-// build unique id for object with GVK + name/namespace/cluster
-func uniqueId(obj client.Object) string {
-	gvk := obj.GetObjectKind().GroupVersionKind()
-	return gvk.Kind + "." + gvk.Group + "." + gvk.Version + "/" + sets.Key(obj)
+	for gvk, objs := range typedObjs {
+		cachedObjs, ok := r.remoteEventCache[gvk]
+
+		if !ok {
+			contextutils.LoggerFrom(r.ctx).DPanicf("deleting object with GVK that does not exist in cache: %v", gvk)
+			continue
+		}
+
+		for _, obj := range objs {
+			cachedObjs.Delete(obj)
+		}
+	}
 }

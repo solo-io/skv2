@@ -16,6 +16,8 @@ import (
     "sigs.k8s.io/controller-runtime/pkg/manager"
     "sigs.k8s.io/controller-runtime/pkg/predicate"
 
+    "k8s.io/apimachinery/pkg/runtime/schema"
+
 {{- range $group := $remoteGroups }}
 {{- $type_import_prefix := group_import_name $group }}
 {{- $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
@@ -80,7 +82,7 @@ func Register{{ $snapshotName }}EventBasedInputReconciler(
 	      {{- end }}
         reconcileFunc input.EventBasedReconcileFunc,
         options {{ $snapshotName }}ReconcileOptions,
-) (input.InputReconciler, error) {
+) (input.EventBasedInputReconciler, error) {
 // {{$remoteGroups}} {{gt 0 (len $remoteGroups)}} {{ len $remoteGroups }}
 // {{$localGroups}}
     base := input.NewEventBasedInputReconciler(
@@ -138,7 +140,7 @@ type Remote{{ $snapshotName }}ReconcileOptions struct {
 }
 
 type remote{{ $snapshotName }}EventBasedInputReconciler struct {
-    base input.InputReconciler
+    base input.EventBasedInputReconciler
 }
 
 {{- range $group := $remoteGroups }}
@@ -151,7 +153,14 @@ type remote{{ $snapshotName }}EventBasedInputReconciler struct {
 
 func (r *remote{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
     obj.ClusterName = clusterName
-    return r.base.ReconcileRemoteGeneric(obj)
+
+    gvk := schema.GroupVersionKind{
+        Group: {{ $type_import_prefix }}.SchemeGroupVersion.Group,
+        Version: {{ $type_import_prefix }}.SchemeGroupVersion.Version,
+        Kind: "{{ $resource.Kind }}",
+    }
+
+    return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remote{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
@@ -160,7 +169,14 @@ func (r *remote{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resour
         Namespace:            obj.Namespace,
         ClusterName:          clusterName,
     }
-    _, err := r.base.ReconcileRemoteGeneric(ref)
+
+    gvk := schema.GroupVersionKind{
+        Group: {{ $type_import_prefix }}.SchemeGroupVersion.Group,
+        Version: {{ $type_import_prefix }}.SchemeGroupVersion.Version,
+        Kind: "{{ $resource.Kind }}",
+    }
+
+    _, err := r.base.ReconcileRemoteGeneric(gvk, ref)
     return err
 }
 {{- end }}
@@ -187,7 +203,7 @@ type Local{{ $snapshotName }}ReconcileOptions struct {
 }
 
 type local{{ $snapshotName }}EventBasedInputReconciler struct {
-    base input.InputReconciler
+    base input.EventBasedInputReconciler
 }
 
 {{- range $group := $localGroups }}
@@ -199,7 +215,13 @@ type local{{ $snapshotName }}EventBasedInputReconciler struct {
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
 func (r *local{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
-    return r.base.ReconcileLocalGeneric(obj)
+    gvk := schema.GroupVersionKind{
+        Group: {{ $type_import_prefix }}.SchemeGroupVersion.Group,
+        Version: {{ $type_import_prefix }}.SchemeGroupVersion.Version,
+        Kind: "{{ $resource.Kind }}",
+    }
+
+    return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *local{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
@@ -207,7 +229,14 @@ func (r *local{{ $snapshotName }}EventBasedInputReconciler) Reconcile{{ $resourc
         Name:                 obj.Name,
         Namespace:            obj.Namespace,
     }
-    _, err := r.base.ReconcileLocalGeneric(ref)
+
+    gvk := schema.GroupVersionKind{
+        Group: {{ $type_import_prefix }}.SchemeGroupVersion.Group,
+        Version: {{ $type_import_prefix }}.SchemeGroupVersion.Version,
+        Kind: "{{ $resource.Kind }}",
+    }
+
+    _, err := r.base.ReconcileLocalGeneric(gvk, ref)
     return err
 }
 {{- end }}
