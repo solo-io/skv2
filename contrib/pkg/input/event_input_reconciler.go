@@ -9,14 +9,12 @@ import (
 	"time"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/reconcile"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/skv2/pkg/reconcile"
 )
 
 // reconcile resources from local and remote clusters.
@@ -160,35 +158,32 @@ func (r *eventBasedInputReconciler) processNextWorkItem() bool {
 	return true
 }
 
-// add a new object into the local event cache
+// add a new event into the local event cache
+// id will be a client.Object for create or update events, and a ref delete events
 func (r *eventBasedInputReconciler) addLocalEventObj(gvk schema.GroupVersionKind, id ezkube.ResourceId) {
-	// only add k8s objects
-	if obj, ok := id.(client.Object); ok {
-		r.localLock.Lock()
-		defer r.localLock.Unlock()
+	r.localLock.Lock()
+	defer r.localLock.Unlock()
 
-		cachedObjs, ok := r.localEventCache[gvk]
-		if !ok {
-			r.localEventCache[gvk] = sets.NewResourceSet()
-			cachedObjs = sets.NewResourceSet()
-		}
-		cachedObjs.Insert(obj)
+	cachedObjs, ok := r.localEventCache[gvk]
+	if !ok {
+		r.localEventCache[gvk] = sets.NewResourceSet()
+		cachedObjs = sets.NewResourceSet()
 	}
+	cachedObjs.Insert(id)
 }
 
 // add a new object into the remote event cache
+// id will be a client.Object for create or update events, and a ref delete events
 func (r *eventBasedInputReconciler) addRemoteEventObj(gvk schema.GroupVersionKind, id ezkube.ClusterResourceId) {
-	if obj, ok := id.(client.Object); ok {
-		r.remoteLock.Lock()
-		defer r.remoteLock.Unlock()
+	r.remoteLock.Lock()
+	defer r.remoteLock.Unlock()
 
-		cachedObjs, ok := r.remoteEventCache[gvk]
-		if !ok {
-			r.remoteEventCache[gvk] = sets.NewResourceSet()
-			cachedObjs = sets.NewResourceSet()
-		}
-		cachedObjs.Insert(obj)
+	cachedObjs, ok := r.remoteEventCache[gvk]
+	if !ok {
+		r.remoteEventCache[gvk] = sets.NewResourceSet()
+		cachedObjs = sets.NewResourceSet()
 	}
+	cachedObjs.Insert(id)
 }
 
 // retrieve all objects from the local event cache, as well as their associated keys
