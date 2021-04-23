@@ -84,7 +84,7 @@ func (r *eventBasedInputReconciler) ReconcileLocalGeneric(gvk schema.GroupVersio
 	r.addLocalEventObj(gvk, obj)
 
 	// never queue more than one event
-	if r.queue.Len() < 2 {
+	if r.queue.Len() < 1 {
 		contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", sets.Key(obj))
 		r.queue.AddRateLimited(obj)
 	}
@@ -106,7 +106,7 @@ func (r *eventBasedInputReconciler) ReconcileRemoteGeneric(gvk schema.GroupVersi
 	r.addRemoteEventObj(gvk, obj)
 
 	// never queue more than one event
-	if r.queue.Len() < 2 {
+	if r.queue.Len() < 1 {
 		contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", obj.GetClusterName(), "obj", sets.Key(obj))
 		r.queue.AddRateLimited(obj)
 	}
