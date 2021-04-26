@@ -167,7 +167,7 @@ func (r *eventBasedInputReconciler) addLocalEventObj(gvk schema.GroupVersionKind
 	cachedObjs, ok := r.localEventCache[gvk]
 	if !ok {
 		r.localEventCache[gvk] = sets.NewResourceSet()
-		cachedObjs = sets.NewResourceSet()
+		cachedObjs = r.localEventCache[gvk]
 	}
 	cachedObjs.Insert(id)
 }
@@ -181,7 +181,7 @@ func (r *eventBasedInputReconciler) addRemoteEventObj(gvk schema.GroupVersionKin
 	cachedObjs, ok := r.remoteEventCache[gvk]
 	if !ok {
 		r.remoteEventCache[gvk] = sets.NewResourceSet()
-		cachedObjs = sets.NewResourceSet()
+		cachedObjs = r.remoteEventCache[gvk]
 	}
 	cachedObjs.Insert(id)
 }
