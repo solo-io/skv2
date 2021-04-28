@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.76.0
-	contrib.go.opencensus.io/exporter/prometheus v0.1.0
 	cuelang.org/go v0.2.2
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.1.0
@@ -18,6 +17,7 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3
+	github.com/google/uuid v1.2.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.1.3
 	github.com/mattn/go-colorable v0.1.7 // indirect
@@ -37,14 +37,17 @@ require (
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.1
 	github.com/solo-io/protoc-gen-ext v0.0.13
+	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/spf13/pflag v1.0.5
+	github.com/stretchr/testify v1.7.0 // indirect
+	go.opencensus.io v0.22.6 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
 	golang.org/x/tools v0.1.0
 	google.golang.org/api v0.38.0
 	google.golang.org/genproto v0.0.0-20210218151259-fe80b386bf06
 	google.golang.org/protobuf v1.25.0
-	istio.io/pkg v0.0.0-20210422202837-7a563315d7c5
 	k8s.io/api v0.19.6
 	k8s.io/apiextensions-apiserver v0.19.6
 	k8s.io/apimachinery v0.19.6
