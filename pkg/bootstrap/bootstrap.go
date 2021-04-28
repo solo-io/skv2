@@ -6,7 +6,7 @@ import (
 
 	"github.com/rotisserie/eris"
 
-	"golang.org/x/sync/errgroup"
+	"github.com/solo-io/go-utils/errgroup"
 
 	"github.com/solo-io/skv2/pkg/stats"
 	"k8s.io/apimachinery/pkg/runtime"
