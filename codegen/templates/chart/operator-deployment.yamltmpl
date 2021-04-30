@@ -34,12 +34,12 @@ spec:
     metadata:
       labels:
         app: [[ $operator.Name ]]
-        [[- range $label := $extraPodLabels ]]
-        [[ $label ]]
+        [[- range $key, $value := $extraPodLabels ]]
+        [[ $key ]]: [[ $value ]]
         [[- end ]]
       annotations:
-        [[- range $annotation := $extraPodAnnotations ]]
-        [[ $annotation ]]
+        [[- range $key, $value := $extraPodAnnotations ]]
+        [[ $key ]]: [[ $value ]]
         [[- end ]]
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
@@ -111,13 +111,13 @@ kind: Service
 metadata:
   labels:
     app: [[ $operator.Name ]]
-    [[- range $label := $extraServiceLabels ]]
-    [[ $label ]]
+    [[- range $key, $value := $extraServiceLabels ]]
+    [[ $key ]]: [[ $value ]]
     [[- end ]]
 [[- if $extraServiceAnnotations ]]
   annotations:
-    [[- range $annotations := $extraServiceAnnotations ]]
-    [[ $annotations ]]
+    [[- range $key, $value := $extraServiceAnnotations ]]
+    [[ $key ]]: [[ $value ]]
     [[- end ]]
 [[ end ]]
   name: [[ $operator.Name ]]

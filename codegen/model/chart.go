@@ -52,8 +52,8 @@ type Operator struct {
 type Deployment struct {
 	// use a DaemonSet instead of a Deployment
 	UseDaemonSet bool                     `json:"-"`
-	Labels       []string                 `json:"extraLabels,omitempty"`
-	Annotations  []string                 `json:"extraAnnotations,omitempty"`
+	Labels       map[string]string        `json:"extraLabels,omitempty"`
+	Annotations  map[string]string        `json:"extraAnnotations,omitempty"`
 	Image        Image                    `json:"image,omitempty"`
 	Resources    *v1.ResourceRequirements `json:"resources,omitempty"`
 }
@@ -62,8 +62,8 @@ type Deployment struct {
 type Service struct {
 	Type        v1.ServiceType
 	Ports       []ServicePort
-	Labels      []string `json:"extraLabels,omitempty"`
-	Annotations []string `json:"extraAnnotations,omitempty"`
+	Labels      map[string]string `json:"extraLabels,omitempty"`
+	Annotations map[string]string `json:"extraAnnotations,omitempty"`
 }
 type ServicePort struct {
 	// The name of this port within the service.
