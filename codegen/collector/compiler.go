@@ -16,8 +16,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/errgroup"
 	"github.com/solo-io/go-utils/log"
-	"golang.org/x/sync/errgroup"
 )
 
 func NewProtoCompiler(

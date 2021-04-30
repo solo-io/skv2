@@ -120,12 +120,27 @@ func shouldDeepCopyInternalMessage(packageName string, desc *descriptor.Descript
 //
 // This is designed to be called from a template.
 func toYAML(v interface{}) string {
+	// NOTE(ilackarms): due to a bug in the underlying yaml library
+	// inserting unnecessary newlines when marshalling string arrays,
+	// we handle that special-case here
+	if strSlice, ok := v.([]string); ok {
+		return strSliceToYaml(strSlice)
+	}
+
 	data, err := yaml.Marshal(v)
 	if err != nil {
 		// Swallow errors inside of a template.
 		return ""
 	}
 	return strings.TrimSuffix(string(data), "\n")
+}
+
+func strSliceToYaml(strSlice []string) string {
+	var yamlElements []string
+	for _, s := range strSlice {
+		yamlElements = append(yamlElements, "- "+s)
+	}
+	return strings.Join(yamlElements, "\n")
 }
 
 // fromYAML converts a YAML document into a map[string]interface{}.

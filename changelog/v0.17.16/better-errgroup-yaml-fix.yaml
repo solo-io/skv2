@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    description: Fix issue where `toYaml` function in templates would produce weird result on string arrays.
+    issueLink: https://github.com/solo-io/skv2/issues/234
+  - type: NON_USER_FACING
+    description: Switch to using `errgroup` which reports all errors encountered.
