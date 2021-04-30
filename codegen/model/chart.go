@@ -52,6 +52,8 @@ type Operator struct {
 type Deployment struct {
 	// use a DaemonSet instead of a Deployment
 	UseDaemonSet bool                     `json:"-"`
+	PodLabels       []string                    `json:"labels,omitempty"`
+	PodAnnotations  []string                    `json:"annotations,omitempty"`
 	Image        Image                    `json:"image,omitempty"`
 	Resources    *v1.ResourceRequirements `json:"resources,omitempty"`
 }

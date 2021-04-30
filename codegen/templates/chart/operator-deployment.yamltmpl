@@ -12,6 +12,8 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
   [[- $workloadKind = "DaemonSet" ]]
   [[- end -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
+[[- $additionalPodLabels := $operator.Deployment.Labels ]]
+[[- $additionalPodAnnotations := $operator.Deployment.Annotations ]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
@@ -32,7 +34,13 @@ spec:
     metadata:
       labels:
         app: [[ $operator.Name ]]
+        [[- range $label := $additionalPodLabels ]]
+        [[ $label ]]
+        [[- end ]]
       annotations:
+        [[- range $annotation := $additionalPodAnnotations ]]
+        [[ $annotation ]]
+        [[- end ]]
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
