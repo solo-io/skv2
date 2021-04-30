@@ -3,4 +3,4 @@ changelog:
     issueLink: https://github.com/solo-io/skv2/issues/236
     description: >
       Adds the ability to pass in additional pod labels and annotations
-      to the skv2-generated helm operator deployment.
+      to the skv2-generated helm templates.
