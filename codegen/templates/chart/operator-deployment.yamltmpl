@@ -12,8 +12,8 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
   [[- $workloadKind = "DaemonSet" ]]
   [[- end -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
-[[- $additionalPodLabels := $operator.Deployment.Labels ]]
-[[- $additionalPodAnnotations := $operator.Deployment.Annotations ]]
+[[- $extraPodLabels := $operator.Deployment.Labels -]]
+[[- $extraPodAnnotations := $operator.Deployment.Annotations -]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
@@ -34,11 +34,11 @@ spec:
     metadata:
       labels:
         app: [[ $operator.Name ]]
-        [[- range $label := $additionalPodLabels ]]
+        [[- range $label := $extraPodLabels ]]
         [[ $label ]]
         [[- end ]]
       annotations:
-        [[- range $annotation := $additionalPodAnnotations ]]
+        [[- range $annotation := $extraPodAnnotations ]]
         [[ $annotation ]]
         [[- end ]]
         prometheus.io/path: /metrics
@@ -103,12 +103,23 @@ metadata:
 [[ if gt (len $operator.Service.Ports) 0 ]]
 ---
 # Service for [[ $operator.Name ]]
+[[- $extraServiceLabels := $operator.Service.Labels -]]
+[[- $extraServiceAnnotations := $operator.Service.Annotations ]]
 
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: [[ $operator.Name ]]
+    [[- range $label := $extraServiceLabels ]]
+    [[ $label ]]
+    [[- end ]]
+[[- if $extraServiceAnnotations ]]
+  annotations:
+    [[- range $annotations := $extraServiceAnnotations ]]
+    [[ $annotations ]]
+    [[- end ]]
+[[ end ]]
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
 spec:
