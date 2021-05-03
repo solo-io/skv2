@@ -2,5 +2,10 @@ changelog:
   - type: NEW_FEATURE
     issueLink: https://github.com/solo-io/skv2/issues/236
     description: >
-      Adds the ability to pass in additional pod labels and annotations
+      Add the ability to pass in additional labels and annotations
       to the skv2-generated helm templates.
+  - type: HELM
+    description: >
+      Add `service.extraAnnotations`, `service.extraLabels`,
+      `deployment.extraDeploymentAnnotations`, `deployment.extraDeploymentLabels`,
+      `deployment.extraPodAnnotations` and `deployment.extraPodLabels`.

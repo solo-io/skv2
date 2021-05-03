@@ -51,11 +51,14 @@ type Operator struct {
 // values for Deployment template
 type Deployment struct {
 	// use a DaemonSet instead of a Deployment
-	UseDaemonSet bool                     `json:"-"`
-	Labels       map[string]string        `json:"extraLabels,omitempty"`
-	Annotations  map[string]string        `json:"extraAnnotations,omitempty"`
-	Image        Image                    `json:"image,omitempty"`
-	Resources    *v1.ResourceRequirements `json:"resources,omitempty"`
+	UseDaemonSet    bool                     `json:"-"`
+	PodLabels       map[string]string        `json:"extraPodLabels,omitempty"`
+	PodAnnotations  map[string]string        `json:"extraPodAnnotations,omitempty"`
+	Image           Image                    `json:"image,omitempty"`
+	Labels          map[string]string        `json:"extraDeploymentLabels,omitempty"`
+	Annotations     map[string]string        `json:"extraDeploymentAnnotations,omitempty"`
+	DeploymentImage Image                    `json:"image,omitempty"`
+	Resources       *v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // values for struct template

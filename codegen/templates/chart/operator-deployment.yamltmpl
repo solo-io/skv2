@@ -12,8 +12,10 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
   [[- $workloadKind = "DaemonSet" ]]
   [[- end -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
-[[- $extraPodLabels := $operator.Deployment.Labels -]]
-[[- $extraPodAnnotations := $operator.Deployment.Annotations -]]
+[[- $extraPodLabels := $operator.Deployment.PodLabels -]]
+[[- $extraPodAnnotations := $operator.Deployment.PodAnnotations -]]
+[[- $extraDeploymentLabels := $operator.Deployment.Labels -]]
+[[- $extraDeploymentAnnotations := $operator.Deployment.Annotations -]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
@@ -24,6 +26,15 @@ kind: [[ $workloadKind ]]
 metadata:
   labels:
     app: [[ $operator.Name ]]
+    [[- range $key, $value := $extraDeploymentLabels ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
+[[- if $extraDeploymentAnnotations ]]
+  annotations:
+    [[- range $key, $value := $extraDeploymentAnnotations ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
+[[- end ]]
   name: [[ $operator.Name ]]
   namespace: {{ .Release.Namespace }}
 spec:
@@ -119,7 +130,7 @@ metadata:
     [[- range $key, $value := $extraServiceAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-[[ end ]]
+[[- end ]]
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
 spec:
