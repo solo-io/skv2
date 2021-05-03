@@ -12,10 +12,10 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
   [[- $workloadKind = "DaemonSet" ]]
   [[- end -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
-[[- $extraPodLabels := $operator.Deployment.PodLabels -]]
-[[- $extraPodAnnotations := $operator.Deployment.PodAnnotations -]]
-[[- $extraDeploymentLabels := $operator.Deployment.Labels -]]
-[[- $extraDeploymentAnnotations := $operator.Deployment.Annotations -]]
+[[- $extraPodLabels := $operator.Deployment.ExtraPodLabels -]]
+[[- $extraPodAnnotations := $operator.Deployment.ExtraPodAnnotations -]]
+[[- $extraDeploymentLabels := $operator.Deployment.ExtraDeploymentLabels -]]
+[[- $extraDeploymentAnnotations := $operator.Deployment.ExtraDeploymentAnnotations -]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
@@ -114,8 +114,8 @@ metadata:
 [[ if gt (len $operator.Service.Ports) 0 ]]
 ---
 # Service for [[ $operator.Name ]]
-[[- $extraServiceLabels := $operator.Service.Labels -]]
-[[- $extraServiceAnnotations := $operator.Service.Annotations ]]
+[[- $extraServiceLabels := $operator.Service.ExtraLabels -]]
+[[- $extraServiceAnnotations := $operator.Service.ExtraAnnotations ]]
 
 apiVersion: v1
 kind: Service

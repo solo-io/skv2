@@ -51,22 +51,22 @@ type Operator struct {
 // values for Deployment template
 type Deployment struct {
 	// use a DaemonSet instead of a Deployment
-	UseDaemonSet    bool                     `json:"-"`
-	PodLabels       map[string]string        `json:"extraPodLabels,omitempty"`
-	PodAnnotations  map[string]string        `json:"extraPodAnnotations,omitempty"`
-	Image           Image                    `json:"image,omitempty"`
-	Labels          map[string]string        `json:"extraDeploymentLabels,omitempty"`
-	Annotations     map[string]string        `json:"extraDeploymentAnnotations,omitempty"`
-	DeploymentImage Image                    `json:"image,omitempty"`
-	Resources       *v1.ResourceRequirements `json:"resources,omitempty"`
+	UseDaemonSet               bool                     `json:"-"`
+	ExtraPodLabels             map[string]string        `json:"extraPodLabels,omitempty"`
+	ExtraPodAnnotations        map[string]string        `json:"extraPodAnnotations,omitempty"`
+	Image                      Image                    `json:"image,omitempty"`
+	ExtraDeploymentLabels      map[string]string        `json:"extraDeploymentLabels,omitempty"`
+	ExtraDeploymentAnnotations map[string]string        `json:"extraDeploymentAnnotations,omitempty"`
+	DeploymentImage            Image                    `json:"image,omitempty"`
+	Resources                  *v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // values for struct template
 type Service struct {
-	Type        v1.ServiceType
-	Ports       []ServicePort
-	Labels      map[string]string `json:"extraLabels,omitempty"`
-	Annotations map[string]string `json:"extraAnnotations,omitempty"`
+	Type             v1.ServiceType
+	Ports            []ServicePort
+	ExtraLabels      map[string]string `json:"extraLabels,omitempty"`
+	ExtraAnnotations map[string]string `json:"extraAnnotations,omitempty"`
 }
 type ServicePort struct {
 	// The name of this port within the service.
