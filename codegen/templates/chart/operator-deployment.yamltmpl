@@ -12,6 +12,10 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
   [[- $workloadKind = "DaemonSet" ]]
   [[- end -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
+[[- $extraPodLabels := $operator.Deployment.ExtraPodLabels -]]
+[[- $extraPodAnnotations := $operator.Deployment.ExtraPodAnnotations -]]
+[[- $extraDeploymentLabels := $operator.Deployment.ExtraDeploymentLabels -]]
+[[- $extraDeploymentAnnotations := $operator.Deployment.ExtraDeploymentAnnotations -]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
@@ -22,6 +26,15 @@ kind: [[ $workloadKind ]]
 metadata:
   labels:
     app: [[ $operator.Name ]]
+    [[- range $key, $value := $extraDeploymentLabels ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
+[[- if $extraDeploymentAnnotations ]]
+  annotations:
+    [[- range $key, $value := $extraDeploymentAnnotations ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
+[[- end ]]
   name: [[ $operator.Name ]]
   namespace: {{ .Release.Namespace }}
 spec:
@@ -32,7 +45,13 @@ spec:
     metadata:
       labels:
         app: [[ $operator.Name ]]
+        [[- range $key, $value := $extraPodLabels ]]
+        [[ $key ]]: [[ $value ]]
+        [[- end ]]
       annotations:
+        [[- range $key, $value := $extraPodAnnotations ]]
+        [[ $key ]]: [[ $value ]]
+        [[- end ]]
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
@@ -95,12 +114,23 @@ metadata:
 [[ if gt (len $operator.Service.Ports) 0 ]]
 ---
 # Service for [[ $operator.Name ]]
+[[- $extraServiceLabels := $operator.Service.ExtraLabels -]]
+[[- $extraServiceAnnotations := $operator.Service.ExtraAnnotations ]]
 
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: [[ $operator.Name ]]
+    [[- range $key, $value := $extraServiceLabels ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
+[[- if $extraServiceAnnotations ]]
+  annotations:
+    [[- range $key, $value := $extraServiceAnnotations ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
+[[- end ]]
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
 spec:
