@@ -9,3 +9,4 @@ changelog:
       Add `service.extraAnnotations`, `service.extraLabels`,
       `deployment.extraDeploymentAnnotations`, `deployment.extraDeploymentLabels`,
       `deployment.extraPodAnnotations` and `deployment.extraPodLabels`.
+    issueLink: https://github.com/solo-io/skv2/issues/236
