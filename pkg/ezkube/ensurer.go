@@ -3,11 +3,12 @@ package ezkube
 import (
 	"context"
 
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
 	"github.com/solo-io/skv2/pkg/utils"
 	"k8s.io/client-go/util/retry"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
 type ensurer struct {
@@ -23,7 +24,7 @@ func NewEnsurer(restClient RestClient) *ensurer {
 
 func (c *ensurer) Ensure(ctx context.Context, parent Object, child Object, reconcileFuncs ...ReconcileFunc) error {
 	if parent != nil {
-		if err := controllerruntime.SetControllerReference(parent, child, c.Manager().GetScheme()); err != nil {
+		if err := controllerutil.SetControllerReference(parent, child, c.Manager().GetScheme()); err != nil {
 			return err
 		}
 	}
