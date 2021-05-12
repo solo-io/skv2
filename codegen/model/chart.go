@@ -120,6 +120,13 @@ type Values struct {
 	ServiceType  v1.ServiceType           `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
 	ServicePorts map[string]uint32        `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
+
+	ExtraPodLabels             map[string]string `json:"extraPodLabels,omitempty"`
+	ExtraPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty"`
+	ExtraDeploymentLabels      map[string]string `json:"extraDeploymentLabels,omitempty"`
+	ExtraDeploymentAnnotations map[string]string `json:"extraDeploymentAnnotations,omitempty"`
+	ExtraServiceLabels         map[string]string `json:"extraAnnotations,omitempty" desc:"Extra annotations for the service"`
+	ExtraServiceAnnotations    map[string]string `json:"extraAnnotations,omitempty" desc:"Extra annotations for the service"`
 }
 
 func (c Chart) BuildChartValues() HelmValues {
@@ -135,11 +142,17 @@ func (c Chart) BuildChartValues() HelmValues {
 		values.Operators = append(values.Operators, OperatorValues{
 			Name: operator.Name,
 			Values: Values{
-				Image:        operator.Deployment.Image,
-				Resources:    operator.Deployment.Resources,
-				ServiceType:  operator.Service.Type,
-				ServicePorts: servicePorts,
-				Env:          operator.Env,
+				Image:                      operator.Deployment.Image,
+				Resources:                  operator.Deployment.Resources,
+				ServiceType:                operator.Service.Type,
+				ServicePorts:               servicePorts,
+				Env:                        operator.Env,
+				ExtraPodLabels:             operator.Deployment.ExtraPodLabels,
+				ExtraPodAnnotations:        operator.Deployment.ExtraPodAnnotations,
+				ExtraDeploymentLabels:      operator.Deployment.ExtraDeploymentLabels,
+				ExtraDeploymentAnnotations: operator.Deployment.ExtraDeploymentAnnotations,
+				ExtraServiceLabels:         operator.Service.ExtraLabels,
+				ExtraServiceAnnotations:    operator.Service.ExtraAnnotations,
 			},
 		})
 	}
