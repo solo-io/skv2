@@ -22,9 +22,11 @@ import (
     "context"
     "encoding/json"
 
+    "k8s.io/apimachinery/pkg/labels"
     "k8s.io/apimachinery/pkg/runtime/schema"
     "github.com/solo-io/skv2/pkg/resource"
     "github.com/solo-io/skv2/pkg/verifier"
+    "github.com/solo-io/go-utils/contextutils"
 
     "github.com/hashicorp/go-multierror"
 {{ $needsControllerUtils := false }}
@@ -571,6 +573,7 @@ func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, 
         return nil, err
     }
 
+    {{/* generate set initialization here */}}
     {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
@@ -592,7 +595,7 @@ func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, 
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
         // insert {{ $kindPlural }}
         case *{{ $types_import_prefix }}.{{ $resource.Kind }}:
-            {{ $kindLowerCamelPlural }}.Insert(obj)
+            i.insert{{ $resource.Kind }}(ctx, obj, {{ $kindLowerCamelPlural }}, opts)
     {{- end }}
     {{- end }}
         }
@@ -611,3 +614,44 @@ func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, 
     ), nil
 }
 
+
+{{/* generate insertion funcs here */}}
+{{- range $group := $groups }}
+{{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+func (i *inMemory{{ $snapshotName }}Builder) insert{{ $resource.Kind }}(
+    ctx context.Context,
+    {{ $kindLowerCamel }} *{{ $types_import_prefix }}.{{ $resource.Kind }},
+    {{ $kindLowerCamel }}Set {{ $set_import_prefix }}.{{ $resource.Kind }}Set,
+    buildOpts {{ $snapshotName }}BuildOptions,
+) {
+
+    opts := buildOpts.{{ $kindPlural }}.ListOptions
+
+    listOpts := &client.ListOptions{}
+    for _, opt := range opts {
+        opt.ApplyToList(listOpts)
+    }
+
+    filteredOut := false
+    if listOpts.Namespace != "" {
+        filteredOut = {{ $kindLowerCamel }}.Namespace != listOpts.Namespace
+    }
+    if listOpts.LabelSelector != nil {
+        filteredOut = !listOpts.LabelSelector.Matches(labels.Set({{ $kindLowerCamel }}.Labels))
+    }
+    if listOpts.FieldSelector != nil {
+        contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+    }
+
+    if !filteredOut {
+        {{ $kindLowerCamel }}Set.Insert({{ $kindLowerCamel }})
+    }
+}
+
+{{- end }}
+{{- end }}
