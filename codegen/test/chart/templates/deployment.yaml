@@ -5,12 +5,25 @@
 # Deployment manifest for painter
 {{- $painter := $.Values.painter}}
 {{- $painterImage := $painter.image }}
+{{- $painterExtraPodLabels := $painter.extraPodLabels -}}
+{{- $painterExtraPodAnnotations := $painter.extraPodAnnotations -}}
+{{- $painterExtraDeploymentLabels := $painter.extraDeploymentLabels -}}
+{{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations -}}
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: painter
+    {{- range $key, $value := $painterExtraDeploymentLabels }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- if $painterExtraDeploymentAnnotations }}
+  annotations:
+    {{- range $key, $value := $painterExtraDeploymentAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- end }}
   name: painter
   namespace: {{ .Release.Namespace }}
 spec:
@@ -21,7 +34,13 @@ spec:
     metadata:
       labels:
         app: painter
+        {{- range $key, $value := $painterExtraPodLabels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
       annotations:
+        {{- range $key, $value := $painterExtraPodAnnotations }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
