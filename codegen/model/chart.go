@@ -121,11 +121,11 @@ type Values struct {
 	ServicePorts map[string]uint32        `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
 
-	ExtraPodLabels             map[string]string `json:"extraPodLabels,omitempty"`
-	ExtraPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty"`
-	ExtraDeploymentLabels      map[string]string `json:"extraDeploymentLabels,omitempty"`
-	ExtraDeploymentAnnotations map[string]string `json:"extraDeploymentAnnotations,omitempty"`
-	ExtraServiceLabels         map[string]string `json:"extraAnnotations,omitempty" desc:"Extra annotations for the service"`
+	ExtraPodLabels             map[string]string `json:"extraPodLabels,omitempty" desc:"Extra labels for the pod"`
+	ExtraPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty" desc:"Extra annotations for the pod"`
+	ExtraDeploymentLabels      map[string]string `json:"extraDeploymentLabels,omitempty" desc:"Extra labels for the deployment"`
+	ExtraDeploymentAnnotations map[string]string `json:"extraDeploymentAnnotations,omitempty" desc:"Extra annotations for the deployment"`
+	ExtraServiceLabels         map[string]string `json:"extraAnnotations,omitempty" desc:"Extra labels for the service"`
 	ExtraServiceAnnotations    map[string]string `json:"extraAnnotations,omitempty" desc:"Extra annotations for the service"`
 }
 
