@@ -1,5 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Allow pod, deployment, or service labels and annotations to be helm values.
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1450
-    resolvesIssue: false
