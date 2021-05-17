@@ -8,9 +8,17 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/solo-io/skv2/codegen/metrics"
+
 	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/skv2/codegen/util"
 )
+
+func init() {
+	// initalize metrics during init phase.
+	// can be safely called multiple times
+	metrics.NewAggregator()
+}
 
 // make sure the pkg matches the go_package option in the proto
 // TODO: validate this
@@ -33,7 +41,7 @@ func CompileProtos(goModule, moduleName, protoDir string, protocOptions collecto
 	defer os.Remove(protoOutDir)
 
 	coll := collector.NewCollector(
-		nil,
+		protocOptions.CustomImports,
 		[]string{protoDir}, // import the inputs dir //
 	)
 
