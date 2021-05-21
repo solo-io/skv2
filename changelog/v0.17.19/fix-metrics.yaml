@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Allow passing CustomImports directly to Protoc compiler.
+    issueLink: https://github.com/solo-io/skv2/issues/242
+  - type: FIX
+    description: Fix panic caused by missing metrics initialization when running proto compiler directly.
+    issueLink: https://github.com/solo-io/skv2/issues/241

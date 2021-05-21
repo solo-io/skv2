@@ -46,6 +46,9 @@ type ProtocOptions struct {
 	// declare mappings from proto files to full import paths of the corresponding generated Go code
 	// used when the source proto files don't define `go_package`
 	GoPackage map[string]string
+
+	// Additional custom protoc imports
+	CustomImports []string
 }
 
 type protoCompiler struct {
