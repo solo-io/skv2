@@ -4,13 +4,19 @@ import (
 	"encoding/json"
 	"strings"
 
+	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"github.com/pseudomuto/protokit"
+	"github.com/solo-io/skv2/codegen/collector"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+
+	"github.com/golang/protobuf/proto"
+
 	"cuelang.org/go/cue"
 	"cuelang.org/go/encoding/openapi"
 	"cuelang.org/go/encoding/protobuf"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/anyvendor/anyvendor"
 	"github.com/solo-io/go-utils/stringutils"
-	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/skv2/codegen/kuberesource"
 	"github.com/solo-io/skv2/codegen/model"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -78,13 +84,8 @@ func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, er
 
 	// Collect all protobuf definitions including transitive dependencies.
 	var imports []string
-	coll := collector.NewCollector([]string{protoDir}, nil)
 	for _, fileDescriptor := range grp.Descriptors {
-		importsForDescriptor, err := coll.CollectImportsForFile(protoDir, fileDescriptor.ProtoFilePath)
-		if err != nil {
-			return nil, err
-		}
-		imports = append(imports, importsForDescriptor...)
+		imports = append(imports, fileDescriptor.Imports...)
 	}
 	imports = stringutils.Unique(imports)
 
@@ -96,7 +97,20 @@ func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, er
 	}
 
 	ext := protobuf.NewExtractor(cfg)
+	// collect the set of messsages for which validation is disabled
+	var disableValidationFiles []*collector.DescriptorWithPath
 	for _, fileDescriptor := range grp.Descriptors {
+		disableOption, err := proto.GetExtension(fileDescriptor.Options, v1.E_DisableOpenapiValidationSchema)
+		if err == nil {
+			disableOpenaApiValidationSchema, ok := disableOption.(*bool)
+			if !ok {
+				return nil, eris.Errorf("internal error: invalid option type %T expecting bool", disableOption)
+			}
+			if *disableOpenaApiValidationSchema {
+				disableValidationFiles = append(disableValidationFiles, fileDescriptor)
+				continue
+			}
+		}
 		if err := ext.AddFile(fileDescriptor.ProtoFilePath, nil); err != nil {
 			return nil, err
 		}
@@ -141,6 +155,19 @@ func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, er
 			oapiSchemas[kv.Key] = jsonSchema
 		}
 
+		comments := newCommentFinder(disableValidationFiles)
+		// set the schema for messages whose validation is disabled to
+		for _, file := range disableValidationFiles {
+			for _, messageDescriptor := range file.GetMessageType() {
+				description := comments.getMessageComment(file.GetName(), messageDescriptor.GetName())
+				oapiSchemas[messageDescriptor.GetName()] = &apiextv1beta1.JSONSchemaProps{
+					Description:            description,
+					Type:                   "object",
+					XPreserveUnknownFields: proto.Bool(true),
+				}
+			}
+		}
+
 		return oapiSchemas, err
 	}
 	return nil, nil
@@ -162,6 +189,36 @@ func renderManifest(appName string, mk MakeResourceFunc, group Group) (string, e
 	}
 
 	return strings.Join(objManifests, "\n---\n"), nil
+}
+
+// gets the comment for a message
+type commentFinder struct {
+	parsedDescriptors []*protokit.FileDescriptor
+}
+
+func newCommentFinder(descriptors []*collector.DescriptorWithPath) *commentFinder {
+	req := &plugin_go.CodeGeneratorRequest{}
+
+	for _, file := range descriptors {
+		req.FileToGenerate = append(req.FileToGenerate, file.GetName())
+		req.ProtoFile = append(req.ProtoFile, file.FileDescriptorProto)
+	}
+	return &commentFinder{parsedDescriptors: protokit.ParseCodeGenRequest(req)}
+}
+
+func (f *commentFinder) getMessageComment(file, msg string) string {
+	for _, descriptor := range f.parsedDescriptors {
+		if descriptor.GetName() != file {
+			continue
+		}
+		for _, message := range descriptor.Messages {
+			if message.GetName() != msg {
+				continue
+			}
+			return message.GetComments().GetLeading()
+		}
+	}
+	panic("message not found")
 }
 
 func marshalObjToYaml(appName string, obj metav1.Object) (string, error) {

@@ -142,7 +142,7 @@ func (p *protoCompiler) addDescriptorsForFile(addDescriptor func(f DescriptorWit
 	}
 
 	for _, f := range desc.File {
-		descriptorWithPath := DescriptorWithPath{FileDescriptorProto: f}
+		descriptorWithPath := DescriptorWithPath{FileDescriptorProto: f, Imports: imports}
 		if strings.HasSuffix(protoFile, f.GetName()) {
 			descriptorWithPath.ProtoFilePath = protoFile
 		}
