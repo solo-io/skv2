@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gertd/go-pluralize"
+	"github.com/solo-io/skv2/codegen/util/stringutils"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/codegen/model"
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
@@ -99,7 +100,7 @@ func CustomResourceDefinition(
 	group := resource.Group.Group
 	version := resource.Group.Version
 	kind := resource.Kind
-	kindLowerPlural := strings.ToLower(pluralize.NewClient().Plural(kind))
+	kindLowerPlural := strings.ToLower(stringutils.Pluralize(kind))
 	kindLower := strings.ToLower(kind)
 
 	var status *apiextv1beta1.CustomResourceSubresourceStatus
