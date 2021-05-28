@@ -29,6 +29,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.9.0
 	github.com/pseudomuto/protoc-gen-doc v1.4.1
+	github.com/pseudomuto/protokit v0.2.0
 	github.com/rogpeppe/go-internal v1.6.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
