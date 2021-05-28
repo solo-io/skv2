@@ -7,7 +7,10 @@ import (
 
 type DescriptorWithPath struct {
 	*descriptor.FileDescriptorProto
+	// path to the file
 	ProtoFilePath string
+	// the set of imports this file requires
+	Imports []string
 }
 
 func (file *DescriptorWithPath) GetMessage(typeName string) *descriptor.DescriptorProto {

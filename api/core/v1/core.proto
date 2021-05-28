@@ -7,6 +7,8 @@ option go_package = "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 
+import "google/protobuf/descriptor.proto";
+
 import "extproto/ext.proto";
 option (extproto.hash_all) = true;
 option (extproto.equal_all) = true;
@@ -107,3 +109,10 @@ message Status {
     // This is useful in situations where a given resource may have multiple owners.
     google.protobuf.StringValue owner = 5;
 }
+
+// Options for processing a file with SKv2
+extend google.protobuf.FileOptions {
+    // Disabled the generation of OpenAPI Schemas for messages in this file.
+    bool disable_openapi_validation_schema = 10001;
+}
+

@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: "Allow disabling OpenAPI Schema generation for proto files. CRDs which use protos for which validation has been disabled will have their corresponding OpenAPI schemas use `type: object` and `x-kubernetes-preserve-unknown-fields: true` to disable admission validation for CR schemas."
+    issueLink: https://github.com/solo-io/skv2/issues/244

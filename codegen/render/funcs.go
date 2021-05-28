@@ -1,13 +1,12 @@
 package render
 
 import (
+	"bytes"
+	"encoding/json"
 	"strings"
 	"text/template"
 
-	"github.com/gertd/go-pluralize"
-
-	"bytes"
-	"encoding/json"
+	"github.com/solo-io/skv2/codegen/util/stringutils"
 
 	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/sprig/v3"
@@ -35,7 +34,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		"lower":           strings.ToLower,
 		"lower_camel":     strcase.ToLowerCamel,
 		"upper_camel":     strcase.ToCamel,
-		"pluralize":       pluralize.NewClient().Plural,
+		"pluralize":       stringutils.Pluralize,
 		"snake":           strcase.ToSnake,
 		"split":           splitTrimEmpty,
 		"string_contains": strings.Contains,

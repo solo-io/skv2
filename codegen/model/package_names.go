@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gertd/go-pluralize"
+	"github.com/solo-io/skv2/codegen/util/stringutils"
 )
 
 var (
 	// function for determining the relative path of generated api types package
 	TypesRelativePath = func(kind, version string) string {
-		c := pluralize.NewClient()
-		return fmt.Sprintf("pkg/apis/%v/%v", strings.ToLower(c.Plural(kind)), version)
+		return fmt.Sprintf("pkg/apis/%v/%v", strings.ToLower(stringutils.Pluralize(kind)), version)
 	}
 
 	// function for determining the relative path of generated schduler package
