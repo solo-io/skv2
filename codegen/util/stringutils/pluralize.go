@@ -3,7 +3,7 @@ package stringutils
 import "github.com/gertd/go-pluralize"
 
 // Define cases for pluralizing which pluralize library does not handle
-var SpecialCases = map[string]string{
+var Pluralize_SpecialCases = map[string]string{
 	"schema": "schemas",
 }
 
@@ -11,7 +11,7 @@ var SpecialCases = map[string]string{
 // when we want a different result than the underlying pluralize library
 func Pluralize(s string) string {
 	c := pluralize.NewClient()
-	for singular, plural := range SpecialCases {
+	for singular, plural := range Pluralize_SpecialCases {
 		c.AddIrregularRule(singular, plural)
 	}
 	return c.Plural(s)
