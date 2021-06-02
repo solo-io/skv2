@@ -19,7 +19,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 {{- $[[ $operatorVar ]]ExtraPodLabels := $[[ $operatorVar ]].extraPodLabels -}}
 {{- $[[ $operatorVar ]]ExtraPodAnnotations := $[[ $operatorVar ]].extraPodAnnotations -}}
 {{- $[[ $operatorVar ]]ExtraDeploymentLabels := $[[ $operatorVar ]].extraDeploymentLabels -}}
-{{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations -}}
+{{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations}}
 
 apiVersion: apps/v1
 kind: [[ $workloadKind ]]
@@ -115,7 +115,7 @@ metadata:
 ---
 # Service for [[ $operator.Name ]]
 {{- $[[ $operatorVar ]]ExtraServiceLabels := $[[ $operatorVar ]].extraLabels -}}
-{{- $[[ $operatorVar ]]ExtraServiceAnnotations := $[[ $operatorVar ]].extraAnnotations -}}
+{{- $[[ $operatorVar ]]ExtraServiceAnnotations := $[[ $operatorVar ]].extraAnnotations }}
 
 apiVersion: v1
 kind: Service
