@@ -8,7 +8,7 @@
 {{- $painterExtraPodLabels := $painter.extraPodLabels -}}
 {{- $painterExtraPodAnnotations := $painter.extraPodAnnotations -}}
 {{- $painterExtraDeploymentLabels := $painter.extraDeploymentLabels -}}
-{{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations -}}
+{{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations}}
 
 apiVersion: apps/v1
 kind: Deployment

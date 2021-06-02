@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Fix the deployment operator helm template.
+    issueLink: https://github.com/solo-io/skv2/issues/236
