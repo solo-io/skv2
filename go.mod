@@ -16,7 +16,7 @@ require (
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr v1.30.1
 	github.com/golang/mock v1.4.4
-	github.com/golang/protobuf v1.4.3
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.1.3
@@ -48,7 +48,7 @@ require (
 	golang.org/x/tools v0.1.0
 	google.golang.org/api v0.38.0
 	google.golang.org/genproto v0.0.0-20210218151259-fe80b386bf06
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.26.0
 	k8s.io/api v0.19.6
 	k8s.io/apiextensions-apiserver v0.19.6
 	k8s.io/apimachinery v0.19.6

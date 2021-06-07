@@ -8,8 +8,8 @@ Name|Version|License
 [go-logr/logr](https://github.com/go-logr/logr)|v0.4.0|Apache License 2.0
 [gogo/protobuf](https://github.com/gogo/protobuf)|v1.3.1|BSD 3-clause "New" or "Revised" License
 [groupcache/lru](https://github.com/golang/groupcache)|v0.0.0-20200121045136-8c9f03a8e57e|Apache License 2.0
-[golang/protobuf](https://github.com/golang/protobuf)|v1.4.3|BSD 3-clause "New" or "Revised" License
-[cmp/internal](https://github.com/google/go-cmp)|v0.5.4|BSD 3-clause "New" or "Revised" License
+[golang/protobuf](https://github.com/golang/protobuf)|v1.5.2|BSD 3-clause "New" or "Revised" License
+[cmp/internal](https://github.com/google/go-cmp)|v0.5.5|BSD 3-clause "New" or "Revised" License
 [google/gofuzz](https://github.com/google/gofuzz)|v1.1.0|Apache License 2.0
 [google/uuid](https://github.com/google/uuid)|v1.2.0|BSD 3-clause "New" or "Revised" License
 [googleapis/gnostic](https://github.com/googleapis/gnostic)|v0.5.1|Apache License 2.0
@@ -34,7 +34,7 @@ Name|Version|License
 [x/text](https://golang.org/x/text)|v0.3.5|BSD 3-clause "New" or "Revised" License
 [time/rate](https://golang.org/x/time/rate)|v0.0.0-20200630173020-3af7569d3a1e|BSD 3-clause "New" or "Revised" License
 [jsonpatch/v2](https://gomodules.xyz/jsonpatch/v2)|v2.1.0|Apache License 2.0
-[google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.25.0|BSD 3-clause "New" or "Revised" License
+[google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.26.0|BSD 3-clause "New" or "Revised" License
 [gopkg.in/inf.v0](https://gopkg.in/inf.v0)|v0.9.1|BSD 3-clause "New" or "Revised" License
 [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)|v2.4.0|Apache License 2.0
 [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)|v3.0.0-20200615113413-eeeca48fe776|MIT License
