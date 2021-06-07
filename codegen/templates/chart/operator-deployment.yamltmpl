@@ -77,18 +77,15 @@ spec:
         {{- end }}
       annotations:
         app.kubernetes.io/name: [[ $operator.Name ]]
-        [[- range $key, $value := $customPodAnnotations ]]
-        [[ $key ]]: [[ $value ]]
-        [[- end ]]
-        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodAnnotations }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
         [[- range $key, $value := $customPodAnnotations ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
+        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodAnnotations }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
     spec:
       serviceAccountName: [[ $operator.Name ]]
 [[- if $operator.Volumes ]]
