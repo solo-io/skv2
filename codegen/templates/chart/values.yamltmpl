@@ -1,6 +1,8 @@
 [[- $values := .BuildChartValues ]]
 
+[[- if $values.CustomValues ]]
 [[- toYaml $values.CustomValues ]]
+[[- end ]]
 
 [[ range $_, $operator := $values.Operators ]]
 [[ lower_camel $operator.Name ]]:

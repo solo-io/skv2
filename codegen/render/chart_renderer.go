@@ -21,6 +21,9 @@ var defaultChartInputs = inputTemplates{
 	"chart/operator-rbac.yamltmpl": {
 		Path: "templates/rbac.yaml",
 	},
+	"chart/_helpers.tpl": {
+		Path: "templates/_helpers.tpl",
+	},
 	"chart/values.yamltmpl": {
 		Path: "values.yaml",
 	},

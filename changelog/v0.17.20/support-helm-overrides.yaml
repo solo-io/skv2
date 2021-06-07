@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: "Helm Chart: Support the ability to allow the user to provide arbitrary overrides to operator deloyments and services in their helm values."
+    issueLink: https://github.com/solo-io/skv2/issues/246
