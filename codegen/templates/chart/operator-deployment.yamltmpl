@@ -134,11 +134,11 @@ spec:
 {{- end }} {{/* define "[[ $operator.Name ]].deploymentSpec" */}}
 
 {{/* Render [[ $operator.Name ]] deployment template with overrides from values*/}}
-{{- $[[ $operator.Name ]]DeploymentOverrides := dict }}
+{{- $[[ $operatorVar ]]DeploymentOverrides := dict }}
 {{- if $[[ $operatorVar ]].deploymentOverrides }}
-{{- $[[ $operator.Name ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
+{{- $[[ $operatorVar ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $[[ $operator.Name ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
+{{- include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
 
 ---
 
@@ -197,10 +197,10 @@ spec:
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
 
 {{/* Render [[ $operator.Name ]] service template with overrides from values*/}}
-{{- $[[ $operator.Name ]]ServiceOverrides := dict }}
+{{- $[[ $operatorVar ]]ServiceOverrides := dict }}
 {{- if $[[ $operatorVar ]].serviceOverrides }}
-{{- $[[ $operator.Name ]]ServiceOverrides = $[[ $operatorVar ]].serviceOverrides  }}
+{{- $[[ $operatorVar ]]ServiceOverrides = $[[ $operatorVar ]].serviceOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $[[ $operator.Name ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
+{{- include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
 
 [[ end ]]
