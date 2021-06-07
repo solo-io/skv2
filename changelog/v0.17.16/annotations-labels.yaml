@@ -6,7 +6,7 @@ changelog:
       to the skv2-generated helm templates.
   - type: HELM
     description: >
-      Add `service.extraAnnotations`, `service.extraLabels`,
-      `deployment.extraDeploymentAnnotations`, `deployment.extraDeploymentLabels`,
-      `deployment.extraPodAnnotations` and `deployment.extraPodLabels`.
+      Add `$operator.extraPodAnnotations`, `$operator.extraPodLabels`,
+      `$operator.extraDeploymentAnnotations`, `$operator.extraDeploymentLabels`,
+      `$operator.extraServiceAnnotations` and `$operator.extraServiceLabels`.
     issueLink: https://github.com/solo-io/skv2/issues/236

@@ -22,6 +22,9 @@ type Chart struct {
 
 	// goes into the chart.yaml
 	Data Data
+
+	// inline string of custom _helpers.tpl which can be provided for the generated chart
+	HelpersTpl string
 }
 
 type Operator struct {
@@ -50,24 +53,24 @@ type Operator struct {
 
 // values for Deployment template
 type Deployment struct {
-	// use a DaemonSet instead of a Deployment
-	UseDaemonSet               bool                     `json:"-"`
-	ExtraPodLabels             map[string]string        `json:"extraPodLabels,omitempty"`
-	ExtraPodAnnotations        map[string]string        `json:"extraPodAnnotations,omitempty"`
-	Image                      Image                    `json:"image,omitempty"`
-	ExtraDeploymentLabels      map[string]string        `json:"extraDeploymentLabels,omitempty"`
-	ExtraDeploymentAnnotations map[string]string        `json:"extraDeploymentAnnotations,omitempty"`
-	DeploymentImage            Image                    `json:"image,omitempty"`
-	Resources                  *v1.ResourceRequirements `json:"resources,omitempty"`
+	// TODO support use of a DaemonSet instead of a Deployment
+	UseDaemonSet                bool
+	Image                       Image
+	Resources                   *v1.ResourceRequirements
+	CustomPodLabels             map[string]string
+	CustomPodAnnotations        map[string]string
+	CustomDeploymentLabels      map[string]string
+	CustomDeploymentAnnotations map[string]string
 }
 
 // values for struct template
 type Service struct {
-	Type             v1.ServiceType
-	Ports            []ServicePort
-	ExtraLabels      map[string]string `json:"extraLabels,omitempty"`
-	ExtraAnnotations map[string]string `json:"extraAnnotations,omitempty"`
+	Type              v1.ServiceType
+	Ports             []ServicePort
+	CustomLabels      map[string]string
+	CustomAnnotations map[string]string
 }
+
 type ServicePort struct {
 	// The name of this port within the service.
 	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name" desc:"The name of this port within the service."`
@@ -121,12 +124,12 @@ type Values struct {
 	ServicePorts map[string]uint32        `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
 
-	ExtraPodLabels             map[string]string `json:"extraPodLabels,omitempty" desc:"Extra labels for the pod"`
-	ExtraPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty" desc:"Extra annotations for the pod"`
-	ExtraDeploymentLabels      map[string]string `json:"extraDeploymentLabels,omitempty" desc:"Extra labels for the deployment"`
-	ExtraDeploymentAnnotations map[string]string `json:"extraDeploymentAnnotations,omitempty" desc:"Extra annotations for the deployment"`
-	ExtraServiceLabels         map[string]string `json:"extraAnnotations,omitempty" desc:"Extra labels for the service"`
-	ExtraServiceAnnotations    map[string]string `json:"extraAnnotations,omitempty" desc:"Extra annotations for the service"`
+	CustomPodLabels             map[string]string `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
+	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
+	CustomDeploymentLabels      map[string]string `json:"customDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
+	CustomDeploymentAnnotations map[string]string `json:"customDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
+	CustomServiceLabels         map[string]string `json:"customServiceLabels,omitempty" desc:"Custom labels for the service"`
+	CustomServiceAnnotations    map[string]string `json:"customServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
 }
 
 func (c Chart) BuildChartValues() HelmValues {
@@ -142,17 +145,17 @@ func (c Chart) BuildChartValues() HelmValues {
 		values.Operators = append(values.Operators, OperatorValues{
 			Name: operator.Name,
 			Values: Values{
-				Image:                      operator.Deployment.Image,
-				Resources:                  operator.Deployment.Resources,
-				ServiceType:                operator.Service.Type,
-				ServicePorts:               servicePorts,
-				Env:                        operator.Env,
-				ExtraPodLabels:             operator.Deployment.ExtraPodLabels,
-				ExtraPodAnnotations:        operator.Deployment.ExtraPodAnnotations,
-				ExtraDeploymentLabels:      operator.Deployment.ExtraDeploymentLabels,
-				ExtraDeploymentAnnotations: operator.Deployment.ExtraDeploymentAnnotations,
-				ExtraServiceLabels:         operator.Service.ExtraLabels,
-				ExtraServiceAnnotations:    operator.Service.ExtraAnnotations,
+				Image:                       operator.Deployment.Image,
+				Resources:                   operator.Deployment.Resources,
+				ServiceType:                 operator.Service.Type,
+				ServicePorts:                servicePorts,
+				Env:                         operator.Env,
+				CustomPodLabels:             operator.Deployment.CustomPodLabels,
+				CustomPodAnnotations:        operator.Deployment.CustomPodAnnotations,
+				CustomDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
+				CustomDeploymentAnnotations: operator.Deployment.CustomDeploymentAnnotations,
+				CustomServiceLabels:         operator.Service.CustomLabels,
+				CustomServiceAnnotations:    operator.Service.CustomAnnotations,
 			},
 		})
 	}

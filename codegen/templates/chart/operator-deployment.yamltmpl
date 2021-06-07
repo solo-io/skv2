@@ -1,60 +1,91 @@
 [[/*
 This template contains the core components for the Operator deployment.
 Expressions evaluating Helm Values use "{{" and "}}"
-Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
+Expressions evaluating SKv2 Config use "[[" and "]]"
 */]]
 [[- range $operator := $.Operators -]]
+[[- $operatorVar := (lower_camel $operator.Name) -]]
+
+[[/* custom values defined in codegen model */]]
+[[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
+[[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
+[[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
+[[- $customDeploymentAnnotations := $operator.Deployment.CustomDeploymentAnnotations -]]
+[[- $customServiceLabels := $operator.Service.CustomLabels -]]
+[[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
+
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 ---
 
-[[/* Support DaemonSet */]]
+{{- define "[[ $operator.Name ]].deploymentSpec"}}
+
+{{/* Define variables in function scope */}}
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
+{{- $[[ $operatorVar ]]ExtraPodLabels := $[[ $operatorVar ]].extraPodLabels }}
+{{- $[[ $operatorVar ]]ExtraPodAnnotations := $[[ $operatorVar ]].extraPodAnnotations }}
+{{- $[[ $operatorVar ]]ExtraDeploymentLabels := $[[ $operatorVar ]].extraDeploymentLabels }}
+{{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations }}
+
   [[- $workloadKind := "Deployment" ]]
   [[- if $operator.Deployment.UseDaemonSet ]]
   [[- $workloadKind = "DaemonSet" ]]
   [[- end -]]
-[[- $operatorVar := (lower_camel $operator.Name) -]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
-{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
-{{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
-{{- $[[ $operatorVar ]]ExtraPodLabels := $[[ $operatorVar ]].extraPodLabels -}}
-{{- $[[ $operatorVar ]]ExtraPodAnnotations := $[[ $operatorVar ]].extraPodAnnotations -}}
-{{- $[[ $operatorVar ]]ExtraDeploymentLabels := $[[ $operatorVar ]].extraDeploymentLabels -}}
-{{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations -}}
 
 apiVersion: apps/v1
 kind: [[ $workloadKind ]]
 metadata:
   labels:
     app: [[ $operator.Name ]]
+    [[- range $key, $value := $customDeploymentLabels ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
     {{- range $key, $value := $[[ $operatorVar ]]ExtraDeploymentLabels }}
     {{ $key }}: {{ $value }}
     {{- end }}
-{{- if $[[ $operatorVar ]]ExtraDeploymentAnnotations }}
   annotations:
+    app.kubernetes.io/name: [[ $operator.Name ]]
+    [[- range $key, $value := $customDeploymentAnnotations ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
     {{- range $key, $value := $[[ $operatorVar ]]ExtraDeploymentAnnotations }}
     {{ $key }}: {{ $value }}
     {{- end }}
-{{- end }}
   name: [[ $operator.Name ]]
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
       app: [[ $operator.Name ]]
+      [[- range $key, $value := $customPodLabels ]]
+      [[ $key ]]: [[ $value ]]
+      [[- end ]]
+      {{- range $key, $value := $[[ $operatorVar ]]ExtraPodLabels }}
+      {{ $key }}: {{ $value }}
+      {{- end }}
   template:
     metadata:
       labels:
         app: [[ $operator.Name ]]
+        [[- range $key, $value := $customPodLabels ]]
+        [[ $key ]]: [[ $value ]]
+        [[- end ]]
         {{- range $key, $value := $[[ $operatorVar ]]ExtraPodLabels }}
         {{ $key }}: {{ $value }}
         {{- end }}
       annotations:
-        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodAnnotations }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
+        app.kubernetes.io/name: [[ $operator.Name ]]
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
+        [[- range $key, $value := $customPodAnnotations ]]
+        [[ $key ]]: [[ $value ]]
+        [[- end ]]
+        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodAnnotations }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
     spec:
       serviceAccountName: [[ $operator.Name ]]
 [[- if $operator.Volumes ]]
@@ -97,10 +128,16 @@ spec:
         - name: {{ $[[ $operatorVar ]]Image.pullSecret }}
       {{- end}}
 
+{{- end }} {{/* define "[[ $operator.Name ]].deploymentSpec" */}}
+
+{{/* Render [[ $operator.Name ]] deployment template with overrides from values*/}}
+{{- $[[ $operatorVar ]]DeploymentOverrides := dict }}
+{{- if $[[ $operatorVar ]].deploymentOverrides }}
+{{- $[[ $operatorVar ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
+{{- end }}
+{{- include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
 
 ---
-
-# Service account for [[ $operator.Name ]]
 
 apiVersion: v1
 kind: ServiceAccount
@@ -111,26 +148,36 @@ metadata:
   namespace: {{ $.Release.Namespace }}
 
 
+{{- define "[[ $operator.Name ]].serviceSpec"}}
+
 [[ if gt (len $operator.Service.Ports) 0 ]]
+# Service for [[ $operator.Name ]]
 ---
 # Service for [[ $operator.Name ]]
-{{- $[[ $operatorVar ]]ExtraServiceLabels := $[[ $operatorVar ]].extraLabels -}}
-{{- $[[ $operatorVar ]]ExtraServiceAnnotations := $[[ $operatorVar ]].extraAnnotations -}}
+{{/* Define variables in function scope */}}
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- $[[ $operatorVar ]]ExtraServiceLabels := $[[ $operatorVar ]].extraServiceLabels }}
+{{- $[[ $operatorVar ]]ExtraServiceAnnotations := $[[ $operatorVar ]].extraServiceAnnotations }}
 
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: [[ $operator.Name ]]
+    [[- range $key, $value := $customServiceLabels ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
     {{- range $key, $value := $[[ $operatorVar ]]ExtraServiceLabels }}
     {{ $key }}: {{ $value }}
     {{- end }}
-{{- if $[[ $operatorVar ]]ExtraServiceAnnotations }}
   annotations:
+    app.kubernetes.io/name: [[ $operator.Name ]]
+    [[- range $key, $value := $customServiceAnnotations ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
     {{- range $key, $value := $[[ $operatorVar ]]ExtraServiceAnnotations }}
     {{ $key }}: {{ $value }}
     {{- end }}
-{{- end }}
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
 spec:
@@ -143,5 +190,14 @@ spec:
     port: {{ $[[ $operatorVar ]].ports.[[ $port.Name ]] }}
   [[- end ]]
 [[ end ]]
+
+{{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
+
+{{/* Render [[ $operator.Name ]] service template with overrides from values*/}}
+{{- $[[ $operatorVar ]]ServiceOverrides := dict }}
+{{- if $[[ $operatorVar ]].serviceOverrides }}
+{{- $[[ $operatorVar ]]ServiceOverrides = $[[ $operatorVar ]].serviceOverrides  }}
+{{- end }}
+{{- include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
 
 [[ end ]]
