@@ -128,7 +128,7 @@ type Values struct {
 	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
 	CustomDeploymentLabels      map[string]string `json:"customDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
 	CustomDeploymentAnnotations map[string]string `json:"customDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
-	CustomServiceLabels         map[string]string `json:"customAnnotations,omitempty" desc:"Custom labels for the service"`
+	CustomServiceLabels         map[string]string `json:"customServiceLabels,omitempty" desc:"Custom labels for the service"`
 	CustomServiceAnnotations    map[string]string `json:"customServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
 }
 
