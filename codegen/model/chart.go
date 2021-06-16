@@ -56,17 +56,17 @@ type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
 	UseDaemonSet bool
 	Container
-	Sidecars []Container
+	Sidecars                    []Container
+	CustomPodLabels             map[string]string
+	CustomPodAnnotations        map[string]string
+	CustomDeploymentLabels      map[string]string
+	CustomDeploymentAnnotations map[string]string
 }
 
 // values for a container
 type Container struct {
-	Image                       Image                    `json:"image" desc:"Specify the container image"`
-	Resources                   *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
-	CustomPodLabels             map[string]string        `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
-	CustomPodAnnotations        map[string]string        `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
-	CustomDeploymentLabels      map[string]string        `json:"customDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
-	CustomDeploymentAnnotations map[string]string        `json:"customDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
+	Image     Image                    `json:"image" desc:"Specify the container image"`
+	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
 }
 
 // values for struct template
@@ -124,14 +124,18 @@ type OperatorValues struct {
 }
 
 type Values struct {
-	Container `json:",inline"`
-	Sidecars  []Container `json:"sidecars" desc:"Additional containers to run in the deployment"`
-	Env       []v1.EnvVar `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
+	Container    `json:",inline"`
+	Sidecars     []Container       `json:"sidecars" desc:"Additional containers to run in the deployment"`
+	ServiceType  v1.ServiceType    `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
+	ServicePorts map[string]uint32 `json:"ports" desc:"Specify service ports as a map from port name to port number."`
+	Env          []v1.EnvVar       `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
 
-	ServiceType              v1.ServiceType    `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts             map[string]uint32 `json:"ports" desc:"Specify service ports as a map from port name to port number."`
-	CustomServiceLabels      map[string]string `json:"customServiceLabels,omitempty" desc:"Custom labels for the service"`
-	CustomServiceAnnotations map[string]string `json:"customServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
+	CustomPodLabels             map[string]string `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
+	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
+	CustomDeploymentLabels      map[string]string `json:"customDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
+	CustomDeploymentAnnotations map[string]string `json:"customDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
+	CustomServiceLabels         map[string]string `json:"customServiceLabels,omitempty" desc:"Custom labels for the service"`
+	CustomServiceAnnotations    map[string]string `json:"customServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
 }
 
 func (c Chart) BuildChartValues() HelmValues {
@@ -148,19 +152,19 @@ func (c Chart) BuildChartValues() HelmValues {
 			Name: operator.Name,
 			Values: Values{
 				Container: Container{
-					Image:                       operator.Deployment.Image,
-					Resources:                   operator.Deployment.Resources,
-					CustomPodLabels:             operator.Deployment.CustomPodLabels,
-					CustomPodAnnotations:        operator.Deployment.CustomPodAnnotations,
-					CustomDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
-					CustomDeploymentAnnotations: operator.Deployment.CustomDeploymentAnnotations,
+					Image:     operator.Deployment.Image,
+					Resources: operator.Deployment.Resources,
 				},
-				Sidecars:                 operator.Deployment.Sidecars,
-				ServiceType:              operator.Service.Type,
-				ServicePorts:             servicePorts,
-				Env:                      operator.Env,
-				CustomServiceLabels:      operator.Service.CustomLabels,
-				CustomServiceAnnotations: operator.Service.CustomAnnotations,
+				Sidecars:                    operator.Deployment.Sidecars,
+				ServiceType:                 operator.Service.Type,
+				ServicePorts:                servicePorts,
+				Env:                         operator.Env,
+				CustomPodLabels:             operator.Deployment.CustomPodLabels,
+				CustomPodAnnotations:        operator.Deployment.CustomPodAnnotations,
+				CustomDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
+				CustomDeploymentAnnotations: operator.Deployment.CustomDeploymentAnnotations,
+				CustomServiceLabels:         operator.Service.CustomLabels,
+				CustomServiceAnnotations:    operator.Service.CustomAnnotations,
 			},
 		})
 	}
