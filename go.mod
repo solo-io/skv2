@@ -5,7 +5,6 @@ go 1.13
 require (
 	cloud.google.com/go v0.76.0
 	cuelang.org/go v0.2.2
-	//cuelang.org/go v0.4.0
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/avast/retry-go v2.2.0+incompatible
@@ -62,7 +61,6 @@ require (
 )
 
 replace (
-	cuelang.org/go => ../cue
 	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
 	// down. The github mirror should be used instead.
 	// Locking to a specific version (from 'go mod graph'):
