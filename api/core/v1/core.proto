@@ -23,6 +23,12 @@ message ObjectRef {
     string namespace = 2;
 }
 
+// Object providing a list of object refs.
+// Used to store lists of refs inside a map.
+message ObjectRefList {
+    repeated ObjectRef refs = 1;
+}
+
 // Resource reference for a cross-cluster-scoped object
 message ClusterObjectRef {
 

@@ -58,6 +58,47 @@ func (m *ObjectRef) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *ObjectRefList) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*ObjectRefList)
+	if !ok {
+		that2, ok := that.(ObjectRefList)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetRefs()) != len(target.GetRefs()) {
+		return false
+	}
+	for idx, v := range m.GetRefs() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRefs()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetRefs()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
 func (m *ClusterObjectRef) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
