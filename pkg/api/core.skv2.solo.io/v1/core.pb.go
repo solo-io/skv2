@@ -86,6 +86,83 @@ func (Status_State) EnumDescriptor() ([]byte, []int) {
 	return file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDescGZIP(), []int{5, 0}
 }
 
+// Object Selector expression operator, while the set-based syntax differs from Kubernetes (kubernetes: `key: !mylabel`, gloo: `key: mylabel, operator: "!"` | kubernetes: `key: mylabel`, gloo: `key: mylabel, operator: exists`), the functionality remains the same.
+type ObjectSelector_Expression_Operator int32
+
+const (
+	// =
+	ObjectSelector_Expression_Equals ObjectSelector_Expression_Operator = 0
+	// ==
+	ObjectSelector_Expression_DoubleEquals ObjectSelector_Expression_Operator = 1
+	// !=
+	ObjectSelector_Expression_NotEquals ObjectSelector_Expression_Operator = 2
+	// in
+	ObjectSelector_Expression_In ObjectSelector_Expression_Operator = 3
+	// notin
+	ObjectSelector_Expression_NotIn ObjectSelector_Expression_Operator = 4
+	// exists
+	ObjectSelector_Expression_Exists ObjectSelector_Expression_Operator = 5
+	// !
+	ObjectSelector_Expression_DoesNotExist ObjectSelector_Expression_Operator = 6
+	// gt
+	ObjectSelector_Expression_GreaterThan ObjectSelector_Expression_Operator = 7
+	// lt
+	ObjectSelector_Expression_LessThan ObjectSelector_Expression_Operator = 8
+)
+
+// Enum value maps for ObjectSelector_Expression_Operator.
+var (
+	ObjectSelector_Expression_Operator_name = map[int32]string{
+		0: "Equals",
+		1: "DoubleEquals",
+		2: "NotEquals",
+		3: "In",
+		4: "NotIn",
+		5: "Exists",
+		6: "DoesNotExist",
+		7: "GreaterThan",
+		8: "LessThan",
+	}
+	ObjectSelector_Expression_Operator_value = map[string]int32{
+		"Equals":       0,
+		"DoubleEquals": 1,
+		"NotEquals":    2,
+		"In":           3,
+		"NotIn":        4,
+		"Exists":       5,
+		"DoesNotExist": 6,
+		"GreaterThan":  7,
+		"LessThan":     8,
+	}
+)
+
+func (x ObjectSelector_Expression_Operator) Enum() *ObjectSelector_Expression_Operator {
+	p := new(ObjectSelector_Expression_Operator)
+	*p = x
+	return p
+}
+
+func (x ObjectSelector_Expression_Operator) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ObjectSelector_Expression_Operator) Descriptor() protoreflect.EnumDescriptor {
+	return file_github_com_solo_io_skv2_api_core_v1_core_proto_enumTypes[1].Descriptor()
+}
+
+func (ObjectSelector_Expression_Operator) Type() protoreflect.EnumType {
+	return &file_github_com_solo_io_skv2_api_core_v1_core_proto_enumTypes[1]
+}
+
+func (x ObjectSelector_Expression_Operator) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ObjectSelector_Expression_Operator.Descriptor instead.
+func (ObjectSelector_Expression_Operator) EnumDescriptor() ([]byte, []int) {
+	return file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDescGZIP(), []int{6, 1, 0}
+}
+
 // Resource reference for an object
 type ObjectRef struct {
 	state         protoimpl.MessageState
@@ -508,6 +585,142 @@ func (x *Status) GetOwner() *wrappers.StringValue {
 	return nil
 }
 
+// Select K8s Objects by namespace, labels, or both.
+type ObjectSelector struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Select Objects in these namespaces. If omitted, Gloo Mesh will only select Objects in the same namespace
+	// as the parent resource (e.g. VirtualGateway) that owns this selector.
+	// The reserved value "*" can be used to select objects in all namespaces watched by Gloo Mesh.
+	Namespaces []string `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	// Select objects whose labels match the ones specified here.
+	Labels map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// Expressions allow for more flexible object label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
+	Expressions []*ObjectSelector_Expression `protobuf:"bytes,3,rep,name=expressions,proto3" json:"expressions,omitempty"`
+}
+
+func (x *ObjectSelector) Reset() {
+	*x = ObjectSelector{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_skv2_api_core_v1_core_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ObjectSelector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ObjectSelector) ProtoMessage() {}
+
+func (x *ObjectSelector) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_skv2_api_core_v1_core_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ObjectSelector.ProtoReflect.Descriptor instead.
+func (*ObjectSelector) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ObjectSelector) GetNamespaces() []string {
+	if x != nil {
+		return x.Namespaces
+	}
+	return nil
+}
+
+func (x *ObjectSelector) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *ObjectSelector) GetExpressions() []*ObjectSelector_Expression {
+	if x != nil {
+		return x.Expressions
+	}
+	return nil
+}
+
+type ObjectSelector_Expression struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Kubernetes label key, must conform to Kubernetes syntax requirements
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+	Operator ObjectSelector_Expression_Operator `protobuf:"varint,2,opt,name=operator,proto3,enum=core.skv2.solo.io.ObjectSelector_Expression_Operator" json:"operator,omitempty"`
+	Values   []string                           `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
+}
+
+func (x *ObjectSelector_Expression) Reset() {
+	*x = ObjectSelector_Expression{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_skv2_api_core_v1_core_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ObjectSelector_Expression) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ObjectSelector_Expression) ProtoMessage() {}
+
+func (x *ObjectSelector_Expression) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_skv2_api_core_v1_core_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ObjectSelector_Expression.ProtoReflect.Descriptor instead.
+func (*ObjectSelector_Expression) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDescGZIP(), []int{6, 1}
+}
+
+func (x *ObjectSelector_Expression) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *ObjectSelector_Expression) GetOperator() ObjectSelector_Expression_Operator {
+	if x != nil {
+		return x.Operator
+	}
+	return ObjectSelector_Expression_Equals
+}
+
+func (x *ObjectSelector_Expression) GetValues() []string {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
 var file_github_com_solo_io_skv2_api_core_v1_core_proto_extTypes = []protoimpl.ExtensionInfo{
 	{
 		ExtendedType:  (*descriptor.FileOptions)(nil),
@@ -602,18 +815,52 @@ var file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDesc = []byte{
 	0x0e, 0x0a, 0x0a, 0x50, 0x52, 0x4f, 0x43, 0x45, 0x53, 0x53, 0x49, 0x4e, 0x47, 0x10, 0x01, 0x12,
 	0x0b, 0x0a, 0x07, 0x49, 0x4e, 0x56, 0x41, 0x4c, 0x49, 0x44, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06,
 	0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x03, 0x12, 0x0c, 0x0a, 0x08, 0x41, 0x43, 0x43, 0x45,
-	0x50, 0x54, 0x45, 0x44, 0x10, 0x04, 0x3a, 0x68, 0x0a, 0x21, 0x64, 0x69, 0x73, 0x61, 0x62, 0x6c,
-	0x65, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x12, 0x1c, 0x2e, 0x67, 0x6f,
-	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x46, 0x69,
-	0x6c, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x91, 0x4e, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x1e, 0x64, 0x69, 0x73, 0x61, 0x62, 0x6c, 0x65, 0x4f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69,
-	0x56, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x63, 0x68, 0x65, 0x6d, 0x61,
-	0x42, 0x3e, 0x5a, 0x34, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73,
-	0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x73, 0x6b, 0x76, 0x32, 0x2f, 0x70, 0x6b, 0x67, 0x2f,
-	0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f,
-	0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0xb8, 0xf5, 0x04, 0x01, 0xc0, 0xf5, 0x04, 0x01,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x50, 0x54, 0x45, 0x44, 0x10, 0x04, 0x22, 0x98, 0x04, 0x0a, 0x0e, 0x4f, 0x62, 0x6a, 0x65, 0x63,
+	0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0a, 0x6e, 0x61, 0x6d,
+	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x6e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x73, 0x12, 0x45, 0x0a, 0x06, 0x6c, 0x61, 0x62,
+	0x65, 0x6c, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x63, 0x6f, 0x72, 0x65,
+	0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62,
+	0x6a, 0x65, 0x63, 0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2e, 0x4c, 0x61, 0x62,
+	0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73,
+	0x12, 0x4e, 0x0a, 0x0b, 0x65, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x18,
+	0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76,
+	0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74,
+	0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2e, 0x45, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x65, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x1a, 0x39, 0x0a, 0x0b, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12,
+	0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65,
+	0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x1a, 0x93, 0x02, 0x0a, 0x0a,
+	0x45, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65,
+	0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x51, 0x0a, 0x08,
+	0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x35,
+	0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e,
+	0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f,
+	0x72, 0x2e, 0x45, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x2e, 0x4f, 0x70, 0x65,
+	0x72, 0x61, 0x74, 0x6f, 0x72, 0x52, 0x08, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12,
+	0x16, 0x0a, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52,
+	0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22, 0x87, 0x01, 0x0a, 0x08, 0x4f, 0x70, 0x65, 0x72,
+	0x61, 0x74, 0x6f, 0x72, 0x12, 0x0a, 0x0a, 0x06, 0x45, 0x71, 0x75, 0x61, 0x6c, 0x73, 0x10, 0x00,
+	0x12, 0x10, 0x0a, 0x0c, 0x44, 0x6f, 0x75, 0x62, 0x6c, 0x65, 0x45, 0x71, 0x75, 0x61, 0x6c, 0x73,
+	0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x4e, 0x6f, 0x74, 0x45, 0x71, 0x75, 0x61, 0x6c, 0x73, 0x10,
+	0x02, 0x12, 0x06, 0x0a, 0x02, 0x49, 0x6e, 0x10, 0x03, 0x12, 0x09, 0x0a, 0x05, 0x4e, 0x6f, 0x74,
+	0x49, 0x6e, 0x10, 0x04, 0x12, 0x0a, 0x0a, 0x06, 0x45, 0x78, 0x69, 0x73, 0x74, 0x73, 0x10, 0x05,
+	0x12, 0x10, 0x0a, 0x0c, 0x44, 0x6f, 0x65, 0x73, 0x4e, 0x6f, 0x74, 0x45, 0x78, 0x69, 0x73, 0x74,
+	0x10, 0x06, 0x12, 0x0f, 0x0a, 0x0b, 0x47, 0x72, 0x65, 0x61, 0x74, 0x65, 0x72, 0x54, 0x68, 0x61,
+	0x6e, 0x10, 0x07, 0x12, 0x0c, 0x0a, 0x08, 0x4c, 0x65, 0x73, 0x73, 0x54, 0x68, 0x61, 0x6e, 0x10,
+	0x08, 0x3a, 0x68, 0x0a, 0x21, 0x64, 0x69, 0x73, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x6f, 0x70, 0x65,
+	0x6e, 0x61, 0x70, 0x69, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f,
+	0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x12, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x4f, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x73, 0x18, 0x91, 0x4e, 0x20, 0x01, 0x28, 0x08, 0x52, 0x1e, 0x64, 0x69, 0x73,
+	0x61, 0x62, 0x6c, 0x65, 0x4f, 0x70, 0x65, 0x6e, 0x61, 0x70, 0x69, 0x56, 0x61, 0x6c, 0x69, 0x64,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x42, 0x3e, 0x5a, 0x34, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69,
+	0x6f, 0x2f, 0x73, 0x6b, 0x76, 0x32, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63,
+	0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f,
+	0x2f, 0x76, 0x31, 0xb8, 0xf5, 0x04, 0x01, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -628,35 +875,42 @@ func file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDescGZIP() []byte {
 	return file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDescData
 }
 
-var file_github_com_solo_io_skv2_api_core_v1_core_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_github_com_solo_io_skv2_api_core_v1_core_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_github_com_solo_io_skv2_api_core_v1_core_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_github_com_solo_io_skv2_api_core_v1_core_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_github_com_solo_io_skv2_api_core_v1_core_proto_goTypes = []interface{}{
-	(Status_State)(0),              // 0: core.skv2.solo.io.Status.State
-	(*ObjectRef)(nil),              // 1: core.skv2.solo.io.ObjectRef
-	(*ObjectRefList)(nil),          // 2: core.skv2.solo.io.ObjectRefList
-	(*ClusterObjectRef)(nil),       // 3: core.skv2.solo.io.ClusterObjectRef
-	(*TypedObjectRef)(nil),         // 4: core.skv2.solo.io.TypedObjectRef
-	(*TypedClusterObjectRef)(nil),  // 5: core.skv2.solo.io.TypedClusterObjectRef
-	(*Status)(nil),                 // 6: core.skv2.solo.io.Status
-	(*wrappers.StringValue)(nil),   // 7: google.protobuf.StringValue
-	(*timestamp.Timestamp)(nil),    // 8: google.protobuf.Timestamp
-	(*descriptor.FileOptions)(nil), // 9: google.protobuf.FileOptions
+	(Status_State)(0),                       // 0: core.skv2.solo.io.Status.State
+	(ObjectSelector_Expression_Operator)(0), // 1: core.skv2.solo.io.ObjectSelector.Expression.Operator
+	(*ObjectRef)(nil),                       // 2: core.skv2.solo.io.ObjectRef
+	(*ObjectRefList)(nil),                   // 3: core.skv2.solo.io.ObjectRefList
+	(*ClusterObjectRef)(nil),                // 4: core.skv2.solo.io.ClusterObjectRef
+	(*TypedObjectRef)(nil),                  // 5: core.skv2.solo.io.TypedObjectRef
+	(*TypedClusterObjectRef)(nil),           // 6: core.skv2.solo.io.TypedClusterObjectRef
+	(*Status)(nil),                          // 7: core.skv2.solo.io.Status
+	(*ObjectSelector)(nil),                  // 8: core.skv2.solo.io.ObjectSelector
+	nil,                                     // 9: core.skv2.solo.io.ObjectSelector.LabelsEntry
+	(*ObjectSelector_Expression)(nil),       // 10: core.skv2.solo.io.ObjectSelector.Expression
+	(*wrappers.StringValue)(nil),            // 11: google.protobuf.StringValue
+	(*timestamp.Timestamp)(nil),             // 12: google.protobuf.Timestamp
+	(*descriptor.FileOptions)(nil),          // 13: google.protobuf.FileOptions
 }
 var file_github_com_solo_io_skv2_api_core_v1_core_proto_depIdxs = []int32{
-	1, // 0: core.skv2.solo.io.ObjectRefList.refs:type_name -> core.skv2.solo.io.ObjectRef
-	7, // 1: core.skv2.solo.io.TypedObjectRef.api_group:type_name -> google.protobuf.StringValue
-	7, // 2: core.skv2.solo.io.TypedObjectRef.kind:type_name -> google.protobuf.StringValue
-	7, // 3: core.skv2.solo.io.TypedClusterObjectRef.api_group:type_name -> google.protobuf.StringValue
-	7, // 4: core.skv2.solo.io.TypedClusterObjectRef.kind:type_name -> google.protobuf.StringValue
-	0, // 5: core.skv2.solo.io.Status.state:type_name -> core.skv2.solo.io.Status.State
-	8, // 6: core.skv2.solo.io.Status.processing_time:type_name -> google.protobuf.Timestamp
-	7, // 7: core.skv2.solo.io.Status.owner:type_name -> google.protobuf.StringValue
-	9, // 8: core.skv2.solo.io.disable_openapi_validation_schema:extendee -> google.protobuf.FileOptions
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	8, // [8:9] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	2,  // 0: core.skv2.solo.io.ObjectRefList.refs:type_name -> core.skv2.solo.io.ObjectRef
+	11, // 1: core.skv2.solo.io.TypedObjectRef.api_group:type_name -> google.protobuf.StringValue
+	11, // 2: core.skv2.solo.io.TypedObjectRef.kind:type_name -> google.protobuf.StringValue
+	11, // 3: core.skv2.solo.io.TypedClusterObjectRef.api_group:type_name -> google.protobuf.StringValue
+	11, // 4: core.skv2.solo.io.TypedClusterObjectRef.kind:type_name -> google.protobuf.StringValue
+	0,  // 5: core.skv2.solo.io.Status.state:type_name -> core.skv2.solo.io.Status.State
+	12, // 6: core.skv2.solo.io.Status.processing_time:type_name -> google.protobuf.Timestamp
+	11, // 7: core.skv2.solo.io.Status.owner:type_name -> google.protobuf.StringValue
+	9,  // 8: core.skv2.solo.io.ObjectSelector.labels:type_name -> core.skv2.solo.io.ObjectSelector.LabelsEntry
+	10, // 9: core.skv2.solo.io.ObjectSelector.expressions:type_name -> core.skv2.solo.io.ObjectSelector.Expression
+	1,  // 10: core.skv2.solo.io.ObjectSelector.Expression.operator:type_name -> core.skv2.solo.io.ObjectSelector.Expression.Operator
+	13, // 11: core.skv2.solo.io.disable_openapi_validation_schema:extendee -> google.protobuf.FileOptions
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	11, // [11:12] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_github_com_solo_io_skv2_api_core_v1_core_proto_init() }
@@ -737,14 +991,38 @@ func file_github_com_solo_io_skv2_api_core_v1_core_proto_init() {
 				return nil
 			}
 		}
+		file_github_com_solo_io_skv2_api_core_v1_core_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ObjectSelector); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_skv2_api_core_v1_core_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ObjectSelector_Expression); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDesc,
-			NumEnums:      1,
-			NumMessages:   6,
+			NumEnums:      2,
+			NumMessages:   9,
 			NumExtensions: 1,
 			NumServices:   0,
 		},
