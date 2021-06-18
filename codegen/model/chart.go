@@ -37,10 +37,6 @@ type Operator struct {
 	Rbac []rbacv1.PolicyRule
 	// these populate the generated ClusterRole for the operator
 	Volumes []v1.Volume
-	// mount these volumes to the operator container
-	VolumeMounts []v1.VolumeMount
-	// set these environment variables on the operator container
-	Env []v1.EnvVar
 	// add a manifest for each configmap
 	ConfigMaps []v1.ConfigMap
 
@@ -54,9 +50,8 @@ type Operator struct {
 // values for Deployment template
 type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
-	UseDaemonSet bool
-	Container
-	Sidecars                    []Container
+	UseDaemonSet                bool
+	Containers                  []Container
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
@@ -65,8 +60,10 @@ type Deployment struct {
 
 // values for a container
 type Container struct {
-	Image     Image                    `json:"image" desc:"Specify the container image"`
-	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
+	Image        Image                    `json:"image" desc:"Specify the container image"`
+	Resources    *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
+	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
+	VolumeMounts []v1.VolumeMount         `json:",omit"`
 }
 
 // values for struct template
@@ -124,11 +121,9 @@ type OperatorValues struct {
 }
 
 type Values struct {
-	Container    `json:",inline"`
-	Sidecars     []Container       `json:"sidecars" desc:"Additional containers to run in the deployment"`
+	Containers   []Container       `json:"containers" desc:"Configuration for the deployed containers."`
 	ServiceType  v1.ServiceType    `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
 	ServicePorts map[string]uint32 `json:"ports" desc:"Specify service ports as a map from port name to port number."`
-	Env          []v1.EnvVar       `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
 
 	CustomPodLabels             map[string]string `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
 	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
@@ -151,14 +146,9 @@ func (c Chart) BuildChartValues() HelmValues {
 		values.Operators = append(values.Operators, OperatorValues{
 			Name: operator.Name,
 			Values: Values{
-				Container: Container{
-					Image:     operator.Deployment.Image,
-					Resources: operator.Deployment.Resources,
-				},
-				Sidecars:                    operator.Deployment.Sidecars,
+				Containers:                  operator.Deployment.Containers,
 				ServiceType:                 operator.Service.Type,
 				ServicePorts:                servicePorts,
-				Env:                         operator.Env,
 				CustomPodLabels:             operator.Deployment.CustomPodLabels,
 				CustomPodAnnotations:        operator.Deployment.CustomPodAnnotations,
 				CustomDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
@@ -184,7 +174,9 @@ func (c Chart) GenerateHelmDoc(title string) string {
 		values := operatorWithValues.Values
 
 		// clear image tag so it doesn't show build time commit hashes
-		values.Image.Tag = ""
+		for _, container := range values.Containers {
+			container.Image.Tag = ""
+		}
 
 		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
