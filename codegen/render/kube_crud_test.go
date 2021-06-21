@@ -212,25 +212,25 @@ var _ = Describe("Generated Code", func() {
 			paint := newPaint(ns, "paint-kube-reconciler")
 
 			// make the paint recursive
-			recursiveType := &RecursiveType{
-				RecursiveField: &RecursiveType{
-					RecursiveField: &RecursiveType{},
-					RepeatedRecursiveField: []*RecursiveType{
+			recursiveType := &PaintSpec_RecursiveType{
+				RecursiveField: &PaintSpec_RecursiveType{
+					RecursiveField: &PaintSpec_RecursiveType{},
+					RepeatedRecursiveField: []*PaintSpec_RecursiveType{
 						{},
 						{},
 					},
 				},
-				RepeatedRecursiveField: []*RecursiveType{
+				RepeatedRecursiveField: []*PaintSpec_RecursiveType{
 					{
-						RecursiveField: &RecursiveType{},
-						RepeatedRecursiveField: []*RecursiveType{
+						RecursiveField: &PaintSpec_RecursiveType{},
+						RepeatedRecursiveField: []*PaintSpec_RecursiveType{
 							{},
 							{},
 						},
 					},
 					{
-						RecursiveField: &RecursiveType{},
-						RepeatedRecursiveField: []*RecursiveType{
+						RecursiveField: &PaintSpec_RecursiveType{},
+						RepeatedRecursiveField: []*PaintSpec_RecursiveType{
 							{},
 							{},
 						},
