@@ -28,6 +28,8 @@ type Chart struct {
 }
 
 type Operator struct {
+	// name of the operator
+	// will ve used as the name of the primary container if sidecars are added
 	Name string
 
 	// deployment config
@@ -42,16 +44,14 @@ type Operator struct {
 
 	// if at least one port is defined, create a service for the
 	Service Service
-
-	// args for the container
-	Args []string
 }
 
 // values for Deployment template
 type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
-	UseDaemonSet                bool
-	Containers                  []Container
+	UseDaemonSet bool
+	Container
+	Sidecars                    map[string]Container
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
@@ -60,10 +60,23 @@ type Deployment struct {
 
 // values for a container
 type Container struct {
-	Image        Image                    `json:"image" desc:"Specify the container image"`
-	Resources    *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
-	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
-	VolumeMounts []v1.VolumeMount         `json:",omit"`
+	Args         []string
+	VolumeMounts []v1.VolumeMount
+	Image        Image
+	Resources    *v1.ResourceRequirements
+	Env          []v1.EnvVar
+}
+
+func (c Container) toValues() ContainerValues {
+	env := c.Env
+	if env == nil {
+		env = make([]v1.EnvVar, 0)
+	}
+	return ContainerValues{
+		Image:     c.Image,
+		Resources: c.Resources,
+		Env:       env,
+	}
 }
 
 // values for struct template
@@ -121,9 +134,10 @@ type OperatorValues struct {
 }
 
 type Values struct {
-	Containers   []Container       `json:"containers" desc:"Configuration for the deployed containers."`
-	ServiceType  v1.ServiceType    `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts map[string]uint32 `json:"ports" desc:"Specify service ports as a map from port name to port number."`
+	ContainerValues `json:",inline"`
+	Sidecars        map[string]ContainerValues `json:"sidecars" desc:"Configuration for the deployed containers."`
+	ServiceType     v1.ServiceType             `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
+	ServicePorts    map[string]uint32          `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 
 	CustomPodLabels             map[string]string `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
 	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
@@ -133,20 +147,27 @@ type Values struct {
 	CustomServiceAnnotations    map[string]string `json:"customServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
 }
 
+type ContainerValues struct {
+	Image     Image                    `json:"image" desc:"Specify the container image"`
+	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
+	Env       []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
+}
+
 func (c Chart) BuildChartValues() HelmValues {
-	values := HelmValues{}
+	values := HelmValues{Operators: make([]OperatorValues, len(c.Operators))}
 	values.CustomValues = c.Values
 
-	for _, operator := range c.Operators {
+	for i, operator := range c.Operators {
 		servicePorts := map[string]uint32{}
 		for _, port := range operator.Service.Ports {
 			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
 
-		values.Operators = append(values.Operators, OperatorValues{
+		values.Operators[i] = OperatorValues{
 			Name: operator.Name,
 			Values: Values{
-				Containers:                  operator.Deployment.Containers,
+				ContainerValues:             operator.Deployment.Container.toValues(),
+				Sidecars:                    make(map[string]ContainerValues),
 				ServiceType:                 operator.Service.Type,
 				ServicePorts:                servicePorts,
 				CustomPodLabels:             operator.Deployment.CustomPodLabels,
@@ -156,7 +177,11 @@ func (c Chart) BuildChartValues() HelmValues {
 				CustomServiceLabels:         operator.Service.CustomLabels,
 				CustomServiceAnnotations:    operator.Service.CustomAnnotations,
 			},
-		})
+		}
+
+		for name, sidecar := range operator.Deployment.Sidecars {
+			values.Operators[i].Values.Sidecars[name] = sidecar.toValues()
+		}
 	}
 
 	return values
@@ -174,8 +199,10 @@ func (c Chart) GenerateHelmDoc(title string) string {
 		values := operatorWithValues.Values
 
 		// clear image tag so it doesn't show build time commit hashes
-		for _, container := range values.Containers {
+		values.Image.Tag = ""
+		for name, container := range values.Sidecars {
 			container.Image.Tag = ""
+			values.Sidecars[name] = container
 		}
 
 		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
