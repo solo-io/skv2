@@ -154,14 +154,6 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 	return nil, nil
 }
 
-// TODO(ilackarms): auto generate this map by parsing proto options. currently it is hand written !
-var ProjectUnstructuredFields map[string][][]string = map[string][][]string{
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1": {
-		{"AllYouNeed", "thatsEverything"},
-		{"AllYouNeed", "thatsEverythingElse"},
-	},
-}
-
 // returns the map of proto fields marked as unstructured, used by CUE to generate openapi schemas
 func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[string][][]string, error) {
 
