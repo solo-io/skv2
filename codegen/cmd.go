@@ -117,6 +117,12 @@ func (c Command) Execute() error {
 		return err
 	}
 
+	// get api-level code gen options from descriptors
+	protoOpts, err := proto.ParseOptions(descriptors)
+	if err != nil {
+		return err
+	}
+
 	if err := c.generateChart(); err != nil {
 		return err
 	}
@@ -125,7 +131,7 @@ func (c Command) Execute() error {
 		// init connects children to their parents
 		group.Init()
 
-		if err := c.generateGroup(group, descriptors); err != nil {
+		if err := c.generateGroup(group, descriptors, protoOpts); err != nil {
 			return err
 		}
 	}
@@ -201,7 +207,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 	return descriptors, nil
 }
 
-func (c Command) generateGroup(grp model.Group, descriptors []*collector.DescriptorWithPath) error {
+func (c Command) generateGroup(grp model.Group, descriptors []*collector.DescriptorWithPath, protoOpts proto.Options) error {
 	c.addDescriptorsToGroup(&grp, descriptors)
 
 	fileWriter := &writer.DefaultFileWriter{
@@ -227,7 +233,7 @@ func (c Command) generateGroup(grp model.Group, descriptors []*collector.Descrip
 		return err
 	}
 
-	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, grp)
+	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, protoOpts, grp)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/solo-io/skv2/codegen/render"
+
 	"sigs.k8s.io/yaml"
 
 	. "github.com/onsi/ginkgo"
@@ -24,6 +26,22 @@ import (
 )
 
 var _ = Describe("Cmd", func() {
+	render.ProjectUnstructuredFields = map[string][][]string{
+		"github.com/solo-io/skv2/codegen/test/api/things.test.io/v1": {
+			{"PaintSpec", "recursiveType", "recursiveField"},
+			{"PaintSpec", "recursiveType", "repeatedRecursiveField"},
+		},
+	}
+
+	skv2Imports := skv2_anyvendor.CreateDefaultMatchOptions(
+		[]string{"codegen/test/*.proto"},
+	)
+
+	// used for a proto option which disables openapi validation on fields
+	skv2Imports.External["cuelang.org/go"] = []string{
+		"encoding/protobuf/cue/cue.proto",
+	}
+
 	It("generates controller code and manifests for a proto file", func() {
 
 		cmd := &Command{
@@ -55,10 +73,8 @@ var _ = Describe("Cmd", func() {
 					CustomTemplates:  contrib.AllGroupCustomTemplates,
 				},
 			},
-			AnyVendorConfig: skv2_anyvendor.CreateDefaultMatchOptions(
-				[]string{"codegen/test/*.proto"},
-			),
-			RenderProtos: true,
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
 
 			Chart: &Chart{
 				Operators: []Operator{
@@ -296,10 +312,8 @@ var _ = Describe("Cmd", func() {
 					ApiRoot:                 "codegen/test/api",
 				},
 			},
-			AnyVendorConfig: skv2_anyvendor.CreateDefaultMatchOptions(
-				[]string{"codegen/test/*.proto"},
-			),
-			RenderProtos: true,
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
 
 			Chart: &Chart{
 				Operators: []Operator{

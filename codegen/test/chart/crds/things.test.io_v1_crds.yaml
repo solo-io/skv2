@@ -89,6 +89,18 @@ spec:
                 waterMixable:
                   type: boolean
               type: object
+            recursiveType:
+              description: OpenAPI gen test for recursive fields
+              properties:
+                recursiveField:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                repeatedRecursiveField:
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  type: array
+              type: object
           type: object
         status:
           properties:
