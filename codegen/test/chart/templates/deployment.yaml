@@ -9,11 +9,13 @@
 
 {{/* Define variables in function scope */}}
 {{- $painter := $.Values.painter}}
-{{- $painterImage := $painter.image }}
 {{- $painterExtraPodLabels := $painter.extraPodLabels }}
 {{- $painterExtraPodAnnotations := $painter.extraPodAnnotations }}
 {{- $painterExtraDeploymentLabels := $painter.extraDeploymentLabels }}
-{{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations }}# Deployment manifest for painter
+{{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations }}
+
+{{/* Container images */}}
+{{- $painterImage := $painter.image }}# Deployment manifest for painter
 
 apiVersion: apps/v1
 kind: Deployment
@@ -79,6 +81,7 @@ spec:
           capabilities:
             drop:
             - ALL
+{{/* Sidecars */}}
       {{- if $painterImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $painterImage.pullSecret }}

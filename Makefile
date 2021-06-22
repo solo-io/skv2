@@ -15,10 +15,10 @@ DEPSGOBIN=$(shell pwd)/_output/.bin
 install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
 	GOBIN=$(DEPSGOBIN) go install github.com/gobuffalo/packr/packr
-	GOBIN=$(DEPSGOBIN) go install github.com/golang/protobuf/protoc-gen-go
+	GOBIN=$(DEPSGOBIN) go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
 	GOBIN=$(DEPSGOBIN) go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 	GOBIN=$(DEPSGOBIN) go install github.com/solo-io/protoc-gen-ext
-	GOBIN=$(DEPSGOBIN) go install github.com/golang/mock/mockgen
+	GOBIN=$(DEPSGOBIN) go install github.com/golang/mock/mockgen@v1.4.4
 	GOBIN=$(DEPSGOBIN) go install golang.org/x/tools/cmd/goimports
 
 # Generated Code - Required to update Codgen Templates
@@ -71,3 +71,4 @@ clean:
 	rm -rf codegen/*-packr.go
 	rm -rf pkg/api
 	rm -rf vendor_any
+	rm -rf _output

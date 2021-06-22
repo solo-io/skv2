@@ -72,14 +72,16 @@ var _ = Describe("Cmd", func() {
 					{
 						Name: "painter",
 						Deployment: Deployment{
-							Image: Image{
-								Tag:        "v0.0.0",
-								Repository: "painter",
-								Registry:   "quay.io/solo-io",
-								PullPolicy: "IfNotPresent",
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
 							},
 						},
-						Args: []string{"foo"},
 					},
 				},
 				Values: nil,
@@ -113,11 +115,14 @@ var _ = Describe("Cmd", func() {
 					{
 						Name: "painter",
 						Deployment: Deployment{
-							Image: Image{
-								Tag:        "v0.0.0",
-								Repository: "painter",
-								Registry:   "quay.io/solo-io",
-								PullPolicy: "IfNotPresent",
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
 							},
 							CustomDeploymentAnnotations: map[string]string{
 								"deployment": "annotation",
@@ -144,7 +149,6 @@ var _ = Describe("Cmd", func() {
 								"service": "labels",
 							},
 						},
-						Args: []string{"foo"},
 					},
 				},
 				Values: nil,
@@ -311,14 +315,16 @@ var _ = Describe("Cmd", func() {
 					{
 						Name: "painter",
 						Deployment: Deployment{
-							Image: Image{
-								Tag:        "v0.0.0",
-								Repository: "painter",
-								Registry:   "quay.io/solo-io",
-								PullPolicy: "IfNotPresent",
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
 							},
 						},
-						Args: []string{"foo"},
 					},
 				},
 				Values: nil,

@@ -27,7 +27,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 {{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations }}
 
 {{/* Container images */}}
-{{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].deployment.image }}
+{{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
 [[- range $name, $container := $operator.Deployment.Sidecars ]]
 {{- $[[ $name ]]Image := $[[ $operatorVar ]].deployment.sidecars.[[ $name ]].image }}
 [[- end ]]
@@ -114,9 +114,9 @@ spec:
 [[- end ]]
         imagePullPolicy: {{ $[[ $operatorVar ]]Image.pullPolicy }}
         name: [[ $operator.Name ]]
-{{- if $[[ $operatorVar ]].deployment.resources }}
+{{- if $[[ $operatorVar ]].resources }}
         resources:
-{{ toYaml $[[ $operatorVar ]].deployment.resources | indent 10}}
+{{ toYaml $[[ $operatorVar ]].resources | indent 10}}
 {{- else}}
         resources:
           requests:
@@ -157,7 +157,7 @@ spec:
             memory: 256Mi
 {{- end}}
 [[- end ]]
-{{- if $[[ $operatorVar ]]Image.pullSecret }}
+      {{- if $[[ $operatorVar ]]Image.pullSecret }}
       imagePullSecrets:
         - name: {{ $[[ $operatorVar ]]Image.pullSecret }}
       {{- end}}

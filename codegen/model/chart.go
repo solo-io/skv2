@@ -28,8 +28,6 @@ type Chart struct {
 }
 
 type Operator struct {
-	// name of the operator
-	// will ve used as the name of the primary container if sidecars are added
 	Name string
 
 	// deployment config
@@ -68,14 +66,10 @@ type Container struct {
 }
 
 func (c Container) toValues() ContainerValues {
-	env := c.Env
-	if env == nil {
-		env = make([]v1.EnvVar, 0)
-	}
 	return ContainerValues{
 		Image:     c.Image,
 		Resources: c.Resources,
-		Env:       env,
+		Env:       c.Env,
 	}
 }
 
@@ -167,7 +161,6 @@ func (c Chart) BuildChartValues() HelmValues {
 			Name: operator.Name,
 			Values: Values{
 				ContainerValues:             operator.Deployment.Container.toValues(),
-				Sidecars:                    make(map[string]ContainerValues),
 				ServiceType:                 operator.Service.Type,
 				ServicePorts:                servicePorts,
 				CustomPodLabels:             operator.Deployment.CustomPodLabels,
