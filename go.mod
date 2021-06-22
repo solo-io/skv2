@@ -60,8 +60,8 @@ require (
 )
 
 replace (
-	// pinned to solo-io's fork of cue
-	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210621160510-78ad41b380f8
+	// pinned to solo-io's fork of cue version 95a50cebaffb4bdba8c544601d8fb867990ad1ad
+	cuelang.org/go => github.com/solo-io/cue 95a50cebaffb4bdba8c544601d8fb867990ad1ad
 
 	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
 	// down. The github mirror should be used instead.
