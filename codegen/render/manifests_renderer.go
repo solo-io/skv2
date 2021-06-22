@@ -4,12 +4,9 @@ import (
 	"encoding/json"
 	"strings"
 
-	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
-	"github.com/pseudomuto/protokit"
-	"github.com/solo-io/skv2/codegen/collector"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/codegen/util"
 
-	"github.com/golang/protobuf/proto"
+	protoutil "github.com/solo-io/skv2/codegen/proto"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/encoding/openapi"
@@ -36,7 +33,11 @@ type ManifestsRenderer struct {
 	ProtoDir      string
 }
 
-func RenderManifests(appName, manifestDir, protoDir string, grp Group) ([]OutFile, error) {
+func RenderManifests(
+	appName, manifestDir, protoDir string,
+	protoOpts protoutil.Options,
+	grp Group,
+) ([]OutFile, error) {
 	defaultManifestsRenderer := ManifestsRenderer{
 		AppName:     appName,
 		ManifestDir: manifestDir,
@@ -47,17 +48,17 @@ func RenderManifests(appName, manifestDir, protoDir string, grp Group) ([]OutFil
 			}: kuberesource.CustomResourceDefinitions,
 		},
 	}
-	return defaultManifestsRenderer.RenderManifests(grp)
+	return defaultManifestsRenderer.RenderManifests(grp, protoOpts)
 }
 
-func (r ManifestsRenderer) RenderManifests(grp Group) ([]OutFile, error) {
+func (r ManifestsRenderer) RenderManifests(grp Group, protoOpts protoutil.Options) ([]OutFile, error) {
 	if !grp.RenderManifests {
 		return nil, nil
 	}
 
 	if grp.RenderValidationSchemas {
 		var err error
-		oapiSchemas, err := generateOpenApi(grp, r.ProtoDir)
+		oapiSchemas, err := generateOpenApi(grp, r.ProtoDir, protoOpts)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +78,7 @@ func (r ManifestsRenderer) RenderManifests(grp Group) ([]OutFile, error) {
 }
 
 // Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
-func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, error) {
+func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Options) (model.OpenApiSchemas, error) {
 	if protoDir == "" {
 		protoDir = anyvendor.DefaultDepDir
 	}
@@ -98,19 +99,7 @@ func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, er
 
 	ext := protobuf.NewExtractor(cfg)
 	// collect the set of messsages for which validation is disabled
-	var disableValidationFiles []*collector.DescriptorWithPath
 	for _, fileDescriptor := range grp.Descriptors {
-		disableOption, err := proto.GetExtension(fileDescriptor.Options, v1.E_DisableOpenapiValidationSchema)
-		if err == nil {
-			disableOpenaApiValidationSchema, ok := disableOption.(*bool)
-			if !ok {
-				return nil, eris.Errorf("internal error: invalid option type %T expecting bool", disableOption)
-			}
-			if *disableOpenaApiValidationSchema {
-				disableValidationFiles = append(disableValidationFiles, fileDescriptor)
-				continue
-			}
-		}
 		if err := ext.AddFile(fileDescriptor.ProtoFilePath, nil); err != nil {
 			return nil, err
 		}
@@ -122,9 +111,14 @@ func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, er
 	}
 
 	// Convert cuelang to openapi
+	unstructuredFieldsMap, err := getUnstructuredFieldsMap(grp, protoOpts)
+	if err != nil {
+		return nil, err
+	}
 	generator := &openapi.Generator{
 		// k8s structural schemas do not allow $refs, i.e. all references must be expanded
-		ExpandReferences: true,
+		ExpandReferences:   true,
+		UnstructuredFields: unstructuredFieldsMap,
 	}
 	built := cue.Build(instances)
 	for _, builtInstance := range built {
@@ -155,22 +149,41 @@ func generateOpenApi(grp model.Group, protoDir string) (model.OpenApiSchemas, er
 			oapiSchemas[kv.Key] = jsonSchema
 		}
 
-		comments := newCommentFinder(disableValidationFiles)
-		// set the schema for messages whose validation is disabled to
-		for _, file := range disableValidationFiles {
-			for _, messageDescriptor := range file.GetMessageType() {
-				description := comments.getMessageComment(file.GetName(), messageDescriptor.GetName())
-				oapiSchemas[messageDescriptor.GetName()] = &apiextv1beta1.JSONSchemaProps{
-					Description:            description,
-					Type:                   "object",
-					XPreserveUnknownFields: proto.Bool(true),
-				}
-			}
-		}
-
 		return oapiSchemas, err
 	}
 	return nil, nil
+}
+
+// returns the map of proto fields marked as unstructured, used by CUE to generate openapi schemas
+func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[string][][]string, error) {
+
+	unstructuredFields := map[string][][]string{}
+	protoPkg := grp.Group
+	goPkg := util.GoPackage(grp)
+	for _, res := range grp.Resources {
+		unstructuredSpecFields, err := opts.GetUnstructuredFields(
+			protoPkg,
+			res.Spec.Type.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+		unstructuredFields[goPkg] = append(unstructuredFields[goPkg], unstructuredSpecFields...)
+		if res.Status != nil {
+			unstructuredStatusFields, err := opts.GetUnstructuredFields(
+				protoPkg,
+				res.Status.Type.Name,
+			)
+			if err != nil {
+				return nil, err
+			}
+			if len(unstructuredStatusFields) > 0 {
+				unstructuredFields[goPkg] = append(unstructuredFields[goPkg], unstructuredStatusFields...)
+			}
+		}
+	}
+
+	return unstructuredFields, nil
 }
 
 func renderManifest(appName string, mk MakeResourceFunc, group Group) (string, error) {
@@ -189,36 +202,6 @@ func renderManifest(appName string, mk MakeResourceFunc, group Group) (string, e
 	}
 
 	return strings.Join(objManifests, "\n---\n"), nil
-}
-
-// gets the comment for a message
-type commentFinder struct {
-	parsedDescriptors []*protokit.FileDescriptor
-}
-
-func newCommentFinder(descriptors []*collector.DescriptorWithPath) *commentFinder {
-	req := &plugin_go.CodeGeneratorRequest{}
-
-	for _, file := range descriptors {
-		req.FileToGenerate = append(req.FileToGenerate, file.GetName())
-		req.ProtoFile = append(req.ProtoFile, file.FileDescriptorProto)
-	}
-	return &commentFinder{parsedDescriptors: protokit.ParseCodeGenRequest(req)}
-}
-
-func (f *commentFinder) getMessageComment(file, msg string) string {
-	for _, descriptor := range f.parsedDescriptors {
-		if descriptor.GetName() != file {
-			continue
-		}
-		for _, message := range descriptor.Messages {
-			if message.GetName() != msg {
-				continue
-			}
-			return message.GetComments().GetLeading()
-		}
-	}
-	panic("message not found")
 }
 
 func marshalObjToYaml(appName string, obj metav1.Object) (string, error) {

@@ -17,7 +17,6 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.5.2
-	github.com/google/uuid v1.2.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.1.3
 	github.com/mattn/go-colorable v0.1.7 // indirect
@@ -29,8 +28,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.9.0
 	github.com/pseudomuto/protoc-gen-doc v1.4.1
-	github.com/pseudomuto/protokit v0.2.0
-	github.com/rogpeppe/go-internal v1.6.0
+	github.com/rogpeppe/go-internal v1.8.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.3
@@ -62,6 +60,9 @@ require (
 )
 
 replace (
+	// pinned to solo-io's fork of cue
+	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210621160510-78ad41b380f8
+
 	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
 	// down. The github mirror should be used instead.
 	// Locking to a specific version (from 'go mod graph'):
