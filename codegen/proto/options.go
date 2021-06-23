@@ -55,6 +55,10 @@ func (o Options) getUnstructuredFields(protoPkg string, rootMessage []string) ([
 	var unstructuredFields [][]string
 	for _, field := range root.Fields {
 		fieldPath := []string{strcase.ToLowerCamel(field.Field.GetName())}
+		if field.Field.GetLabel() == descriptor.FieldDescriptorProto_LABEL_REPEATED {
+			// arrays become the path element '*' in the cue openapi builder
+			fieldPath = append(fieldPath, "*")
+		}
 
 		if field.OpenAPIValidationDisabled {
 			// we are in a leaf, return a single-level path
