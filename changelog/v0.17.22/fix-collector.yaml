@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: "Fix an issue with the way imports are parsed from proto files."
+    issueLink: https://github.com/solo-io/skv2/issues/258
