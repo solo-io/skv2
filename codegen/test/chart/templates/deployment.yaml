@@ -10,22 +10,22 @@
 {{/* Define variables in function scope */}}
 {{- $painter := $.Values.painter}}
 {{- $painterImage := $painter.image }}
-{{- $painterExtraPodLabels := $painter.extraPodLabels }}
-{{- $painterExtraPodAnnotations := $painter.extraPodAnnotations }}
-{{- $painterExtraDeploymentLabels := $painter.extraDeploymentLabels }}
-{{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations }}# Deployment manifest for painter
+{{- $painterCustomPodLabels := $painter.customPodLabels }}
+{{- $painterCustomPodAnnotations := $painter.customPodAnnotations }}
+{{- $painterCustomDeploymentLabels := $painter.customDeploymentLabels }}
+{{- $painterCustomDeploymentAnnotations := $painter.customDeploymentAnnotations }}# Deployment manifest for painter
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: painter
-    {{- range $key, $value := $painterExtraDeploymentLabels }}
+    {{- range $key, $value := $painterCustomDeploymentLabels }}
     {{ $key }}: {{ $value }}
     {{- end }}
   annotations:
     app.kubernetes.io/name: painter
-    {{- range $key, $value := $painterExtraDeploymentAnnotations }}
+    {{- range $key, $value := $painterCustomDeploymentAnnotations }}
     {{ $key }}: {{ $value }}
     {{- end }}
   name: painter
@@ -34,14 +34,14 @@ spec:
   selector:
     matchLabels:
       app: painter
-      {{- range $key, $value := $painterExtraPodLabels }}
+      {{- range $key, $value := $painterCustomPodLabels }}
       {{ $key }}: {{ $value }}
       {{- end }}
   template:
     metadata:
       labels:
         app: painter
-        {{- range $key, $value := $painterExtraPodLabels }}
+        {{- range $key, $value := $painterCustomPodLabels }}
         {{ $key }}: {{ $value }}
         {{- end }}
       annotations:
@@ -49,7 +49,7 @@ spec:
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
-        {{- range $key, $value := $painterExtraPodAnnotations }}
+        {{- range $key, $value := $painterCustomPodAnnotations }}
         {{ $key }}: {{ $value }}
         {{- end }}
     spec:

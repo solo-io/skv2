@@ -174,22 +174,22 @@ var _ = Describe("Cmd", func() {
 
 		helmValues := map[string]interface{}{
 			"painter": map[string]interface{}{
-				"extraPodLabels": map[string]string{
+				"customPodLabels": map[string]string{
 					"extrapod": "labels",
 				},
-				"extraPodAnnotations": map[string]string{
+				"customPodAnnotations": map[string]string{
 					"extrapod": "annotations",
 				},
-				"extraDeploymentLabels": map[string]string{
+				"customDeploymentLabels": map[string]string{
 					"extradeployment": "labels",
 				},
-				"extraDeploymentAnnotations": map[string]string{
+				"customDeploymentAnnotations": map[string]string{
 					"extradeployment": "annotations",
 				},
-				"extraServiceLabels": map[string]string{
+				"customServiceLabels": map[string]string{
 					"extraservice": "labels",
 				},
-				"extraServiceAnnotations": map[string]string{
+				"customServiceAnnotations": map[string]string{
 					"extraservice": "annotations",
 				},
 				"serviceOverrides": map[string]interface{}{

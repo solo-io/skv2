@@ -22,10 +22,10 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 {{/* Define variables in function scope */}}
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 {{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
-{{- $[[ $operatorVar ]]ExtraPodLabels := $[[ $operatorVar ]].extraPodLabels }}
-{{- $[[ $operatorVar ]]ExtraPodAnnotations := $[[ $operatorVar ]].extraPodAnnotations }}
-{{- $[[ $operatorVar ]]ExtraDeploymentLabels := $[[ $operatorVar ]].extraDeploymentLabels }}
-{{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations }}
+{{- $[[ $operatorVar ]]CustomPodLabels := $[[ $operatorVar ]].customPodLabels }}
+{{- $[[ $operatorVar ]]CustomPodAnnotations := $[[ $operatorVar ]].customPodAnnotations }}
+{{- $[[ $operatorVar ]]CustomDeploymentLabels := $[[ $operatorVar ]].customDeploymentLabels }}
+{{- $[[ $operatorVar ]]CustomDeploymentAnnotations := $[[ $operatorVar ]].customDeploymentAnnotations }}
 
   [[- $workloadKind := "Deployment" ]]
   [[- if $operator.Deployment.UseDaemonSet ]]
@@ -42,7 +42,7 @@ metadata:
     [[- range $key, $value := $customDeploymentLabels ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraDeploymentLabels }}
+    {{- range $key, $value := $[[ $operatorVar ]]CustomDeploymentLabels }}
     {{ $key }}: {{ $value }}
     {{- end }}
   annotations:
@@ -50,7 +50,7 @@ metadata:
     [[- range $key, $value := $customDeploymentAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraDeploymentAnnotations }}
+    {{- range $key, $value := $[[ $operatorVar ]]CustomDeploymentAnnotations }}
     {{ $key }}: {{ $value }}
     {{- end }}
   name: [[ $operator.Name ]]
@@ -62,7 +62,7 @@ spec:
       [[- range $key, $value := $customPodLabels ]]
       [[ $key ]]: [[ $value ]]
       [[- end ]]
-      {{- range $key, $value := $[[ $operatorVar ]]ExtraPodLabels }}
+      {{- range $key, $value := $[[ $operatorVar ]]CustomPodLabels }}
       {{ $key }}: {{ $value }}
       {{- end }}
   template:
@@ -72,7 +72,7 @@ spec:
         [[- range $key, $value := $customPodLabels ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
-        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodLabels }}
+        {{- range $key, $value := $[[ $operatorVar ]]CustomPodLabels }}
         {{ $key }}: {{ $value }}
         {{- end }}
       annotations:
@@ -83,7 +83,7 @@ spec:
         [[- range $key, $value := $customPodAnnotations ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
-        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodAnnotations }}
+        {{- range $key, $value := $[[ $operatorVar ]]CustomPodAnnotations }}
         {{ $key }}: {{ $value }}
         {{- end }}
     spec:
@@ -156,8 +156,8 @@ metadata:
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
-{{- $[[ $operatorVar ]]ExtraServiceLabels := $[[ $operatorVar ]].extraServiceLabels }}
-{{- $[[ $operatorVar ]]ExtraServiceAnnotations := $[[ $operatorVar ]].extraServiceAnnotations }}
+{{- $[[ $operatorVar ]]CustomServiceLabels := $[[ $operatorVar ]].customServiceLabels }}
+{{- $[[ $operatorVar ]]CustomServiceAnnotations := $[[ $operatorVar ]].customServiceAnnotations }}
 
 apiVersion: v1
 kind: Service
@@ -167,7 +167,7 @@ metadata:
     [[- range $key, $value := $customServiceLabels ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraServiceLabels }}
+    {{- range $key, $value := $[[ $operatorVar ]]CustomServiceLabels }}
     {{ $key }}: {{ $value }}
     {{- end }}
   annotations:
@@ -175,7 +175,7 @@ metadata:
     [[- range $key, $value := $customServiceAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraServiceAnnotations }}
+    {{- range $key, $value := $[[ $operatorVar ]]CustomServiceAnnotations }}
     {{ $key }}: {{ $value }}
     {{- end }}
   name: [[ $operator.Name ]]

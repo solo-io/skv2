@@ -1,0 +1,12 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/236
+    description: >
+      Fix the ability to pass in additional labels and annotations
+      to the skv2-generated helm templates.
+  - type: HELM
+    description: >
+      Add `$operator.customPodAnnotations`, `$operator.customPodLabels`,
+      `$operator.customDeploymentAnnotations`, `$operator.customDeploymentLabels`,
+      `$operator.customServiceAnnotations` and `$operator.customServiceLabels`.
+    issueLink: https://github.com/solo-io/skv2/issues/236
