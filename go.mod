@@ -60,9 +60,9 @@ require (
 )
 
 replace (
-	// pinned to solo-io's fork of cue version 95a50cebaffb4bdba8c544601d8fb867990ad1ad
+	// pinned to solo-io's fork of cue version 308aee4ff0928a8e0ec25b9cbbdc445264038463
 	// note(ilackarms): this replace must be shared in any skv2-based go module due to incompatibility with upstream versions of cue
-	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210622213027-95a50cebaffb
+	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210623143425-308aee4ff092
 
 	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
 	// down. The github mirror should be used instead.
