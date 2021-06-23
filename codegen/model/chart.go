@@ -124,12 +124,12 @@ type Values struct {
 	ServicePorts map[string]uint32        `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
 
-	CustomPodLabels             map[string]string `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
-	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
-	CustomDeploymentLabels      map[string]string `json:"customDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
-	CustomDeploymentAnnotations map[string]string `json:"customDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
-	CustomServiceLabels         map[string]string `json:"customServiceLabels,omitempty" desc:"Custom labels for the service"`
-	CustomServiceAnnotations    map[string]string `json:"customServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
+	CustomPodLabels             map[string]string `json:"extraPodLabels,omitempty" desc:"Custom labels for the pod"`
+	CustomPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
+	CustomDeploymentLabels      map[string]string `json:"extraDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
+	CustomDeploymentAnnotations map[string]string `json:"extraDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
+	CustomServiceLabels         map[string]string `json:"extraServiceLabels,omitempty" desc:"Custom labels for the service"`
+	CustomServiceAnnotations    map[string]string `json:"extraServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
 }
 
 func (c Chart) BuildChartValues() HelmValues {
