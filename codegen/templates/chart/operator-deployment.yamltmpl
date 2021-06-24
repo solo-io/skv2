@@ -10,7 +10,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $args := $operator.Deployment.Args -]]
 [[- $volumes := $operator.Deployment.Volumes -]]
 [[- $volumeMounts := $operator.Deployment.VolumeMounts -]]
-[[- $sidecars := $operator.Deployment.Sidecars -]]
+[[- $sidecars := $operator.Deployment.Sidecars.SortedList -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
@@ -32,15 +32,15 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 
 {{/* Container images */}}
 {{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
-[[- range $name, $container := $sidecars ]]
-{{- $[[ $name ]]Image := $[[ $operatorVar ]].sidecars.[[ $name ]].image }}
+[[- range $sidecar := $sidecars ]]
+{{- $[[ $sidecar.Name ]]Image := $[[ $operatorVar ]].sidecars.[[ $sidecar.Name ]].image }}
 [[- end ]]
 
 
   [[- $workloadKind := "Deployment" ]]
   [[- if $operator.Deployment.UseDaemonSet ]]
   [[- $workloadKind = "DaemonSet" ]]
-  [[- end -]]
+  [[- end ]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 
@@ -134,9 +134,9 @@ spec:
             drop:
             - ALL
 {{/* Sidecars */}}
-[[- range $name, $sidecar := $sidecars ]]
-        [[- $sidecarVar := (printf "%s.sidecars.%s" $operatorVar $name) ]]
-      - image: {{ $[[ $name ]]Image.registry }}/{{ $[[ $name ]]Image.repository }}:{{ $[[ $name ]]Image.tag }}
+[[- range $sidecar := $sidecars ]]
+        [[- $sidecarVar := (printf "%s.sidecars.%s" $operatorVar $sidecar.Name) ]]
+      - image: {{ $[[ $sidecar.Name ]]Image.registry }}/{{ $[[ $sidecar.Name ]]Image.repository }}:{{ $[[ $sidecar.Name ]]Image.tag }}
 [[- if $sidecar.Args ]]
         args:
 [[ toYaml $sidecar.Args | indent 8 ]]
@@ -149,8 +149,8 @@ spec:
         volumeMounts:
 [[ toYaml $sidecar.VolumeMounts | indent 8 ]]
 [[- end ]]
-        imagePullPolicy: {{ $[[ $name ]]Image.pullPolicy }}
-        name: [[ $name ]]
+        imagePullPolicy: {{ $[[ $sidecar.Name ]]Image.pullPolicy }}
+        name: [[ $sidecar.Name ]]
 {{- if $[[ $sidecarVar ]].resources }}
         resources:
 {{ toYaml $[[ $sidecarVar ]].resources | indent 10}}

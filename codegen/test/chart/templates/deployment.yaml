@@ -16,7 +16,9 @@
 
 {{/* Container images */}}
 {{- $painterImage := $painter.image }}
-{{- $paletteImage := $painter.sidecars.palette.image }}# Deployment manifest for painter
+{{- $paletteImage := $painter.sidecars.palette.image }}
+
+# Deployment manifest for painter
 
 apiVersion: apps/v1
 kind: Deployment

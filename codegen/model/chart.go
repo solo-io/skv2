@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/doc"
@@ -48,7 +49,7 @@ type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
 	UseDaemonSet bool
 	Container
-	Sidecars                    map[string]Container
+	Sidecars                    Sidecars
 	Volumes                     []v1.Volume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
@@ -58,11 +59,34 @@ type Deployment struct {
 
 // values for a container
 type Container struct {
-	Args         []string
-	VolumeMounts []v1.VolumeMount
 	Image        Image
-	Resources    *v1.ResourceRequirements
+	Args         []string
 	Env          []v1.EnvVar
+	VolumeMounts []v1.VolumeMount
+	Resources    *v1.ResourceRequirements
+}
+
+type NamedContainer struct {
+	Container
+	Name string
+}
+
+type Sidecars map[string]Container
+
+// returns a sorted list of sidecars in a predictable order
+func (scs Sidecars) SortedList() []NamedContainer {
+	list := make([]NamedContainer, 0, len(scs))
+	for name, container := range scs {
+		list = append(list, NamedContainer{
+			Name:      name,
+			Container: container,
+		})
+	}
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Name < list[j].Name
+	})
+
+	return list
 }
 
 func (c Container) toValues() ContainerValues {
@@ -129,9 +153,10 @@ type OperatorValues struct {
 
 type Values struct {
 	ContainerValues `json:",inline"`
-	Sidecars        map[string]ContainerValues `json:"sidecars" desc:"Configuration for the deployed containers."`
-	ServiceType     v1.ServiceType             `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts    map[string]uint32          `json:"ports" desc:"Specify service ports as a map from port name to port number."`
+	// Required to have an interface value in order to use the `index` function in the template
+	Sidecars     map[string]ContainerValues `json:"sidecars" desc:"Configuration for the deployed containers."`
+	ServiceType  v1.ServiceType             `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
+	ServicePorts map[string]uint32          `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 
 	CustomPodLabels             map[string]string `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
 	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
@@ -143,8 +168,8 @@ type Values struct {
 
 type ContainerValues struct {
 	Image     Image                    `json:"image" desc:"Specify the container image"`
-	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
 	Env       []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
+	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
 }
 
 func (c Chart) BuildChartValues() HelmValues {
