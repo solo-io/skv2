@@ -15,18 +15,21 @@
 {{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations }}
 
 {{/* Container images */}}
-{{- $painterImage := $painter.image }}# Deployment manifest for painter
+{{- $painterImage := $painter.image }}
+{{- $paletteImage := $painter.sidecars.palette.image }}# Deployment manifest for painter
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: painter
+    deployment: labels
     {{- range $key, $value := $painterExtraDeploymentLabels }}
     {{ $key }}: {{ $value }}
     {{- end }}
   annotations:
     app.kubernetes.io/name: painter
+    deployment: annotation
     {{- range $key, $value := $painterExtraDeploymentAnnotations }}
     {{ $key }}: {{ $value }}
     {{- end }}
@@ -36,6 +39,7 @@ spec:
   selector:
     matchLabels:
       app: painter
+      pod: labels
       {{- range $key, $value := $painterExtraPodLabels }}
       {{ $key }}: {{ $value }}
       {{- end }}
@@ -43,6 +47,7 @@ spec:
     metadata:
       labels:
         app: painter
+        pod: labels
         {{- range $key, $value := $painterExtraPodLabels }}
         {{ $key }}: {{ $value }}
         {{- end }}
@@ -51,11 +56,15 @@ spec:
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
+        pod: annotations
         {{- range $key, $value := $painterExtraPodAnnotations }}
         {{ $key }}: {{ $value }}
         {{- end }}
     spec:
       serviceAccountName: painter
+      volumes:
+      - emptyDir: {}
+        name: paint
       containers:
       - image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
         args:
@@ -82,6 +91,28 @@ spec:
             drop:
             - ALL
 {{/* Sidecars */}}
+      - image: {{ $paletteImage.registry }}/{{ $paletteImage.repository }}:{{ $paletteImage.tag }}
+        args:
+        - bar
+        - baz
+{{- if $painter.sidecars.palette.env }}
+        env:
+{{ toYaml $painter.sidecars.palette.env | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /etc/paint
+          name: paint
+        imagePullPolicy: {{ $paletteImage.pullPolicy }}
+        name: palette
+{{- if $painter.sidecars.palette.resources }}
+        resources:
+{{ toYaml $painter.sidecars.palette.resources | indent 10}}
+{{- else}}
+        resources:
+          requests:
+            cpu: 500m
+            memory: 256Mi
+{{- end}}
       {{- if $painterImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $painterImage.pullSecret }}

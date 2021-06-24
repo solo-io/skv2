@@ -35,8 +35,7 @@ type Operator struct {
 
 	// these populate the generated ClusterRole for the operator
 	Rbac []rbacv1.PolicyRule
-	// these populate the generated ClusterRole for the operator
-	Volumes []v1.Volume
+
 	// add a manifest for each configmap
 	ConfigMaps []v1.ConfigMap
 
@@ -50,6 +49,7 @@ type Deployment struct {
 	UseDaemonSet bool
 	Container
 	Sidecars                    map[string]Container
+	Volumes                     []v1.Volume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
@@ -94,7 +94,7 @@ type Image struct {
 	Repository string        `json:"repository,omitempty"  desc:"Image name (repository)."`
 	Registry   string        `json:"registry,omitempty" desc:"Image registry."`
 	PullPolicy v1.PullPolicy `json:"pullPolicy,omitempty"  desc:"Image pull policy."`
-	PullSecret string        `json:"pullSecret,omitempty" desc:"Image pull policy. "`
+	PullSecret string        `json:"pullSecret,omitempty" desc:"Image pull secret."`
 }
 
 // Helm chart dependency
@@ -152,7 +152,7 @@ func (c Chart) BuildChartValues() HelmValues {
 	values.CustomValues = c.Values
 
 	for i, operator := range c.Operators {
-		servicePorts := map[string]uint32{}
+		servicePorts := make(map[string]uint32, len(operator.Service.Ports))
 		for _, port := range operator.Service.Ports {
 			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
@@ -161,6 +161,7 @@ func (c Chart) BuildChartValues() HelmValues {
 			Name: operator.Name,
 			Values: Values{
 				ContainerValues:             operator.Deployment.Container.toValues(),
+				Sidecars:                    make(map[string]ContainerValues, len(operator.Deployment.Sidecars)),
 				ServiceType:                 operator.Service.Type,
 				ServicePorts:                servicePorts,
 				CustomPodLabels:             operator.Deployment.CustomPodLabels,

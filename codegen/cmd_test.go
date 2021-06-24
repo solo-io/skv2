@@ -122,8 +122,43 @@ var _ = Describe("Cmd", func() {
 									Registry:   "quay.io/solo-io",
 									PullPolicy: "IfNotPresent",
 								},
+
 								Args: []string{"foo"},
+								Env: []v1.EnvVar{
+									{
+										Name:  "FOO",
+										Value: "BAR",
+									},
+								},
 							},
+
+							Sidecars: map[string]Container{
+								"palette": {
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "palette",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+									Args: []string{"bar", "baz"},
+									VolumeMounts: []v1.VolumeMount{
+										{
+											Name:      "paint",
+											MountPath: "/etc/paint",
+										},
+									},
+								},
+							},
+
+							Volumes: []v1.Volume{
+								{
+									Name: "paint",
+									VolumeSource: v1.VolumeSource{
+										EmptyDir: &v1.EmptyDirVolumeSource{},
+									},
+								},
+							},
+
 							CustomDeploymentAnnotations: map[string]string{
 								"deployment": "annotation",
 							},
@@ -137,6 +172,7 @@ var _ = Describe("Cmd", func() {
 								"pod": "labels",
 							},
 						},
+
 						Service: Service{
 							Ports: []ServicePort{{
 								Name:        "http",
@@ -151,6 +187,7 @@ var _ = Describe("Cmd", func() {
 						},
 					},
 				},
+
 				Values: nil,
 				Data: Data{
 					ApiVersion:  "v1",
@@ -323,6 +360,52 @@ var _ = Describe("Cmd", func() {
 									PullPolicy: "IfNotPresent",
 								},
 								Args: []string{"foo"},
+								Env: []v1.EnvVar{
+									{
+										Name:  "FOO",
+										Value: "BAR",
+									},
+								},
+							},
+
+							Sidecars: map[string]Container{
+								"palette": {
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "palette",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+									Args: []string{"bar", "baz"},
+									VolumeMounts: []v1.VolumeMount{
+										{
+											Name:      "paint",
+											MountPath: "/etc/paint",
+										},
+									},
+								},
+							},
+
+							Volumes: []v1.Volume{
+								{
+									Name: "paint",
+									VolumeSource: v1.VolumeSource{
+										EmptyDir: &v1.EmptyDirVolumeSource{},
+									},
+								},
+							},
+
+							CustomDeploymentAnnotations: map[string]string{
+								"deployment": "annotation",
+							},
+							CustomDeploymentLabels: map[string]string{
+								"deployment": "labels",
+							},
+							CustomPodAnnotations: map[string]string{
+								"pod": "annotations",
+							},
+							CustomPodLabels: map[string]string{
+								"pod": "labels",
 							},
 						},
 					},
