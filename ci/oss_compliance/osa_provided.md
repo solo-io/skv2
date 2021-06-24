@@ -11,7 +11,7 @@ Name|Version|License
 [golang/protobuf](https://github.com/golang/protobuf)|v1.5.2|BSD 3-clause "New" or "Revised" License
 [cmp/internal](https://github.com/google/go-cmp)|v0.5.5|BSD 3-clause "New" or "Revised" License
 [google/gofuzz](https://github.com/google/gofuzz)|v1.1.0|Apache License 2.0
-[google/uuid](https://github.com/google/uuid)|v1.1.2|BSD 3-clause "New" or "Revised" License
+[google/uuid](https://github.com/google/uuid)|v1.2.0|BSD 3-clause "New" or "Revised" License
 [googleapis/gnostic](https://github.com/googleapis/gnostic)|v0.5.1|Apache License 2.0
 [json-iterator/go](https://github.com/json-iterator/go)|v1.1.10|MIT License
 [golang_protobuf_extensions/pbutil](https://github.com/matttproud/golang_protobuf_extensions)|v1.0.2-0.20181231171920-c182affec369|Apache License 2.0

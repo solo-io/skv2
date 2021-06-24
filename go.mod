@@ -28,7 +28,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.9.0
 	github.com/pseudomuto/protoc-gen-doc v1.4.1
-	github.com/pseudomuto/protokit v0.2.0
 	github.com/rogpeppe/go-internal v1.8.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
@@ -61,6 +60,10 @@ require (
 )
 
 replace (
+	// pinned to solo-io's fork of cue version 308aee4ff0928a8e0ec25b9cbbdc445264038463
+	// note(ilackarms): this replace must be shared in any skv2-based go module due to incompatibility with upstream versions of cue
+	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210623143425-308aee4ff092
+
 	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
 	// down. The github mirror should be used instead.
 	// Locking to a specific version (from 'go mod graph'):

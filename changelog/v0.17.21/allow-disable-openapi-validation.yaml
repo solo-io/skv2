@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: "Allow disabling OpenAPI Schema generation for proto files. Fields within protos which have been marked with the option `[(cue.opt).disable_openapi_validation = true]` will have their corresponding OpenAPI schemas use `type: object` and `x-kubernetes-preserve-unknown-fields: true` to disable validation for those fields. This supercedes and replaces the solution that was implemented in https://github.com/solo-io/skv2/issues/244."
+    issueLink: https://github.com/solo-io/skv2/issues/253

@@ -205,4 +205,45 @@ var _ = Describe("Generated Code", func() {
 		})
 	})
 
+	Context("recursive fields in kube api", func() {
+
+		It("uses the generated controller to reconcile", func() {
+
+			paint := newPaint(ns, "paint-kube-reconciler")
+
+			// make the paint recursive
+			recursiveType := &PaintSpec_RecursiveType{
+				RecursiveField: &PaintSpec_RecursiveType{
+					RecursiveField: &PaintSpec_RecursiveType{},
+					RepeatedRecursiveField: []*PaintSpec_RecursiveType{
+						{},
+						{},
+					},
+				},
+				RepeatedRecursiveField: []*PaintSpec_RecursiveType{
+					{
+						RecursiveField: &PaintSpec_RecursiveType{},
+						RepeatedRecursiveField: []*PaintSpec_RecursiveType{
+							{},
+							{},
+						},
+					},
+					{
+						RecursiveField: &PaintSpec_RecursiveType{},
+						RepeatedRecursiveField: []*PaintSpec_RecursiveType{
+							{},
+							{},
+						},
+					},
+				},
+			}
+			paint.Spec.RecursiveType = recursiveType
+
+			err := clientSet.Paints().CreatePaint(ctx, paint)
+			Expect(err).NotTo(HaveOccurred())
+
+			// expect the server accepted our spec
+			Expect(paint.Spec.RecursiveType).To(Equal(recursiveType))
+		})
+	})
 })
