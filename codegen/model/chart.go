@@ -49,7 +49,7 @@ type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
 	UseDaemonSet bool
 	Container
-	Sidecars                    Sidecars
+	Sidecars                    map[string]Container
 	Volumes                     []v1.Volume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
@@ -59,24 +59,25 @@ type Deployment struct {
 
 // values for a container
 type Container struct {
-	Image        Image
-	Args         []string
-	Env          []v1.EnvVar
-	VolumeMounts []v1.VolumeMount
-	Resources    *v1.ResourceRequirements
+	// not configurable via helm values
+	Args         []string         `json:"-"`
+	VolumeMounts []v1.VolumeMount `json:"-"`
+
+	Image     Image                    `json:"image" desc:"Specify the container image"`
+	Env       []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
+	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
 }
 
+// used when converting from a map to list so the name is still available
 type NamedContainer struct {
 	Container
 	Name string
 }
 
-type Sidecars map[string]Container
-
 // returns a sorted list of sidecars in a predictable order
-func (scs Sidecars) SortedList() []NamedContainer {
-	list := make([]NamedContainer, 0, len(scs))
-	for name, container := range scs {
+func (dep Deployment) SortedSidecars() []NamedContainer {
+	list := make([]NamedContainer, 0, len(dep.Sidecars))
+	for name, container := range dep.Sidecars {
 		list = append(list, NamedContainer{
 			Name:      name,
 			Container: container,
@@ -87,14 +88,6 @@ func (scs Sidecars) SortedList() []NamedContainer {
 	})
 
 	return list
-}
-
-func (c Container) toValues() ContainerValues {
-	return ContainerValues{
-		Image:     c.Image,
-		Resources: c.Resources,
-		Env:       c.Env,
-	}
 }
 
 // values for struct template
@@ -152,11 +145,11 @@ type OperatorValues struct {
 }
 
 type Values struct {
-	ContainerValues `json:",inline"`
+	Container `json:",inline"`
 	// Required to have an interface value in order to use the `index` function in the template
-	Sidecars     map[string]ContainerValues `json:"sidecars" desc:"Configuration for the deployed containers."`
-	ServiceType  v1.ServiceType             `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts map[string]uint32          `json:"ports" desc:"Specify service ports as a map from port name to port number."`
+	Sidecars     map[string]Container `json:"sidecars" desc:"Configuration for the deployed containers."`
+	ServiceType  v1.ServiceType       `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
+	ServicePorts map[string]uint32    `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 
 	CustomPodLabels             map[string]string `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
 	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
@@ -164,12 +157,6 @@ type Values struct {
 	CustomDeploymentAnnotations map[string]string `json:"customDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
 	CustomServiceLabels         map[string]string `json:"customServiceLabels,omitempty" desc:"Custom labels for the service"`
 	CustomServiceAnnotations    map[string]string `json:"customServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
-}
-
-type ContainerValues struct {
-	Image     Image                    `json:"image" desc:"Specify the container image"`
-	Env       []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
-	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
 }
 
 func (c Chart) BuildChartValues() HelmValues {
@@ -185,8 +172,8 @@ func (c Chart) BuildChartValues() HelmValues {
 		values.Operators[i] = OperatorValues{
 			Name: operator.Name,
 			Values: Values{
-				ContainerValues:             operator.Deployment.Container.toValues(),
-				Sidecars:                    make(map[string]ContainerValues, len(operator.Deployment.Sidecars)),
+				Container:                   operator.Deployment.Container,
+				Sidecars:                    operator.Deployment.Sidecars,
 				ServiceType:                 operator.Service.Type,
 				ServicePorts:                servicePorts,
 				CustomPodLabels:             operator.Deployment.CustomPodLabels,
@@ -196,10 +183,6 @@ func (c Chart) BuildChartValues() HelmValues {
 				CustomServiceLabels:         operator.Service.CustomLabels,
 				CustomServiceAnnotations:    operator.Service.CustomAnnotations,
 			},
-		}
-
-		for name, sidecar := range operator.Deployment.Sidecars {
-			values.Operators[i].Values.Sidecars[name] = sidecar.toValues()
 		}
 	}
 
