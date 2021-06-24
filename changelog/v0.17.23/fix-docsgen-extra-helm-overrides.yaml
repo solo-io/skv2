@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    description: Fix the helm docs to display `extraPodAnnotations` instead of `customPodAnnotations`.
-    issueLink: https://github.com/solo-io/skv2/issues/246
