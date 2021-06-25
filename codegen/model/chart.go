@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/doc"
@@ -49,7 +48,7 @@ type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
 	UseDaemonSet bool
 	Container
-	Sidecars                    map[string]Container
+	Sidecars                    []Sidecar
 	Volumes                     []v1.Volume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
@@ -68,26 +67,10 @@ type Container struct {
 	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
 }
 
-// used when converting from a map to list so the name is still available
-type NamedContainer struct {
+// sidecars require a container config and a unique name
+type Sidecar struct {
 	Container
 	Name string
-}
-
-// returns a sorted list of sidecars in a predictable order
-func (dep Deployment) SortedSidecars() []NamedContainer {
-	list := make([]NamedContainer, 0, len(dep.Sidecars))
-	for name, container := range dep.Sidecars {
-		list = append(list, NamedContainer{
-			Name:      name,
-			Container: container,
-		})
-	}
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].Name < list[j].Name
-	})
-
-	return list
 }
 
 // values for struct template
@@ -160,20 +143,23 @@ type Values struct {
 }
 
 func (c Chart) BuildChartValues() HelmValues {
-	values := HelmValues{Operators: make([]OperatorValues, len(c.Operators))}
-	values.CustomValues = c.Values
+	values := HelmValues{CustomValues: c.Values}
 
-	for i, operator := range c.Operators {
-		servicePorts := make(map[string]uint32, len(operator.Service.Ports))
+	for _, operator := range c.Operators {
+		servicePorts := map[string]uint32{}
 		for _, port := range operator.Service.Ports {
 			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
+		sidecars := map[string]Container{}
+		for _, sidecar := range operator.Deployment.Sidecars {
+			sidecars[sidecar.Name] = sidecar.Container
+		}
 
-		values.Operators[i] = OperatorValues{
+		values.Operators = append(values.Operators, OperatorValues{
 			Name: operator.Name,
 			Values: Values{
 				Container:                   operator.Deployment.Container,
-				Sidecars:                    operator.Deployment.Sidecars,
+				Sidecars:                    sidecars,
 				ServiceType:                 operator.Service.Type,
 				ServicePorts:                servicePorts,
 				CustomPodLabels:             operator.Deployment.CustomPodLabels,
@@ -183,7 +169,7 @@ func (c Chart) BuildChartValues() HelmValues {
 				CustomServiceLabels:         operator.Service.CustomLabels,
 				CustomServiceAnnotations:    operator.Service.CustomAnnotations,
 			},
-		}
+		})
 	}
 
 	return values

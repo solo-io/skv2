@@ -132,19 +132,22 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Sidecars: map[string]Container{
-								"palette": {
-									Image: Image{
-										Tag:        "v0.0.0",
-										Repository: "palette",
-										Registry:   "quay.io/solo-io",
-										PullPolicy: "IfNotPresent",
-									},
-									Args: []string{"bar", "baz"},
-									VolumeMounts: []v1.VolumeMount{
-										{
-											Name:      "paint",
-											MountPath: "/etc/paint",
+							Sidecars: []Sidecar{
+								{
+									Name: "palette",
+									Container: Container{
+										Image: Image{
+											Tag:        "v0.0.0",
+											Repository: "palette",
+											Registry:   "quay.io/solo-io",
+											PullPolicy: "IfNotPresent",
+										},
+										Args: []string{"bar", "baz"},
+										VolumeMounts: []v1.VolumeMount{
+											{
+												Name:      "paint",
+												MountPath: "/etc/paint",
+											},
 										},
 									},
 								},
@@ -368,19 +371,23 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Sidecars: map[string]Container{
-								"palette": {
-									Image: Image{
-										Tag:        "v0.0.0",
-										Repository: "palette",
-										Registry:   "quay.io/solo-io",
-										PullPolicy: "IfNotPresent",
-									},
-									Args: []string{"bar", "baz"},
-									VolumeMounts: []v1.VolumeMount{
-										{
-											Name:      "paint",
-											MountPath: "/etc/paint",
+							Sidecars: []Sidecar{
+
+								{
+									Name: "palette",
+									Container: Container{
+										Image: Image{
+											Tag:        "v0.0.0",
+											Repository: "palette",
+											Registry:   "quay.io/solo-io",
+											PullPolicy: "IfNotPresent",
+										},
+										Args: []string{"bar", "baz"},
+										VolumeMounts: []v1.VolumeMount{
+											{
+												Name:      "paint",
+												MountPath: "/etc/paint",
+											},
 										},
 									},
 								},

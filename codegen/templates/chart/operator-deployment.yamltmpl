@@ -10,7 +10,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $args := $operator.Deployment.Args -]]
 [[- $volumes := $operator.Deployment.Volumes -]]
 [[- $volumeMounts := $operator.Deployment.VolumeMounts -]]
-[[- $sidecars := $operator.Deployment.SortedSidecars -]]
+[[- $sidecars := $operator.Deployment.Sidecars -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
