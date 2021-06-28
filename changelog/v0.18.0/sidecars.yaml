@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    issueLink: https://github.com/solo-io/skv2/issues/252
+    description: Adds support for multiple deployment containers via sidecars.
