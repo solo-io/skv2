@@ -9,14 +9,11 @@
 
 {{/* Define variables in function scope */}}
 {{- $painter := $.Values.painter}}
+{{- $painterImage := $painter.image }}
 {{- $painterExtraPodLabels := $painter.extraPodLabels }}
 {{- $painterExtraPodAnnotations := $painter.extraPodAnnotations }}
 {{- $painterExtraDeploymentLabels := $painter.extraDeploymentLabels }}
 {{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations }}
-
-{{/* Container images */}}
-{{- $painterImage := $painter.image }}
-{{- $paletteImage := $painter.sidecars.palette.image }}
 
 # Deployment manifest for painter
 
@@ -92,6 +89,7 @@ spec:
           capabilities:
             drop:
             - ALL
+{{- $paletteImage := $painter.sidecars.palette.image }}
       - image: {{ $paletteImage.registry }}/{{ $paletteImage.repository }}:{{ $paletteImage.tag }}
         args:
         - bar

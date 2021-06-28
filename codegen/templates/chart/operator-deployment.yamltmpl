@@ -25,17 +25,11 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 
 {{/* Define variables in function scope */}}
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
 {{- $[[ $operatorVar ]]ExtraPodLabels := $[[ $operatorVar ]].extraPodLabels }}
 {{- $[[ $operatorVar ]]ExtraPodAnnotations := $[[ $operatorVar ]].extraPodAnnotations }}
 {{- $[[ $operatorVar ]]ExtraDeploymentLabels := $[[ $operatorVar ]].extraDeploymentLabels }}
 {{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations }}
-
-{{/* Container images */}}
-{{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
-[[- range $sidecar := $sidecars ]]
-{{- $[[ $sidecar.Name ]]Image := $[[ $operatorVar ]].sidecars.[[ $sidecar.Name ]].image }}
-[[- end ]]
-
 
   [[- $workloadKind := "Deployment" ]]
   [[- if $operator.Deployment.UseDaemonSet ]]
@@ -135,6 +129,7 @@ spec:
             - ALL
 [[- range $sidecar := $sidecars ]]
         [[- $sidecarVar := (printf "%s.sidecars.%s" $operatorVar $sidecar.Name) ]]
+{{- $[[ $sidecar.Name ]]Image := $[[ $operatorVar ]].sidecars.[[ $sidecar.Name ]].image }}
       - image: {{ $[[ $sidecar.Name ]]Image.registry }}/{{ $[[ $sidecar.Name ]]Image.repository }}:{{ $[[ $sidecar.Name ]]Image.tag }}
 [[- if $sidecar.Args ]]
         args:
