@@ -4,17 +4,17 @@
 
 
 painter:
-  customDeploymentAnnotations:
-    deployment: annotation
-  customDeploymentLabels:
-    deployment: labels
-  customPodAnnotations:
-    pod: annotations
-  customPodLabels:
-    pod: labels
   env:
   - name: FOO
     value: BAR
+  extraDeploymentAnnotations:
+    deployment: annotation
+  extraDeploymentLabels:
+    deployment: labels
+  extraPodAnnotations:
+    pod: annotations
+  extraPodLabels:
+    pod: labels
   image:
     pullPolicy: IfNotPresent
     registry: quay.io/solo-io
