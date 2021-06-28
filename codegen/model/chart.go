@@ -35,32 +35,42 @@ type Operator struct {
 
 	// these populate the generated ClusterRole for the operator
 	Rbac []rbacv1.PolicyRule
-	// these populate the generated ClusterRole for the operator
-	Volumes []v1.Volume
-	// mount these volumes to the operator container
-	VolumeMounts []v1.VolumeMount
-	// set these environment variables on the operator container
-	Env []v1.EnvVar
+
 	// add a manifest for each configmap
 	ConfigMaps []v1.ConfigMap
 
 	// if at least one port is defined, create a service for the
 	Service Service
-
-	// args for the container
-	Args []string
 }
 
 // values for Deployment template
 type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
-	UseDaemonSet                bool
-	Image                       Image
-	Resources                   *v1.ResourceRequirements
+	UseDaemonSet bool
+	Container
+	Sidecars                    []Sidecar
+	Volumes                     []v1.Volume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
 	CustomDeploymentAnnotations map[string]string
+}
+
+// values for a container
+type Container struct {
+	// not configurable via helm values
+	Args         []string         `json:"-"`
+	VolumeMounts []v1.VolumeMount `json:"-"`
+
+	Image     Image                    `json:"image" desc:"Specify the container image"`
+	Env       []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
+	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
+}
+
+// sidecars require a container config and a unique name
+type Sidecar struct {
+	Container
+	Name string
 }
 
 // values for struct template
@@ -84,7 +94,7 @@ type Image struct {
 	Repository string        `json:"repository,omitempty"  desc:"Image name (repository)."`
 	Registry   string        `json:"registry,omitempty" desc:"Image registry."`
 	PullPolicy v1.PullPolicy `json:"pullPolicy,omitempty"  desc:"Image pull policy."`
-	PullSecret string        `json:"pullSecret,omitempty" desc:"Image pull policy. "`
+	PullSecret string        `json:"pullSecret,omitempty" desc:"Image pull secret."`
 }
 
 // Helm chart dependency
@@ -118,11 +128,11 @@ type OperatorValues struct {
 }
 
 type Values struct {
-	Image        Image                    `json:"image" desc:"Specify the deployment image."`
-	Resources    *v1.ResourceRequirements `json:"resources" desc:"Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details." omitChildren:"true"`
-	ServiceType  v1.ServiceType           `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts map[string]uint32        `json:"ports" desc:"Specify service ports as a map from port name to port number."`
-	Env          []v1.EnvVar              `json:"env" desc:"Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
+	Container `json:",inline"`
+	// Required to have an interface value in order to use the `index` function in the template
+	Sidecars     map[string]Container `json:"sidecars" desc:"Configuration for the deployed containers."`
+	ServiceType  v1.ServiceType       `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
+	ServicePorts map[string]uint32    `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 
 	CustomPodLabels             map[string]string `json:"extraPodLabels,omitempty" desc:"Custom labels for the pod"`
 	CustomPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
@@ -133,23 +143,25 @@ type Values struct {
 }
 
 func (c Chart) BuildChartValues() HelmValues {
-	values := HelmValues{}
-	values.CustomValues = c.Values
+	values := HelmValues{CustomValues: c.Values}
 
 	for _, operator := range c.Operators {
 		servicePorts := map[string]uint32{}
 		for _, port := range operator.Service.Ports {
 			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
+		sidecars := map[string]Container{}
+		for _, sidecar := range operator.Deployment.Sidecars {
+			sidecars[sidecar.Name] = sidecar.Container
+		}
 
 		values.Operators = append(values.Operators, OperatorValues{
 			Name: operator.Name,
 			Values: Values{
-				Image:                       operator.Deployment.Image,
-				Resources:                   operator.Deployment.Resources,
+				Container:                   operator.Deployment.Container,
+				Sidecars:                    sidecars,
 				ServiceType:                 operator.Service.Type,
 				ServicePorts:                servicePorts,
-				Env:                         operator.Env,
 				CustomPodLabels:             operator.Deployment.CustomPodLabels,
 				CustomPodAnnotations:        operator.Deployment.CustomPodAnnotations,
 				CustomDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
@@ -176,6 +188,10 @@ func (c Chart) GenerateHelmDoc(title string) string {
 
 		// clear image tag so it doesn't show build time commit hashes
 		values.Image.Tag = ""
+		for name, container := range values.Sidecars {
+			container.Image.Tag = ""
+			values.Sidecars[name] = container
+		}
 
 		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}

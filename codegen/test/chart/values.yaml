@@ -4,12 +4,29 @@
 
 
 painter:
-  env: null
+  customDeploymentAnnotations:
+    deployment: annotation
+  customDeploymentLabels:
+    deployment: labels
+  customPodAnnotations:
+    pod: annotations
+  customPodLabels:
+    pod: labels
+  env:
+  - name: FOO
+    value: BAR
   image:
     pullPolicy: IfNotPresent
     registry: quay.io/solo-io
     repository: painter
     tag: v0.0.0
   ports: {}
-  resources: null
   serviceType: ""
+  sidecars:
+    palette:
+      env: null
+      image:
+        pullPolicy: IfNotPresent
+        registry: quay.io/solo-io
+        repository: palette
+        tag: v0.0.0

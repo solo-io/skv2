@@ -7,6 +7,10 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $operatorVar := (lower_camel $operator.Name) -]]
 
 [[/* custom values defined in codegen model */]]
+[[- $args := $operator.Deployment.Args -]]
+[[- $volumes := $operator.Deployment.Volumes -]]
+[[- $volumeMounts := $operator.Deployment.VolumeMounts -]]
+[[- $sidecars := $operator.Deployment.Sidecars -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
@@ -30,7 +34,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
   [[- $workloadKind := "Deployment" ]]
   [[- if $operator.Deployment.UseDaemonSet ]]
   [[- $workloadKind = "DaemonSet" ]]
-  [[- end -]]
+  [[- end ]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 
@@ -88,23 +92,23 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: [[ $operator.Name ]]
-[[- if $operator.Volumes ]]
+[[- if $volumes ]]
       volumes:
-[[ toYaml $operator.Volumes | indent 6 ]]
+[[ toYaml $volumes | indent 6 ]]
 [[- end ]]
       containers:
       - image: {{ $[[ $operatorVar ]]Image.registry }}/{{ $[[ $operatorVar ]]Image.repository }}:{{ $[[ $operatorVar ]]Image.tag }}
-[[- if $operator.Args ]]
+[[- if $args ]]
         args:
-[[ toYaml $operator.Args | indent 8 ]]
+[[ toYaml $args | indent 8 ]]
 [[- end ]]
 {{- if $[[ $operatorVar ]].env }}
         env:
 {{ toYaml $[[ $operatorVar ]].env | indent 10 }}
 {{- end }}
-[[- if $operator.VolumeMounts ]]
+[[- if $volumeMounts ]]
         volumeMounts:
-[[ toYaml $operator.VolumeMounts | indent 8 ]]
+[[ toYaml $volumeMounts | indent 8 ]]
 [[- end ]]
         imagePullPolicy: {{ $[[ $operatorVar ]]Image.pullPolicy }}
         name: [[ $operator.Name ]]
@@ -123,6 +127,34 @@ spec:
           capabilities:
             drop:
             - ALL
+[[- range $sidecar := $sidecars ]]
+        [[- $sidecarVar := (printf "%s.sidecars.%s" $operatorVar $sidecar.Name) ]]
+{{- $[[ $sidecar.Name ]]Image := $[[ $operatorVar ]].sidecars.[[ $sidecar.Name ]].image }}
+      - image: {{ $[[ $sidecar.Name ]]Image.registry }}/{{ $[[ $sidecar.Name ]]Image.repository }}:{{ $[[ $sidecar.Name ]]Image.tag }}
+[[- if $sidecar.Args ]]
+        args:
+[[ toYaml $sidecar.Args | indent 8 ]]
+[[- end ]]
+{{- if $[[ $sidecarVar ]].env }}
+        env:
+{{ toYaml $[[ $sidecarVar ]].env | indent 10 }}
+{{- end }}
+[[- if $sidecar.VolumeMounts ]]
+        volumeMounts:
+[[ toYaml $sidecar.VolumeMounts | indent 8 ]]
+[[- end ]]
+        imagePullPolicy: {{ $[[ $sidecar.Name ]]Image.pullPolicy }}
+        name: [[ $sidecar.Name ]]
+{{- if $[[ $sidecarVar ]].resources }}
+        resources:
+{{ toYaml $[[ $sidecarVar ]].resources | indent 10}}
+{{- else}}
+        resources:
+          requests:
+            cpu: 500m
+            memory: 256Mi
+{{- end}}
+[[- end ]]
       {{- if $[[ $operatorVar ]]Image.pullSecret }}
       imagePullSecrets:
         - name: {{ $[[ $operatorVar ]]Image.pullSecret }}
