@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/260
+    description: Expose Deployment container's `securityContext`. If not specified, default to `runAsNonRoot":" true`.
