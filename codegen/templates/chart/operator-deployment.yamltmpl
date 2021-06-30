@@ -174,7 +174,8 @@ spec:
 {{- if $[[ $operatorVar ]].deploymentOverrides }}
 {{- $[[ $operatorVar ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
 
 ---
 
@@ -188,16 +189,12 @@ metadata:
 
 
 {{- define "[[ $operator.Name ]].serviceSpec"}}
-
 [[ if gt (len $operator.Service.Ports) 0 ]]
-# Service for [[ $operator.Name ]]
----
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 {{- $[[ $operatorVar ]]ExtraServiceLabels := $[[ $operatorVar ]].extraServiceLabels }}
 {{- $[[ $operatorVar ]]ExtraServiceAnnotations := $[[ $operatorVar ]].extraServiceAnnotations }}
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -237,6 +234,7 @@ spec:
 {{- if $[[ $operatorVar ]].serviceOverrides }}
 {{- $[[ $operatorVar ]]ServiceOverrides = $[[ $operatorVar ]].serviceOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
 
 [[ end ]]

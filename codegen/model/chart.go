@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	appsv1 "k8s.io/api/apps/v1"
+	"github.com/solo-io/skv2/codegen/model/values"
 
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/doc"
@@ -93,13 +93,7 @@ type ServicePort struct {
 	DefaultPort int32 `json:"port" protobuf:"varint,3,opt,name=port" desc:"The default port that will be exposed by this service."`
 }
 
-type Image struct {
-	Tag        string        `json:"tag,omitempty"  desc:"Tag for the container."`
-	Repository string        `json:"repository,omitempty"  desc:"Image name (repository)."`
-	Registry   string        `json:"registry,omitempty" desc:"Image registry."`
-	PullPolicy v1.PullPolicy `json:"pullPolicy,omitempty"  desc:"Image pull policy."`
-	PullSecret string        `json:"pullSecret,omitempty" desc:"Image pull secret."`
-}
+type Image = values.Image
 
 // Helm chart dependency
 type Dependency struct {
@@ -120,83 +114,39 @@ type Data struct {
 	Dependencies []Dependency `json:"dependencies,omitempty"`
 }
 
-// used to document the values structure of the generated Helm Chart
-type helmValuesDoc struct {
-	Operators    []operatorValuesDoc
-	CustomValues interface{}
-}
-
-type operatorValuesDoc struct {
-	Name   string
-	Values valuesDoc
-}
-
-// document values structure for an operator
-type valuesDoc struct {
-	Container containerValuesDoc `json:",inline"`
-
-	// Required to have an interface value in order to use the `index` function in the template
-	Sidecars     map[string]containerValuesDoc `json:"sidecars" desc:"Configuration for the deployed containers."`
-	ServiceType  v1.ServiceType                `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts map[string]uint32             `json:"ports" desc:"Specify service ports as a map from port name to port number."`
-
-	ExtraPodLabels             map[string]string `json:"extraPodLabels,omitempty" desc:"Custom labels for the pod"`
-	ExtraPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
-	ExtraDeploymentLabels      map[string]string `json:"extraDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
-	ExtraDeploymentAnnotations map[string]string `json:"extraDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
-	ExtraServiceLabels         map[string]string `json:"extraServiceLabels,omitempty" desc:"Custom labels for the service"`
-	ExtraServiceAnnotations    map[string]string `json:"extraServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
-
-	DeploymentOverrides *appsv1.Deployment `json:"deploymentOverrides" desc:"Provide arbitrary overrides for the component's deployment template" omitChildren:"true"`
-	ServiceOverrides    *v1.Service        `json:"serviceOverrides" desc:"Provide arbitrary overrides for the component's service template" omitChildren:"true"`
-}
-
-// document values structure for a container
-type containerValuesDoc struct {
-	Image     Image                    `json:"image" desc:"Specify the container image"`
-	Env       []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
-	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
-}
-
-func makeContainerDocs(c Container) containerValuesDoc {
-	return containerValuesDoc{
+func makeContainerDocs(c Container) values.UserContainerValues {
+	return values.UserContainerValues{
 		Image:     c.Image,
 		Env:       c.Env,
 		Resources: c.Resources,
 	}
 }
 
-func (c Chart) BuildChartValues() helmValuesDoc {
-	values := helmValuesDoc{CustomValues: c.Values}
+func (c Chart) BuildChartValues() values.UserHelmValues {
+	helmValues := values.UserHelmValues{CustomValues: c.Values}
 
 	for _, operator := range c.Operators {
 		servicePorts := map[string]uint32{}
 		for _, port := range operator.Service.Ports {
 			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
-		sidecars := map[string]containerValuesDoc{}
+		sidecars := map[string]values.UserContainerValues{}
 		for _, sidecar := range operator.Deployment.Sidecars {
 			sidecars[sidecar.Name] = makeContainerDocs(sidecar.Container)
 		}
 
-		values.Operators = append(values.Operators, operatorValuesDoc{
+		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{
 			Name: operator.Name,
-			Values: valuesDoc{
-				Container:                  makeContainerDocs(operator.Deployment.Container),
-				Sidecars:                   sidecars,
-				ServiceType:                operator.Service.Type,
-				ServicePorts:               servicePorts,
-				ExtraPodLabels:             operator.Deployment.CustomPodLabels,
-				ExtraPodAnnotations:        operator.Deployment.CustomPodAnnotations,
-				ExtraDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
-				ExtraDeploymentAnnotations: operator.Deployment.CustomDeploymentAnnotations,
-				ExtraServiceLabels:         operator.Service.CustomLabels,
-				ExtraServiceAnnotations:    operator.Service.CustomAnnotations,
+			Values: values.UserValues{
+				UserContainerValues: makeContainerDocs(operator.Deployment.Container),
+				Sidecars:            sidecars,
+				ServiceType:         operator.Service.Type,
+				ServicePorts:        servicePorts,
 			},
 		})
 	}
 
-	return values
+	return helmValues
 }
 
 func (c Chart) GenerateHelmDoc(title string) string {
@@ -211,7 +161,7 @@ func (c Chart) GenerateHelmDoc(title string) string {
 		values := operatorWithValues.Values
 
 		// clear image tag so it doesn't show build time commit hashes
-		values.Container.Image.Tag = ""
+		values.Image.Tag = ""
 		for name, container := range values.Sidecars {
 			container.Image.Tag = ""
 			values.Sidecars[name] = container

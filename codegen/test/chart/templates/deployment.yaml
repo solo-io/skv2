@@ -126,7 +126,8 @@ spec:
 {{- if $painter.deploymentOverrides }}
 {{- $painterDeploymentOverrides = $painter.deploymentOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $painterDeploymentOverrides "painter.deploymentSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $painterDeploymentOverrides "painter.deploymentSpec") }}
 
 ---
 
@@ -142,7 +143,6 @@ metadata:
 {{- define "painter.serviceSpec"}}
 
 
-
 {{- end }} {{/* define "painter.serviceSpec" */}}
 
 {{/* Render painter service template with overrides from values*/}}
@@ -150,6 +150,7 @@ metadata:
 {{- if $painter.serviceOverrides }}
 {{- $painterServiceOverrides = $painter.serviceOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $painterServiceOverrides "painter.serviceSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $painterServiceOverrides "painter.serviceSpec") }}
 
 
