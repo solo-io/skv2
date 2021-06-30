@@ -26,10 +26,6 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 {{/* Define variables in function scope */}}
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 {{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
-{{- $[[ $operatorVar ]]ExtraPodLabels := $[[ $operatorVar ]].extraPodLabels }}
-{{- $[[ $operatorVar ]]ExtraPodAnnotations := $[[ $operatorVar ]].extraPodAnnotations }}
-{{- $[[ $operatorVar ]]ExtraDeploymentLabels := $[[ $operatorVar ]].extraDeploymentLabels }}
-{{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations }}
 
   [[- $workloadKind := "Deployment" ]]
   [[- if $operator.Deployment.UseDaemonSet ]]
@@ -46,17 +42,11 @@ metadata:
     [[- range $key, $value := $customDeploymentLabels ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraDeploymentLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: [[ $operator.Name ]]
     [[- range $key, $value := $customDeploymentAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraDeploymentAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: [[ $operator.Name ]]
   namespace: {{ .Release.Namespace }}
 spec:
@@ -66,9 +56,6 @@ spec:
       [[- range $key, $value := $customPodLabels ]]
       [[ $key ]]: [[ $value ]]
       [[- end ]]
-      {{- range $key, $value := $[[ $operatorVar ]]ExtraPodLabels }}
-      {{ $key }}: {{ $value }}
-      {{- end }}
   template:
     metadata:
       labels:
@@ -76,9 +63,6 @@ spec:
         [[- range $key, $value := $customPodLabels ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
-        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodLabels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
       annotations:
         app.kubernetes.io/name: [[ $operator.Name ]]
         prometheus.io/path: /metrics
@@ -87,9 +71,6 @@ spec:
         [[- range $key, $value := $customPodAnnotations ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
-        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodAnnotations }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
     spec:
       serviceAccountName: [[ $operator.Name ]]
 [[- if $volumes ]]
@@ -193,8 +174,6 @@ metadata:
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
-{{- $[[ $operatorVar ]]ExtraServiceLabels := $[[ $operatorVar ]].extraServiceLabels }}
-{{- $[[ $operatorVar ]]ExtraServiceAnnotations := $[[ $operatorVar ]].extraServiceAnnotations }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -203,17 +182,11 @@ metadata:
     [[- range $key, $value := $customServiceLabels ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraServiceLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: [[ $operator.Name ]]
     [[- range $key, $value := $customServiceAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraServiceAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
 spec:

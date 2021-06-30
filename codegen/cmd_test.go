@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"os/exec"
 
@@ -216,36 +217,64 @@ var _ = Describe("Cmd", func() {
 			replicas       int32 = 3
 		)
 
+		marshalMap := func(v interface{}) map[string]interface{} {
+			data, err := json.Marshal(v)
+			Expect(err).NotTo(HaveOccurred())
+
+			var m map[string]interface{}
+			err = json.Unmarshal(data, &m)
+			Expect(err).NotTo(HaveOccurred())
+
+			return m
+		}
+
 		helmValues := map[string]interface{}{
 			"painter": map[string]interface{}{
-				"extraPodLabels": map[string]string{
-					"extrapod": "labels",
-				},
-				"extraPodAnnotations": map[string]string{
-					"extrapod": "annotations",
-				},
-				"extraDeploymentLabels": map[string]string{
-					"extradeployment": "labels",
-				},
-				"extraDeploymentAnnotations": map[string]string{
-					"extradeployment": "annotations",
-				},
-				"extraServiceLabels": map[string]string{
-					"extraservice": "labels",
-				},
-				"extraServiceAnnotations": map[string]string{
-					"extraservice": "annotations",
-				},
-				"serviceOverrides": map[string]interface{}{
-					"spec": map[string]interface{}{
-						"loadBalancerIp": loadBalancerIp,
+
+				"serviceOverrides": marshalMap(&v1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							// override labels
+							"extraservice": "labels",
+						},
+						Annotations: map[string]string{
+							// override annotations
+							"extraservice": "annotations",
+						},
 					},
-				},
-				"deploymentOverrides": map[string]interface{}{
-					"spec": map[string]interface{}{
-						"replicas": replicas,
+					// override load balancer ip
+					Spec: v1.ServiceSpec{
+						LoadBalancerIP: loadBalancerIp,
 					},
-				},
+				}),
+				"deploymentOverrides": marshalMap(&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							// override labels
+							"extradeployment": "labels",
+						},
+						Annotations: map[string]string{
+							// override annotations
+							"extradeployment": "annotations",
+						},
+					},
+					// override replicas
+					Spec: appsv1.DeploymentSpec{
+						Replicas: &replicas,
+						Template: v1.PodTemplateSpec{
+							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									// override labels
+									"extrapod": "labels",
+								},
+								Annotations: map[string]string{
+									// override annotations
+									"extrapod": "annotations",
+								},
+							},
+						},
+					},
+				}),
 			},
 		}
 

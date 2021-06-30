@@ -10,10 +10,6 @@
 {{/* Define variables in function scope */}}
 {{- $painter := $.Values.painter}}
 {{- $painterImage := $painter.image }}
-{{- $painterExtraPodLabels := $painter.extraPodLabels }}
-{{- $painterExtraPodAnnotations := $painter.extraPodAnnotations }}
-{{- $painterExtraDeploymentLabels := $painter.extraDeploymentLabels }}
-{{- $painterExtraDeploymentAnnotations := $painter.extraDeploymentAnnotations }}
 
 # Deployment manifest for painter
 
@@ -23,15 +19,9 @@ metadata:
   labels:
     app: painter
     deployment: labels
-    {{- range $key, $value := $painterExtraDeploymentLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: painter
     deployment: annotation
-    {{- range $key, $value := $painterExtraDeploymentAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: painter
   namespace: {{ .Release.Namespace }}
 spec:
@@ -39,26 +29,17 @@ spec:
     matchLabels:
       app: painter
       pod: labels
-      {{- range $key, $value := $painterExtraPodLabels }}
-      {{ $key }}: {{ $value }}
-      {{- end }}
   template:
     metadata:
       labels:
         app: painter
         pod: labels
-        {{- range $key, $value := $painterExtraPodLabels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
       annotations:
         app.kubernetes.io/name: painter
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
         pod: annotations
-        {{- range $key, $value := $painterExtraPodAnnotations }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
     spec:
       serviceAccountName: painter
       volumes:
@@ -141,6 +122,28 @@ metadata:
 
 
 {{- define "painter.serviceSpec"}}
+
+# Service for painter
+{{/* Define variables in function scope */}}
+{{- $painter := $.Values.painter}}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: painter
+    service: labels
+  annotations:
+    app.kubernetes.io/name: painter
+    service: annotations
+  name: painter
+  namespace: {{ $.Release.Namespace }}
+spec:
+  selector:
+    app: painter
+  type: {{ $painter.serviceType }}
+  ports:
+  - name: http
+    port: {{ $painter.ports.http }}
 
 
 {{- end }} {{/* define "painter.serviceSpec" */}}
