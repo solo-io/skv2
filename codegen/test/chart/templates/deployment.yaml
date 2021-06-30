@@ -89,6 +89,7 @@ spec:
 {{- else }}
         securityContext:
           runAsNonRoot: true
+          runAsUser: 10101
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
