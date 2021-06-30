@@ -123,28 +123,6 @@ metadata:
 
 {{- define "painter.serviceSpec"}}
 
-# Service for painter
-{{/* Define variables in function scope */}}
-{{- $painter := $.Values.painter}}
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: painter
-    service: labels
-  annotations:
-    app.kubernetes.io/name: painter
-    service: annotations
-  name: painter
-  namespace: {{ $.Release.Namespace }}
-spec:
-  selector:
-    app: painter
-  type: {{ $painter.serviceType }}
-  ports:
-  - name: http
-    port: {{ $painter.ports.http }}
-
 
 {{- end }} {{/* define "painter.serviceSpec" */}}
 

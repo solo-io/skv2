@@ -12,8 +12,7 @@ painter:
     registry: quay.io/solo-io
     repository: painter
     tag: v0.0.0
-  ports:
-    http: 1234
+  ports: {}
   serviceType: ""
   sidecars:
     palette:

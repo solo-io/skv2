@@ -65,20 +65,14 @@ func (m *ObjectRefList) Hash(hasher hash.Hash64) (uint64, error) {
 	for _, v := range m.GetRefs() {
 
 		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
-			if _, err = hasher.Write([]byte("")); err != nil {
-				return 0, err
-			}
 			if _, err = h.Hash(hasher); err != nil {
 				return 0, err
 			}
 		} else {
-			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
+			if val, err := hashstructure.Hash(v, nil); err != nil {
 				return 0, err
 			} else {
-				if _, err = hasher.Write([]byte("")); err != nil {
-					return 0, err
-				}
-				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 					return 0, err
 				}
 			}
@@ -131,40 +125,28 @@ func (m *TypedObjectRef) Hash(hasher hash.Hash64) (uint64, error) {
 	}
 
 	if h, ok := interface{}(m.GetApiGroup()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("ApiGroup")); err != nil {
-			return 0, err
-		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetApiGroup(), nil); err != nil {
+		if val, err := hashstructure.Hash(m.GetApiGroup(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("ApiGroup")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 				return 0, err
 			}
 		}
 	}
 
 	if h, ok := interface{}(m.GetKind()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("Kind")); err != nil {
-			return 0, err
-		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetKind(), nil); err != nil {
+		if val, err := hashstructure.Hash(m.GetKind(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("Kind")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 				return 0, err
 			}
 		}
@@ -195,40 +177,28 @@ func (m *TypedClusterObjectRef) Hash(hasher hash.Hash64) (uint64, error) {
 	}
 
 	if h, ok := interface{}(m.GetApiGroup()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("ApiGroup")); err != nil {
-			return 0, err
-		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetApiGroup(), nil); err != nil {
+		if val, err := hashstructure.Hash(m.GetApiGroup(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("ApiGroup")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 				return 0, err
 			}
 		}
 	}
 
 	if h, ok := interface{}(m.GetKind()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("Kind")); err != nil {
-			return 0, err
-		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetKind(), nil); err != nil {
+		if val, err := hashstructure.Hash(m.GetKind(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("Kind")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 				return 0, err
 			}
 		}
@@ -277,40 +247,28 @@ func (m *Status) Hash(hasher hash.Hash64) (uint64, error) {
 	}
 
 	if h, ok := interface{}(m.GetProcessingTime()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("ProcessingTime")); err != nil {
-			return 0, err
-		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetProcessingTime(), nil); err != nil {
+		if val, err := hashstructure.Hash(m.GetProcessingTime(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("ProcessingTime")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 				return 0, err
 			}
 		}
 	}
 
 	if h, ok := interface{}(m.GetOwner()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("Owner")); err != nil {
-			return 0, err
-		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetOwner(), nil); err != nil {
+		if val, err := hashstructure.Hash(m.GetOwner(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("Owner")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 				return 0, err
 			}
 		}
@@ -366,20 +324,14 @@ func (m *ObjectSelector) Hash(hasher hash.Hash64) (uint64, error) {
 	for _, v := range m.GetExpressions() {
 
 		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
-			if _, err = hasher.Write([]byte("")); err != nil {
-				return 0, err
-			}
 			if _, err = h.Hash(hasher); err != nil {
 				return 0, err
 			}
 		} else {
-			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
+			if val, err := hashstructure.Hash(v, nil); err != nil {
 				return 0, err
 			} else {
-				if _, err = hasher.Write([]byte("")); err != nil {
-					return 0, err
-				}
-				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 					return 0, err
 				}
 			}

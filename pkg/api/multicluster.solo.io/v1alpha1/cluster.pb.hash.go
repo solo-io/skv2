@@ -47,20 +47,14 @@ func (m *KubernetesClusterSpec) Hash(hasher hash.Hash64) (uint64, error) {
 	}
 
 	if h, ok := interface{}(m.GetProviderInfo()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("ProviderInfo")); err != nil {
-			return 0, err
-		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetProviderInfo(), nil); err != nil {
+		if val, err := hashstructure.Hash(m.GetProviderInfo(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("ProviderInfo")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+			if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 				return 0, err
 			}
 		}
@@ -85,20 +79,14 @@ func (m *KubernetesClusterStatus) Hash(hasher hash.Hash64) (uint64, error) {
 	for _, v := range m.GetStatus() {
 
 		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
-			if _, err = hasher.Write([]byte("")); err != nil {
-				return 0, err
-			}
 			if _, err = h.Hash(hasher); err != nil {
 				return 0, err
 			}
 		} else {
-			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
+			if val, err := hashstructure.Hash(v, nil); err != nil {
 				return 0, err
 			} else {
-				if _, err = hasher.Write([]byte("")); err != nil {
-					return 0, err
-				}
-				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 					return 0, err
 				}
 			}
@@ -113,20 +101,14 @@ func (m *KubernetesClusterStatus) Hash(hasher hash.Hash64) (uint64, error) {
 	for _, v := range m.GetPolicyRules() {
 
 		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
-			if _, err = hasher.Write([]byte("")); err != nil {
-				return 0, err
-			}
 			if _, err = h.Hash(hasher); err != nil {
 				return 0, err
 			}
 		} else {
-			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
+			if val, err := hashstructure.Hash(v, nil); err != nil {
 				return 0, err
 			} else {
-				if _, err = hasher.Write([]byte("")); err != nil {
-					return 0, err
-				}
-				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 					return 0, err
 				}
 			}
@@ -211,20 +193,14 @@ func (m *KubernetesClusterSpec_ProviderInfo) Hash(hasher hash.Hash64) (uint64, e
 	case *KubernetesClusterSpec_ProviderInfo_Eks:
 
 		if h, ok := interface{}(m.GetEks()).(safe_hasher.SafeHasher); ok {
-			if _, err = hasher.Write([]byte("Eks")); err != nil {
-				return 0, err
-			}
 			if _, err = h.Hash(hasher); err != nil {
 				return 0, err
 			}
 		} else {
-			if fieldValue, err := hashstructure.Hash(m.GetEks(), nil); err != nil {
+			if val, err := hashstructure.Hash(m.GetEks(), nil); err != nil {
 				return 0, err
 			} else {
-				if _, err = hasher.Write([]byte("Eks")); err != nil {
-					return 0, err
-				}
-				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				if err := binary.Write(hasher, binary.LittleEndian, val); err != nil {
 					return 0, err
 				}
 			}
