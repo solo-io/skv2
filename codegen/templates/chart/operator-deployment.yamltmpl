@@ -123,7 +123,7 @@ spec:
 {{- end}}
 {{- if $[[ $operatorVar ]].securityContext }}
         securityContext:
-{{ toYaml $[[ $sidecarVar ]].securityContext | indent 10 }}
+{{ toYaml $[[ $operatorVar ]].securityContext | indent 10 }}
 {{- else }}
         securityContext:
           runAsNonRoot: true
