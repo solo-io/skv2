@@ -83,12 +83,18 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+{{- if $painter.securityContext }}
         securityContext:
+{{ toYaml $painter.securityContext | indent 10 }}
+{{- else }}
+        securityContext:
+          runAsNonRoot: true
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
+{{- end }}
 {{- $paletteImage := $painter.sidecars.palette.image }}
       - image: {{ $paletteImage.registry }}/{{ $paletteImage.repository }}:{{ $paletteImage.tag }}
         args:
