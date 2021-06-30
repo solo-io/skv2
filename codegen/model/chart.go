@@ -134,12 +134,12 @@ type Values struct {
 	ServiceType  v1.ServiceType       `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
 	ServicePorts map[string]uint32    `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 
-	CustomPodLabels             map[string]string `json:"customPodLabels,omitempty" desc:"Custom labels for the pod"`
-	CustomPodAnnotations        map[string]string `json:"customPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
-	CustomDeploymentLabels      map[string]string `json:"customDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
-	CustomDeploymentAnnotations map[string]string `json:"customDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
-	CustomServiceLabels         map[string]string `json:"customServiceLabels,omitempty" desc:"Custom labels for the service"`
-	CustomServiceAnnotations    map[string]string `json:"customServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
+	ExtraPodLabels             map[string]string `json:"extraPodLabels,omitempty" desc:"Custom labels for the pod"`
+	ExtraPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
+	ExtraDeploymentLabels      map[string]string `json:"extraDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
+	ExtraDeploymentAnnotations map[string]string `json:"extraDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
+	ExtraServiceLabels         map[string]string `json:"extraServiceLabels,omitempty" desc:"Custom labels for the service"`
+	ExtraServiceAnnotations    map[string]string `json:"extraServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
 }
 
 func (c Chart) BuildChartValues() HelmValues {
@@ -158,16 +158,16 @@ func (c Chart) BuildChartValues() HelmValues {
 		values.Operators = append(values.Operators, OperatorValues{
 			Name: operator.Name,
 			Values: Values{
-				Container:                   operator.Deployment.Container,
-				Sidecars:                    sidecars,
-				ServiceType:                 operator.Service.Type,
-				ServicePorts:                servicePorts,
-				CustomPodLabels:             operator.Deployment.CustomPodLabels,
-				CustomPodAnnotations:        operator.Deployment.CustomPodAnnotations,
-				CustomDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
-				CustomDeploymentAnnotations: operator.Deployment.CustomDeploymentAnnotations,
-				CustomServiceLabels:         operator.Service.CustomLabels,
-				CustomServiceAnnotations:    operator.Service.CustomAnnotations,
+				Container:                  operator.Deployment.Container,
+				Sidecars:                   sidecars,
+				ServiceType:                operator.Service.Type,
+				ServicePorts:               servicePorts,
+				ExtraPodLabels:             operator.Deployment.CustomPodLabels,
+				ExtraPodAnnotations:        operator.Deployment.CustomPodAnnotations,
+				ExtraDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
+				ExtraDeploymentAnnotations: operator.Deployment.CustomDeploymentAnnotations,
+				ExtraServiceLabels:         operator.Service.CustomLabels,
+				ExtraServiceAnnotations:    operator.Service.CustomAnnotations,
 			},
 		})
 	}
