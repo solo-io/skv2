@@ -59,8 +59,9 @@ type Deployment struct {
 // values for a container
 type Container struct {
 	// not configurable via helm values
-	Args         []string         `json:"-"`
-	VolumeMounts []v1.VolumeMount `json:"-"`
+	Args            []string            `json:"-"`
+	VolumeMounts    []v1.VolumeMount    `json:"-"`
+	SecurityContext *v1.SecurityContext `json:"-"`
 
 	Image     Image                    `json:"image" desc:"Specify the container image"`
 	Env       []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
