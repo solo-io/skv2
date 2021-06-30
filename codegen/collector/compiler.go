@@ -49,6 +49,9 @@ type ProtocOptions struct {
 
 	// Additional custom protoc imports
 	CustomImports []string
+
+	// Skip compiling these directories
+	SkipDirs []string
 }
 
 type protoCompiler struct {

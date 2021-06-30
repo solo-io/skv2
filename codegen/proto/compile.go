@@ -55,7 +55,7 @@ func CompileProtos(goModule, moduleName, protoDir string, protocOptions collecto
 			return true
 		},
 		protocOptions,
-	).CompileDescriptorsFromRoot(protoDir, nil)
+	).CompileDescriptorsFromRoot(protoDir, protocOptions.SkipDirs)
 	if err != nil {
 		return nil, err
 	}
