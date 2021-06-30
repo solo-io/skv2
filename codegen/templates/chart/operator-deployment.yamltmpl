@@ -121,10 +121,10 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
-{{- if $[[ $operatorVar ]].securityContext }}
+[[- if $operator.Deployment.SecurityContext ]]
         securityContext:
-{{ toYaml $[[ $operatorVar ]].securityContext | indent 10 }}
-{{- else }}
+[[ toYaml $operator.Deployment.SecurityContext | indent 10 ]]
+[[- else ]]
         securityContext:
           runAsNonRoot: true
           runAsUser: 10101
@@ -133,7 +133,7 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- end }}
+[[- end ]]
 [[- range $sidecar := $sidecars ]]
         [[- $sidecarVar := (printf "%s.sidecars.%s" $operatorVar $sidecar.Name) ]]
 {{- $[[ $sidecar.Name ]]Image := $[[ $operatorVar ]].sidecars.[[ $sidecar.Name ]].image }}
