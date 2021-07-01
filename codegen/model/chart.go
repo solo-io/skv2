@@ -3,12 +3,15 @@ package model
 import (
 	"fmt"
 
+	"github.com/solo-io/skv2/codegen/model/values"
+
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/doc"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
+// Chart provides the input data structure for generating Helm charts from the skv2 chart "meta-templates" (templates whose outputs are templates and other files used by generated Helm charts)
 type Chart struct {
 	Operators []Operator
 
@@ -59,13 +62,13 @@ type Deployment struct {
 // values for a container
 type Container struct {
 	// not configurable via helm values
-	Args            []string            `json:"-"`
-	VolumeMounts    []v1.VolumeMount    `json:"-"`
-	SecurityContext *v1.SecurityContext `json:"-"`
+	Args            []string
+	VolumeMounts    []v1.VolumeMount
+	SecurityContext *v1.SecurityContext
 
-	Image     Image                    `json:"image" desc:"Specify the container image"`
-	Env       []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
-	Resources *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
+	Image     Image
+	Env       []v1.EnvVar
+	Resources *v1.ResourceRequirements
 }
 
 // sidecars require a container config and a unique name
@@ -90,13 +93,7 @@ type ServicePort struct {
 	DefaultPort int32 `json:"port" protobuf:"varint,3,opt,name=port" desc:"The default port that will be exposed by this service."`
 }
 
-type Image struct {
-	Tag        string        `json:"tag,omitempty"  desc:"Tag for the container."`
-	Repository string        `json:"repository,omitempty"  desc:"Image name (repository)."`
-	Registry   string        `json:"registry,omitempty" desc:"Image registry."`
-	PullPolicy v1.PullPolicy `json:"pullPolicy,omitempty"  desc:"Image pull policy."`
-	PullSecret string        `json:"pullSecret,omitempty" desc:"Image pull secret."`
-}
+type Image = values.Image
 
 // Helm chart dependency
 type Dependency struct {
@@ -117,63 +114,39 @@ type Data struct {
 	Dependencies []Dependency `json:"dependencies,omitempty"`
 }
 
-// fields exposed as Helm values
-type HelmValues struct {
-	Operators    []OperatorValues
-	CustomValues interface{}
+func makeContainerDocs(c Container) values.UserContainerValues {
+	return values.UserContainerValues{
+		Image:     c.Image,
+		Env:       c.Env,
+		Resources: c.Resources,
+	}
 }
 
-type OperatorValues struct {
-	Name   string
-	Values Values
-}
-
-type Values struct {
-	Container `json:",inline"`
-	// Required to have an interface value in order to use the `index` function in the template
-	Sidecars     map[string]Container `json:"sidecars" desc:"Configuration for the deployed containers."`
-	ServiceType  v1.ServiceType       `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts map[string]uint32    `json:"ports" desc:"Specify service ports as a map from port name to port number."`
-
-	ExtraPodLabels             map[string]string `json:"extraPodLabels,omitempty" desc:"Custom labels for the pod"`
-	ExtraPodAnnotations        map[string]string `json:"extraPodAnnotations,omitempty" desc:"Custom annotations for the pod"`
-	ExtraDeploymentLabels      map[string]string `json:"extraDeploymentLabels,omitempty" desc:"Custom labels for the deployment"`
-	ExtraDeploymentAnnotations map[string]string `json:"extraDeploymentAnnotations,omitempty" desc:"Custom annotations for the deployment"`
-	ExtraServiceLabels         map[string]string `json:"extraServiceLabels,omitempty" desc:"Custom labels for the service"`
-	ExtraServiceAnnotations    map[string]string `json:"extraServiceAnnotations,omitempty" desc:"Custom annotations for the service"`
-}
-
-func (c Chart) BuildChartValues() HelmValues {
-	values := HelmValues{CustomValues: c.Values}
+func (c Chart) BuildChartValues() values.UserHelmValues {
+	helmValues := values.UserHelmValues{CustomValues: c.Values}
 
 	for _, operator := range c.Operators {
 		servicePorts := map[string]uint32{}
 		for _, port := range operator.Service.Ports {
 			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
-		sidecars := map[string]Container{}
+		sidecars := map[string]values.UserContainerValues{}
 		for _, sidecar := range operator.Deployment.Sidecars {
-			sidecars[sidecar.Name] = sidecar.Container
+			sidecars[sidecar.Name] = makeContainerDocs(sidecar.Container)
 		}
 
-		values.Operators = append(values.Operators, OperatorValues{
+		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{
 			Name: operator.Name,
-			Values: Values{
-				Container:                  operator.Deployment.Container,
-				Sidecars:                   sidecars,
-				ServiceType:                operator.Service.Type,
-				ServicePorts:               servicePorts,
-				ExtraPodLabels:             operator.Deployment.CustomPodLabels,
-				ExtraPodAnnotations:        operator.Deployment.CustomPodAnnotations,
-				ExtraDeploymentLabels:      operator.Deployment.CustomDeploymentLabels,
-				ExtraDeploymentAnnotations: operator.Deployment.CustomDeploymentAnnotations,
-				ExtraServiceLabels:         operator.Service.CustomLabels,
-				ExtraServiceAnnotations:    operator.Service.CustomAnnotations,
+			Values: values.UserValues{
+				UserContainerValues: makeContainerDocs(operator.Deployment.Container),
+				Sidecars:            sidecars,
+				ServiceType:         operator.Service.Type,
+				ServicePorts:        servicePorts,
 			},
 		})
 	}
 
-	return values
+	return helmValues
 }
 
 func (c Chart) GenerateHelmDoc(title string) string {
