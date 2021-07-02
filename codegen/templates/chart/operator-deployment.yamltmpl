@@ -89,6 +89,10 @@ spec:
         env:
 {{ toYaml [[ $containerVar ]].env | indent 10 }}
 {{- end }}
+[[- if $container.VolumeMounts ]]
+        volumeMounts:
+[[ toYaml $container.VolumeMounts | indent 8 ]]
+[[- end ]]
         resources:
 {{- if [[ $containerVar ]].resources }}
 {{ toYaml [[ $containerVar ]].resources | indent 10}}

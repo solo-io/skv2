@@ -85,6 +85,9 @@ spec:
         env:
 {{ toYaml $palette.env | indent 10 }}
 {{- end }}
+        volumeMounts:
+        - mountPath: /etc/paint
+          name: paint
         resources:
 {{- if $palette.resources }}
 {{ toYaml $palette.resources | indent 10}}
