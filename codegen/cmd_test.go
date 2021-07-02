@@ -145,7 +145,7 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Sidecars: []NamedContainer{
+							Sidecars: []Sidecar{
 								{
 									Name: "palette",
 									Container: Container{
@@ -432,7 +432,7 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Sidecars: []NamedContainer{
+							Sidecars: []Sidecar{
 
 								{
 									Name: "palette",

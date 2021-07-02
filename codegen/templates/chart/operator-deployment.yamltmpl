@@ -8,14 +8,13 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $operatorVar := (lower_camel $operator.Name) -]]
 
 [[/* custom values defined in codegen model */]]
-[[- $containers := $operator.Containers -]]
 [[- $volumes := $operator.Deployment.Volumes -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
 [[- $customDeploymentAnnotations := $operator.Deployment.CustomDeploymentAnnotations -]]
 [[- $customServiceLabels := $operator.Service.CustomLabels -]]
-[[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
+[[- $customServiceAnnotations := $operator.Service.CustomAnnotations -]]
 
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 ---
@@ -73,15 +72,11 @@ spec:
 [[ toYaml $volumes | indent 6 ]]
 [[- end ]]
       containers:
-[[- range $i, $container := $containers ]]
+[[- range $container := containerConfigs $operator ]]
 [[- $containerVar := printf "$%s%s" $container.Name "Container" ]]
 [[- $imageVar := printf "$%s%s" $container.Name "Image" ]]
-[[- if eq $i 0 ]] [[/* Keep values for primary container on top level */]]
-{{ [[ $containerVar ]]:= $.Values.[[ $operatorVar ]] }}
-[[- else ]]
-{{ [[ $containerVar ]]:= $.Values.[[ $operatorVar ]].sidecars.[[ $container.Name | lower_camel ]] }}
-[[- end ]]
-{{ [[ $imageVar ]] := [[ $containerVar ]].image }}
+{{- [[ $containerVar ]] := [[ $container.ValuesVar ]] }}
+{{- [[ $imageVar ]] := [[ $containerVar ]].image }}
       - name: [[ $container.Name ]]
         image: {{ [[ $imageVar ]].registry }}/{{ [[ $imageVar ]].repository }}:{{ [[ $imageVar ]].tag }}
         imagePullPolicy: {{ [[ $imageVar ]].pullPolicy }}
