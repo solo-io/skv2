@@ -14,7 +14,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
 [[- $customDeploymentAnnotations := $operator.Deployment.CustomDeploymentAnnotations -]]
 [[- $customServiceLabels := $operator.Service.CustomLabels -]]
-[[- $customServiceAnnotations := $operator.Service.CustomAnnotations -]]
+[[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 ---
