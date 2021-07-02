@@ -40,20 +40,20 @@ spec:
       - emptyDir: {}
         name: paint
       containers:
-{{- $painterContainer := $.Values.painter }}
-{{- $painterImage := $painterContainer.image }}
+{{- $painter := $.Values.painter }}
+{{- $painterImage := $painter.image }}
       - name: painter
         image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
         imagePullPolicy: {{ $painterImage.pullPolicy }}
         args:
         - foo
-{{- if $painterContainer.env }}
+{{- if $painter.env }}
         env:
-{{ toYaml $painterContainer.env | indent 10 }}
+{{ toYaml $painter.env | indent 10 }}
 {{- end }}
         resources:
-{{- if $painterContainer.resources }}
-{{ toYaml $painterContainer.resources | indent 10}}
+{{- if $painter.resources }}
+{{ toYaml $painter.resources | indent 10}}
 {{- else}}
           requests:
             cpu: 500m
@@ -73,21 +73,21 @@ spec:
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
-{{- $paletteContainer := $.Values.painter.sidecars.palette }}
-{{- $paletteImage := $paletteContainer.image }}
+{{- $palette := $.Values.painter.sidecars.palette }}
+{{- $paletteImage := $palette.image }}
       - name: palette
         image: {{ $paletteImage.registry }}/{{ $paletteImage.repository }}:{{ $paletteImage.tag }}
         imagePullPolicy: {{ $paletteImage.pullPolicy }}
         args:
         - bar
         - baz
-{{- if $paletteContainer.env }}
+{{- if $palette.env }}
         env:
-{{ toYaml $paletteContainer.env | indent 10 }}
+{{ toYaml $palette.env | indent 10 }}
 {{- end }}
         resources:
-{{- if $paletteContainer.resources }}
-{{ toYaml $paletteContainer.resources | indent 10}}
+{{- if $palette.resources }}
+{{ toYaml $palette.resources | indent 10}}
 {{- else}}
           requests:
             cpu: 500m

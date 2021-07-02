@@ -74,7 +74,7 @@ spec:
       containers:
 [[- range $container := containerConfigs $operator ]]
 [[- $containerName := lower_camel $container.Name ]]
-[[- $containerVar := printf "$%s%s" $containerName "Container" ]]
+[[- $containerVar := printf "$%s" $containerName ]]
 [[- $imageVar := printf "$%s%s" $containerName "Image" ]]
 {{- [[ $containerVar ]] := [[ $container.ValuesVar ]] }}
 {{- [[ $imageVar ]] := [[ $containerVar ]].image }}
