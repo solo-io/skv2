@@ -105,7 +105,7 @@ var _ = Describe("Cmd", func() {
 		err := cmd.Execute()
 		Expect(err).NotTo(HaveOccurred())
 
-		err = exec.Command("goimports", "-w", "codegen/test/api").Run()
+		err = exec.Command("go", "run", "golang.org/x/tools/cmd/goimports", "-w", "codegen/test/api").Run()
 		Expect(err).NotTo(HaveOccurred())
 	})
 

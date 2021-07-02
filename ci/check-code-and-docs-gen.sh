@@ -26,7 +26,7 @@ fi
 
 if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
   echo "Generating code produced a non-empty diff"
-  echo "Try running 'make install-go-tools generated-code -B' then re-pushing."
+  echo "Try running 'make clean generated-code -B' then re-pushing."
   git status --porcelain
   git diff | cat
   exit 1;

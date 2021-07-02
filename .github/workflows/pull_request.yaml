@@ -62,9 +62,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: Install deps for codegen
-        run: |
-          make install-go-tools
       - name: Run tests
         run: |
           REMOTE_CLUSTER_CONTEXT=kind-skv2-test-remote PATH="$(pwd)/_output/.bin:$PATH" go test ./...

@@ -8,30 +8,36 @@
 mod-download:
 	go mod download
 
-
 DEPSGOBIN=$(shell pwd)/_output/.bin
 export GOBIN:=$(DEPSGOBIN)
 export PATH:=$(GOBIN):$(PATH)
 
-.PHONY: install-go-tools
-install-go-tools: mod-download
-	mkdir -p $(DEPSGOBIN)
-	go install github.com/gobuffalo/packr/packr
-	go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
-	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
-	go install github.com/solo-io/protoc-gen-ext
-	go install github.com/golang/mock/mockgen@v1.4.4
-	go install golang.org/x/tools/cmd/goimports
+# Dependencies for code generation
+.PHONY: mockgen protoc-gen-go protoc-gen-ext protoc-gen-jsonshim protoc-plugins
+
+mockgen: $(DEPSGOBIN)/mockgen
+$(DEPSGOBIN)/mockgen:
+	go build -o $@ github.com/golang/mock/mockgen
+
+protoc-gen-go: $(DEPSGOBIN)/protoc-gen-go
+$(DEPSGOBIN)/protoc-gen-go:
+	go build -o $@ github.com/golang/protobuf/protoc-gen-go
+
+protoc-gen-ext: $(DEPSGOBIN)/protoc-gen-ext
+$(DEPSGOBIN)/protoc-gen-ext:
+	go build -o $@ github.com/solo-io/protoc-gen-ext
+
+protoc-plugins: protoc-gen-go protoc-gen-ext # protoc-gen-jsonshim
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
-generated-code: install-go-tools update-licenses
+generated-code: update-licenses mockgen protoc-plugins
 	go run api/generate.go
 	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
 # this re-gens test protos
 	go test ./codegen
 	go generate -v ./...
-	goimports -w .
+	go run golang.org/x/tools/cmd/goimports -w .
 	go mod tidy
 
 #----------------------------------------------------------------------------------
