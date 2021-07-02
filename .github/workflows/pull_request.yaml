@@ -64,4 +64,4 @@ jobs:
             ${{ runner.os }}-go-
       - name: Run tests
         run: |
-          REMOTE_CLUSTER_CONTEXT=kind-skv2-test-remote PATH="$(pwd)/_output/.bin:$PATH" go test ./...
+          REMOTE_CLUSTER_CONTEXT=kind-skv2-test-remote make run-tests

@@ -47,8 +47,8 @@ generated-code: update-licenses mockgen protoc-plugins
 # run all tests
 # set TEST_PKG to run a specific test package
 .PHONY: run-tests
-run-tests:
-	PATH=$(DEPSGOBIN):$$PATH ginkgo -r -failFast -trace -progress \
+run-tests: protoc-plugins
+	go run github.com/onsi/ginkgo/ginkgo -r -failFast -trace -progress \
 		-progress \
 		-compilers=4 \
 		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG) \
@@ -56,7 +56,7 @@ run-tests:
 		-randomizeAllSpecs \
 		-randomizeSuites \
 		-keepGoing
-	goimports -w .
+	go run golang.org/x/tools/cmd/goimports -w .
 
 #----------------------------------------------------------------------------------
 # Third Party License Management
