@@ -27,7 +27,7 @@ protoc-gen-ext: $(DEPSGOBIN)/protoc-gen-ext
 $(DEPSGOBIN)/protoc-gen-ext:
 	go build -o $@ github.com/solo-io/protoc-gen-ext
 
-protoc-plugins: protoc-gen-go protoc-gen-ext # protoc-gen-jsonshim
+protoc-plugins: protoc-gen-go protoc-gen-ext
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
