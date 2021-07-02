@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"sigs.k8s.io/yaml"
 
@@ -132,9 +133,19 @@ var _ = Describe("Cmd", func() {
 										Value: "BAR",
 									},
 								},
+								ReadinessProbe: &v1.Probe{
+									Handler: v1.Handler{
+										HTTPGet: &v1.HTTPGetAction{
+											Path: "/",
+											Port: intstr.FromInt(8080),
+										},
+									},
+									PeriodSeconds:       10,
+									InitialDelaySeconds: 5,
+								},
 							},
 
-							Sidecars: []Sidecar{
+							Sidecars: []NamedContainer{
 								{
 									Name: "palette",
 									Container: Container{
@@ -150,6 +161,16 @@ var _ = Describe("Cmd", func() {
 												Name:      "paint",
 												MountPath: "/etc/paint",
 											},
+										},
+										LivenessProbe: &v1.Probe{
+											Handler: v1.Handler{
+												HTTPGet: &v1.HTTPGetAction{
+													Path: "/",
+													Port: intstr.FromInt(8080),
+												},
+											},
+											PeriodSeconds:       60,
+											InitialDelaySeconds: 30,
 										},
 									},
 								},
@@ -399,9 +420,19 @@ var _ = Describe("Cmd", func() {
 										Value: "BAR",
 									},
 								},
+								ReadinessProbe: &v1.Probe{
+									Handler: v1.Handler{
+										HTTPGet: &v1.HTTPGetAction{
+											Path: "/",
+											Port: intstr.FromInt(8080),
+										},
+									},
+									PeriodSeconds:       10,
+									InitialDelaySeconds: 5,
+								},
 							},
 
-							Sidecars: []Sidecar{
+							Sidecars: []NamedContainer{
 
 								{
 									Name: "palette",
@@ -418,6 +449,16 @@ var _ = Describe("Cmd", func() {
 												Name:      "paint",
 												MountPath: "/etc/paint",
 											},
+										},
+										LivenessProbe: &v1.Probe{
+											Handler: v1.Handler{
+												HTTPGet: &v1.HTTPGetAction{
+													Path: "/",
+													Port: intstr.FromInt(8080),
+												},
+											},
+											PeriodSeconds:       60,
+											InitialDelaySeconds: 30,
 										},
 									},
 								},

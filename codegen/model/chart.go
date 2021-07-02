@@ -46,12 +46,22 @@ type Operator struct {
 	Service Service
 }
 
+// returns a unified list of containers (primary + sidecars)
+func (op Operator) Containers() []NamedContainer {
+	primary := NamedContainer{
+		Container: op.Deployment.Container,
+		Name:      op.Name,
+	}
+
+	return append([]NamedContainer{primary}, op.Deployment.Sidecars...)
+}
+
 // values for Deployment template
 type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
 	UseDaemonSet bool
 	Container
-	Sidecars                    []Sidecar
+	Sidecars                    []NamedContainer
 	Volumes                     []v1.Volume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
@@ -64,6 +74,8 @@ type Container struct {
 	// not configurable via helm values
 	Args            []string
 	VolumeMounts    []v1.VolumeMount
+	ReadinessProbe  *v1.Probe
+	LivenessProbe   *v1.Probe
 	SecurityContext *v1.SecurityContext
 
 	Image     Image
@@ -71,8 +83,8 @@ type Container struct {
 	Resources *v1.ResourceRequirements
 }
 
-// sidecars require a container config and a unique name
-type Sidecar struct {
+// used when the container name needs to be included, such as sidecars
+type NamedContainer struct {
 	Container
 	Name string
 }
