@@ -64,6 +64,8 @@ type Container struct {
 	// not configurable via helm values
 	Args            []string
 	VolumeMounts    []v1.VolumeMount
+	ReadinessProbe  *v1.Probe
+	LivenessProbe   *v1.Probe
 	SecurityContext *v1.SecurityContext
 
 	Image     Image

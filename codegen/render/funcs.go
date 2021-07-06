@@ -65,6 +65,8 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 			}
 			return excludingGroupImport
 		},
+
+		"containerConfigs": containerConfigs,
 	}
 
 	for k, v := range skv2Funcs {
@@ -76,6 +78,31 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	}
 
 	return f
+}
+
+type containerConfig struct {
+	model.Container
+	Name      string
+	ValuesVar string
+}
+
+func containerConfigs(op model.Operator) []containerConfig {
+	opVar := "$.Values." + strcase.ToLowerCamel(op.Name)
+	configs := []containerConfig{{
+		Container: op.Deployment.Container,
+		Name:      op.Name,
+		ValuesVar: opVar,
+	}}
+
+	for _, sidecar := range op.Deployment.Sidecars {
+		configs = append(configs, containerConfig{
+			Container: sidecar.Container,
+			Name:      sidecar.Name,
+			ValuesVar: opVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
+		})
+	}
+
+	return configs
 }
 
 /*

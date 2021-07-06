@@ -7,10 +7,6 @@
 
 {{- define "painter.deploymentSpec"}}
 
-{{/* Define variables in function scope */}}
-{{- $painter := $.Values.painter}}
-{{- $painterImage := $painter.image }}
-
 # Deployment manifest for painter
 
 apiVersion: apps/v1
@@ -46,20 +42,21 @@ spec:
       - emptyDir: {}
         name: paint
       containers:
-      - image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
+{{- $painter := $.Values.painter }}
+{{- $painterImage := $painter.image }}
+      - name: painter
+        image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
+        imagePullPolicy: {{ $painterImage.pullPolicy }}
         args:
         - foo
 {{- if $painter.env }}
         env:
 {{ toYaml $painter.env | indent 10 }}
 {{- end }}
-        imagePullPolicy: {{ $painterImage.pullPolicy }}
-        name: painter
-{{- if $painter.resources }}
         resources:
+{{- if $painter.resources }}
 {{ toYaml $painter.resources | indent 10}}
 {{- else}}
-        resources:
           requests:
             cpu: 500m
             memory: 256Mi
@@ -72,29 +69,49 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- $paletteImage := $painter.sidecars.palette.image }}
-      - image: {{ $paletteImage.registry }}/{{ $paletteImage.repository }}:{{ $paletteImage.tag }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+{{- $palette := $.Values.painter.sidecars.palette }}
+{{- $paletteImage := $palette.image }}
+      - name: palette
+        image: {{ $paletteImage.registry }}/{{ $paletteImage.repository }}:{{ $paletteImage.tag }}
+        imagePullPolicy: {{ $paletteImage.pullPolicy }}
         args:
         - bar
         - baz
-{{- if $painter.sidecars.palette.env }}
+{{- if $palette.env }}
         env:
-{{ toYaml $painter.sidecars.palette.env | indent 10 }}
+{{ toYaml $palette.env | indent 10 }}
 {{- end }}
         volumeMounts:
         - mountPath: /etc/paint
           name: paint
-        imagePullPolicy: {{ $paletteImage.pullPolicy }}
-        name: palette
-{{- if $painter.sidecars.palette.resources }}
         resources:
-{{ toYaml $painter.sidecars.palette.resources | indent 10}}
+{{- if $palette.resources }}
+{{ toYaml $palette.resources | indent 10}}
 {{- else}}
-        resources:
           requests:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10101
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 60
       {{- if $painterImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $painterImage.pullSecret }}
