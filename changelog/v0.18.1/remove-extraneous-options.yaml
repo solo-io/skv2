@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/263
+    description: Remove extraneous `extra{Pod/Deployment/Service}{Labels/Annotations}` Helm values.

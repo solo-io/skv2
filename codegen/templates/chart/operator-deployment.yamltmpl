@@ -3,10 +3,12 @@ This template contains the core components for the Operator deployment.
 Expressions evaluating Helm Values use "{{" and "}}"
 Expressions evaluating SKv2 Config use "[[" and "]]"
 */]]
+
 [[- range $operator := $.Operators -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
 
 [[/* custom values defined in codegen model */]]
+[[- $volumes := $operator.Deployment.Volumes -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
@@ -19,18 +21,10 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 
 {{- define "[[ $operator.Name ]].deploymentSpec"}}
 
-{{/* Define variables in function scope */}}
-{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
-{{- $[[ $operatorVar ]]Image := $[[ $operatorVar ]].image }}
-{{- $[[ $operatorVar ]]ExtraPodLabels := $[[ $operatorVar ]].extraPodLabels }}
-{{- $[[ $operatorVar ]]ExtraPodAnnotations := $[[ $operatorVar ]].extraPodAnnotations }}
-{{- $[[ $operatorVar ]]ExtraDeploymentLabels := $[[ $operatorVar ]].extraDeploymentLabels }}
-{{- $[[ $operatorVar ]]ExtraDeploymentAnnotations := $[[ $operatorVar ]].extraDeploymentAnnotations }}
-
-  [[- $workloadKind := "Deployment" ]]
-  [[- if $operator.Deployment.UseDaemonSet ]]
-  [[- $workloadKind = "DaemonSet" ]]
-  [[- end -]]
+[[- $workloadKind := "Deployment" ]]
+[[- if $operator.Deployment.UseDaemonSet ]]
+[[- $workloadKind = "DaemonSet" ]]
+[[- end ]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 
@@ -42,17 +36,11 @@ metadata:
     [[- range $key, $value := $customDeploymentLabels ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraDeploymentLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: [[ $operator.Name ]]
     [[- range $key, $value := $customDeploymentAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraDeploymentAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: [[ $operator.Name ]]
   namespace: {{ .Release.Namespace }}
 spec:
@@ -62,9 +50,6 @@ spec:
       [[- range $key, $value := $customPodLabels ]]
       [[ $key ]]: [[ $value ]]
       [[- end ]]
-      {{- range $key, $value := $[[ $operatorVar ]]ExtraPodLabels }}
-      {{ $key }}: {{ $value }}
-      {{- end }}
   template:
     metadata:
       labels:
@@ -72,9 +57,6 @@ spec:
         [[- range $key, $value := $customPodLabels ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
-        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodLabels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
       annotations:
         app.kubernetes.io/name: [[ $operator.Name ]]
         prometheus.io/path: /metrics
@@ -83,46 +65,63 @@ spec:
         [[- range $key, $value := $customPodAnnotations ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
-        {{- range $key, $value := $[[ $operatorVar ]]ExtraPodAnnotations }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
     spec:
       serviceAccountName: [[ $operator.Name ]]
-[[- if $operator.Volumes ]]
+[[- if $volumes ]]
       volumes:
-[[ toYaml $operator.Volumes | indent 6 ]]
+[[ toYaml $volumes | indent 6 ]]
 [[- end ]]
       containers:
-      - image: {{ $[[ $operatorVar ]]Image.registry }}/{{ $[[ $operatorVar ]]Image.repository }}:{{ $[[ $operatorVar ]]Image.tag }}
-[[- if $operator.Args ]]
+[[- range $container := containerConfigs $operator ]]
+[[- $containerName := lower_camel $container.Name ]]
+[[- $containerVar := printf "$%s" $containerName ]]
+[[- $imageVar := printf "$%s%s" $containerName "Image" ]]
+{{- [[ $containerVar ]] := [[ $container.ValuesVar ]] }}
+{{- [[ $imageVar ]] := [[ $containerVar ]].image }}
+      - name: [[ $container.Name ]]
+        image: {{ [[ $imageVar ]].registry }}/{{ [[ $imageVar ]].repository }}:{{ [[ $imageVar ]].tag }}
+        imagePullPolicy: {{ [[ $imageVar ]].pullPolicy }}
+[[- if $container.Args ]]
         args:
-[[ toYaml $operator.Args | indent 8 ]]
+[[ toYaml $container.Args | indent 8 ]]
 [[- end ]]
-{{- if $[[ $operatorVar ]].env }}
+{{- if [[ $containerVar ]].env }}
         env:
-{{ toYaml $[[ $operatorVar ]].env | indent 10 }}
+{{ toYaml [[ $containerVar ]].env | indent 10 }}
 {{- end }}
-[[- if $operator.VolumeMounts ]]
+[[- if $container.VolumeMounts ]]
         volumeMounts:
-[[ toYaml $operator.VolumeMounts | indent 8 ]]
+[[ toYaml $container.VolumeMounts | indent 8 ]]
 [[- end ]]
-        imagePullPolicy: {{ $[[ $operatorVar ]]Image.pullPolicy }}
-        name: [[ $operator.Name ]]
-{{- if $[[ $operatorVar ]].resources }}
         resources:
-{{ toYaml $[[ $operatorVar ]].resources | indent 10}}
+{{- if [[ $containerVar ]].resources }}
+{{ toYaml [[ $containerVar ]].resources | indent 10}}
 {{- else}}
-        resources:
           requests:
             cpu: 500m
             memory: 256Mi
 {{- end}}
         securityContext:
+[[- if $container.SecurityContext ]]
+[[ toYaml $container.SecurityContext | indent 10 ]]
+[[- else ]]
+          runAsNonRoot: true
+          runAsUser: 10101
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
+[[- end ]]
+[[- if $container.ReadinessProbe ]]
+        readinessProbe:
+[[ toYaml $container.ReadinessProbe | indent 10 ]]
+[[- end ]]
+[[- if $container.LivenessProbe ]]
+        livenessProbe:
+[[ toYaml $container.LivenessProbe | indent 10 ]]
+[[- end ]]
+[[- end ]]
       {{- if $[[ $operatorVar ]]Image.pullSecret }}
       imagePullSecrets:
         - name: {{ $[[ $operatorVar ]]Image.pullSecret }}
@@ -135,7 +134,8 @@ spec:
 {{- if $[[ $operatorVar ]].deploymentOverrides }}
 {{- $[[ $operatorVar ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
 
 ---
 
@@ -149,16 +149,10 @@ metadata:
 
 
 {{- define "[[ $operator.Name ]].serviceSpec"}}
-
 [[ if gt (len $operator.Service.Ports) 0 ]]
-# Service for [[ $operator.Name ]]
----
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
-{{- $[[ $operatorVar ]]ExtraServiceLabels := $[[ $operatorVar ]].extraServiceLabels }}
-{{- $[[ $operatorVar ]]ExtraServiceAnnotations := $[[ $operatorVar ]].extraServiceAnnotations }}
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -167,17 +161,11 @@ metadata:
     [[- range $key, $value := $customServiceLabels ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraServiceLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: [[ $operator.Name ]]
     [[- range $key, $value := $customServiceAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-    {{- range $key, $value := $[[ $operatorVar ]]ExtraServiceAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
 spec:
@@ -198,6 +186,7 @@ spec:
 {{- if $[[ $operatorVar ]].serviceOverrides }}
 {{- $[[ $operatorVar ]]ServiceOverrides = $[[ $operatorVar ]].serviceOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
 
 [[ end ]]
