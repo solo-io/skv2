@@ -19,6 +19,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.1.3
+	github.com/lyft/protoc-gen-star v0.5.3 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/hashstructure v1.0.0
@@ -31,18 +32,22 @@ require (
 	github.com/rogpeppe/go-internal v1.8.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
-	github.com/solo-io/anyvendor v0.0.4-0.20210517195830-8b745111ad4e
+	github.com/solo-io/anyvendor v0.0.4-0.20210712172508-4fde0999d65f
 	github.com/solo-io/go-list-licenses v0.0.4
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.1
 	github.com/solo-io/protoc-gen-ext v0.0.13
+	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0 // indirect
 	go.opencensus.io v0.22.6 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
+	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
+	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
 	golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
+	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
 	golang.org/x/tools v0.1.1
 	google.golang.org/api v0.38.0
 	google.golang.org/genproto v0.0.0-20210218151259-fe80b386bf06

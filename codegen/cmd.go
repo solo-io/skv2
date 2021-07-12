@@ -199,7 +199,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 		}
 
 		for _, patch := range c.ProtoFilePatches {
-			if err := patch.PatchProtoFiles(); err != nil{
+			if err := patch.PatchProtoFiles(); err != nil {
 				return nil, err
 			}
 		}

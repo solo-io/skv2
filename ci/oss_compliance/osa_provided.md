@@ -27,11 +27,12 @@ Name|Version|License
 [go.uber.org/atomic](https://go.uber.org/atomic)|v1.7.0|MIT License
 [go.uber.org/multierr](https://go.uber.org/multierr)|v1.6.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.16.0|MIT License
-[ssh/terminal](https://golang.org/x/crypto/ssh/terminal)|v0.0.0-20200622213623-75b288015ac9|BSD 3-clause "New" or "Revised" License
-[x/net](https://golang.org/x/net)|v0.0.0-20210119194325-5f4716e94777|BSD 3-clause "New" or "Revised" License
+[ssh/terminal](https://golang.org/x/crypto/ssh/terminal)|v0.0.0-20210322153248-0c34fe9e7dc2|BSD 3-clause "New" or "Revised" License
+[x/net](https://golang.org/x/net)|v0.0.0-20210510120150-4163338589ed|BSD 3-clause "New" or "Revised" License
 [oauth2/internal](https://golang.org/x/oauth2/internal)|v0.0.0-20210201163806-010130855d6c|BSD 3-clause "New" or "Revised" License
-[x/sys](https://golang.org/x/sys)|v0.0.0-20210124154548-22da62e12c0c|BSD 3-clause "New" or "Revised" License
-[x/text](https://golang.org/x/text)|v0.3.5|BSD 3-clause "New" or "Revised" License
+[x/sys](https://golang.org/x/sys)|v0.0.0-20210514084401-e8d321eab015|BSD 3-clause "New" or "Revised" License
+[x/term](https://golang.org/x/term)|v0.0.0-20201126162022-7de9c90e9dd1|BSD 3-clause "New" or "Revised" License
+[x/text](https://golang.org/x/text)|v0.3.6|BSD 3-clause "New" or "Revised" License
 [time/rate](https://golang.org/x/time/rate)|v0.0.0-20200630173020-3af7569d3a1e|BSD 3-clause "New" or "Revised" License
 [jsonpatch/v2](https://gomodules.xyz/jsonpatch/v2)|v2.1.0|Apache License 2.0
 [google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.26.0|BSD 3-clause "New" or "Revised" License
