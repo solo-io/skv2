@@ -256,3 +256,17 @@ func (mr *MockKubernetesClusterSetMockRecorder) Delta(newSet interface{}) *gomoc
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Delta), newSet)
 }
+
+// Clone mocks base method
+func (m *MockKubernetesClusterSet) Clone() v1alpha1sets.KubernetesClusterSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockKubernetesClusterSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Clone))
+}

@@ -44,6 +44,8 @@ type ValidatingWebhookConfigurationSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ValidatingWebhookConfigurationSet
 	Delta(newSet ValidatingWebhookConfigurationSet) sksets.ResourceDelta
+	// Clone a deep copy of the current ValidatingWebhookConfigurationSet
+	Clone() ValidatingWebhookConfigurationSet
 }
 
 func makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) sksets.ResourceSet {
@@ -221,4 +223,11 @@ func (s *validatingWebhookConfigurationSet) Delta(newSet ValidatingWebhookConfig
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *validatingWebhookConfigurationSet) Clone() ValidatingWebhookConfigurationSet {
+	if s == nil {
+		return nil
+	}
+	return &validatingWebhookConfigurationSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

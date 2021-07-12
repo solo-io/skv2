@@ -44,6 +44,8 @@ type PaintSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another PaintSet
 	Delta(newSet PaintSet) sksets.ResourceDelta
+	// Clone a deep copy of the current PaintSet
+	Clone() PaintSet
 }
 
 func makeGenericPaintSet(paintList []*things_test_io_v1.Paint) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *paintSet) Delta(newSet PaintSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *paintSet) Clone() PaintSet {
+	if s == nil {
+		return nil
+	}
+	return &paintSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type ClusterResourceSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type ClusterResourceSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ClusterResourceSet
 	Delta(newSet ClusterResourceSet) sksets.ResourceDelta
+	// Clone a deep copy of the current ClusterResourceSet
+	Clone() ClusterResourceSet
 }
 
 func makeGenericClusterResourceSet(clusterResourceList []*things_test_io_v1.ClusterResource) sksets.ResourceSet {
@@ -431,4 +442,11 @@ func (s *clusterResourceSet) Delta(newSet ClusterResourceSet) sksets.ResourceDel
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *clusterResourceSet) Clone() ClusterResourceSet {
+	if s == nil {
+		return nil
+	}
+	return &clusterResourceSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

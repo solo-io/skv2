@@ -45,6 +45,8 @@ type ResourceSet interface {
 	Length() int
 	// returns the delta between this and and another ResourceSet
 	Delta(newSet ResourceSet) ResourceDelta
+	// Clone returns a deep copy of the set
+	Clone() ResourceSet
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -251,4 +253,16 @@ func (oldSet *resourceSet) Delta(newSet ResourceSet) ResourceDelta {
 		Removed:  removed,
 	}
 
+}
+
+// Create a clone of the current set
+// note that this function will currently panic if called for a ResourceSet containing non-runtime.Objects
+func (oldSet *resourceSet) Clone() ResourceSet {
+	new := NewResourceSet()
+	oldSet.List(func(oldObj ezkube.ResourceId) bool {
+		copy := oldObj.(client.Object).DeepCopyObject().(client.Object)
+		new.Insert(copy)
+		return true
+	})
+	return new
 }

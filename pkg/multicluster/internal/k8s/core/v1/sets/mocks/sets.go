@@ -257,6 +257,20 @@ func (mr *MockSecretSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockSecretSet)(nil).Delta), newSet)
 }
 
+// Clone mocks base method
+func (m *MockSecretSet) Clone() v1sets.SecretSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.SecretSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockSecretSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockSecretSet)(nil).Clone))
+}
+
 // MockServiceAccountSet is a mock of ServiceAccountSet interface
 type MockServiceAccountSet struct {
 	ctrl     *gomock.Controller
@@ -499,6 +513,20 @@ func (mr *MockServiceAccountSetMockRecorder) Delta(newSet interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockServiceAccountSet)(nil).Delta), newSet)
 }
 
+// Clone mocks base method
+func (m *MockServiceAccountSet) Clone() v1sets.ServiceAccountSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.ServiceAccountSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockServiceAccountSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockServiceAccountSet)(nil).Clone))
+}
+
 // MockNamespaceSet is a mock of NamespaceSet interface
 type MockNamespaceSet struct {
 	ctrl     *gomock.Controller
@@ -739,4 +767,18 @@ func (m *MockNamespaceSet) Delta(newSet v1sets.NamespaceSet) sets.ResourceDelta 
 func (mr *MockNamespaceSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockNamespaceSet)(nil).Delta), newSet)
+}
+
+// Clone mocks base method
+func (m *MockNamespaceSet) Clone() v1sets.NamespaceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.NamespaceSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockNamespaceSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockNamespaceSet)(nil).Clone))
 }

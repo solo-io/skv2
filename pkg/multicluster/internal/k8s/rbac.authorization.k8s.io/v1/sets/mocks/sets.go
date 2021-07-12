@@ -257,6 +257,20 @@ func (mr *MockRoleSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRoleSet)(nil).Delta), newSet)
 }
 
+// Clone mocks base method
+func (m *MockRoleSet) Clone() v1sets.RoleSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.RoleSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockRoleSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRoleSet)(nil).Clone))
+}
+
 // MockRoleBindingSet is a mock of RoleBindingSet interface
 type MockRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -497,6 +511,20 @@ func (m *MockRoleBindingSet) Delta(newSet v1sets.RoleBindingSet) sets.ResourceDe
 func (mr *MockRoleBindingSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRoleBindingSet)(nil).Delta), newSet)
+}
+
+// Clone mocks base method
+func (m *MockRoleBindingSet) Clone() v1sets.RoleBindingSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.RoleBindingSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockRoleBindingSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRoleBindingSet)(nil).Clone))
 }
 
 // MockClusterRoleSet is a mock of ClusterRoleSet interface
@@ -741,6 +769,20 @@ func (mr *MockClusterRoleSetMockRecorder) Delta(newSet interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockClusterRoleSet)(nil).Delta), newSet)
 }
 
+// Clone mocks base method
+func (m *MockClusterRoleSet) Clone() v1sets.ClusterRoleSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.ClusterRoleSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockClusterRoleSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClusterRoleSet)(nil).Clone))
+}
+
 // MockClusterRoleBindingSet is a mock of ClusterRoleBindingSet interface
 type MockClusterRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -981,4 +1023,18 @@ func (m *MockClusterRoleBindingSet) Delta(newSet v1sets.ClusterRoleBindingSet) s
 func (mr *MockClusterRoleBindingSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Delta), newSet)
+}
+
+// Clone mocks base method
+func (m *MockClusterRoleBindingSet) Clone() v1sets.ClusterRoleBindingSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.ClusterRoleBindingSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockClusterRoleBindingSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Clone))
 }
