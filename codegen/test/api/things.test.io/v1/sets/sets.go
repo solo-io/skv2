@@ -44,7 +44,7 @@ type PaintSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another PaintSet
 	Delta(newSet PaintSet) sksets.ResourceDelta
-	// Clone a deep copy of the current PaintSet
+	// Create a deep copy of the current PaintSet
 	Clone() PaintSet
 }
 
@@ -263,7 +263,7 @@ type ClusterResourceSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ClusterResourceSet
 	Delta(newSet ClusterResourceSet) sksets.ResourceDelta
-	// Clone a deep copy of the current ClusterResourceSet
+	// Create a deep copy of the current ClusterResourceSet
 	Clone() ClusterResourceSet
 }
 

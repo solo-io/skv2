@@ -44,7 +44,7 @@ type CustomResourceDefinitionSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another CustomResourceDefinitionSet
 	Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta
-	// Clone a deep copy of the current CustomResourceDefinitionSet
+	// Create a deep copy of the current CustomResourceDefinitionSet
 	Clone() CustomResourceDefinitionSet
 }
 

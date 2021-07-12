@@ -44,7 +44,7 @@ type RoleSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RoleSet
 	Delta(newSet RoleSet) sksets.ResourceDelta
-	// Clone a deep copy of the current RoleSet
+	// Create a deep copy of the current RoleSet
 	Clone() RoleSet
 }
 
@@ -263,7 +263,7 @@ type RoleBindingSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RoleBindingSet
 	Delta(newSet RoleBindingSet) sksets.ResourceDelta
-	// Clone a deep copy of the current RoleBindingSet
+	// Create a deep copy of the current RoleBindingSet
 	Clone() RoleBindingSet
 }
 
@@ -482,7 +482,7 @@ type ClusterRoleSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ClusterRoleSet
 	Delta(newSet ClusterRoleSet) sksets.ResourceDelta
-	// Clone a deep copy of the current ClusterRoleSet
+	// Create a deep copy of the current ClusterRoleSet
 	Clone() ClusterRoleSet
 }
 
@@ -701,7 +701,7 @@ type ClusterRoleBindingSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ClusterRoleBindingSet
 	Delta(newSet ClusterRoleBindingSet) sksets.ResourceDelta
-	// Clone a deep copy of the current ClusterRoleBindingSet
+	// Create a deep copy of the current ClusterRoleBindingSet
 	Clone() ClusterRoleBindingSet
 }
 

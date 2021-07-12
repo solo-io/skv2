@@ -44,7 +44,7 @@ type ValidatingWebhookConfigurationSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ValidatingWebhookConfigurationSet
 	Delta(newSet ValidatingWebhookConfigurationSet) sksets.ResourceDelta
-	// Clone a deep copy of the current ValidatingWebhookConfigurationSet
+	// Create a deep copy of the current ValidatingWebhookConfigurationSet
 	Clone() ValidatingWebhookConfigurationSet
 }
 

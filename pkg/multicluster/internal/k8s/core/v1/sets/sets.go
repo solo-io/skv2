@@ -44,7 +44,7 @@ type SecretSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another SecretSet
 	Delta(newSet SecretSet) sksets.ResourceDelta
-	// Clone a deep copy of the current SecretSet
+	// Create a deep copy of the current SecretSet
 	Clone() SecretSet
 }
 
@@ -263,7 +263,7 @@ type ServiceAccountSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ServiceAccountSet
 	Delta(newSet ServiceAccountSet) sksets.ResourceDelta
-	// Clone a deep copy of the current ServiceAccountSet
+	// Create a deep copy of the current ServiceAccountSet
 	Clone() ServiceAccountSet
 }
 
@@ -482,7 +482,7 @@ type NamespaceSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another NamespaceSet
 	Delta(newSet NamespaceSet) sksets.ResourceDelta
-	// Clone a deep copy of the current NamespaceSet
+	// Create a deep copy of the current NamespaceSet
 	Clone() NamespaceSet
 }
 

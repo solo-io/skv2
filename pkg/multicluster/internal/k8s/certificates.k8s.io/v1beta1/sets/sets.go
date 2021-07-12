@@ -44,7 +44,7 @@ type CertificateSigningRequestSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another CertificateSigningRequestSet
 	Delta(newSet CertificateSigningRequestSet) sksets.ResourceDelta
-	// Clone a deep copy of the current CertificateSigningRequestSet
+	// Create a deep copy of the current CertificateSigningRequestSet
 	Clone() CertificateSigningRequestSet
 }
 

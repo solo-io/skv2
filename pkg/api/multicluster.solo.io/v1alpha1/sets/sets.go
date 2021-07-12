@@ -44,7 +44,7 @@ type KubernetesClusterSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another KubernetesClusterSet
 	Delta(newSet KubernetesClusterSet) sksets.ResourceDelta
-	// Clone current KubernetesClusterSet
+	// Create a deep copy of the current KubernetesClusterSet
 	Clone() KubernetesClusterSet
 }
 
