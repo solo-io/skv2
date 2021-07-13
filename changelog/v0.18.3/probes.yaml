@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Fix regex string used to match import statements in proto compiler.
