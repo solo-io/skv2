@@ -44,6 +44,8 @@ type CertificateSigningRequestSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another CertificateSigningRequestSet
 	Delta(newSet CertificateSigningRequestSet) sksets.ResourceDelta
+	// Create a deep copy of the current CertificateSigningRequestSet
+	Clone() CertificateSigningRequestSet
 }
 
 func makeGenericCertificateSigningRequestSet(certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest) sksets.ResourceSet {
@@ -221,4 +223,11 @@ func (s *certificateSigningRequestSet) Delta(newSet CertificateSigningRequestSet
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *certificateSigningRequestSet) Clone() CertificateSigningRequestSet {
+	if s == nil {
+		return nil
+	}
+	return &certificateSigningRequestSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
