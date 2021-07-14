@@ -257,6 +257,20 @@ func (mr *MockPaintSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockPaintSet)(nil).Delta), newSet)
 }
 
+// Clone mocks base method
+func (m *MockPaintSet) Clone() v1sets.PaintSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.PaintSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockPaintSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockPaintSet)(nil).Clone))
+}
+
 // MockClusterResourceSet is a mock of ClusterResourceSet interface
 type MockClusterResourceSet struct {
 	ctrl     *gomock.Controller
@@ -497,4 +511,18 @@ func (m *MockClusterResourceSet) Delta(newSet v1sets.ClusterResourceSet) sets.Re
 func (mr *MockClusterResourceSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockClusterResourceSet)(nil).Delta), newSet)
+}
+
+// Clone mocks base method
+func (m *MockClusterResourceSet) Clone() v1sets.ClusterResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.ClusterResourceSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockClusterResourceSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClusterResourceSet)(nil).Clone))
 }

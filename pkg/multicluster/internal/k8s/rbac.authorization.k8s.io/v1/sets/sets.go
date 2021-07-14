@@ -44,6 +44,8 @@ type RoleSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RoleSet
 	Delta(newSet RoleSet) sksets.ResourceDelta
+	// Create a deep copy of the current RoleSet
+	Clone() RoleSet
 }
 
 func makeGenericRoleSet(roleList []*rbac_authorization_k8s_io_v1.Role) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *roleSet) Delta(newSet RoleSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *roleSet) Clone() RoleSet {
+	if s == nil {
+		return nil
+	}
+	return &roleSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type RoleBindingSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type RoleBindingSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RoleBindingSet
 	Delta(newSet RoleBindingSet) sksets.ResourceDelta
+	// Create a deep copy of the current RoleBindingSet
+	Clone() RoleBindingSet
 }
 
 func makeGenericRoleBindingSet(roleBindingList []*rbac_authorization_k8s_io_v1.RoleBinding) sksets.ResourceSet {
@@ -433,6 +444,13 @@ func (s *roleBindingSet) Delta(newSet RoleBindingSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *roleBindingSet) Clone() RoleBindingSet {
+	if s == nil {
+		return nil
+	}
+	return &roleBindingSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type ClusterRoleSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -464,6 +482,8 @@ type ClusterRoleSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ClusterRoleSet
 	Delta(newSet ClusterRoleSet) sksets.ResourceDelta
+	// Create a deep copy of the current ClusterRoleSet
+	Clone() ClusterRoleSet
 }
 
 func makeGenericClusterRoleSet(clusterRoleList []*rbac_authorization_k8s_io_v1.ClusterRole) sksets.ResourceSet {
@@ -643,6 +663,13 @@ func (s *clusterRoleSet) Delta(newSet ClusterRoleSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *clusterRoleSet) Clone() ClusterRoleSet {
+	if s == nil {
+		return nil
+	}
+	return &clusterRoleSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type ClusterRoleBindingSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -674,6 +701,8 @@ type ClusterRoleBindingSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ClusterRoleBindingSet
 	Delta(newSet ClusterRoleBindingSet) sksets.ResourceDelta
+	// Create a deep copy of the current ClusterRoleBindingSet
+	Clone() ClusterRoleBindingSet
 }
 
 func makeGenericClusterRoleBindingSet(clusterRoleBindingList []*rbac_authorization_k8s_io_v1.ClusterRoleBinding) sksets.ResourceSet {
@@ -851,4 +880,11 @@ func (s *clusterRoleBindingSet) Delta(newSet ClusterRoleBindingSet) sksets.Resou
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *clusterRoleBindingSet) Clone() ClusterRoleBindingSet {
+	if s == nil {
+		return nil
+	}
+	return &clusterRoleBindingSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

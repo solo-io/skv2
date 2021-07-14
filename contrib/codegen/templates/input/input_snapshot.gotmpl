@@ -104,6 +104,9 @@ type {{ $snapshotName }}Snapshot interface {
 {{- end }}
     // serialize the entire snapshot as JSON
     MarshalJSON() ([]byte, error)
+
+    // Clone the snapshot
+    Clone() {{ $snapshotName }}Snapshot
 }
 
 // options for syncing input object statuses
@@ -291,6 +294,20 @@ func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
 {{- end }}
 {{- end }}
 	return json.Marshal(snapshotMap)
+}
+
+func (s snapshot{{ $snapshotName }}) Clone() {{ $snapshotName }}Snapshot {
+	return &snapshot{{ $snapshotName }}{
+        name: s.name,
+{{/* add map contents here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }}: s.{{ $kindLowerCamelPlural }}.Clone(),
+{{- end }}
+{{- end }}
+    }
 }
 
 // builds the input snapshot from API Clients.

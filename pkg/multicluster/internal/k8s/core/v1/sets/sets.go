@@ -44,6 +44,8 @@ type SecretSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another SecretSet
 	Delta(newSet SecretSet) sksets.ResourceDelta
+	// Create a deep copy of the current SecretSet
+	Clone() SecretSet
 }
 
 func makeGenericSecretSet(secretList []*v1.Secret) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *secretSet) Delta(newSet SecretSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *secretSet) Clone() SecretSet {
+	if s == nil {
+		return nil
+	}
+	return &secretSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type ServiceAccountSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type ServiceAccountSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ServiceAccountSet
 	Delta(newSet ServiceAccountSet) sksets.ResourceDelta
+	// Create a deep copy of the current ServiceAccountSet
+	Clone() ServiceAccountSet
 }
 
 func makeGenericServiceAccountSet(serviceAccountList []*v1.ServiceAccount) sksets.ResourceSet {
@@ -433,6 +444,13 @@ func (s *serviceAccountSet) Delta(newSet ServiceAccountSet) sksets.ResourceDelta
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *serviceAccountSet) Clone() ServiceAccountSet {
+	if s == nil {
+		return nil
+	}
+	return &serviceAccountSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type NamespaceSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -464,6 +482,8 @@ type NamespaceSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another NamespaceSet
 	Delta(newSet NamespaceSet) sksets.ResourceDelta
+	// Create a deep copy of the current NamespaceSet
+	Clone() NamespaceSet
 }
 
 func makeGenericNamespaceSet(namespaceList []*v1.Namespace) sksets.ResourceSet {
@@ -641,4 +661,11 @@ func (s *namespaceSet) Delta(newSet NamespaceSet) sksets.ResourceDelta {
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *namespaceSet) Clone() NamespaceSet {
+	if s == nil {
+		return nil
+	}
+	return &namespaceSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

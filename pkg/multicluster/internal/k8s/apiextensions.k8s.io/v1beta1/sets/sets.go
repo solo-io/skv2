@@ -44,6 +44,8 @@ type CustomResourceDefinitionSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another CustomResourceDefinitionSet
 	Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta
+	// Create a deep copy of the current CustomResourceDefinitionSet
+	Clone() CustomResourceDefinitionSet
 }
 
 func makeGenericCustomResourceDefinitionSet(customResourceDefinitionList []*apiextensions_k8s_io_v1beta1.CustomResourceDefinition) sksets.ResourceSet {
@@ -221,4 +223,11 @@ func (s *customResourceDefinitionSet) Delta(newSet CustomResourceDefinitionSet) 
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
+	if s == nil {
+		return nil
+	}
+	return &customResourceDefinitionSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

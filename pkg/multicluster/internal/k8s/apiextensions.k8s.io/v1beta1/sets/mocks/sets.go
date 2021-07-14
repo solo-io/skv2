@@ -256,3 +256,17 @@ func (mr *MockCustomResourceDefinitionSetMockRecorder) Delta(newSet interface{})
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockCustomResourceDefinitionSet)(nil).Delta), newSet)
 }
+
+// Clone mocks base method
+func (m *MockCustomResourceDefinitionSet) Clone() v1beta1sets.CustomResourceDefinitionSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.CustomResourceDefinitionSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockCustomResourceDefinitionSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockCustomResourceDefinitionSet)(nil).Clone))
+}

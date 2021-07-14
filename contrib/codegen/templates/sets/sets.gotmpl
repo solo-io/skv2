@@ -46,6 +46,8 @@ type {{ $resource.Kind }}Set interface {
     Generic() sksets.ResourceSet
     // returns the delta between this and and another {{ $resource.Kind }}Set
     Delta(newSet {{ $resource.Kind }}Set) sksets.ResourceDelta
+    // Create a deep copy of the current {{ $resource.Kind }}Set
+    Clone() {{ $resource.Kind }}Set
 }
 
 func makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }}) sksets.ResourceSet {
@@ -224,6 +226,13 @@ func (s *{{ $kindLowerCamel }}Set) Delta(newSet {{ $resource.Kind }}Set) sksets.
         }
     }
     return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *{{ $kindLowerCamel }}Set) Clone() {{ $resource.Kind }}Set {
+	if s == nil {
+		return nil
+	}
+	return &{{ $kindLowerCamel }}Set{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
 
 {{- end }}

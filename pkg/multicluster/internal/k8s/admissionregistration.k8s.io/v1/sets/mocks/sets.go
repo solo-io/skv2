@@ -256,3 +256,17 @@ func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Delta(newSet interf
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Delta), newSet)
 }
+
+// Clone mocks base method
+func (m *MockValidatingWebhookConfigurationSet) Clone() v1sets.ValidatingWebhookConfigurationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.ValidatingWebhookConfigurationSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Clone))
+}

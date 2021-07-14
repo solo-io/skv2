@@ -44,6 +44,8 @@ type KubernetesClusterSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another KubernetesClusterSet
 	Delta(newSet KubernetesClusterSet) sksets.ResourceDelta
+	// Create a deep copy of the current KubernetesClusterSet
+	Clone() KubernetesClusterSet
 }
 
 func makeGenericKubernetesClusterSet(kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster) sksets.ResourceSet {
@@ -221,4 +223,11 @@ func (s *kubernetesClusterSet) Delta(newSet KubernetesClusterSet) sksets.Resourc
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
+	if s == nil {
+		return nil
+	}
+	return &kubernetesClusterSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
