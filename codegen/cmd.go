@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	protovendor "github.com/solo-io/anyvendor/pkg/proto"
 	"github.com/solo-io/skv2/codegen/metrics"
 
 	"github.com/sirupsen/logrus"
@@ -42,6 +43,10 @@ type Command struct {
 	// config to vendor protos and other non-go files
 	// Optional: If nil will not be used
 	AnyVendorConfig *skv2_anyvendor.Imports
+
+	// Patches to apply to vendored proto files after vendoring
+	// Can be used e.g.
+	ProtoFilePatches []protovendor.ProtoFilePatcher
 
 	// the k8s api groups for which to compile
 	Groups []render.Group
@@ -191,6 +196,12 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 
 		if err := mgr.Ensure(c.ctx, c.AnyVendorConfig.ToAnyvendorConfig()); err != nil {
 			return nil, err
+		}
+
+		for _, patch := range c.ProtoFilePatches {
+			if err := patch.PatchProtoFiles(); err != nil {
+				return nil, err
+			}
 		}
 	}
 	descriptors, err := proto.CompileProtos(

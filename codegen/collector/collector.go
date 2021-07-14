@@ -43,7 +43,7 @@ func (c *collector) CollectImportsForFile(root, protoFile string) ([]string, err
 	return c.synchronizedImportsForProtoFile(root, protoFile, c.customImports)
 }
 
-var protoImportStatementRegex = regexp.MustCompile(`^import "(.*)";.*`)
+var protoImportStatementRegex = regexp.MustCompile(`^import.*"(.*)";.*`)
 
 func (c *collector) detectImportsForFile(file string) ([]string, error) {
 	metrics.IncrementFrequency("collector-opened-files")
