@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    desscription: Sets up codegen to respect the versions in the go.mod.
