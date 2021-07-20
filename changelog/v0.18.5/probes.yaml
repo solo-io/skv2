@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    description: Fix pinned anyvendor version (0.0.4).
-    issueLink: https://github.com/solo-io/skv2/issues/270
