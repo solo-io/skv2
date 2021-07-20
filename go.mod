@@ -15,11 +15,10 @@ require (
 	github.com/go-logr/zapr v0.2.0
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr v1.30.1
-	github.com/golang/mock v1.5.0
+	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.1.3
-	github.com/lyft/protoc-gen-star v0.5.3 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/hashstructure v1.0.0
@@ -32,26 +31,22 @@ require (
 	github.com/rogpeppe/go-internal v1.8.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
-	github.com/solo-io/anyvendor v0.0.4-0.20210712172508-4fde0999d65f
+	github.com/solo-io/anyvendor v0.0.4
 	github.com/solo-io/go-list-licenses v0.0.4
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.1
 	github.com/solo-io/protoc-gen-ext v0.0.13
-	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0 // indirect
 	go.opencensus.io v0.22.6 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
-	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
 	golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
-	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
-	golang.org/x/tools v0.1.1
+	golang.org/x/tools v0.1.4
 	google.golang.org/api v0.38.0
 	google.golang.org/genproto v0.0.0-20210218151259-fe80b386bf06
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/protobuf v1.27.1
 	k8s.io/api v0.19.6
 	k8s.io/apiextensions-apiserver v0.19.6
 	k8s.io/apimachinery v0.19.6
@@ -69,12 +64,7 @@ replace (
 	// note(ilackarms): this replace must be shared in any skv2-based go module due to incompatibility with upstream versions of cue
 	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210623143425-308aee4ff092
 
-	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
-	// down. The github mirror should be used instead.
 	// Locking to a specific version (from 'go mod graph'):
-	git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
-	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
-	github.com/operator-framework/operator-lifecycle-manager => github.com/operator-framework/operator-lifecycle-manager v0.0.0-20190605231540-b8a4faf68e36
 )
