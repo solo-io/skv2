@@ -52,6 +52,9 @@ type ProtocOptions struct {
 
 	// Skip compiling these directories
 	SkipDirs []string
+
+	// Extra flags to provide to invocations of protoc
+	ProtocExtraFlags []string
 }
 
 type protoCompiler struct {
@@ -188,6 +191,8 @@ func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []str
 			)
 		}
 	}
+
+	cmd.Args = append(cmd.Args, p.protocOptions.ProtocExtraFlags...)
 
 	cmd.Args = append(cmd.Args, "-o"+toFile, "--include_imports", "--include_source_info",
 		protoFile)
