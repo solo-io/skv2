@@ -87,11 +87,11 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 
 // Start a controller with the given start func. The StartFunc will be called with a bootstrapped local manager. If localMode is false, the StartParameters will include initialized multicluster components.
 func Start(ctx context.Context, start StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool) error {
-	return StartMulti(ctx, []StartFunc{start}, opts, schemes, localMode)
+	return StartMulti(ctx, map[string]StartFunc{"": start}, opts, schemes, localMode)
 }
 
 // Like Start, but runs multiple StartFuncs concurrently
-func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool, addStatsHandlers ...func(mux *http.ServeMux, profiles map[string]string)) error {
+func StartMulti(ctx context.Context, startFuncs map[string]StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool, addStatsHandlers ...func(mux *http.ServeMux, profiles map[string]string)) error {
 	setupLogging(opts.VerboseMode, opts.JSONLogger)
 
 	mgr, err := makeMasterManager(opts, schemes)
@@ -129,13 +129,22 @@ func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schem
 
 	eg, ctx := errgroup.WithContext(ctx)
 
-	for _, start := range startFuncs {
+	for name, start := range startFuncs {
 		start := start // pike
+		namedCtx := ctx
+		if name != "" {
+			namedCtx = contextutils.WithLogger(namedCtx, name)
+		}
 		eg.Go(func() error {
-			if synced := params.MasterManager.GetCache().WaitForCacheSync(ctx); !synced {
+			contextutils.LoggerFrom(namedCtx).Debugf("starting main goroutine")
+			if synced := params.MasterManager.GetCache().WaitForCacheSync(namedCtx); !synced {
 				return eris.Errorf("caches failed to sync")
 			}
-			return start(ctx, params)
+			err := start(namedCtx, params)
+			if err != nil {
+				contextutils.LoggerFrom(namedCtx).Errorf("main goroutine failed: %v", err)
+			}
+			return err
 		})
 	}
 
@@ -151,6 +160,7 @@ func StartMulti(ctx context.Context, startFuncs []StartFunc, opts Options, schem
 
 	eg.Go(func() error {
 		// start the local manager
+		ctx := contextutils.WithLogger(ctx, "controller-manager")
 		contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
 		return mgr.Start(ctx)
 	})
