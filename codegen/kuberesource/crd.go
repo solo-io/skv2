@@ -230,7 +230,15 @@ func DoCrdsNeedUpgrade(newProdCrdInfo model.CRDMetadata, deployedInClusterCrds [
 	}
 	return ret
 }
-
+/**
+ * The idea behind this function is that we only want to ugprade a CRD if the version of the new CRD 
+ * is higher than version of the CRD in the cluser **and** the specHash is different.
+ * The reasoning:
+ * if the spec hash is the same, then the CRD's json schema is the same, and it is pointless to upgrade it.
+ * if the spec hash is different, then we want to make sure we only update a CRD when it is backwards compatible.
+ * under the assumption that we don't make backwards incompatible changes, then this means that we 
+ * should only upgrade a CRD if it's version is higher than what's deployed on the cluster.
+*/
 func DoesCrdNeedUpgrade(newProductVersion, newCrdHash string, deployedCrdAnnotations map[string]string) (bool, error) {
 
 	if newProductVersion == "" || newCrdHash == "" {
