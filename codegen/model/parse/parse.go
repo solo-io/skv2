@@ -11,9 +11,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 )
 
-func PasreCRDs(f fs.FS) (model.CRDMetadata, error) {
+func ParseCRDs(f fs.FS) (model.CRDMetadata, error) {
 	var ret model.CRDMetadata
-	// read all crds from agent-crds and gloo-mesh-crds
+	// read all crds from the specified directory
 	// generate a file with all the versions and hashes of the crds
 	// package the generated file into the binary
 	dirList, err := fs.ReadDir(f, ".")

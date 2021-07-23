@@ -32,8 +32,10 @@ func WithoutSpecHash() Option {
 }
 
 // Create CRDs for a group
-func CustomResourceDefinitions(group model.Group,
-	opts ...Option) (objects []metav1.Object, err error) {
+func CustomResourceDefinitions(
+	group model.Group,
+	opts ...Option,
+) (objects []metav1.Object, err error) {
 	for _, resource := range group.Resources {
 
 		var validationSchema *apiextv1beta1.CustomResourceValidation
@@ -204,7 +206,7 @@ func (e *CrdNotFound) Error() string {
 }
 
 func DoCrdsNeedUpgrade(newProdCrdInfo model.CRDMetadata, ourCrds []apiextv1beta1.CustomResourceDefinition) ErrMap {
-	newProducutVersion := newProdCrdInfo.Version
+	newProductVersion := newProdCrdInfo.Version
 	crdmap := make(map[string]string)
 	for _, crd := range newProdCrdInfo.CRDS {
 		crdmap[crd.Name] = crd.Hash
@@ -256,7 +258,7 @@ func DoesCrdNeedUpgrade(newProductVersion, newCrdHash string, deployedCrdAnnotat
 		return false, errors.Wrapf(err, "Cannot parse current product version: %s", newProductVersion)
 	}
 
-	currentCrdVersionSemvar, err := semver.NewVersion(crdVersion)
+	currentCrdVersionSemver, err := semver.NewVersion(crdVersion)
 	if err != nil {
 		return false, errors.Wrapf(err, "Cannot parse current crd version: %s", crdVersion)
 	}
