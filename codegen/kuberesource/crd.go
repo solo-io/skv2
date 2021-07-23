@@ -213,18 +213,17 @@ func DoCrdsNeedUpgrade(newProdCrdInfo model.CRDMetadata, ourCrds []apiextv1beta1
 	}
 	ret := ErrMap{}
 	for _, ourCrd := range ourCrds {
-		var err error
-		var needUpgrade bool
-		if hash, ok := crdmap[ourCrd.Name]; ok {
-			needUpgrade, err = DoesCrdNeedUpgrade(newProducutVersion, hash, ourCrd.Annotations)
+		if hash, ok := crdmap[ourCrd.Name]; !ok {
+			ret[ourCrd.Name] = &CrdNotFound{CRDName: ourCrd.Name}
+			continue
 		} else {
-			err = &CrdNotFound{CRDName: ourCrd.Name}
-			ret[ourCrd.Name] = err
-		}
-		if err != nil {
-			ret[ourCrd.Name] = err
-		} else if needUpgrade {
-			ret[ourCrd.Name] = &CrdNeedsUpgrade{CRDName: ourCrd.Name}
+			needUpgrade, err := DoesCrdNeedUpgrade(newProducutVersion, hash, ourCrd.Annotations)
+
+			if err != nil {
+				ret[ourCrd.Name] = err
+			} else if needUpgrade {
+				ret[ourCrd.Name] = &CrdNeedsUpgrade{CRDName: ourCrd.Name}
+			}
 		}
 	}
 	if len(ret) == 0 {
