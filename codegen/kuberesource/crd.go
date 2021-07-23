@@ -169,10 +169,11 @@ func CustomResourceDefinition(
 	if !options.WithoutSpecHash {
 		// hashstructure of the crd spec:
 		specHash, err := hashstructure.Hash(crd.Spec, nil)
-		if err == nil {
-			crd.Annotations = map[string]string{
-				model.CRDSpecHashKey: fmt.Sprintf("%x", specHash),
-			}
+		if err != nil {
+			panic(err)
+		}
+		crd.Annotations = map[string]string{
+			model.CRDSpecHashKey: fmt.Sprintf("%x", specHash),
 		}
 	}
 
@@ -205,19 +206,17 @@ func (e *CrdNotFound) Error() string {
 	return fmt.Sprintf("CRD %s not found. Is it unused?", e.CRDName)
 }
 
-func DoCrdsNeedUpgrade(newProdCrdInfo model.CRDMetadata, ourCrds []apiextv1beta1.CustomResourceDefinition) ErrMap {
-	newProductVersion := newProdCrdInfo.Version
-	crdmap := make(map[string]string)
+func DoCrdsNeedUpgrade(newProdCrdInfo model.CRDMetadata, deployedInClusterCrds []apiextv1beta1.CustomResourceDefinition) ErrMap {
+	crdMap := make(map[string]string)
 	for _, crd := range newProdCrdInfo.CRDS {
-		crdmap[crd.Name] = crd.Hash
+		crdMap[crd.Name] = crd.Hash
 	}
 	ret := ErrMap{}
-	for _, ourCrd := range ourCrds {
-		if hash, ok := crdmap[ourCrd.Name]; !ok {
+	for _, ourCrd := range deployedInClusterCrds {
+		if hash, ok := crdMap[ourCrd.Name]; !ok {
 			ret[ourCrd.Name] = &CrdNotFound{CRDName: ourCrd.Name}
-			continue
 		} else {
-			needUpgrade, err := DoesCrdNeedUpgrade(newProducutVersion, hash, ourCrd.Annotations)
+			needUpgrade, err := DoesCrdNeedUpgrade(newProdCrdInfo.Version, hash, ourCrd.Annotations)
 
 			if err != nil {
 				ret[ourCrd.Name] = err
@@ -251,19 +250,19 @@ func DoesCrdNeedUpgrade(newProductVersion, newCrdHash string, deployedCrdAnnotat
 		return false, nil
 	}
 
-	// parse semver of the current product version
 	newProductVersionSemver, err := semver.NewVersion(newProductVersion)
 	if err != nil {
-		return false, errors.Wrapf(err, "Cannot parse current product version: %s", newProductVersion)
+		return false, errors.Wrapf(err, "Cannot parse new product version: %s", newProductVersion)
 	}
 
+	// parse semver of the current product version
 	currentCrdVersionSemver, err := semver.NewVersion(crdVersion)
 	if err != nil {
 		return false, errors.Wrapf(err, "Cannot parse current crd version: %s", crdVersion)
 	}
 
-	// If the current product version is greater than the crd version, the CRD needs to be upgraded.
-	if currentCrdVersionSemvar.Compare(newProductVersionSemver) <= 0 {
+	// If the new product version is greater than the current crd version, the CRD needs to be upgraded.
+	if currentCrdVersionSemver.Compare(newProductVersionSemver) <= 0 {
 		return true, nil
 	}
 	return false, nil
