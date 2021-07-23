@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	errors "github.com/rotisserie/eris"
+
+	"github.com/Masterminds/semver"
+	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 
 	"github.com/rotisserie/eris"
@@ -15,8 +19,21 @@ import (
 	"k8s.io/utils/pointer"
 )
 
+type Options struct {
+	WithoutSpecHash bool
+}
+
+type Option func(*Options)
+
+func WithoutSpecHash() Option {
+	return func(o *Options) {
+		o.WithoutSpecHash = true
+	}
+}
+
 // Create CRDs for a group
-func CustomResourceDefinitions(group model.Group) (objects []metav1.Object, err error) {
+func CustomResourceDefinitions(group model.Group,
+	opts ...Option) (objects []metav1.Object, err error) {
 	for _, resource := range group.Resources {
 
 		var validationSchema *apiextv1beta1.CustomResourceValidation
@@ -27,7 +44,7 @@ func CustomResourceDefinitions(group model.Group) (objects []metav1.Object, err 
 			}
 		}
 
-		objects = append(objects, CustomResourceDefinition(resource, validationSchema))
+		objects = append(objects, CustomResourceDefinition(resource, validationSchema, opts...))
 	}
 	return objects, nil
 }
@@ -95,7 +112,12 @@ func validateStructural(s *apiextv1beta1.JSONSchemaProps) error {
 func CustomResourceDefinition(
 	resource model.Resource,
 	validationSchema *apiextv1beta1.CustomResourceValidation,
+	opts ...Option,
 ) *apiextv1beta1.CustomResourceDefinition {
+	options := Options{}
+	for _, opt := range opts {
+		opt(&options)
+	}
 
 	group := resource.Group.Group
 	version := resource.Group.Version
@@ -142,6 +164,16 @@ func CustomResourceDefinition(
 			},
 		},
 	}
+	if !options.WithoutSpecHash {
+		// hashstructure of the crd spec:
+		specHash, err := hashstructure.Hash(crd.Spec, nil)
+		if err == nil {
+			crd.Annotations = map[string]string{
+				model.CRDSpecHashKey: fmt.Sprintf("%x", specHash),
+			}
+		}
+	}
+
 	if validationSchema != nil {
 		// Setting PreserveUnknownFields to false ensures that objects with unknown fields are rejected.
 		crd.Spec.PreserveUnknownFields = pointer.BoolPtr(false)
@@ -152,4 +184,86 @@ func CustomResourceDefinition(
 		crd.Spec.Validation = validationSchema
 	}
 	return crd
+}
+
+type ErrMap map[string]error
+type CrdNeedsUpgrade struct {
+	CRDName string
+}
+
+func (e *CrdNeedsUpgrade) Error() string {
+	return fmt.Sprintf("CRD %s needs to be upgraded", e.CRDName)
+}
+
+type CrdNotFound struct {
+	CRDName string
+}
+
+func (e *CrdNotFound) Error() string {
+	return fmt.Sprintf("CRD %s not found. Is it unused?", e.CRDName)
+}
+
+func DoCrdsNeedUpgrade(newProdCrdInfo model.CRDMetadata, ourCrds []apiextv1beta1.CustomResourceDefinition) ErrMap {
+	newProducutVersion := newProdCrdInfo.Version
+	crdmap := make(map[string]string)
+	for _, crd := range newProdCrdInfo.CRDS {
+		crdmap[crd.Name] = crd.Hash
+	}
+	ret := ErrMap{}
+	for _, ourCrd := range ourCrds {
+		var err error
+		var needUpgrade bool
+		if hash, ok := crdmap[ourCrd.Name]; ok {
+			needUpgrade, err = DoesCrdNeedUpgrade(newProducutVersion, hash, ourCrd.Annotations)
+		} else {
+			err = &CrdNotFound{CRDName: ourCrd.Name}
+			ret[ourCrd.Name] = err
+		}
+		if err != nil {
+			ret[ourCrd.Name] = err
+		} else if needUpgrade {
+			ret[ourCrd.Name] = &CrdNeedsUpgrade{CRDName: ourCrd.Name}
+		}
+	}
+	if len(ret) == 0 {
+		return nil
+	}
+	return ret
+}
+
+func DoesCrdNeedUpgrade(newProductVersion, newCrdHash string, deployedCrdAnnotations map[string]string) (bool, error) {
+
+	if newProductVersion == "" || newCrdHash == "" {
+		return false, errors.New(fmt.Sprintf("Cannot determine if CRDs need an upgrade, missing internal data: %s %s", newProductVersion, newCrdHash))
+	}
+
+	crdVersion, ok := deployedCrdAnnotations[model.CRDVersionKey]
+	if !ok {
+		return false, errors.New(fmt.Sprintf("Cannot determine crd product version from CRD annotations: %v", deployedCrdAnnotations))
+	}
+	crdSpecHash, ok := deployedCrdAnnotations[model.CRDSpecHashKey]
+	if !ok {
+		return false, errors.New(fmt.Sprintf("Cannot determine crd spec hash from CRD annotations: %v", deployedCrdAnnotations))
+	}
+
+	if newCrdHash == crdSpecHash {
+		return false, nil
+	}
+
+	// parse semver of the current product version
+	newProductVersionSemver, err := semver.NewVersion(newProductVersion)
+	if err != nil {
+		return false, errors.Wrapf(err, "Cannot parse current product version: %s", newProductVersion)
+	}
+
+	currentCrdVersionSemvar, err := semver.NewVersion(crdVersion)
+	if err != nil {
+		return false, errors.Wrapf(err, "Cannot parse current crd version: %s", crdVersion)
+	}
+
+	// If the current product version is greater than the crd version, the CRD needs to be upgraded.
+	if currentCrdVersionSemvar.Compare(newProductVersionSemver) <= 0 {
+		return true, nil
+	}
+	return false, nil
 }

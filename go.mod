@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.76.0
 	cuelang.org/go v0.2.2
 	github.com/BurntSushi/toml v0.3.1
+	github.com/Masterminds/semver v1.4.2
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/avast/retry-go v2.2.0+incompatible
 	github.com/aws/aws-sdk-go v1.30.15

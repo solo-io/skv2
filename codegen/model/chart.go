@@ -12,6 +12,22 @@ import (
 )
 
 // Chart provides the input data structure for generating Helm charts from the skv2 chart "meta-templates" (templates whose outputs are templates and other files used by generated Helm charts)
+const (
+	CRDVersionKey  = "crd.solo.io/version"
+	CRDSpecHashKey = "crd.solo.io/specHash"
+	CRDMetadataKey = "crd.solo.io/crdMetadata"
+)
+
+type CRDMetadata struct {
+	CRDS    []CRDAnnotations `json:"crds"`
+	Version string           `json:"version"`
+}
+
+type CRDAnnotations struct {
+	Name string `json:"name"`
+	Hash string `json:"hash"`
+}
+
 type Chart struct {
 	Operators []Operator
 

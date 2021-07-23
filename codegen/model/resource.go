@@ -59,6 +59,12 @@ type Group struct {
 	// Should we generate kubernetes manifests?
 	RenderManifests bool
 
+	// Should we add the chart version to the generated manifests?
+	AddChartVersion string
+
+	// Should we not add the spec hash to the annotation of the generated manifests?
+	SkipSpecHash bool
+
 	// Should we generate validating schemas for CRDs?
 	RenderValidationSchemas bool
 
