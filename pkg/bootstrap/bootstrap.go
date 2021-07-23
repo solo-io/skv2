@@ -160,7 +160,7 @@ func StartMulti(ctx context.Context, startFuncs map[string]StartFunc, opts Optio
 
 	eg.Go(func() error {
 		// start the local manager
-		ctx := contextutils.WithLogger(ctx, "controller-manager")
+		ctx := contextutils.WithLogger(ctx, "controller-runtime-manager")
 		contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
 		return mgr.Start(ctx)
 	})

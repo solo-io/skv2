@@ -18,13 +18,13 @@ import (
 )
 
 type Input{{ $snapshotName }}SnapshotManualBuilder struct {
-name string
+	name string
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 	{{- range $resource := $group.Resources }}
 		{{- $kindLowerCamel := lower_camel $resource.Kind }}
 		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-		{{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+	{{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
 	{{- end }}
 {{- end }}
 
@@ -46,8 +46,8 @@ name:               name,
 }
 
 func (i *Input{{ $snapshotName }}SnapshotManualBuilder) Build() {{ $snapshotName }}Snapshot {
-return New{{ $snapshotName }}Snapshot(
-i.name,
+	return New{{ $snapshotName }}Snapshot(
+		i.name,
 {{- range $group := $groups }}
 	{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 	{{- range $resource := $group.Resources }}
@@ -57,7 +57,7 @@ i.name,
 		i.{{ $kindLowerCamelPlural }},
 	{{- end }}
 {{- end }}
-)
+	)
 }
 
 {{- range $group := $groups }}
@@ -65,9 +65,9 @@ i.name,
 		{{- $kindPlural := pluralize $resource.Kind }}
 		{{- $kindLowerCamel := lower_camel $resource.Kind }}
 		{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-		func (i *Input{{ $snapshotName }}SnapshotManualBuilder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *Input{{ $snapshotName }}SnapshotManualBuilder {
-		i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
-		return i
-		}
+func (i *Input{{ $snapshotName }}SnapshotManualBuilder) Add{{ $kindPlural }}({{ $kindLowerCamelPlural }} []*{{ group_import_name $group }}.{{ $resource.Kind }}) *Input{{ $snapshotName }}SnapshotManualBuilder {
+	i.{{ $kindLowerCamelPlural }}.Insert({{ $kindLowerCamelPlural }}...)
+	return i
+}
 	{{- end }}
 {{- end }}
