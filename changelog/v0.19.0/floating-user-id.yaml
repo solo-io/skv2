@@ -1,0 +1,5 @@
+changelog:
+  - type: BREAKING_CHANGE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/881
+    resolvesIssue: false
+    description: Adds the `floatingUserId` and the `runAsUser` to the user-facing helm values.
