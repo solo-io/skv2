@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    description: Remove noisy "added outut {{ resource.Kind }} " logs for output snapshot.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/702
+    resolvesIssue: false
+
