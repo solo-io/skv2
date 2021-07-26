@@ -103,9 +103,9 @@ spec:
 {{- end}}
         securityContext:
           runAsNonRoot: true
-{{- if not $[[ $operatorVar ]].floatingUserId }}
+          {{- if not $[[ $operatorVar ]].floatingUserId }}
           runAsUser: {{ printf "%.0f" (float64 $[[ $operatorVar ]].runAsUser) }}
-{{- end }}
+          {{- end }}
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
