@@ -47,11 +47,7 @@ func RenderManifests(
 			{
 				Path: manifestDir + "/crds/" + grp.Group + "_" + grp.Version + "_" + "crds.yaml",
 			}: func(group Group) ([]metav1.Object, error) {
-				var options []kuberesource.Option
-				if grp.SkipSpecHash {
-					options = append(options, kuberesource.WithoutSpecHash())
-				}
-				return kuberesource.CustomResourceDefinitions(group, options...)
+				return kuberesource.CustomResourceDefinitions(group)
 			},
 		},
 	}

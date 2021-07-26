@@ -19,22 +19,9 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-type Options struct {
-	WithoutSpecHash bool
-}
-
-type Option func(*Options)
-
-func WithoutSpecHash() Option {
-	return func(o *Options) {
-		o.WithoutSpecHash = true
-	}
-}
-
 // Create CRDs for a group
 func CustomResourceDefinitions(
 	group model.Group,
-	opts ...Option,
 ) (objects []metav1.Object, err error) {
 	for _, resource := range group.Resources {
 
@@ -46,7 +33,7 @@ func CustomResourceDefinitions(
 			}
 		}
 
-		objects = append(objects, CustomResourceDefinition(resource, validationSchema, opts...))
+		objects = append(objects, CustomResourceDefinition(resource, validationSchema, group.SkipSpecHash))
 	}
 	return objects, nil
 }
@@ -114,12 +101,8 @@ func validateStructural(s *apiextv1beta1.JSONSchemaProps) error {
 func CustomResourceDefinition(
 	resource model.Resource,
 	validationSchema *apiextv1beta1.CustomResourceValidation,
-	opts ...Option,
+	withoutSpecHash bool,
 ) *apiextv1beta1.CustomResourceDefinition {
-	options := Options{}
-	for _, opt := range opts {
-		opt(&options)
-	}
 
 	group := resource.Group.Group
 	version := resource.Group.Version
@@ -166,7 +149,7 @@ func CustomResourceDefinition(
 			},
 		},
 	}
-	if !options.WithoutSpecHash {
+	if !withoutSpecHash {
 		// hashstructure of the crd spec:
 		specHash, err := hashstructure.Hash(crd.Spec, nil)
 		if err != nil {
@@ -230,15 +213,16 @@ func DoCrdsNeedUpgrade(newProdCrdInfo model.CRDMetadata, deployedInClusterCrds [
 	}
 	return ret
 }
+
 /**
- * The idea behind this function is that we only want to ugprade a CRD if the version of the new CRD 
+ * The idea behind this function is that we only want to ugprade a CRD if the version of the new CRD
  * is higher than version of the CRD in the cluser **and** the specHash is different.
  * The reasoning:
  * if the spec hash is the same, then the CRD's json schema is the same, and it is pointless to upgrade it.
  * if the spec hash is different, then we want to make sure we only update a CRD when it is backwards compatible.
- * under the assumption that we don't make backwards incompatible changes, then this means that we 
+ * under the assumption that we don't make backwards incompatible changes, then this means that we
  * should only upgrade a CRD if it's version is higher than what's deployed on the cluster.
-*/
+ */
 func DoesCrdNeedUpgrade(newProductVersion, newCrdHash string, deployedCrdAnnotations map[string]string) (bool, error) {
 
 	if newProductVersion == "" || newCrdHash == "" {
