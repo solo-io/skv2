@@ -78,11 +78,10 @@ type Deployment struct {
 // values for a container
 type Container struct {
 	// not configurable via helm values
-	Args            []string
-	VolumeMounts    []v1.VolumeMount
-	ReadinessProbe  *v1.Probe
-	LivenessProbe   *v1.Probe
-	SecurityContext *v1.SecurityContext
+	Args           []string
+	VolumeMounts   []v1.VolumeMount
+	ReadinessProbe *v1.Probe
+	LivenessProbe  *v1.Probe
 
 	Image     Image
 	Env       []v1.EnvVar
@@ -158,6 +157,8 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 			Values: values.UserValues{
 				UserContainerValues: makeContainerDocs(operator.Deployment.Container),
 				Sidecars:            sidecars,
+				FloatingUserID:      false,
+				RunAsUser:           10101,
 				ServiceType:         operator.Service.Type,
 				ServicePorts:        servicePorts,
 			},
