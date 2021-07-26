@@ -102,17 +102,15 @@ spec:
             memory: 256Mi
 {{- end}}
         securityContext:
-[[- if $container.SecurityContext ]]
-[[ toYaml $container.SecurityContext | indent 10 ]]
-[[- else ]]
           runAsNonRoot: true
-          runAsUser: 10101
+{{- if not $[[ $operatorVar ]].floatingUserId }}
+          runAsUser: {{ printf "%.0f" (float64 $[[ $operatorVar ]].runAsUser) }}
+{{- end }}
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
-[[- end ]]
 [[- if $container.ReadinessProbe ]]
         readinessProbe:
 [[ toYaml $container.ReadinessProbe | indent 10 ]]

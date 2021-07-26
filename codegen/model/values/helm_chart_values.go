@@ -21,9 +21,11 @@ type UserValues struct {
 	UserContainerValues `json:",inline"`
 
 	// Required to have an interface value in order to use the `index` function in the template
-	Sidecars     map[string]UserContainerValues `json:"sidecars" desc:"Configuration for the deployed containers."`
-	ServiceType  v1.ServiceType                 `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts map[string]uint32              `json:"ports" desc:"Specify service ports as a map from port name to port number."`
+	Sidecars       map[string]UserContainerValues `json:"sidecars" desc:"Configuration for the deployed containers."`
+	FloatingUserID bool                           `json:"floatingUserId" desc:"Allow the pod to be assigned a dynamic user ID."`
+	RunAsUser      uint32                         `json:"runAsUser" desc:"Static user ID to run the containers as. Unused if floatingUserId is 'true'."`
+	ServiceType    v1.ServiceType                 `json:"serviceType" desc:"Specify the service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
+	ServicePorts   map[string]uint32              `json:"ports" desc:"Specify service ports as a map from port name to port number."`
 
 	// Overrides which can be set by the user
 	DeploymentOverrides *appsv1.Deployment `json:"deploymentOverrides,omitempty" desc:"Provide arbitrary overrides for the component's [deployment template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)" omitChildren:"true"`

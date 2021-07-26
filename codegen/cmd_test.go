@@ -13,6 +13,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
@@ -109,6 +110,85 @@ var _ = Describe("Cmd", func() {
 		err = exec.Command("goimports", "-w", "codegen/test/api").Run()
 		Expect(err).NotTo(HaveOccurred())
 	})
+
+	DescribeTable("configuring the runAsbUser value",
+		func(floatingUserId bool, runAsUser, expectedRunAsUser int) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			painterValues := map[string]interface{}{"floatingUserId": floatingUserId}
+			if runAsUser > 0 {
+				painterValues["runAsUser"] = runAsUser
+			}
+			helmValues := map[string]interface{}{"painter": painterValues}
+
+			renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedRunAsUser := renderedDeployment.Spec.Template.Spec.Containers[0].SecurityContext.RunAsUser
+			if expectedRunAsUser == 0 {
+				Expect(renderedRunAsUser).To(BeNil())
+			} else {
+				Expect(renderedRunAsUser).ToNot(BeNil())
+				Expect(*renderedRunAsUser).To(BeEquivalentTo(expectedRunAsUser))
+			}
+		},
+		Entry("default values", false, 0, 10101),
+		Entry("set runAsUser value", false, 20202, 20202),
+		Entry("floatingUserId enabled", true, 10101, 0),
+	)
 
 	It("supports overriding the deployment and service specs via helm values", func() {
 

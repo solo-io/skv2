@@ -63,7 +63,9 @@ spec:
 {{- end}}
         securityContext:
           runAsNonRoot: true
-          runAsUser: 10101
+{{- if not $painter.floatingUserId }}
+          runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
+{{- end }}
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
@@ -100,7 +102,9 @@ spec:
 {{- end}}
         securityContext:
           runAsNonRoot: true
-          runAsUser: 10101
+{{- if not $painter.floatingUserId }}
+          runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
+{{- end }}
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
