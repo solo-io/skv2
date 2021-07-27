@@ -6,13 +6,13 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/pkg/crdutils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 )
 
-func ParseCRDs(f fs.FS) (model.CRDMetadata, error) {
-	var ret model.CRDMetadata
+func ParseCRDs(f fs.FS) (crdutils.CRDMetadata, error) {
+	var ret crdutils.CRDMetadata
 	// read all crds from the specified directory
 	// generate a file with all the versions and hashes of the crds
 	// package the generated file into the binary
@@ -44,8 +44,8 @@ func ParseCRDs(f fs.FS) (model.CRDMetadata, error) {
 	return ret, errs
 }
 
-func getCRDInfo(f fs.FS, file string) (model.CRDAnnotations, string, error) {
-	var ret model.CRDAnnotations
+func getCRDInfo(f fs.FS, file string) (crdutils.CRDAnnotations, string, error) {
+	var ret crdutils.CRDAnnotations
 	crdRaw, err := fs.ReadFile(f, file)
 	if err != nil {
 		return ret, "", err
@@ -62,8 +62,8 @@ func getCRDInfo(f fs.FS, file string) (model.CRDAnnotations, string, error) {
 	ret.Name = crd.GetName()
 	var v string
 	if m := crd.GetAnnotations(); m != nil {
-		ret.Hash = m[model.CRDSpecHashKey]
-		v = m[model.CRDVersionKey]
+		ret.Hash = m[crdutils.CRDSpecHashKey]
+		v = m[crdutils.CRDVersionKey]
 	}
 	return ret, v, nil
 }
