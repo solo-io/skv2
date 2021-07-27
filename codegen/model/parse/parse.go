@@ -11,6 +11,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 )
 
+/**
+ * This is used by downstream projects to collect the spec hashes of all CRDs, and the version of the product.
+ * the resulting CRDMetadata will most likely end up on the downstream project's deployment annotations.
+ */
 func ParseCRDs(f fs.FS) (crdutils.CRDMetadata, error) {
 	var ret crdutils.CRDMetadata
 	// read all crds from the specified directory
