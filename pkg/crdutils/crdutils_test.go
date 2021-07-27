@@ -93,7 +93,7 @@ var _ = Describe("CrdUtils", func() {
 	})
 	Describe("Parse annotation", func() {
 		It("Parse CRDMetadataKeyannotation", func() {
-			crdMeta, err := ParseCRDMetadataFromAnnotation(map[string]string{
+			crdMeta, err := ParseCRDMetadataFromAnnotations(map[string]string{
 				CRDMetadataKey: `{"version":"1.2.3","crds":[{"name":"test","hash":"123"}]}`,
 			})
 
@@ -104,19 +104,19 @@ var _ = Describe("CrdUtils", func() {
 			Expect(crdMeta.CRDS[0].Hash).To(Equal("123"))
 		})
 		It("errors on invalid json", func() {
-			crdMeta, err := ParseCRDMetadataFromAnnotation(map[string]string{
+			crdMeta, err := ParseCRDMetadataFromAnnotations(map[string]string{
 				CRDMetadataKey: `not json`,
 			})
 			Expect(crdMeta).To(BeNil())
 			Expect(err).To(HaveOccurred())
 		})
 		It("doesnt error when annotation missing", func() {
-			crdMeta, err := ParseCRDMetadataFromAnnotation(map[string]string{})
+			crdMeta, err := ParseCRDMetadataFromAnnotations(map[string]string{})
 			Expect(crdMeta).To(BeNil())
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("doesnt error when annotation nil", func() {
-			crdMeta, err := ParseCRDMetadataFromAnnotation(nil)
+			crdMeta, err := ParseCRDMetadataFromAnnotations(nil)
 			Expect(crdMeta).To(BeNil())
 			Expect(err).NotTo(HaveOccurred())
 		})

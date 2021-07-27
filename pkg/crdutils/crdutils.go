@@ -114,7 +114,7 @@ func DoesCrdNeedUpgrade(newProductVersion, newCrdHash string, deployedCrdAnnotat
 	return false, nil
 }
 
-func ParseCRDMetadataFromAnnotation(annotations map[string]string) (*CRDMetadata, error) {
+func ParseCRDMetadataFromAnnotations(annotations map[string]string) (*CRDMetadata, error) {
 
 	if annotations == nil || annotations[CRDMetadataKey] == "" {
 		return nil, nil
