@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/solo-io/skv2/codegen/util"
+	"github.com/solo-io/skv2/pkg/crdutils"
 
 	protoutil "github.com/solo-io/skv2/codegen/proto"
 
@@ -208,7 +209,7 @@ func SetVersionForObject(obj metav1.Object, version string) {
 			return
 		}
 
-		a[model.CRDVersionKey] = strippedVersion.String()
+		a[crdutils.CRDVersionKey] = strippedVersion.String()
 		obj.SetAnnotations(a)
 	}
 }

@@ -8,25 +8,26 @@ import (
 
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/render"
+	"github.com/solo-io/skv2/pkg/crdutils"
 )
 
-var _ = FDescribe("ManifestsRenderer", func() {
+var _ = Describe("ManifestsRenderer", func() {
 
 	It("should set version without patch", func() {
 		m := new(metav1.ObjectMeta)
 		render.SetVersionForObject(m, "1.0.0-patch1")
-		Expect(m.Annotations[model.CRDVersionKey]).To(Equal("1.0.0"))
+		Expect(m.Annotations[crdutils.CRDVersionKey]).To(Equal("1.0.0"))
 	})
 
 	It("should set version without metadata", func() {
 		m := new(metav1.ObjectMeta)
 		render.SetVersionForObject(m, "1.0.0+metadata")
-		Expect(m.Annotations[model.CRDVersionKey]).To(Equal("1.0.0"))
+		Expect(m.Annotations[crdutils.CRDVersionKey]).To(Equal("1.0.0"))
 	})
 	It("should set version with v", func() {
 		m := new(metav1.ObjectMeta)
 		render.SetVersionForObject(m, "v1.2.3+metadata")
-		Expect(m.Annotations[model.CRDVersionKey]).To(Equal("1.2.3"))
+		Expect(m.Annotations[crdutils.CRDVersionKey]).To(Equal("1.2.3"))
 	})
 
 	Describe("CRD gen", func() {
@@ -62,8 +63,8 @@ var _ = FDescribe("ManifestsRenderer", func() {
 			)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(1))
-			Expect(outFiles[0].Content).To(ContainSubstring(model.CRDVersionKey + ": 1.0.0"))
-			Expect(outFiles[0].Content).To(ContainSubstring(model.CRDSpecHashKey + ": d18828e563010e32"))
+			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
+			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": d18828e563010e32"))
 
 		})
 	})
