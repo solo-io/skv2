@@ -1,6 +1,7 @@
 package crdutils
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/semver"
@@ -111,4 +112,18 @@ func DoesCrdNeedUpgrade(newProductVersion, newCrdHash string, deployedCrdAnnotat
 		return true, nil
 	}
 	return false, nil
+}
+
+func ParseCRDMetadataFromAnnotation(annotations map[string]string) (*CRDMetadata, error) {
+
+	if annotations == nil || annotations[CRDMetadataKey] == "" {
+		return nil, nil
+	}
+
+	var crdMd CRDMetadata
+	err := json.Unmarshal([]byte(annotations[CRDMetadataKey]), &crdMd)
+	if err != nil {
+		return nil, err
+	}
+	return &crdMd, nil
 }
