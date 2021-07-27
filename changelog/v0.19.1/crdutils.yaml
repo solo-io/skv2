@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Add CRD Utilities to allow downstream projects verify if CRDs need upgrades.
+

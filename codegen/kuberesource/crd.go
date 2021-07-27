@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
+	"github.com/solo-io/skv2/pkg/crdutils"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/codegen/model"
@@ -16,7 +18,9 @@ import (
 )
 
 // Create CRDs for a group
-func CustomResourceDefinitions(group model.Group) (objects []metav1.Object, err error) {
+func CustomResourceDefinitions(
+	group model.Group,
+) (objects []metav1.Object, err error) {
 	for _, resource := range group.Resources {
 
 		var validationSchema *apiextv1beta1.CustomResourceValidation
@@ -27,7 +31,7 @@ func CustomResourceDefinitions(group model.Group) (objects []metav1.Object, err 
 			}
 		}
 
-		objects = append(objects, CustomResourceDefinition(resource, validationSchema))
+		objects = append(objects, CustomResourceDefinition(resource, validationSchema, group.SkipSpecHash))
 	}
 	return objects, nil
 }
@@ -95,6 +99,7 @@ func validateStructural(s *apiextv1beta1.JSONSchemaProps) error {
 func CustomResourceDefinition(
 	resource model.Resource,
 	validationSchema *apiextv1beta1.CustomResourceValidation,
+	withoutSpecHash bool,
 ) *apiextv1beta1.CustomResourceDefinition {
 
 	group := resource.Group.Group
@@ -142,6 +147,17 @@ func CustomResourceDefinition(
 			},
 		},
 	}
+	if !withoutSpecHash {
+		// hashstructure of the crd spec:
+		specHash, err := hashstructure.Hash(crd.Spec, nil)
+		if err != nil {
+			panic(err)
+		}
+		crd.Annotations = map[string]string{
+			crdutils.CRDSpecHashKey: fmt.Sprintf("%x", specHash),
+		}
+	}
+
 	if validationSchema != nil {
 		// Setting PreserveUnknownFields to false ensures that objects with unknown fields are rejected.
 		crd.Spec.PreserveUnknownFields = pointer.BoolPtr(false)

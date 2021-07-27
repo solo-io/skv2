@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/Masterminds/semver"
 	"github.com/solo-io/skv2/codegen/util"
+	"github.com/solo-io/skv2/pkg/crdutils"
 
 	protoutil "github.com/solo-io/skv2/codegen/proto"
 
@@ -45,7 +47,9 @@ func RenderManifests(
 		ResourceFuncs: map[OutFile]MakeResourceFunc{
 			{
 				Path: manifestDir + "/crds/" + grp.Group + "_" + grp.Version + "_" + "crds.yaml",
-			}: kuberesource.CustomResourceDefinitions,
+			}: func(group Group) ([]metav1.Object, error) {
+				return kuberesource.CustomResourceDefinitions(group)
+			},
 		},
 	}
 	return defaultManifestsRenderer.RenderManifests(grp, protoOpts)
@@ -67,7 +71,7 @@ func (r ManifestsRenderer) RenderManifests(grp Group, protoOpts protoutil.Option
 
 	var renderedFiles []OutFile
 	for out, mkFunc := range r.ResourceFuncs {
-		content, err := renderManifest(r.AppName, mkFunc, grp)
+		content, err := r.renderManifest(r.AppName, mkFunc, grp)
 		if err != nil {
 			return nil, err
 		}
@@ -186,7 +190,31 @@ func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[stri
 	return unstructuredFields, nil
 }
 
-func renderManifest(appName string, mk MakeResourceFunc, group Group) (string, error) {
+func SetVersionForObject(obj metav1.Object, version string) {
+	if version == "" {
+		return
+	}
+	a := obj.GetAnnotations()
+	if a == nil {
+		a = make(map[string]string)
+	}
+	// we only care about major minor and patch versions.
+	if parsedSemVer, err := semver.NewVersion(version); err == nil {
+		strippedVersion, err := parsedSemVer.SetPrerelease("")
+		if err != nil {
+			return
+		}
+		strippedVersion, err = strippedVersion.SetMetadata("")
+		if err != nil {
+			return
+		}
+
+		a[crdutils.CRDVersionKey] = strippedVersion.String()
+		obj.SetAnnotations(a)
+	}
+}
+
+func (r ManifestsRenderer) renderManifest(appName string, mk MakeResourceFunc, group Group) (string, error) {
 	objs, err := mk(group)
 	if err != nil {
 		return "", err
@@ -194,6 +222,8 @@ func renderManifest(appName string, mk MakeResourceFunc, group Group) (string, e
 
 	var objManifests []string
 	for _, obj := range objs {
+		// find the annotation of the manifest, and add to them
+		SetVersionForObject(obj, group.AddChartVersion)
 		manifest, err := marshalObjToYaml(appName, obj)
 		if err != nil {
 			return "", err
