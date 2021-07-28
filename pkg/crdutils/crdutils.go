@@ -40,7 +40,7 @@ type CrdNotFound struct {
 }
 
 func (e *CrdNotFound) Error() string {
-	return fmt.Sprintf("CRD %s not found. Is it unused?", e.CRDName)
+	return fmt.Sprintf("CRD %s not found", e.CRDName)
 }
 
 func DoCrdsNeedUpgrade(newProdCrdInfo CRDMetadata, deployedInClusterCrds []apiextv1beta1.CustomResourceDefinition) ErrMap {
