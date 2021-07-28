@@ -44,21 +44,22 @@ func (e *CrdNotFound) Error() string {
 }
 
 func DoCrdsNeedUpgrade(newProdCrdInfo CRDMetadata, deployedInClusterCrds []apiextv1beta1.CustomResourceDefinition) ErrMap {
-	crdMap := make(map[string]string)
-	for _, crd := range newProdCrdInfo.CRDS {
-		crdMap[crd.Name] = crd.Hash
+	crdMap := make(map[string]apiextv1beta1.CustomResourceDefinition)
+	for _, crd := range deployedInClusterCrds {
+		crdMap[crd.Name] = crd
 	}
 	ret := ErrMap{}
-	for _, ourCrd := range deployedInClusterCrds {
-		if hash, ok := crdMap[ourCrd.Name]; !ok {
-			ret[ourCrd.Name] = &CrdNotFound{CRDName: ourCrd.Name}
+	for _, newCrd := range newProdCrdInfo.CRDS {
+		if deployedCrd, ok := crdMap[newCrd.Name]; !ok {
+			ret[newCrd.Name] = &CrdNotFound{CRDName: newCrd.Name}
 		} else {
-			needUpgrade, err := DoesCrdNeedUpgrade(newProdCrdInfo.Version, hash, ourCrd.Annotations)
+			hash := newCrd.Hash
+			needUpgrade, err := DoesCrdNeedUpgrade(newProdCrdInfo.Version, hash, deployedCrd.Annotations)
 
 			if err != nil {
-				ret[ourCrd.Name] = err
+				ret[newCrd.Name] = err
 			} else if needUpgrade {
-				ret[ourCrd.Name] = &CrdNeedsUpgrade{CRDName: ourCrd.Name}
+				ret[newCrd.Name] = &CrdNeedsUpgrade{CRDName: newCrd.Name}
 			}
 		}
 	}

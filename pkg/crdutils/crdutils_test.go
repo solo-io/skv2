@@ -57,7 +57,7 @@ var _ = Describe("CrdUtils", func() {
 			errmap := DoCrdsNeedUpgrade(newProdCrdInfo, []apiextv1beta1.CustomResourceDefinition{crd})
 			Expect(errmap).To(HaveKeyWithValue(crd.Name, BeAssignableToTypeOf(&CrdNeedsUpgrade{})))
 		})
-		It("should return CrdNeedsUpgrade", func() {
+		It("should return CrdNotFound", func() {
 			crd1 := apiextv1beta1.CustomResourceDefinition{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo",
@@ -83,12 +83,20 @@ var _ = Describe("CrdUtils", func() {
 						Name: "foo",
 						Hash: "456",
 					},
+					{
+						Name: "gar",
+						Hash: "456",
+					},
 				},
 			}
 
 			errmap := DoCrdsNeedUpgrade(newProdCrdInfo, []apiextv1beta1.CustomResourceDefinition{crd1, crd2})
+			// crd in deployment matches the one in the cluster.
 			Expect(errmap).NotTo(HaveKey(crd1.Name))
-			Expect(errmap).To(HaveKeyWithValue(crd2.Name, BeAssignableToTypeOf(&CrdNotFound{})))
+			// if CRD exists in the cluster and not here, we don't care.
+			Expect(errmap).NotTo(HaveKey(crd2.Name))
+			// if CRD is neede by deployment and missing, errors./
+			Expect(errmap).To(HaveKeyWithValue("gar", BeAssignableToTypeOf(&CrdNotFound{})))
 		})
 	})
 	Describe("Parse annotation", func() {
