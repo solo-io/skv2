@@ -64,34 +64,34 @@ func NewInputReconciler(
 }
 
 func (r *inputReconciler) ReconcileLocalGeneric(id ezkube.ResourceId) (reconcile.Result, error) {
-	if r.ctx == nil {
-		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
-	}
 	if r.singleClusterReconcileFunc == nil {
-		return reconcile.Result{}, eris.Errorf("internal error: no single-cluster reconcile func provided; cannot reconcile %v", sets.Key(id))
-	}
-	// never queue more than one event
-	if r.queue.Len() < 2 {
-		contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "id", sets.Key(id))
-		r.queue.AddRateLimited(id)
+		return reconcile.Result{}, eris.Errorf("internal error: no single-cluster reconcile func provided; cannot reconcile %v", sets.TypedKey(id))
 	}
 
-	return reconcile.Result{}, nil
+	return r.reconcileGeneric(id)
 }
 
 func (r *inputReconciler) ReconcileRemoteGeneric(id ezkube.ClusterResourceId) (reconcile.Result, error) {
+	if r.multiClusterReconcileFunc == nil {
+		return reconcile.Result{}, eris.Errorf("internal error: no multi-cluster reconcile func provided; cannot reconcile %v", sets.TypedKey(id))
+	}
+
+	return r.reconcileGeneric(id)
+}
+
+func (r *inputReconciler) reconcileGeneric(id ezkube.ResourceId) (reconcile.Result, error) {
 	if r.ctx == nil {
 		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
 	}
-	if r.multiClusterReconcileFunc == nil {
-		return reconcile.Result{}, eris.Errorf("internal error: no multi-cluster reconcile func provided; cannot reconcile %v", sets.Key(id))
-	}
-	// never queue more than one event
-	if r.queue.Len() < 2 {
-		contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", id.GetClusterName(), "id", sets.Key(id))
-		r.queue.AddRateLimited(id)
-	}
+	key := sets.TypedKey(id)
 
+	// no need to queue more than one event in reconcile-the-world approach
+	if r.queue.Len() == 0 {
+		contextutils.LoggerFrom(r.ctx).Debugw("adding event to reconciler queue", "id", key)
+		r.queue.AddRateLimited(id)
+	} else {
+		contextutils.LoggerFrom(r.ctx).Debugw("dropping event as there are are objects in the reconciler's queue", "id", key)
+	}
 	return reconcile.Result{}, nil
 }
 
