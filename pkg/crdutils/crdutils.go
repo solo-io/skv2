@@ -86,11 +86,11 @@ func DoesCrdNeedUpgrade(newProductVersion, newCrdHash string, deployedCrdAnnotat
 
 	crdVersion, ok := deployedCrdAnnotations[CRDVersionKey]
 	if !ok {
-		return false, eris.New(fmt.Sprintf("Cannot determine crd product version from CRD annotations: %v", deployedCrdAnnotations))
+		return false, eris.New(fmt.Sprintf("Cannot determine CRD product version from CRD annotations, missing label with key '%s': %v", CRDVersionKey, deployedCrdAnnotations))
 	}
 	crdSpecHash, ok := deployedCrdAnnotations[CRDSpecHashKey]
 	if !ok {
-		return false, eris.New(fmt.Sprintf("Cannot determine crd spec hash from CRD annotations: %v", deployedCrdAnnotations))
+		return false, eris.New(fmt.Sprintf("Cannot determine CRD spec hash from CRD annotations, missing label with key '%s': %v", CRDSpecHashKey, deployedCrdAnnotations))
 	}
 
 	if newCrdHash == crdSpecHash {
