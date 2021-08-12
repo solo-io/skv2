@@ -5,6 +5,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 */]]
 
 [[- range $operator := $.Operators -]]
+[[- $operatorVar := (lower_camel $operator.Name) -]]
 [[- if $operator.Rbac ]]
 # Rbac manifests for [[ $operator.Name ]]
 

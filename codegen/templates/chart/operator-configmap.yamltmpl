@@ -1,4 +1,5 @@
 [[- range $operator := $.Operators -]]
+[[- $operatorVar := (lower_camel $operator.Name) -]]
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 {{- if $[[ $operatorVar ]].enabled }}
 [[- range $configmap := $operator.ConfigMaps -]]

@@ -5,22 +5,24 @@
 // Definitions for the Kubernetes Controllers
 package controller
 
+
+
 import (
 	"context"
 
-	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+    multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
-	"github.com/pkg/errors"
-	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+    "github.com/pkg/errors"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    "github.com/solo-io/skv2/pkg/reconcile"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Reconcile Upsert events for the KubernetesCluster Resource.
 // implemented by the user
 type KubernetesClusterReconciler interface {
-	ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error)
+    ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the KubernetesCluster Resource.
@@ -28,108 +30,109 @@ type KubernetesClusterReconciler interface {
 // before being deleted.
 // implemented by the user
 type KubernetesClusterDeletionReconciler interface {
-	ReconcileKubernetesClusterDeletion(req reconcile.Request) error
+    ReconcileKubernetesClusterDeletion(req reconcile.Request) error
 }
 
 type KubernetesClusterReconcilerFuncs struct {
-	OnReconcileKubernetesCluster         func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error)
-	OnReconcileKubernetesClusterDeletion func(req reconcile.Request) error
+    OnReconcileKubernetesCluster func(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error)
+    OnReconcileKubernetesClusterDeletion func(req reconcile.Request) error
 }
 
 func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
-	if f.OnReconcileKubernetesCluster == nil {
-		return reconcile.Result{}, nil
-	}
-	return f.OnReconcileKubernetesCluster(obj)
+    if f.OnReconcileKubernetesCluster == nil {
+        return reconcile.Result{}, nil
+    }
+    return f.OnReconcileKubernetesCluster(obj)
 }
 
 func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesClusterDeletion(req reconcile.Request) error {
-	if f.OnReconcileKubernetesClusterDeletion == nil {
-		return nil
-	}
-	return f.OnReconcileKubernetesClusterDeletion(req)
+    if f.OnReconcileKubernetesClusterDeletion == nil {
+        return nil
+    }
+    return f.OnReconcileKubernetesClusterDeletion(req)
 }
 
 // Reconcile and finalize the KubernetesCluster Resource
 // implemented by the user
 type KubernetesClusterFinalizer interface {
-	KubernetesClusterReconciler
+    KubernetesClusterReconciler
 
-	// name of the finalizer used by this handler.
-	// finalizer names should be unique for a single task
-	KubernetesClusterFinalizerName() string
+    // name of the finalizer used by this handler.
+    // finalizer names should be unique for a single task
+    KubernetesClusterFinalizerName() string
 
-	// finalize the object before it is deleted.
-	// Watchers created with a finalizing handler will a
-	FinalizeKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
+    // finalize the object before it is deleted.
+    // Watchers created with a finalizing handler will a
+    FinalizeKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) error
 }
 
 type KubernetesClusterReconcileLoop interface {
-	RunKubernetesClusterReconciler(ctx context.Context, rec KubernetesClusterReconciler, predicates ...predicate.Predicate) error
+    RunKubernetesClusterReconciler(ctx context.Context, rec KubernetesClusterReconciler, predicates ...predicate.Predicate) error
 }
 
 type kubernetesClusterReconcileLoop struct {
-	loop reconcile.Loop
+    loop reconcile.Loop
 }
 
 func NewKubernetesClusterReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) KubernetesClusterReconcileLoop {
-	return &kubernetesClusterReconcileLoop{
-		// empty cluster indicates this reconciler is built for the local cluster
-		loop: reconcile.NewLoop(name, "", mgr, &multicluster_solo_io_v1alpha1.KubernetesCluster{}, options),
-	}
+    return &kubernetesClusterReconcileLoop{
+    	// empty cluster indicates this reconciler is built for the local cluster
+        loop: reconcile.NewLoop(name, "", mgr, &multicluster_solo_io_v1alpha1.KubernetesCluster{}, options),
+    }
 }
 
 func (c *kubernetesClusterReconcileLoop) RunKubernetesClusterReconciler(ctx context.Context, reconciler KubernetesClusterReconciler, predicates ...predicate.Predicate) error {
-	genericReconciler := genericKubernetesClusterReconciler{
-		reconciler: reconciler,
-	}
+    genericReconciler := genericKubernetesClusterReconciler{
+        reconciler: reconciler,
+    }
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(KubernetesClusterFinalizer); ok {
-		reconcilerWrapper = genericKubernetesClusterFinalizer{
-			genericKubernetesClusterReconciler: genericReconciler,
-			finalizingReconciler:               finalizingReconciler,
-		}
-	} else {
-		reconcilerWrapper = genericReconciler
-	}
+        reconcilerWrapper = genericKubernetesClusterFinalizer{
+            genericKubernetesClusterReconciler: genericReconciler,
+            finalizingReconciler: finalizingReconciler,
+        }
+    } else {
+        reconcilerWrapper = genericReconciler
+    }
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericKubernetesClusterHandler implements a generic reconcile.Reconciler
 type genericKubernetesClusterReconciler struct {
-	reconciler KubernetesClusterReconciler
+    reconciler KubernetesClusterReconciler
 }
 
 func (r genericKubernetesClusterReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
-	}
-	return r.reconciler.ReconcileKubernetesCluster(obj)
+    obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    if !ok {
+        return reconcile.Result{}, errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
+    }
+    return r.reconciler.ReconcileKubernetesCluster(obj)
 }
 
 func (r genericKubernetesClusterReconciler) ReconcileDeletion(request reconcile.Request) error {
-	if deletionReconciler, ok := r.reconciler.(KubernetesClusterDeletionReconciler); ok {
-		return deletionReconciler.ReconcileKubernetesClusterDeletion(request)
-	}
-	return nil
+    if deletionReconciler, ok := r.reconciler.(KubernetesClusterDeletionReconciler); ok {
+        return deletionReconciler.ReconcileKubernetesClusterDeletion(request)
+    }
+    return nil
 }
 
 // genericKubernetesClusterFinalizer implements a generic reconcile.FinalizingReconciler
 type genericKubernetesClusterFinalizer struct {
-	genericKubernetesClusterReconciler
-	finalizingReconciler KubernetesClusterFinalizer
+    genericKubernetesClusterReconciler
+    finalizingReconciler KubernetesClusterFinalizer
 }
 
+
 func (r genericKubernetesClusterFinalizer) FinalizerName() string {
-	return r.finalizingReconciler.KubernetesClusterFinalizerName()
+    return r.finalizingReconciler.KubernetesClusterFinalizerName()
 }
 
 func (r genericKubernetesClusterFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	if !ok {
-		return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
-	}
-	return r.finalizingReconciler.FinalizeKubernetesCluster(obj)
+    obj, ok := object.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    if !ok {
+        return errors.Errorf("internal error: KubernetesCluster handler received event for %T", object)
+    }
+    return r.finalizingReconciler.FinalizeKubernetesCluster(obj)
 }

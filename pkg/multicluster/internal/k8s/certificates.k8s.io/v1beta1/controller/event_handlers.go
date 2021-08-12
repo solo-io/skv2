@@ -8,118 +8,118 @@ package controller
 import (
 	"context"
 
-	certificates_k8s_io_v1beta1 "k8s.io/api/certificates/v1beta1"
+    certificates_k8s_io_v1beta1 "k8s.io/api/certificates/v1beta1"
 
-	"github.com/pkg/errors"
-	"github.com/solo-io/skv2/pkg/events"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+    "github.com/pkg/errors"
+    "github.com/solo-io/skv2/pkg/events"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Handle events for the CertificateSigningRequest Resource
 // DEPRECATED: Prefer reconciler pattern.
 type CertificateSigningRequestEventHandler interface {
-	CreateCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
-	UpdateCertificateSigningRequest(old, new *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
-	DeleteCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
-	GenericCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
+    CreateCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
+    UpdateCertificateSigningRequest(old, new *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
+    DeleteCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
+    GenericCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
 }
 
 type CertificateSigningRequestEventHandlerFuncs struct {
-	OnCreate  func(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
-	OnUpdate  func(old, new *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
-	OnDelete  func(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
-	OnGeneric func(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
+    OnCreate  func(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
+    OnUpdate  func(old, new *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
+    OnDelete  func(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
+    OnGeneric func(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error
 }
 
 func (f *CertificateSigningRequestEventHandlerFuncs) CreateCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error {
-	if f.OnCreate == nil {
-		return nil
-	}
-	return f.OnCreate(obj)
+    if f.OnCreate == nil {
+        return nil
+    }
+    return f.OnCreate(obj)
 }
 
 func (f *CertificateSigningRequestEventHandlerFuncs) DeleteCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error {
-	if f.OnDelete == nil {
-		return nil
-	}
-	return f.OnDelete(obj)
+    if f.OnDelete == nil {
+        return nil
+    }
+    return f.OnDelete(obj)
 }
 
 func (f *CertificateSigningRequestEventHandlerFuncs) UpdateCertificateSigningRequest(objOld, objNew *certificates_k8s_io_v1beta1.CertificateSigningRequest) error {
-	if f.OnUpdate == nil {
-		return nil
-	}
-	return f.OnUpdate(objOld, objNew)
+    if f.OnUpdate == nil {
+        return nil
+    }
+    return f.OnUpdate(objOld, objNew)
 }
 
 func (f *CertificateSigningRequestEventHandlerFuncs) GenericCertificateSigningRequest(obj *certificates_k8s_io_v1beta1.CertificateSigningRequest) error {
-	if f.OnGeneric == nil {
-		return nil
-	}
-	return f.OnGeneric(obj)
+    if f.OnGeneric == nil {
+        return nil
+    }
+    return f.OnGeneric(obj)
 }
 
 type CertificateSigningRequestEventWatcher interface {
-	AddEventHandler(ctx context.Context, h CertificateSigningRequestEventHandler, predicates ...predicate.Predicate) error
+    AddEventHandler(ctx context.Context, h CertificateSigningRequestEventHandler, predicates ...predicate.Predicate) error
 }
 
 type certificateSigningRequestEventWatcher struct {
-	watcher events.EventWatcher
+    watcher events.EventWatcher
 }
 
 func NewCertificateSigningRequestEventWatcher(name string, mgr manager.Manager) CertificateSigningRequestEventWatcher {
-	return &certificateSigningRequestEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &certificates_k8s_io_v1beta1.CertificateSigningRequest{}),
-	}
+    return &certificateSigningRequestEventWatcher{
+        watcher: events.NewWatcher(name, mgr, &certificates_k8s_io_v1beta1.CertificateSigningRequest{}),
+    }
 }
 
 func (c *certificateSigningRequestEventWatcher) AddEventHandler(ctx context.Context, h CertificateSigningRequestEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericCertificateSigningRequestHandler{handler: h}
-	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
-		return err
-	}
-	return nil
+    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
+        return err
+    }
+    return nil
 }
 
 // genericCertificateSigningRequestHandler implements a generic events.EventHandler
 type genericCertificateSigningRequestHandler struct {
-	handler CertificateSigningRequestEventHandler
+    handler CertificateSigningRequestEventHandler
 }
 
 func (h genericCertificateSigningRequestHandler) Create(object client.Object) error {
-	obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
-	if !ok {
-		return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)
-	}
-	return h.handler.CreateCertificateSigningRequest(obj)
+    obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
+    if !ok {
+        return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)
+    }
+    return h.handler.CreateCertificateSigningRequest(obj)
 }
 
 func (h genericCertificateSigningRequestHandler) Delete(object client.Object) error {
-	obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
-	if !ok {
-		return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)
-	}
-	return h.handler.DeleteCertificateSigningRequest(obj)
+    obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
+    if !ok {
+        return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)
+    }
+    return h.handler.DeleteCertificateSigningRequest(obj)
 }
 
 func (h genericCertificateSigningRequestHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
-	if !ok {
-		return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", old)
-	}
-	objNew, ok := new.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
-	if !ok {
-		return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", new)
-	}
-	return h.handler.UpdateCertificateSigningRequest(objOld, objNew)
+    objOld, ok := old.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
+    if !ok {
+        return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", old)
+    }
+    objNew, ok := new.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
+    if !ok {
+        return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", new)
+    }
+    return h.handler.UpdateCertificateSigningRequest(objOld, objNew)
 }
 
 func (h genericCertificateSigningRequestHandler) Generic(object client.Object) error {
-	obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
-	if !ok {
-		return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)
-	}
-	return h.handler.GenericCertificateSigningRequest(obj)
+    obj, ok := object.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
+    if !ok {
+        return errors.Errorf("internal error: CertificateSigningRequest handler received event for %T", object)
+    }
+    return h.handler.GenericCertificateSigningRequest(obj)
 }
