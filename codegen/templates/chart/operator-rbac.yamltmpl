@@ -8,6 +8,8 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 [[- if $operator.Rbac ]]
 # Rbac manifests for [[ $operator.Name ]]
 
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- if $[[ $operatorVar ]].enabled }}
 ---
 
 kind: ClusterRole
@@ -36,5 +38,6 @@ roleRef:
   name: [[ $operator.Name ]]
   apiGroup: rbac.authorization.k8s.io
 
+{{- end }}
 [[- end ]]
 [[- end ]]

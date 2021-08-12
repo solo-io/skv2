@@ -17,6 +17,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- if $[[ $operatorVar ]].enabled }}
 ---
 
 {{- define "[[ $operator.Name ]].deploymentSpec"}}
@@ -187,4 +188,5 @@ spec:
 ---
 {{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
 
+{{- end }}
 [[ end ]]

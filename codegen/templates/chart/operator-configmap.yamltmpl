@@ -1,4 +1,6 @@
 [[- range $operator := $.Operators -]]
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- if $[[ $operatorVar ]].enabled }}
 [[- range $configmap := $operator.ConfigMaps -]]
 ---
 # ConfigMap [[ $configmap.Name ]]
@@ -14,4 +16,5 @@ data:
 [[ toYaml $configmap.Data | indent 2 ]]
 
 [[- end ]]
+{{- end }}
 [[- end ]]
