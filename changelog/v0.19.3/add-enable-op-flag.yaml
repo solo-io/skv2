@@ -1,3 +1,4 @@
 changelog:
   - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/284
     description: Add enable flag to operator to enable/disable creation of the operator deployment/service.
