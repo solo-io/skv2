@@ -5,16 +5,17 @@
 package v1alpha1
 
 import (
-    proto "github.com/golang/protobuf/proto"
+	proto "github.com/golang/protobuf/proto"
 )
 
 // DeepCopyInto for the KubernetesCluster.Spec
 func (in *KubernetesClusterSpec) DeepCopyInto(out *KubernetesClusterSpec) {
-    p := proto.Clone(in).(*KubernetesClusterSpec)
-    *out = *p
+	p := proto.Clone(in).(*KubernetesClusterSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the KubernetesCluster.Status
 func (in *KubernetesClusterStatus) DeepCopyInto(out *KubernetesClusterStatus) {
-    p := proto.Clone(in).(*KubernetesClusterStatus)
-    *out = *p
+	p := proto.Clone(in).(*KubernetesClusterStatus)
+	*out = *p
 }

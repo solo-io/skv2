@@ -17,11 +17,11 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
 {{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
-{{- if $[[ $operatorVar ]].enabled }}
 ---
 
 {{- define "[[ $operator.Name ]].deploymentSpec"}}
-
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- if $[[ $operatorVar ]].enabled }}
 [[- $workloadKind := "Deployment" ]]
 [[- if $operator.Deployment.UseDaemonSet ]]
 [[- $workloadKind = "DaemonSet" ]]
@@ -125,19 +125,21 @@ spec:
       imagePullSecrets:
         - name: {{ $[[ $operatorVar ]]Image.pullSecret }}
       {{- end}}
-
+{{- end }}
 {{- end }} {{/* define "[[ $operator.Name ]].deploymentSpec" */}}
 
 {{/* Render [[ $operator.Name ]] deployment template with overrides from values*/}}
+{{- if $[[ $operatorVar ]].enabled }}
 {{- $[[ $operatorVar ]]DeploymentOverrides := dict }}
 {{- if $[[ $operatorVar ]].deploymentOverrides }}
 {{- $[[ $operatorVar ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
 {{- end }}
 ---
 {{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
-
+{{- end }}
 ---
 
+{{- if $[[ $operatorVar ]].enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -145,13 +147,15 @@ metadata:
     app: [[ $operator.Name ]]
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
+{{- end }}
 
 
 {{- define "[[ $operator.Name ]].serviceSpec"}}
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- if $[[ $operatorVar ]].enabled }}
 [[ if gt (len $operator.Service.Ports) 0 ]]
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
-{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -177,9 +181,10 @@ spec:
     port: {{ $[[ $operatorVar ]].ports.[[ $port.Name ]] }}
   [[- end ]]
 [[ end ]]
-
+{{- end }}
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
 
+{{- if $[[ $operatorVar ]].enabled }}
 {{/* Render [[ $operator.Name ]] service template with overrides from values*/}}
 {{- $[[ $operatorVar ]]ServiceOverrides := dict }}
 {{- if $[[ $operatorVar ]].serviceOverrides }}
@@ -187,6 +192,6 @@ spec:
 {{- end }}
 ---
 {{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
-
 {{- end }}
+
 [[ end ]]

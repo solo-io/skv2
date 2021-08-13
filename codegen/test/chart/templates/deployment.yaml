@@ -3,10 +3,11 @@
 
 
 {{- $painter := $.Values.painter}}
-{{- if $painter.enabled }}
 ---
 
 {{- define "painter.deploymentSpec"}}
+{{- $painter := $.Values.painter}}
+{{- if $painter.enabled }}
 
 # Deployment manifest for painter
 
@@ -121,19 +122,21 @@ spec:
       imagePullSecrets:
         - name: {{ $painterImage.pullSecret }}
       {{- end}}
-
+{{- end }}
 {{- end }} {{/* define "painter.deploymentSpec" */}}
 
 {{/* Render painter deployment template with overrides from values*/}}
+{{- if $painter.enabled }}
 {{- $painterDeploymentOverrides := dict }}
 {{- if $painter.deploymentOverrides }}
 {{- $painterDeploymentOverrides = $painter.deploymentOverrides  }}
 {{- end }}
 ---
 {{ include "skv2.utils.merge" (list . $painterDeploymentOverrides "painter.deploymentSpec") }}
-
+{{- end }}
 ---
 
+{{- if $painter.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -141,13 +144,17 @@ metadata:
     app: painter
   name: painter
   namespace: {{ $.Release.Namespace }}
+{{- end }}
 
 
 {{- define "painter.serviceSpec"}}
+{{- $painter := $.Values.painter}}
+{{- if $painter.enabled }}
 
-
+{{- end }}
 {{- end }} {{/* define "painter.serviceSpec" */}}
 
+{{- if $painter.enabled }}
 {{/* Render painter service template with overrides from values*/}}
 {{- $painterServiceOverrides := dict }}
 {{- if $painter.serviceOverrides }}
@@ -155,5 +162,5 @@ metadata:
 {{- end }}
 ---
 {{ include "skv2.utils.merge" (list . $painterServiceOverrides "painter.serviceSpec") }}
-
 {{- end }}
+
