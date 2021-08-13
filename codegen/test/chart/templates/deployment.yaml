@@ -6,8 +6,6 @@
 ---
 
 {{- define "painter.deploymentSpec"}}
-{{- $painter := $.Values.painter}}
-{{- if $painter.enabled }}
 
 # Deployment manifest for painter
 
@@ -122,7 +120,6 @@ spec:
       imagePullSecrets:
         - name: {{ $painterImage.pullSecret }}
       {{- end}}
-{{- end }}
 {{- end }} {{/* define "painter.deploymentSpec" */}}
 
 {{/* Render painter deployment template with overrides from values*/}}
@@ -148,10 +145,7 @@ metadata:
 
 
 {{- define "painter.serviceSpec"}}
-{{- $painter := $.Values.painter}}
-{{- if $painter.enabled }}
 
-{{- end }}
 {{- end }} {{/* define "painter.serviceSpec" */}}
 
 {{- if $painter.enabled }}

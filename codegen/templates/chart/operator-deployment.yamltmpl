@@ -20,8 +20,6 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 ---
 
 {{- define "[[ $operator.Name ]].deploymentSpec"}}
-{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
-{{- if $[[ $operatorVar ]].enabled }}
 [[- $workloadKind := "Deployment" ]]
 [[- if $operator.Deployment.UseDaemonSet ]]
 [[- $workloadKind = "DaemonSet" ]]
@@ -125,7 +123,6 @@ spec:
       imagePullSecrets:
         - name: {{ $[[ $operatorVar ]]Image.pullSecret }}
       {{- end}}
-{{- end }}
 {{- end }} {{/* define "[[ $operator.Name ]].deploymentSpec" */}}
 
 {{/* Render [[ $operator.Name ]] deployment template with overrides from values*/}}
@@ -151,11 +148,10 @@ metadata:
 
 
 {{- define "[[ $operator.Name ]].serviceSpec"}}
-{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
-{{- if $[[ $operatorVar ]].enabled }}
 [[ if gt (len $operator.Service.Ports) 0 ]]
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -181,7 +177,6 @@ spec:
     port: {{ $[[ $operatorVar ]].ports.[[ $port.Name ]] }}
   [[- end ]]
 [[ end ]]
-{{- end }}
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
 
 {{- if $[[ $operatorVar ]].enabled }}
