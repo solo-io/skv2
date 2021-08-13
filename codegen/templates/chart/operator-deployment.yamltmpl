@@ -40,7 +40,7 @@ metadata:
   annotations:
     app.kubernetes.io/name: [[ $operator.Name ]]
     [[- range $key, $value := $customDeploymentAnnotations ]]
-    [[ $key ]]: [[ $value ]]  
+    [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
   namespace: {{ .Release.Namespace }}

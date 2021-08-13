@@ -6,6 +6,5 @@
 
 [[ range $_, $operator := $values.Operators ]]
 [[ lower_camel $operator.Name ]]:
-  enabled: true
 [[ toYaml $operator.Values | indent 2]]
 [[- end ]]

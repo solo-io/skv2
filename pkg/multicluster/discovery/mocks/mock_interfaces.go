@@ -14,30 +14,30 @@ import (
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 )
 
-// MockGkeConfigBuilder is a mock of GkeConfigBuilder interface
+// MockGkeConfigBuilder is a mock of GkeConfigBuilder interface.
 type MockGkeConfigBuilder struct {
 	ctrl     *gomock.Controller
 	recorder *MockGkeConfigBuilderMockRecorder
 }
 
-// MockGkeConfigBuilderMockRecorder is the mock recorder for MockGkeConfigBuilder
+// MockGkeConfigBuilderMockRecorder is the mock recorder for MockGkeConfigBuilder.
 type MockGkeConfigBuilderMockRecorder struct {
 	mock *MockGkeConfigBuilder
 }
 
-// NewMockGkeConfigBuilder creates a new mock instance
+// NewMockGkeConfigBuilder creates a new mock instance.
 func NewMockGkeConfigBuilder(ctrl *gomock.Controller) *MockGkeConfigBuilder {
 	mock := &MockGkeConfigBuilder{ctrl: ctrl}
 	mock.recorder = &MockGkeConfigBuilderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockGkeConfigBuilder) EXPECT() *MockGkeConfigBuilderMockRecorder {
 	return m.recorder
 }
 
-// ConfigForCluster mocks base method
+// ConfigForCluster mocks base method.
 func (m *MockGkeConfigBuilder) ConfigForCluster(ctx context.Context, cluster *container.Cluster) (clientcmd.ClientConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigForCluster", ctx, cluster)
@@ -46,36 +46,36 @@ func (m *MockGkeConfigBuilder) ConfigForCluster(ctx context.Context, cluster *co
 	return ret0, ret1
 }
 
-// ConfigForCluster indicates an expected call of ConfigForCluster
+// ConfigForCluster indicates an expected call of ConfigForCluster.
 func (mr *MockGkeConfigBuilderMockRecorder) ConfigForCluster(ctx, cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigForCluster", reflect.TypeOf((*MockGkeConfigBuilder)(nil).ConfigForCluster), ctx, cluster)
 }
 
-// MockEksConfigBuilder is a mock of EksConfigBuilder interface
+// MockEksConfigBuilder is a mock of EksConfigBuilder interface.
 type MockEksConfigBuilder struct {
 	ctrl     *gomock.Controller
 	recorder *MockEksConfigBuilderMockRecorder
 }
 
-// MockEksConfigBuilderMockRecorder is the mock recorder for MockEksConfigBuilder
+// MockEksConfigBuilderMockRecorder is the mock recorder for MockEksConfigBuilder.
 type MockEksConfigBuilderMockRecorder struct {
 	mock *MockEksConfigBuilder
 }
 
-// NewMockEksConfigBuilder creates a new mock instance
+// NewMockEksConfigBuilder creates a new mock instance.
 func NewMockEksConfigBuilder(ctrl *gomock.Controller) *MockEksConfigBuilder {
 	mock := &MockEksConfigBuilder{ctrl: ctrl}
 	mock.recorder = &MockEksConfigBuilderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockEksConfigBuilder) EXPECT() *MockEksConfigBuilderMockRecorder {
 	return m.recorder
 }
 
-// ConfigForCluster mocks base method
+// ConfigForCluster mocks base method.
 func (m *MockEksConfigBuilder) ConfigForCluster(ctx context.Context, cluster *eks.Cluster) (clientcmd.ClientConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigForCluster", ctx, cluster)
@@ -84,7 +84,7 @@ func (m *MockEksConfigBuilder) ConfigForCluster(ctx context.Context, cluster *ek
 	return ret0, ret1
 }
 
-// ConfigForCluster indicates an expected call of ConfigForCluster
+// ConfigForCluster indicates an expected call of ConfigForCluster.
 func (mr *MockEksConfigBuilderMockRecorder) ConfigForCluster(ctx, cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigForCluster", reflect.TypeOf((*MockEksConfigBuilder)(nil).ConfigForCluster), ctx, cluster)
