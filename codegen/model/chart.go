@@ -144,6 +144,7 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 				RunAsUser:           10101,
 				ServiceType:         operator.Service.Type,
 				ServicePorts:        servicePorts,
+				Enabled:             true,
 			},
 		})
 	}

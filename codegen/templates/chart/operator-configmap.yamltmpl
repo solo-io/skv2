@@ -1,4 +1,7 @@
 [[- range $operator := $.Operators -]]
+[[- $operatorVar := (lower_camel $operator.Name) -]]
+{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- if $[[ $operatorVar ]].enabled }}
 [[- range $configmap := $operator.ConfigMaps -]]
 ---
 # ConfigMap [[ $configmap.Name ]]
@@ -14,4 +17,5 @@ data:
 [[ toYaml $configmap.Data | indent 2 ]]
 
 [[- end ]]
+{{- end }}
 [[- end ]]

@@ -4,6 +4,7 @@
 
 
 painter:
+  enabled: true
   env:
   - name: FOO
     value: BAR
