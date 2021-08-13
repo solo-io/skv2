@@ -14,30 +14,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockPaintEventHandler is a mock of PaintEventHandler interface.
+// MockPaintEventHandler is a mock of PaintEventHandler interface
 type MockPaintEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockPaintEventHandlerMockRecorder
 }
 
-// MockPaintEventHandlerMockRecorder is the mock recorder for MockPaintEventHandler.
+// MockPaintEventHandlerMockRecorder is the mock recorder for MockPaintEventHandler
 type MockPaintEventHandlerMockRecorder struct {
 	mock *MockPaintEventHandler
 }
 
-// NewMockPaintEventHandler creates a new mock instance.
+// NewMockPaintEventHandler creates a new mock instance
 func NewMockPaintEventHandler(ctrl *gomock.Controller) *MockPaintEventHandler {
 	mock := &MockPaintEventHandler{ctrl: ctrl}
 	mock.recorder = &MockPaintEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockPaintEventHandler) EXPECT() *MockPaintEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreatePaint mocks base method.
+// CreatePaint mocks base method
 func (m *MockPaintEventHandler) CreatePaint(obj *v1.Paint) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePaint", obj)
@@ -45,41 +45,13 @@ func (m *MockPaintEventHandler) CreatePaint(obj *v1.Paint) error {
 	return ret0
 }
 
-// CreatePaint indicates an expected call of CreatePaint.
+// CreatePaint indicates an expected call of CreatePaint
 func (mr *MockPaintEventHandlerMockRecorder) CreatePaint(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePaint", reflect.TypeOf((*MockPaintEventHandler)(nil).CreatePaint), obj)
 }
 
-// DeletePaint mocks base method.
-func (m *MockPaintEventHandler) DeletePaint(obj *v1.Paint) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePaint", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePaint indicates an expected call of DeletePaint.
-func (mr *MockPaintEventHandlerMockRecorder) DeletePaint(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePaint", reflect.TypeOf((*MockPaintEventHandler)(nil).DeletePaint), obj)
-}
-
-// GenericPaint mocks base method.
-func (m *MockPaintEventHandler) GenericPaint(obj *v1.Paint) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenericPaint", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// GenericPaint indicates an expected call of GenericPaint.
-func (mr *MockPaintEventHandlerMockRecorder) GenericPaint(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericPaint", reflect.TypeOf((*MockPaintEventHandler)(nil).GenericPaint), obj)
-}
-
-// UpdatePaint mocks base method.
+// UpdatePaint mocks base method
 func (m *MockPaintEventHandler) UpdatePaint(old, new *v1.Paint) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePaint", old, new)
@@ -87,36 +59,64 @@ func (m *MockPaintEventHandler) UpdatePaint(old, new *v1.Paint) error {
 	return ret0
 }
 
-// UpdatePaint indicates an expected call of UpdatePaint.
+// UpdatePaint indicates an expected call of UpdatePaint
 func (mr *MockPaintEventHandlerMockRecorder) UpdatePaint(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePaint", reflect.TypeOf((*MockPaintEventHandler)(nil).UpdatePaint), old, new)
 }
 
-// MockPaintEventWatcher is a mock of PaintEventWatcher interface.
+// DeletePaint mocks base method
+func (m *MockPaintEventHandler) DeletePaint(obj *v1.Paint) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePaint", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePaint indicates an expected call of DeletePaint
+func (mr *MockPaintEventHandlerMockRecorder) DeletePaint(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePaint", reflect.TypeOf((*MockPaintEventHandler)(nil).DeletePaint), obj)
+}
+
+// GenericPaint mocks base method
+func (m *MockPaintEventHandler) GenericPaint(obj *v1.Paint) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenericPaint", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GenericPaint indicates an expected call of GenericPaint
+func (mr *MockPaintEventHandlerMockRecorder) GenericPaint(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericPaint", reflect.TypeOf((*MockPaintEventHandler)(nil).GenericPaint), obj)
+}
+
+// MockPaintEventWatcher is a mock of PaintEventWatcher interface
 type MockPaintEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockPaintEventWatcherMockRecorder
 }
 
-// MockPaintEventWatcherMockRecorder is the mock recorder for MockPaintEventWatcher.
+// MockPaintEventWatcherMockRecorder is the mock recorder for MockPaintEventWatcher
 type MockPaintEventWatcherMockRecorder struct {
 	mock *MockPaintEventWatcher
 }
 
-// NewMockPaintEventWatcher creates a new mock instance.
+// NewMockPaintEventWatcher creates a new mock instance
 func NewMockPaintEventWatcher(ctrl *gomock.Controller) *MockPaintEventWatcher {
 	mock := &MockPaintEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockPaintEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockPaintEventWatcher) EXPECT() *MockPaintEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method.
+// AddEventHandler mocks base method
 func (m *MockPaintEventWatcher) AddEventHandler(ctx context.Context, h controller.PaintEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -128,37 +128,37 @@ func (m *MockPaintEventWatcher) AddEventHandler(ctx context.Context, h controlle
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler.
+// AddEventHandler indicates an expected call of AddEventHandler
 func (mr *MockPaintEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockPaintEventWatcher)(nil).AddEventHandler), varargs...)
 }
 
-// MockClusterResourceEventHandler is a mock of ClusterResourceEventHandler interface.
+// MockClusterResourceEventHandler is a mock of ClusterResourceEventHandler interface
 type MockClusterResourceEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterResourceEventHandlerMockRecorder
 }
 
-// MockClusterResourceEventHandlerMockRecorder is the mock recorder for MockClusterResourceEventHandler.
+// MockClusterResourceEventHandlerMockRecorder is the mock recorder for MockClusterResourceEventHandler
 type MockClusterResourceEventHandlerMockRecorder struct {
 	mock *MockClusterResourceEventHandler
 }
 
-// NewMockClusterResourceEventHandler creates a new mock instance.
+// NewMockClusterResourceEventHandler creates a new mock instance
 func NewMockClusterResourceEventHandler(ctrl *gomock.Controller) *MockClusterResourceEventHandler {
 	mock := &MockClusterResourceEventHandler{ctrl: ctrl}
 	mock.recorder = &MockClusterResourceEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterResourceEventHandler) EXPECT() *MockClusterResourceEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateClusterResource mocks base method.
+// CreateClusterResource mocks base method
 func (m *MockClusterResourceEventHandler) CreateClusterResource(obj *v1.ClusterResource) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateClusterResource", obj)
@@ -166,41 +166,13 @@ func (m *MockClusterResourceEventHandler) CreateClusterResource(obj *v1.ClusterR
 	return ret0
 }
 
-// CreateClusterResource indicates an expected call of CreateClusterResource.
+// CreateClusterResource indicates an expected call of CreateClusterResource
 func (mr *MockClusterResourceEventHandlerMockRecorder) CreateClusterResource(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateClusterResource", reflect.TypeOf((*MockClusterResourceEventHandler)(nil).CreateClusterResource), obj)
 }
 
-// DeleteClusterResource mocks base method.
-func (m *MockClusterResourceEventHandler) DeleteClusterResource(obj *v1.ClusterResource) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteClusterResource", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteClusterResource indicates an expected call of DeleteClusterResource.
-func (mr *MockClusterResourceEventHandlerMockRecorder) DeleteClusterResource(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClusterResource", reflect.TypeOf((*MockClusterResourceEventHandler)(nil).DeleteClusterResource), obj)
-}
-
-// GenericClusterResource mocks base method.
-func (m *MockClusterResourceEventHandler) GenericClusterResource(obj *v1.ClusterResource) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenericClusterResource", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// GenericClusterResource indicates an expected call of GenericClusterResource.
-func (mr *MockClusterResourceEventHandlerMockRecorder) GenericClusterResource(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericClusterResource", reflect.TypeOf((*MockClusterResourceEventHandler)(nil).GenericClusterResource), obj)
-}
-
-// UpdateClusterResource mocks base method.
+// UpdateClusterResource mocks base method
 func (m *MockClusterResourceEventHandler) UpdateClusterResource(old, new *v1.ClusterResource) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateClusterResource", old, new)
@@ -208,36 +180,64 @@ func (m *MockClusterResourceEventHandler) UpdateClusterResource(old, new *v1.Clu
 	return ret0
 }
 
-// UpdateClusterResource indicates an expected call of UpdateClusterResource.
+// UpdateClusterResource indicates an expected call of UpdateClusterResource
 func (mr *MockClusterResourceEventHandlerMockRecorder) UpdateClusterResource(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClusterResource", reflect.TypeOf((*MockClusterResourceEventHandler)(nil).UpdateClusterResource), old, new)
 }
 
-// MockClusterResourceEventWatcher is a mock of ClusterResourceEventWatcher interface.
+// DeleteClusterResource mocks base method
+func (m *MockClusterResourceEventHandler) DeleteClusterResource(obj *v1.ClusterResource) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteClusterResource", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteClusterResource indicates an expected call of DeleteClusterResource
+func (mr *MockClusterResourceEventHandlerMockRecorder) DeleteClusterResource(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClusterResource", reflect.TypeOf((*MockClusterResourceEventHandler)(nil).DeleteClusterResource), obj)
+}
+
+// GenericClusterResource mocks base method
+func (m *MockClusterResourceEventHandler) GenericClusterResource(obj *v1.ClusterResource) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenericClusterResource", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GenericClusterResource indicates an expected call of GenericClusterResource
+func (mr *MockClusterResourceEventHandlerMockRecorder) GenericClusterResource(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericClusterResource", reflect.TypeOf((*MockClusterResourceEventHandler)(nil).GenericClusterResource), obj)
+}
+
+// MockClusterResourceEventWatcher is a mock of ClusterResourceEventWatcher interface
 type MockClusterResourceEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterResourceEventWatcherMockRecorder
 }
 
-// MockClusterResourceEventWatcherMockRecorder is the mock recorder for MockClusterResourceEventWatcher.
+// MockClusterResourceEventWatcherMockRecorder is the mock recorder for MockClusterResourceEventWatcher
 type MockClusterResourceEventWatcherMockRecorder struct {
 	mock *MockClusterResourceEventWatcher
 }
 
-// NewMockClusterResourceEventWatcher creates a new mock instance.
+// NewMockClusterResourceEventWatcher creates a new mock instance
 func NewMockClusterResourceEventWatcher(ctrl *gomock.Controller) *MockClusterResourceEventWatcher {
 	mock := &MockClusterResourceEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockClusterResourceEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterResourceEventWatcher) EXPECT() *MockClusterResourceEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method.
+// AddEventHandler mocks base method
 func (m *MockClusterResourceEventWatcher) AddEventHandler(ctx context.Context, h controller.ClusterResourceEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -249,7 +249,7 @@ func (m *MockClusterResourceEventWatcher) AddEventHandler(ctx context.Context, h
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler.
+// AddEventHandler indicates an expected call of AddEventHandler
 func (mr *MockClusterResourceEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)

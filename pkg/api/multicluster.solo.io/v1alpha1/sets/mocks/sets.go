@@ -15,171 +15,30 @@ import (
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockKubernetesClusterSet is a mock of KubernetesClusterSet interface.
+// MockKubernetesClusterSet is a mock of KubernetesClusterSet interface
 type MockKubernetesClusterSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterSetMockRecorder
 }
 
-// MockKubernetesClusterSetMockRecorder is the mock recorder for MockKubernetesClusterSet.
+// MockKubernetesClusterSetMockRecorder is the mock recorder for MockKubernetesClusterSet
 type MockKubernetesClusterSetMockRecorder struct {
 	mock *MockKubernetesClusterSet
 }
 
-// NewMockKubernetesClusterSet creates a new mock instance.
+// NewMockKubernetesClusterSet creates a new mock instance
 func NewMockKubernetesClusterSet(ctrl *gomock.Controller) *MockKubernetesClusterSet {
 	mock := &MockKubernetesClusterSet{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockKubernetesClusterSet) EXPECT() *MockKubernetesClusterSetMockRecorder {
 	return m.recorder
 }
 
-// Clone mocks base method.
-func (m *MockKubernetesClusterSet) Clone() v1alpha1sets.KubernetesClusterSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Clone")
-	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
-	return ret0
-}
-
-// Clone indicates an expected call of Clone.
-func (mr *MockKubernetesClusterSetMockRecorder) Clone() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Clone))
-}
-
-// Delete mocks base method.
-func (m *MockKubernetesClusterSet) Delete(kubernetesCluster ezkube.ResourceId) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Delete", kubernetesCluster)
-}
-
-// Delete indicates an expected call of Delete.
-func (mr *MockKubernetesClusterSetMockRecorder) Delete(kubernetesCluster interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Delete), kubernetesCluster)
-}
-
-// Delta mocks base method.
-func (m *MockKubernetesClusterSet) Delta(newSet v1alpha1sets.KubernetesClusterSet) sets.ResourceDelta {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delta", newSet)
-	ret0, _ := ret[0].(sets.ResourceDelta)
-	return ret0
-}
-
-// Delta indicates an expected call of Delta.
-func (mr *MockKubernetesClusterSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Delta), newSet)
-}
-
-// Difference mocks base method.
-func (m *MockKubernetesClusterSet) Difference(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Difference", set)
-	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
-	return ret0
-}
-
-// Difference indicates an expected call of Difference.
-func (mr *MockKubernetesClusterSetMockRecorder) Difference(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Difference), set)
-}
-
-// Equal mocks base method.
-func (m *MockKubernetesClusterSet) Equal(kubernetesClusterSet v1alpha1sets.KubernetesClusterSet) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Equal", kubernetesClusterSet)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Equal indicates an expected call of Equal.
-func (mr *MockKubernetesClusterSetMockRecorder) Equal(kubernetesClusterSet interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Equal), kubernetesClusterSet)
-}
-
-// Find mocks base method.
-func (m *MockKubernetesClusterSet) Find(id ezkube.ResourceId) (*v1alpha1.KubernetesCluster, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", id)
-	ret0, _ := ret[0].(*v1alpha1.KubernetesCluster)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Find indicates an expected call of Find.
-func (mr *MockKubernetesClusterSetMockRecorder) Find(id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Find), id)
-}
-
-// Generic mocks base method.
-func (m *MockKubernetesClusterSet) Generic() sets.ResourceSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic")
-	ret0, _ := ret[0].(sets.ResourceSet)
-	return ret0
-}
-
-// Generic indicates an expected call of Generic.
-func (mr *MockKubernetesClusterSetMockRecorder) Generic() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Generic))
-}
-
-// Has mocks base method.
-func (m *MockKubernetesClusterSet) Has(kubernetesCluster ezkube.ResourceId) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Has", kubernetesCluster)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Has indicates an expected call of Has.
-func (mr *MockKubernetesClusterSetMockRecorder) Has(kubernetesCluster interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Has), kubernetesCluster)
-}
-
-// Insert mocks base method.
-func (m *MockKubernetesClusterSet) Insert(kubernetesCluster ...*v1alpha1.KubernetesCluster) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{}
-	for _, a := range kubernetesCluster {
-		varargs = append(varargs, a)
-	}
-	m.ctrl.Call(m, "Insert", varargs...)
-}
-
-// Insert indicates an expected call of Insert.
-func (mr *MockKubernetesClusterSetMockRecorder) Insert(kubernetesCluster ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Insert), kubernetesCluster...)
-}
-
-// Intersection mocks base method.
-func (m *MockKubernetesClusterSet) Intersection(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Intersection", set)
-	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
-	return ret0
-}
-
-// Intersection indicates an expected call of Intersection.
-func (mr *MockKubernetesClusterSetMockRecorder) Intersection(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Intersection), set)
-}
-
-// Keys mocks base method.
+// Keys mocks base method
 func (m *MockKubernetesClusterSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -187,27 +46,13 @@ func (m *MockKubernetesClusterSet) Keys() sets0.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys.
+// Keys indicates an expected call of Keys
 func (mr *MockKubernetesClusterSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Keys))
 }
 
-// Length mocks base method.
-func (m *MockKubernetesClusterSet) Length() int {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Length")
-	ret0, _ := ret[0].(int)
-	return ret0
-}
-
-// Length indicates an expected call of Length.
-func (mr *MockKubernetesClusterSetMockRecorder) Length() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Length))
-}
-
-// List mocks base method.
+// List mocks base method
 func (m *MockKubernetesClusterSet) List(filterResource ...func(*v1alpha1.KubernetesCluster) bool) []*v1alpha1.KubernetesCluster {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -219,41 +64,13 @@ func (m *MockKubernetesClusterSet) List(filterResource ...func(*v1alpha1.Kuberne
 	return ret0
 }
 
-// List indicates an expected call of List.
+// List indicates an expected call of List
 func (mr *MockKubernetesClusterSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockKubernetesClusterSet)(nil).List), filterResource...)
 }
 
-// Map mocks base method.
-func (m *MockKubernetesClusterSet) Map() map[string]*v1alpha1.KubernetesCluster {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Map")
-	ret0, _ := ret[0].(map[string]*v1alpha1.KubernetesCluster)
-	return ret0
-}
-
-// Map indicates an expected call of Map.
-func (mr *MockKubernetesClusterSetMockRecorder) Map() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Map))
-}
-
-// Union mocks base method.
-func (m *MockKubernetesClusterSet) Union(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Union", set)
-	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
-	return ret0
-}
-
-// Union indicates an expected call of Union.
-func (mr *MockKubernetesClusterSetMockRecorder) Union(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Union), set)
-}
-
-// UnsortedList mocks base method.
+// UnsortedList mocks base method
 func (m *MockKubernetesClusterSet) UnsortedList(filterResource ...func(*v1alpha1.KubernetesCluster) bool) []*v1alpha1.KubernetesCluster {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -265,8 +82,191 @@ func (m *MockKubernetesClusterSet) UnsortedList(filterResource ...func(*v1alpha1
 	return ret0
 }
 
-// UnsortedList indicates an expected call of UnsortedList.
+// UnsortedList indicates an expected call of UnsortedList
 func (mr *MockKubernetesClusterSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockKubernetesClusterSet)(nil).UnsortedList), filterResource...)
+}
+
+// Map mocks base method
+func (m *MockKubernetesClusterSet) Map() map[string]*v1alpha1.KubernetesCluster {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1alpha1.KubernetesCluster)
+	return ret0
+}
+
+// Map indicates an expected call of Map
+func (mr *MockKubernetesClusterSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Map))
+}
+
+// Insert mocks base method
+func (m *MockKubernetesClusterSet) Insert(kubernetesCluster ...*v1alpha1.KubernetesCluster) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range kubernetesCluster {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert
+func (mr *MockKubernetesClusterSetMockRecorder) Insert(kubernetesCluster ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Insert), kubernetesCluster...)
+}
+
+// Equal mocks base method
+func (m *MockKubernetesClusterSet) Equal(kubernetesClusterSet v1alpha1sets.KubernetesClusterSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", kubernetesClusterSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal
+func (mr *MockKubernetesClusterSetMockRecorder) Equal(kubernetesClusterSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Equal), kubernetesClusterSet)
+}
+
+// Has mocks base method
+func (m *MockKubernetesClusterSet) Has(kubernetesCluster ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", kubernetesCluster)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has
+func (mr *MockKubernetesClusterSetMockRecorder) Has(kubernetesCluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Has), kubernetesCluster)
+}
+
+// Delete mocks base method
+func (m *MockKubernetesClusterSet) Delete(kubernetesCluster ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", kubernetesCluster)
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockKubernetesClusterSetMockRecorder) Delete(kubernetesCluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Delete), kubernetesCluster)
+}
+
+// Union mocks base method
+func (m *MockKubernetesClusterSet) Union(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union
+func (mr *MockKubernetesClusterSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Union), set)
+}
+
+// Difference mocks base method
+func (m *MockKubernetesClusterSet) Difference(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference
+func (mr *MockKubernetesClusterSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Difference), set)
+}
+
+// Intersection mocks base method
+func (m *MockKubernetesClusterSet) Intersection(set v1alpha1sets.KubernetesClusterSet) v1alpha1sets.KubernetesClusterSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection
+func (mr *MockKubernetesClusterSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Intersection), set)
+}
+
+// Find mocks base method
+func (m *MockKubernetesClusterSet) Find(id ezkube.ResourceId) (*v1alpha1.KubernetesCluster, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1alpha1.KubernetesCluster)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find
+func (mr *MockKubernetesClusterSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Find), id)
+}
+
+// Length mocks base method
+func (m *MockKubernetesClusterSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length
+func (mr *MockKubernetesClusterSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Length))
+}
+
+// Generic mocks base method
+func (m *MockKubernetesClusterSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockKubernetesClusterSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockKubernetesClusterSet) Delta(newSet v1alpha1sets.KubernetesClusterSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockKubernetesClusterSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Delta), newSet)
+}
+
+// Clone mocks base method
+func (m *MockKubernetesClusterSet) Clone() v1alpha1sets.KubernetesClusterSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone
+func (mr *MockKubernetesClusterSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockKubernetesClusterSet)(nil).Clone))
 }

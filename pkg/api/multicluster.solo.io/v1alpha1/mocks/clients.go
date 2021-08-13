@@ -13,30 +13,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockMulticlusterClientset is a mock of MulticlusterClientset interface.
+// MockMulticlusterClientset is a mock of MulticlusterClientset interface
 type MockMulticlusterClientset struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterClientsetMockRecorder
 }
 
-// MockMulticlusterClientsetMockRecorder is the mock recorder for MockMulticlusterClientset.
+// MockMulticlusterClientsetMockRecorder is the mock recorder for MockMulticlusterClientset
 type MockMulticlusterClientsetMockRecorder struct {
 	mock *MockMulticlusterClientset
 }
 
-// NewMockMulticlusterClientset creates a new mock instance.
+// NewMockMulticlusterClientset creates a new mock instance
 func NewMockMulticlusterClientset(ctrl *gomock.Controller) *MockMulticlusterClientset {
 	mock := &MockMulticlusterClientset{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterClientsetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterClientset) EXPECT() *MockMulticlusterClientsetMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method.
+// Cluster mocks base method
 func (m *MockMulticlusterClientset) Cluster(cluster string) (v1alpha1.Clientset, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -45,36 +45,36 @@ func (m *MockMulticlusterClientset) Cluster(cluster string) (v1alpha1.Clientset,
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster.
+// Cluster indicates an expected call of Cluster
 func (mr *MockMulticlusterClientsetMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterClientset)(nil).Cluster), cluster)
 }
 
-// MockClientset is a mock of Clientset interface.
+// MockClientset is a mock of Clientset interface
 type MockClientset struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientsetMockRecorder
 }
 
-// MockClientsetMockRecorder is the mock recorder for MockClientset.
+// MockClientsetMockRecorder is the mock recorder for MockClientset
 type MockClientsetMockRecorder struct {
 	mock *MockClientset
 }
 
-// NewMockClientset creates a new mock instance.
+// NewMockClientset creates a new mock instance
 func NewMockClientset(ctrl *gomock.Controller) *MockClientset {
 	mock := &MockClientset{ctrl: ctrl}
 	mock.recorder = &MockClientsetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
-// KubernetesClusters mocks base method.
+// KubernetesClusters mocks base method
 func (m *MockClientset) KubernetesClusters() v1alpha1.KubernetesClusterClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "KubernetesClusters")
@@ -82,36 +82,36 @@ func (m *MockClientset) KubernetesClusters() v1alpha1.KubernetesClusterClient {
 	return ret0
 }
 
-// KubernetesClusters indicates an expected call of KubernetesClusters.
+// KubernetesClusters indicates an expected call of KubernetesClusters
 func (mr *MockClientsetMockRecorder) KubernetesClusters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KubernetesClusters", reflect.TypeOf((*MockClientset)(nil).KubernetesClusters))
 }
 
-// MockKubernetesClusterReader is a mock of KubernetesClusterReader interface.
+// MockKubernetesClusterReader is a mock of KubernetesClusterReader interface
 type MockKubernetesClusterReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterReaderMockRecorder
 }
 
-// MockKubernetesClusterReaderMockRecorder is the mock recorder for MockKubernetesClusterReader.
+// MockKubernetesClusterReaderMockRecorder is the mock recorder for MockKubernetesClusterReader
 type MockKubernetesClusterReaderMockRecorder struct {
 	mock *MockKubernetesClusterReader
 }
 
-// NewMockKubernetesClusterReader creates a new mock instance.
+// NewMockKubernetesClusterReader creates a new mock instance
 func NewMockKubernetesClusterReader(ctrl *gomock.Controller) *MockKubernetesClusterReader {
 	mock := &MockKubernetesClusterReader{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockKubernetesClusterReader) EXPECT() *MockKubernetesClusterReaderMockRecorder {
 	return m.recorder
 }
 
-// GetKubernetesCluster mocks base method.
+// GetKubernetesCluster mocks base method
 func (m *MockKubernetesClusterReader) GetKubernetesCluster(ctx context.Context, key client.ObjectKey) (*v1alpha1.KubernetesCluster, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetKubernetesCluster", ctx, key)
@@ -120,13 +120,13 @@ func (m *MockKubernetesClusterReader) GetKubernetesCluster(ctx context.Context, 
 	return ret0, ret1
 }
 
-// GetKubernetesCluster indicates an expected call of GetKubernetesCluster.
+// GetKubernetesCluster indicates an expected call of GetKubernetesCluster
 func (mr *MockKubernetesClusterReaderMockRecorder) GetKubernetesCluster(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterReader)(nil).GetKubernetesCluster), ctx, key)
 }
 
-// ListKubernetesCluster mocks base method.
+// ListKubernetesCluster mocks base method
 func (m *MockKubernetesClusterReader) ListKubernetesCluster(ctx context.Context, opts ...client.ListOption) (*v1alpha1.KubernetesClusterList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -139,37 +139,37 @@ func (m *MockKubernetesClusterReader) ListKubernetesCluster(ctx context.Context,
 	return ret0, ret1
 }
 
-// ListKubernetesCluster indicates an expected call of ListKubernetesCluster.
+// ListKubernetesCluster indicates an expected call of ListKubernetesCluster
 func (mr *MockKubernetesClusterReaderMockRecorder) ListKubernetesCluster(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterReader)(nil).ListKubernetesCluster), varargs...)
 }
 
-// MockKubernetesClusterWriter is a mock of KubernetesClusterWriter interface.
+// MockKubernetesClusterWriter is a mock of KubernetesClusterWriter interface
 type MockKubernetesClusterWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterWriterMockRecorder
 }
 
-// MockKubernetesClusterWriterMockRecorder is the mock recorder for MockKubernetesClusterWriter.
+// MockKubernetesClusterWriterMockRecorder is the mock recorder for MockKubernetesClusterWriter
 type MockKubernetesClusterWriterMockRecorder struct {
 	mock *MockKubernetesClusterWriter
 }
 
-// NewMockKubernetesClusterWriter creates a new mock instance.
+// NewMockKubernetesClusterWriter creates a new mock instance
 func NewMockKubernetesClusterWriter(ctrl *gomock.Controller) *MockKubernetesClusterWriter {
 	mock := &MockKubernetesClusterWriter{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockKubernetesClusterWriter) EXPECT() *MockKubernetesClusterWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateKubernetesCluster mocks base method.
+// CreateKubernetesCluster mocks base method
 func (m *MockKubernetesClusterWriter) CreateKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -181,33 +181,14 @@ func (m *MockKubernetesClusterWriter) CreateKubernetesCluster(ctx context.Contex
 	return ret0
 }
 
-// CreateKubernetesCluster indicates an expected call of CreateKubernetesCluster.
+// CreateKubernetesCluster indicates an expected call of CreateKubernetesCluster
 func (mr *MockKubernetesClusterWriterMockRecorder) CreateKubernetesCluster(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterWriter)(nil).CreateKubernetesCluster), varargs...)
 }
 
-// DeleteAllOfKubernetesCluster mocks base method.
-func (m *MockKubernetesClusterWriter) DeleteAllOfKubernetesCluster(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteAllOfKubernetesCluster", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteAllOfKubernetesCluster indicates an expected call of DeleteAllOfKubernetesCluster.
-func (mr *MockKubernetesClusterWriterMockRecorder) DeleteAllOfKubernetesCluster(ctx interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterWriter)(nil).DeleteAllOfKubernetesCluster), varargs...)
-}
-
-// DeleteKubernetesCluster mocks base method.
+// DeleteKubernetesCluster mocks base method
 func (m *MockKubernetesClusterWriter) DeleteKubernetesCluster(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
@@ -219,33 +200,14 @@ func (m *MockKubernetesClusterWriter) DeleteKubernetesCluster(ctx context.Contex
 	return ret0
 }
 
-// DeleteKubernetesCluster indicates an expected call of DeleteKubernetesCluster.
+// DeleteKubernetesCluster indicates an expected call of DeleteKubernetesCluster
 func (mr *MockKubernetesClusterWriterMockRecorder) DeleteKubernetesCluster(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterWriter)(nil).DeleteKubernetesCluster), varargs...)
 }
 
-// PatchKubernetesCluster mocks base method.
-func (m *MockKubernetesClusterWriter) PatchKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj, patch}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "PatchKubernetesCluster", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchKubernetesCluster indicates an expected call of PatchKubernetesCluster.
-func (mr *MockKubernetesClusterWriterMockRecorder) PatchKubernetesCluster(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterWriter)(nil).PatchKubernetesCluster), varargs...)
-}
-
-// UpdateKubernetesCluster mocks base method.
+// UpdateKubernetesCluster mocks base method
 func (m *MockKubernetesClusterWriter) UpdateKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -257,14 +219,52 @@ func (m *MockKubernetesClusterWriter) UpdateKubernetesCluster(ctx context.Contex
 	return ret0
 }
 
-// UpdateKubernetesCluster indicates an expected call of UpdateKubernetesCluster.
+// UpdateKubernetesCluster indicates an expected call of UpdateKubernetesCluster
 func (mr *MockKubernetesClusterWriterMockRecorder) UpdateKubernetesCluster(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterWriter)(nil).UpdateKubernetesCluster), varargs...)
 }
 
-// UpsertKubernetesCluster mocks base method.
+// PatchKubernetesCluster mocks base method
+func (m *MockKubernetesClusterWriter) PatchKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchKubernetesCluster", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchKubernetesCluster indicates an expected call of PatchKubernetesCluster
+func (mr *MockKubernetesClusterWriterMockRecorder) PatchKubernetesCluster(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterWriter)(nil).PatchKubernetesCluster), varargs...)
+}
+
+// DeleteAllOfKubernetesCluster mocks base method
+func (m *MockKubernetesClusterWriter) DeleteAllOfKubernetesCluster(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfKubernetesCluster", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfKubernetesCluster indicates an expected call of DeleteAllOfKubernetesCluster
+func (mr *MockKubernetesClusterWriterMockRecorder) DeleteAllOfKubernetesCluster(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterWriter)(nil).DeleteAllOfKubernetesCluster), varargs...)
+}
+
+// UpsertKubernetesCluster mocks base method
 func (m *MockKubernetesClusterWriter) UpsertKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, transitionFuncs ...v1alpha1.KubernetesClusterTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -276,56 +276,37 @@ func (m *MockKubernetesClusterWriter) UpsertKubernetesCluster(ctx context.Contex
 	return ret0
 }
 
-// UpsertKubernetesCluster indicates an expected call of UpsertKubernetesCluster.
+// UpsertKubernetesCluster indicates an expected call of UpsertKubernetesCluster
 func (mr *MockKubernetesClusterWriterMockRecorder) UpsertKubernetesCluster(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterWriter)(nil).UpsertKubernetesCluster), varargs...)
 }
 
-// MockKubernetesClusterStatusWriter is a mock of KubernetesClusterStatusWriter interface.
+// MockKubernetesClusterStatusWriter is a mock of KubernetesClusterStatusWriter interface
 type MockKubernetesClusterStatusWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterStatusWriterMockRecorder
 }
 
-// MockKubernetesClusterStatusWriterMockRecorder is the mock recorder for MockKubernetesClusterStatusWriter.
+// MockKubernetesClusterStatusWriterMockRecorder is the mock recorder for MockKubernetesClusterStatusWriter
 type MockKubernetesClusterStatusWriterMockRecorder struct {
 	mock *MockKubernetesClusterStatusWriter
 }
 
-// NewMockKubernetesClusterStatusWriter creates a new mock instance.
+// NewMockKubernetesClusterStatusWriter creates a new mock instance
 func NewMockKubernetesClusterStatusWriter(ctrl *gomock.Controller) *MockKubernetesClusterStatusWriter {
 	mock := &MockKubernetesClusterStatusWriter{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterStatusWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockKubernetesClusterStatusWriter) EXPECT() *MockKubernetesClusterStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// PatchKubernetesClusterStatus mocks base method.
-func (m *MockKubernetesClusterStatusWriter) PatchKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj, patch}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "PatchKubernetesClusterStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchKubernetesClusterStatus indicates an expected call of PatchKubernetesClusterStatus.
-func (mr *MockKubernetesClusterStatusWriterMockRecorder) PatchKubernetesClusterStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterStatusWriter)(nil).PatchKubernetesClusterStatus), varargs...)
-}
-
-// UpdateKubernetesClusterStatus mocks base method.
+// UpdateKubernetesClusterStatus mocks base method
 func (m *MockKubernetesClusterStatusWriter) UpdateKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -337,94 +318,56 @@ func (m *MockKubernetesClusterStatusWriter) UpdateKubernetesClusterStatus(ctx co
 	return ret0
 }
 
-// UpdateKubernetesClusterStatus indicates an expected call of UpdateKubernetesClusterStatus.
+// UpdateKubernetesClusterStatus indicates an expected call of UpdateKubernetesClusterStatus
 func (mr *MockKubernetesClusterStatusWriterMockRecorder) UpdateKubernetesClusterStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterStatusWriter)(nil).UpdateKubernetesClusterStatus), varargs...)
 }
 
-// MockKubernetesClusterClient is a mock of KubernetesClusterClient interface.
+// PatchKubernetesClusterStatus mocks base method
+func (m *MockKubernetesClusterStatusWriter) PatchKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchKubernetesClusterStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchKubernetesClusterStatus indicates an expected call of PatchKubernetesClusterStatus
+func (mr *MockKubernetesClusterStatusWriterMockRecorder) PatchKubernetesClusterStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterStatusWriter)(nil).PatchKubernetesClusterStatus), varargs...)
+}
+
+// MockKubernetesClusterClient is a mock of KubernetesClusterClient interface
 type MockKubernetesClusterClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterClientMockRecorder
 }
 
-// MockKubernetesClusterClientMockRecorder is the mock recorder for MockKubernetesClusterClient.
+// MockKubernetesClusterClientMockRecorder is the mock recorder for MockKubernetesClusterClient
 type MockKubernetesClusterClientMockRecorder struct {
 	mock *MockKubernetesClusterClient
 }
 
-// NewMockKubernetesClusterClient creates a new mock instance.
+// NewMockKubernetesClusterClient creates a new mock instance
 func NewMockKubernetesClusterClient(ctrl *gomock.Controller) *MockKubernetesClusterClient {
 	mock := &MockKubernetesClusterClient{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockKubernetesClusterClient) EXPECT() *MockKubernetesClusterClientMockRecorder {
 	return m.recorder
 }
 
-// CreateKubernetesCluster mocks base method.
-func (m *MockKubernetesClusterClient) CreateKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.CreateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "CreateKubernetesCluster", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateKubernetesCluster indicates an expected call of CreateKubernetesCluster.
-func (mr *MockKubernetesClusterClientMockRecorder) CreateKubernetesCluster(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).CreateKubernetesCluster), varargs...)
-}
-
-// DeleteAllOfKubernetesCluster mocks base method.
-func (m *MockKubernetesClusterClient) DeleteAllOfKubernetesCluster(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteAllOfKubernetesCluster", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteAllOfKubernetesCluster indicates an expected call of DeleteAllOfKubernetesCluster.
-func (mr *MockKubernetesClusterClientMockRecorder) DeleteAllOfKubernetesCluster(ctx interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).DeleteAllOfKubernetesCluster), varargs...)
-}
-
-// DeleteKubernetesCluster mocks base method.
-func (m *MockKubernetesClusterClient) DeleteKubernetesCluster(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteKubernetesCluster", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteKubernetesCluster indicates an expected call of DeleteKubernetesCluster.
-func (mr *MockKubernetesClusterClientMockRecorder) DeleteKubernetesCluster(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).DeleteKubernetesCluster), varargs...)
-}
-
-// GetKubernetesCluster mocks base method.
+// GetKubernetesCluster mocks base method
 func (m *MockKubernetesClusterClient) GetKubernetesCluster(ctx context.Context, key client.ObjectKey) (*v1alpha1.KubernetesCluster, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetKubernetesCluster", ctx, key)
@@ -433,13 +376,13 @@ func (m *MockKubernetesClusterClient) GetKubernetesCluster(ctx context.Context, 
 	return ret0, ret1
 }
 
-// GetKubernetesCluster indicates an expected call of GetKubernetesCluster.
+// GetKubernetesCluster indicates an expected call of GetKubernetesCluster
 func (mr *MockKubernetesClusterClientMockRecorder) GetKubernetesCluster(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).GetKubernetesCluster), ctx, key)
 }
 
-// ListKubernetesCluster mocks base method.
+// ListKubernetesCluster mocks base method
 func (m *MockKubernetesClusterClient) ListKubernetesCluster(ctx context.Context, opts ...client.ListOption) (*v1alpha1.KubernetesClusterList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -452,52 +395,52 @@ func (m *MockKubernetesClusterClient) ListKubernetesCluster(ctx context.Context,
 	return ret0, ret1
 }
 
-// ListKubernetesCluster indicates an expected call of ListKubernetesCluster.
+// ListKubernetesCluster indicates an expected call of ListKubernetesCluster
 func (mr *MockKubernetesClusterClientMockRecorder) ListKubernetesCluster(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).ListKubernetesCluster), varargs...)
 }
 
-// PatchKubernetesCluster mocks base method.
-func (m *MockKubernetesClusterClient) PatchKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
+// CreateKubernetesCluster mocks base method
+func (m *MockKubernetesClusterClient) CreateKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj, patch}
+	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchKubernetesCluster", varargs...)
+	ret := m.ctrl.Call(m, "CreateKubernetesCluster", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchKubernetesCluster indicates an expected call of PatchKubernetesCluster.
-func (mr *MockKubernetesClusterClientMockRecorder) PatchKubernetesCluster(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// CreateKubernetesCluster indicates an expected call of CreateKubernetesCluster
+func (mr *MockKubernetesClusterClientMockRecorder) CreateKubernetesCluster(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).PatchKubernetesCluster), varargs...)
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).CreateKubernetesCluster), varargs...)
 }
 
-// PatchKubernetesClusterStatus mocks base method.
-func (m *MockKubernetesClusterClient) PatchKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
+// DeleteKubernetesCluster mocks base method
+func (m *MockKubernetesClusterClient) DeleteKubernetesCluster(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj, patch}
+	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchKubernetesClusterStatus", varargs...)
+	ret := m.ctrl.Call(m, "DeleteKubernetesCluster", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchKubernetesClusterStatus indicates an expected call of PatchKubernetesClusterStatus.
-func (mr *MockKubernetesClusterClientMockRecorder) PatchKubernetesClusterStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// DeleteKubernetesCluster indicates an expected call of DeleteKubernetesCluster
+func (mr *MockKubernetesClusterClientMockRecorder) DeleteKubernetesCluster(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterClient)(nil).PatchKubernetesClusterStatus), varargs...)
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).DeleteKubernetesCluster), varargs...)
 }
 
-// UpdateKubernetesCluster mocks base method.
+// UpdateKubernetesCluster mocks base method
 func (m *MockKubernetesClusterClient) UpdateKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -509,33 +452,52 @@ func (m *MockKubernetesClusterClient) UpdateKubernetesCluster(ctx context.Contex
 	return ret0
 }
 
-// UpdateKubernetesCluster indicates an expected call of UpdateKubernetesCluster.
+// UpdateKubernetesCluster indicates an expected call of UpdateKubernetesCluster
 func (mr *MockKubernetesClusterClientMockRecorder) UpdateKubernetesCluster(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).UpdateKubernetesCluster), varargs...)
 }
 
-// UpdateKubernetesClusterStatus mocks base method.
-func (m *MockKubernetesClusterClient) UpdateKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.UpdateOption) error {
+// PatchKubernetesCluster mocks base method
+func (m *MockKubernetesClusterClient) PatchKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
+	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateKubernetesClusterStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchKubernetesCluster", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateKubernetesClusterStatus indicates an expected call of UpdateKubernetesClusterStatus.
-func (mr *MockKubernetesClusterClientMockRecorder) UpdateKubernetesClusterStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// PatchKubernetesCluster indicates an expected call of PatchKubernetesCluster
+func (mr *MockKubernetesClusterClientMockRecorder) PatchKubernetesCluster(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterClient)(nil).UpdateKubernetesClusterStatus), varargs...)
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).PatchKubernetesCluster), varargs...)
 }
 
-// UpsertKubernetesCluster mocks base method.
+// DeleteAllOfKubernetesCluster mocks base method
+func (m *MockKubernetesClusterClient) DeleteAllOfKubernetesCluster(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfKubernetesCluster", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfKubernetesCluster indicates an expected call of DeleteAllOfKubernetesCluster
+func (mr *MockKubernetesClusterClientMockRecorder) DeleteAllOfKubernetesCluster(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).DeleteAllOfKubernetesCluster), varargs...)
+}
+
+// UpsertKubernetesCluster mocks base method
 func (m *MockKubernetesClusterClient) UpsertKubernetesCluster(ctx context.Context, obj *v1alpha1.KubernetesCluster, transitionFuncs ...v1alpha1.KubernetesClusterTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -547,37 +509,75 @@ func (m *MockKubernetesClusterClient) UpsertKubernetesCluster(ctx context.Contex
 	return ret0
 }
 
-// UpsertKubernetesCluster indicates an expected call of UpsertKubernetesCluster.
+// UpsertKubernetesCluster indicates an expected call of UpsertKubernetesCluster
 func (mr *MockKubernetesClusterClientMockRecorder) UpsertKubernetesCluster(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertKubernetesCluster", reflect.TypeOf((*MockKubernetesClusterClient)(nil).UpsertKubernetesCluster), varargs...)
 }
 
-// MockMulticlusterKubernetesClusterClient is a mock of MulticlusterKubernetesClusterClient interface.
+// UpdateKubernetesClusterStatus mocks base method
+func (m *MockKubernetesClusterClient) UpdateKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateKubernetesClusterStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateKubernetesClusterStatus indicates an expected call of UpdateKubernetesClusterStatus
+func (mr *MockKubernetesClusterClientMockRecorder) UpdateKubernetesClusterStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterClient)(nil).UpdateKubernetesClusterStatus), varargs...)
+}
+
+// PatchKubernetesClusterStatus mocks base method
+func (m *MockKubernetesClusterClient) PatchKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchKubernetesClusterStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchKubernetesClusterStatus indicates an expected call of PatchKubernetesClusterStatus
+func (mr *MockKubernetesClusterClientMockRecorder) PatchKubernetesClusterStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterClient)(nil).PatchKubernetesClusterStatus), varargs...)
+}
+
+// MockMulticlusterKubernetesClusterClient is a mock of MulticlusterKubernetesClusterClient interface
 type MockMulticlusterKubernetesClusterClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterKubernetesClusterClientMockRecorder
 }
 
-// MockMulticlusterKubernetesClusterClientMockRecorder is the mock recorder for MockMulticlusterKubernetesClusterClient.
+// MockMulticlusterKubernetesClusterClientMockRecorder is the mock recorder for MockMulticlusterKubernetesClusterClient
 type MockMulticlusterKubernetesClusterClientMockRecorder struct {
 	mock *MockMulticlusterKubernetesClusterClient
 }
 
-// NewMockMulticlusterKubernetesClusterClient creates a new mock instance.
+// NewMockMulticlusterKubernetesClusterClient creates a new mock instance
 func NewMockMulticlusterKubernetesClusterClient(ctrl *gomock.Controller) *MockMulticlusterKubernetesClusterClient {
 	mock := &MockMulticlusterKubernetesClusterClient{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterKubernetesClusterClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterKubernetesClusterClient) EXPECT() *MockMulticlusterKubernetesClusterClientMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method.
+// Cluster mocks base method
 func (m *MockMulticlusterKubernetesClusterClient) Cluster(cluster string) (v1alpha1.KubernetesClusterClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -586,7 +586,7 @@ func (m *MockMulticlusterKubernetesClusterClient) Cluster(cluster string) (v1alp
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster.
+// Cluster indicates an expected call of Cluster
 func (mr *MockMulticlusterKubernetesClusterClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterKubernetesClusterClient)(nil).Cluster), cluster)

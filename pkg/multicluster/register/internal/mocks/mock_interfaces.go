@@ -12,30 +12,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockClusterRBACBinder is a mock of ClusterRBACBinder interface.
+// MockClusterRBACBinder is a mock of ClusterRBACBinder interface
 type MockClusterRBACBinder struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterRBACBinderMockRecorder
 }
 
-// MockClusterRBACBinderMockRecorder is the mock recorder for MockClusterRBACBinder.
+// MockClusterRBACBinderMockRecorder is the mock recorder for MockClusterRBACBinder
 type MockClusterRBACBinderMockRecorder struct {
 	mock *MockClusterRBACBinder
 }
 
-// NewMockClusterRBACBinder creates a new mock instance.
+// NewMockClusterRBACBinder creates a new mock instance
 func NewMockClusterRBACBinder(ctrl *gomock.Controller) *MockClusterRBACBinder {
 	mock := &MockClusterRBACBinder{ctrl: ctrl}
 	mock.recorder = &MockClusterRBACBinderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClusterRBACBinder) EXPECT() *MockClusterRBACBinderMockRecorder {
 	return m.recorder
 }
 
-// BindClusterRoles mocks base method.
+// BindClusterRoles mocks base method
 func (m *MockClusterRBACBinder) BindClusterRoles(ctx context.Context, serviceAccount client.ObjectKey, clusterRoles []client.ObjectKey) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BindClusterRoles", ctx, serviceAccount, clusterRoles)
@@ -43,13 +43,13 @@ func (m *MockClusterRBACBinder) BindClusterRoles(ctx context.Context, serviceAcc
 	return ret0
 }
 
-// BindClusterRoles indicates an expected call of BindClusterRoles.
+// BindClusterRoles indicates an expected call of BindClusterRoles
 func (mr *MockClusterRBACBinderMockRecorder) BindClusterRoles(ctx, serviceAccount, clusterRoles interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindClusterRoles", reflect.TypeOf((*MockClusterRBACBinder)(nil).BindClusterRoles), ctx, serviceAccount, clusterRoles)
 }
 
-// BindRoles mocks base method.
+// BindRoles mocks base method
 func (m *MockClusterRBACBinder) BindRoles(ctx context.Context, serviceAccount client.ObjectKey, roles []client.ObjectKey) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BindRoles", ctx, serviceAccount, roles)
@@ -57,13 +57,13 @@ func (m *MockClusterRBACBinder) BindRoles(ctx context.Context, serviceAccount cl
 	return ret0
 }
 
-// BindRoles indicates an expected call of BindRoles.
+// BindRoles indicates an expected call of BindRoles
 func (mr *MockClusterRBACBinderMockRecorder) BindRoles(ctx, serviceAccount, roles interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindRoles", reflect.TypeOf((*MockClusterRBACBinder)(nil).BindRoles), ctx, serviceAccount, roles)
 }
 
-// DeleteClusterRoleBindings mocks base method.
+// DeleteClusterRoleBindings mocks base method
 func (m *MockClusterRBACBinder) DeleteClusterRoleBindings(ctx context.Context, serviceAccount client.ObjectKey, clusterRoles []client.ObjectKey) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteClusterRoleBindings", ctx, serviceAccount, clusterRoles)
@@ -71,13 +71,13 @@ func (m *MockClusterRBACBinder) DeleteClusterRoleBindings(ctx context.Context, s
 	return ret0
 }
 
-// DeleteClusterRoleBindings indicates an expected call of DeleteClusterRoleBindings.
+// DeleteClusterRoleBindings indicates an expected call of DeleteClusterRoleBindings
 func (mr *MockClusterRBACBinderMockRecorder) DeleteClusterRoleBindings(ctx, serviceAccount, clusterRoles interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClusterRoleBindings", reflect.TypeOf((*MockClusterRBACBinder)(nil).DeleteClusterRoleBindings), ctx, serviceAccount, clusterRoles)
 }
 
-// DeleteRoleBindings mocks base method.
+// DeleteRoleBindings mocks base method
 func (m *MockClusterRBACBinder) DeleteRoleBindings(ctx context.Context, serviceAccount client.ObjectKey, roles []client.ObjectKey) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteRoleBindings", ctx, serviceAccount, roles)
@@ -85,7 +85,7 @@ func (m *MockClusterRBACBinder) DeleteRoleBindings(ctx context.Context, serviceA
 	return ret0
 }
 
-// DeleteRoleBindings indicates an expected call of DeleteRoleBindings.
+// DeleteRoleBindings indicates an expected call of DeleteRoleBindings
 func (mr *MockClusterRBACBinderMockRecorder) DeleteRoleBindings(ctx, serviceAccount, roles interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoleBindings", reflect.TypeOf((*MockClusterRBACBinder)(nil).DeleteRoleBindings), ctx, serviceAccount, roles)

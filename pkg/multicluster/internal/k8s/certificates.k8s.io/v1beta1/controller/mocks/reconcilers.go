@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockCertificateSigningRequestReconciler is a mock of CertificateSigningRequestReconciler interface.
+// MockCertificateSigningRequestReconciler is a mock of CertificateSigningRequestReconciler interface
 type MockCertificateSigningRequestReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateSigningRequestReconcilerMockRecorder
 }
 
-// MockCertificateSigningRequestReconcilerMockRecorder is the mock recorder for MockCertificateSigningRequestReconciler.
+// MockCertificateSigningRequestReconcilerMockRecorder is the mock recorder for MockCertificateSigningRequestReconciler
 type MockCertificateSigningRequestReconcilerMockRecorder struct {
 	mock *MockCertificateSigningRequestReconciler
 }
 
-// NewMockCertificateSigningRequestReconciler creates a new mock instance.
+// NewMockCertificateSigningRequestReconciler creates a new mock instance
 func NewMockCertificateSigningRequestReconciler(ctrl *gomock.Controller) *MockCertificateSigningRequestReconciler {
 	mock := &MockCertificateSigningRequestReconciler{ctrl: ctrl}
 	mock.recorder = &MockCertificateSigningRequestReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCertificateSigningRequestReconciler) EXPECT() *MockCertificateSigningRequestReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileCertificateSigningRequest mocks base method.
+// ReconcileCertificateSigningRequest mocks base method
 func (m *MockCertificateSigningRequestReconciler) ReconcileCertificateSigningRequest(obj *v1beta1.CertificateSigningRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateSigningRequest", obj)
@@ -47,36 +47,36 @@ func (m *MockCertificateSigningRequestReconciler) ReconcileCertificateSigningReq
 	return ret0, ret1
 }
 
-// ReconcileCertificateSigningRequest indicates an expected call of ReconcileCertificateSigningRequest.
+// ReconcileCertificateSigningRequest indicates an expected call of ReconcileCertificateSigningRequest
 func (mr *MockCertificateSigningRequestReconcilerMockRecorder) ReconcileCertificateSigningRequest(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateSigningRequest", reflect.TypeOf((*MockCertificateSigningRequestReconciler)(nil).ReconcileCertificateSigningRequest), obj)
 }
 
-// MockCertificateSigningRequestDeletionReconciler is a mock of CertificateSigningRequestDeletionReconciler interface.
+// MockCertificateSigningRequestDeletionReconciler is a mock of CertificateSigningRequestDeletionReconciler interface
 type MockCertificateSigningRequestDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateSigningRequestDeletionReconcilerMockRecorder
 }
 
-// MockCertificateSigningRequestDeletionReconcilerMockRecorder is the mock recorder for MockCertificateSigningRequestDeletionReconciler.
+// MockCertificateSigningRequestDeletionReconcilerMockRecorder is the mock recorder for MockCertificateSigningRequestDeletionReconciler
 type MockCertificateSigningRequestDeletionReconcilerMockRecorder struct {
 	mock *MockCertificateSigningRequestDeletionReconciler
 }
 
-// NewMockCertificateSigningRequestDeletionReconciler creates a new mock instance.
+// NewMockCertificateSigningRequestDeletionReconciler creates a new mock instance
 func NewMockCertificateSigningRequestDeletionReconciler(ctrl *gomock.Controller) *MockCertificateSigningRequestDeletionReconciler {
 	mock := &MockCertificateSigningRequestDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockCertificateSigningRequestDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCertificateSigningRequestDeletionReconciler) EXPECT() *MockCertificateSigningRequestDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileCertificateSigningRequestDeletion mocks base method.
+// ReconcileCertificateSigningRequestDeletion mocks base method
 func (m *MockCertificateSigningRequestDeletionReconciler) ReconcileCertificateSigningRequestDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateSigningRequestDeletion", req)
@@ -84,64 +84,36 @@ func (m *MockCertificateSigningRequestDeletionReconciler) ReconcileCertificateSi
 	return ret0
 }
 
-// ReconcileCertificateSigningRequestDeletion indicates an expected call of ReconcileCertificateSigningRequestDeletion.
+// ReconcileCertificateSigningRequestDeletion indicates an expected call of ReconcileCertificateSigningRequestDeletion
 func (mr *MockCertificateSigningRequestDeletionReconcilerMockRecorder) ReconcileCertificateSigningRequestDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateSigningRequestDeletion", reflect.TypeOf((*MockCertificateSigningRequestDeletionReconciler)(nil).ReconcileCertificateSigningRequestDeletion), req)
 }
 
-// MockCertificateSigningRequestFinalizer is a mock of CertificateSigningRequestFinalizer interface.
+// MockCertificateSigningRequestFinalizer is a mock of CertificateSigningRequestFinalizer interface
 type MockCertificateSigningRequestFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateSigningRequestFinalizerMockRecorder
 }
 
-// MockCertificateSigningRequestFinalizerMockRecorder is the mock recorder for MockCertificateSigningRequestFinalizer.
+// MockCertificateSigningRequestFinalizerMockRecorder is the mock recorder for MockCertificateSigningRequestFinalizer
 type MockCertificateSigningRequestFinalizerMockRecorder struct {
 	mock *MockCertificateSigningRequestFinalizer
 }
 
-// NewMockCertificateSigningRequestFinalizer creates a new mock instance.
+// NewMockCertificateSigningRequestFinalizer creates a new mock instance
 func NewMockCertificateSigningRequestFinalizer(ctrl *gomock.Controller) *MockCertificateSigningRequestFinalizer {
 	mock := &MockCertificateSigningRequestFinalizer{ctrl: ctrl}
 	mock.recorder = &MockCertificateSigningRequestFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCertificateSigningRequestFinalizer) EXPECT() *MockCertificateSigningRequestFinalizerMockRecorder {
 	return m.recorder
 }
 
-// CertificateSigningRequestFinalizerName mocks base method.
-func (m *MockCertificateSigningRequestFinalizer) CertificateSigningRequestFinalizerName() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CertificateSigningRequestFinalizerName")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// CertificateSigningRequestFinalizerName indicates an expected call of CertificateSigningRequestFinalizerName.
-func (mr *MockCertificateSigningRequestFinalizerMockRecorder) CertificateSigningRequestFinalizerName() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateSigningRequestFinalizerName", reflect.TypeOf((*MockCertificateSigningRequestFinalizer)(nil).CertificateSigningRequestFinalizerName))
-}
-
-// FinalizeCertificateSigningRequest mocks base method.
-func (m *MockCertificateSigningRequestFinalizer) FinalizeCertificateSigningRequest(obj *v1beta1.CertificateSigningRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeCertificateSigningRequest", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FinalizeCertificateSigningRequest indicates an expected call of FinalizeCertificateSigningRequest.
-func (mr *MockCertificateSigningRequestFinalizerMockRecorder) FinalizeCertificateSigningRequest(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeCertificateSigningRequest", reflect.TypeOf((*MockCertificateSigningRequestFinalizer)(nil).FinalizeCertificateSigningRequest), obj)
-}
-
-// ReconcileCertificateSigningRequest mocks base method.
+// ReconcileCertificateSigningRequest mocks base method
 func (m *MockCertificateSigningRequestFinalizer) ReconcileCertificateSigningRequest(obj *v1beta1.CertificateSigningRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateSigningRequest", obj)
@@ -150,36 +122,64 @@ func (m *MockCertificateSigningRequestFinalizer) ReconcileCertificateSigningRequ
 	return ret0, ret1
 }
 
-// ReconcileCertificateSigningRequest indicates an expected call of ReconcileCertificateSigningRequest.
+// ReconcileCertificateSigningRequest indicates an expected call of ReconcileCertificateSigningRequest
 func (mr *MockCertificateSigningRequestFinalizerMockRecorder) ReconcileCertificateSigningRequest(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateSigningRequest", reflect.TypeOf((*MockCertificateSigningRequestFinalizer)(nil).ReconcileCertificateSigningRequest), obj)
 }
 
-// MockCertificateSigningRequestReconcileLoop is a mock of CertificateSigningRequestReconcileLoop interface.
+// CertificateSigningRequestFinalizerName mocks base method
+func (m *MockCertificateSigningRequestFinalizer) CertificateSigningRequestFinalizerName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CertificateSigningRequestFinalizerName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// CertificateSigningRequestFinalizerName indicates an expected call of CertificateSigningRequestFinalizerName
+func (mr *MockCertificateSigningRequestFinalizerMockRecorder) CertificateSigningRequestFinalizerName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateSigningRequestFinalizerName", reflect.TypeOf((*MockCertificateSigningRequestFinalizer)(nil).CertificateSigningRequestFinalizerName))
+}
+
+// FinalizeCertificateSigningRequest mocks base method
+func (m *MockCertificateSigningRequestFinalizer) FinalizeCertificateSigningRequest(obj *v1beta1.CertificateSigningRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeCertificateSigningRequest", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeCertificateSigningRequest indicates an expected call of FinalizeCertificateSigningRequest
+func (mr *MockCertificateSigningRequestFinalizerMockRecorder) FinalizeCertificateSigningRequest(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeCertificateSigningRequest", reflect.TypeOf((*MockCertificateSigningRequestFinalizer)(nil).FinalizeCertificateSigningRequest), obj)
+}
+
+// MockCertificateSigningRequestReconcileLoop is a mock of CertificateSigningRequestReconcileLoop interface
 type MockCertificateSigningRequestReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateSigningRequestReconcileLoopMockRecorder
 }
 
-// MockCertificateSigningRequestReconcileLoopMockRecorder is the mock recorder for MockCertificateSigningRequestReconcileLoop.
+// MockCertificateSigningRequestReconcileLoopMockRecorder is the mock recorder for MockCertificateSigningRequestReconcileLoop
 type MockCertificateSigningRequestReconcileLoopMockRecorder struct {
 	mock *MockCertificateSigningRequestReconcileLoop
 }
 
-// NewMockCertificateSigningRequestReconcileLoop creates a new mock instance.
+// NewMockCertificateSigningRequestReconcileLoop creates a new mock instance
 func NewMockCertificateSigningRequestReconcileLoop(ctrl *gomock.Controller) *MockCertificateSigningRequestReconcileLoop {
 	mock := &MockCertificateSigningRequestReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockCertificateSigningRequestReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCertificateSigningRequestReconcileLoop) EXPECT() *MockCertificateSigningRequestReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunCertificateSigningRequestReconciler mocks base method.
+// RunCertificateSigningRequestReconciler mocks base method
 func (m *MockCertificateSigningRequestReconcileLoop) RunCertificateSigningRequestReconciler(ctx context.Context, rec controller.CertificateSigningRequestReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -191,7 +191,7 @@ func (m *MockCertificateSigningRequestReconcileLoop) RunCertificateSigningReques
 	return ret0
 }
 
-// RunCertificateSigningRequestReconciler indicates an expected call of RunCertificateSigningRequestReconciler.
+// RunCertificateSigningRequestReconciler indicates an expected call of RunCertificateSigningRequestReconciler
 func (mr *MockCertificateSigningRequestReconcileLoopMockRecorder) RunCertificateSigningRequestReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
