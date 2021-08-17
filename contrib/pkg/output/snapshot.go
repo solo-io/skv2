@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	skv2_resource "github.com/solo-io/skv2/pkg/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
@@ -215,8 +216,17 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHa
 	for _, list := range s.ListsToSync {
 		listForLocalCluster := list.SplitByClusterName()[multicluster.LocalCluster]
 
+		existingResource := []ezkube.Object{}
+		for _, resource := range listForLocalCluster{
+			err := cli.Get(ctx, skv2_resource.ToClientKey(resource), resource)
+			if err == nil {
+				// Only append resources whose crds exist
+				existingResource = append(existingResource, resource)
+			}
+		}
+
 		resourcesForLocalCluster := ResourceList{
-			Resources:    listForLocalCluster,
+			Resources:    existingResource,
 			ListFunc:     list.ListFunc,
 			ResourceKind: list.ResourceKind,
 			StatusUpdate: list.StatusUpdate,
