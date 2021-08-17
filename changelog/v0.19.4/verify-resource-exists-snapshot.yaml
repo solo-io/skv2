@@ -1,4 +1,4 @@
 changelog:
   - type: NON_USER_FACING
-    issueLink: https://github.com/solo-io/skv2/issues/284
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/987
     description: Add check that if crd does not exist, do not attempt to sync the output snapshot for that resource.
