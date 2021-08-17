@@ -217,7 +217,7 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHa
 		listForLocalCluster := list.SplitByClusterName()[multicluster.LocalCluster]
 
 		var existingResource []ezkube.Object
-		for _, resource := range listForLocalCluster{
+		for _, resource := range listForLocalCluster {
 			err := cli.Get(ctx, skv2_resource.ToClientKey(resource), resource)
 			if err == nil {
 				// Only append resources whose crds exist
