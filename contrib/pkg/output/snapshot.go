@@ -216,7 +216,7 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHa
 	for _, list := range s.ListsToSync {
 		listForLocalCluster := list.SplitByClusterName()[multicluster.LocalCluster]
 
-		existingResource := []ezkube.Object{}
+		var existingResource []ezkube.Object
 		for _, resource := range listForLocalCluster{
 			err := cli.Get(ctx, skv2_resource.ToClientKey(resource), resource)
 			if err == nil {
