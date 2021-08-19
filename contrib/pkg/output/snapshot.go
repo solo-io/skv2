@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/skv2/pkg/verifier"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -207,28 +208,52 @@ type Snapshot struct {
 	ListsToSync []ResourceList
 }
 
+// Options for writing resources of a given type
+type OutputOpts struct {
+	// error handler
+	errHandler ErrorHandler
+
+	// If provided, ensure the resource has been verified before adding it to snapshots
+	Verifier verifier.OutputResourceVerifier
+}
+
 // sync the output snapshot to local cluster storage.
 // only writes resources intended for the local cluster (with ClusterName == "")
 // Note that Syncing snapshots in this way adds the label
-func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHandler ErrorHandler) {
+func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, opts OutputOpts) {
 
+	var presentResources []ezkube.Object
 	for _, list := range s.ListsToSync {
 		listForLocalCluster := list.SplitByClusterName()[multicluster.LocalCluster]
 
+		for _, resource := range listForLocalCluster {
+			if opts.Verifier != nil {
+				gvk := resource.GetObjectKind().GroupVersionKind()
+				resourceRegistered, _ := opts.Verifier.VerifyServerResource(
+					multicluster.LocalCluster,
+					gvk,
+				)
+
+				if resourceRegistered {
+					presentResources = append(presentResources, resource)
+				}
+			}
+		}
+
 		resourcesForLocalCluster := ResourceList{
-			Resources:    listForLocalCluster,
+			Resources:    presentResources,
 			ListFunc:     list.ListFunc,
 			ResourceKind: list.ResourceKind,
 			StatusUpdate: list.StatusUpdate,
 		}
 
-		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, errHandler)
+		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, opts.errHandler)
 	}
 }
 
 // sync the output snapshot to storage across multiple clusters.
 // uses the object's ClusterName to determine the correct destination cluster.
-func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Client, errHandler ErrorHandler) {
+func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Client, opts OutputOpts) {
 	for _, list := range s.ListsToSync {
 		listsByCluster := list.SplitByClusterName()
 		// TODO(ilackarms): possible error case that we're ignoring here;
@@ -236,23 +261,38 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 		// if the cluster is not available, we will not error (simply skip writing the resources here)
 		for _, cluster := range s.Clusters {
 			listForCluster := listsByCluster[cluster]
+			var presentResources []ezkube.Object
 
 			cli, err := mcClient.Cluster(cluster)
 			if err != nil {
 				for _, object := range listForCluster {
 					// send a write error for every object in the cluster
-					errHandler.HandleWriteError(object, err)
+					opts.errHandler.HandleWriteError(object, err)
 				}
 				continue
 			}
 
+			for _, resource := range listForCluster {
+				if opts.Verifier != nil {
+					gvk := resource.GetObjectKind().GroupVersionKind()
+					resourceRegistered, _ := opts.Verifier.VerifyServerResource(
+						cluster,
+						gvk,
+					)
+
+					if resourceRegistered {
+						presentResources = append(presentResources, resource)
+					}
+				}
+			}
+
 			resourcesForCluster := ResourceList{
-				Resources:    listForCluster,
+				Resources:    presentResources,
 				ListFunc:     list.ListFunc,
 				ResourceKind: list.ResourceKind,
 			}
 
-			s.syncList(ctx, cluster, cli, resourcesForCluster, errHandler)
+			s.syncList(ctx, cluster, cli, resourcesForCluster, opts.errHandler)
 		}
 	}
 }
