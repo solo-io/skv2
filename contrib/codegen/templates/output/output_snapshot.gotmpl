@@ -17,6 +17,7 @@ import (
     "github.com/solo-io/skv2/contrib/pkg/output"
     "github.com/solo-io/skv2/pkg/ezkube"
     "sigs.k8s.io/controller-runtime/pkg/client"
+    "github.com/solo-io/skv2/pkg/verifier"
 
 
 {{- range $group := $groups }}
@@ -51,6 +52,16 @@ var SnapshotGVKs = []schema.GroupVersionKind{
     {{- end }}
 }
 
+// Options for writing resources of a given type
+type OutputOpts struct {
+{{/* generate output options here */}}
+    // error handler
+    errHandler output.ErrorHandler
+
+    // If provided, ensure the resource has been verified before adding it to snapshots
+    Verifier verifier.OutputResourceVerifier
+}
+
 // the snapshot of output resources produced by a translation
 type Snapshot interface {
 {{/* generate a getter for each resource */}}
@@ -63,10 +74,10 @@ type Snapshot interface {
 {{- end }}
 
     // apply the snapshot to the local cluster, garbage collecting stale resources
-    ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
+    ApplyLocalCluster(ctx context.Context, clusterClient client.Client, opts OutputOpts)
 
     // apply resources from the snapshot across multiple clusters, garbage collecting stale resources
-    ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler)
+     ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, opts OutputOpts)
 
     // serialize the entire snapshot as JSON
     MarshalJSON() ([]byte, error)
@@ -209,8 +220,9 @@ func NewSinglePartitionedSnapshot(
 
 
 // apply the desired resources to the cluster state; remove stale resources where necessary
-func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
+func (s *snapshot) ApplyLocalCluster(ctx context.Context, clusterClient client.Client, opts OutputOpts) {
     var genericLists []output.ResourceList
+    var presentResources []output.ResourceList
 
 {{/* generate each list conversion */}}
 {{- range $group := $groups }}
@@ -220,18 +232,38 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
     for _, outputSet := range s.{{ $kindLowerCamelPlural }} {
         genericLists = append(genericLists,  outputSet.Generic())
     }
+
+    for _, resource := range genericLists {
+         if opts.Verifier != nil {
+            gvk := schema.GroupVersionKind{
+                Group: "{{ $resource.Group.Group }}",
+                Version: "{{ $resource.Version }}",
+                Kind: "{{ $resource.Kind }}",
+            }
+
+            if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+                cluster,
+                gvk,
+            ); err != nil{
+                return err
+            } else if resourceRegistered {
+               presentResources = append(presentResources,  resource)
+            }
+         }
+    }
 {{- end }}
 {{- end }}
 
     output.Snapshot{
         Name:        s.name,
-        ListsToSync: genericLists,
-    }.SyncLocalCluster(ctx, cli, errHandler)
+        ListsToSync: presentResources,
+    }.SyncLocalCluster(ctx, cli, opts.errHandler)
 }
 
 // apply the desired resources to multiple cluster states; remove stale resources where necessary
-func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
+func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, opts OutputOpts) error {
     var genericLists []output.ResourceList
+    var presentResources []output.ResourceList
 
 {{/* generate each list conversion */}}
 {{- range $group := $groups }}
@@ -240,6 +272,25 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     for _, outputSet := range s.{{ $kindLowerCamelPlural }} {
         genericLists = append(genericLists,  outputSet.Generic())
+    }
+
+    for _, resource := range genericLists {
+         if opts.Verifier != nil {
+            gvk := schema.GroupVersionKind{
+                Group:   resource.Group.Group,
+                Version: resource.Group.Version,
+                Kind:    resource.Kind,
+            }
+
+            if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+                cluster,
+                gvk,
+            ); err != nil{
+                return err
+            } else if resourceRegistered {
+               presentResources = append(presentResources,  resource)
+            }
+         }
     }
 {{- end }}
 {{- end }}
@@ -247,8 +298,8 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
     output.Snapshot{
         Name:        s.name,
         Clusters:    s.clusters,
-        ListsToSync: genericLists,
-    }.SyncMultiCluster(ctx, multiClusterClient, errHandler)
+        ListsToSync: presentResources,
+    }.SyncMultiCluster(ctx, multiClusterClient, opts.errHandler)
 }
 
 func (s *snapshot) Generic() resource.ClusterSnapshot {
