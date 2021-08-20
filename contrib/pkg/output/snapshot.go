@@ -3,6 +3,8 @@ package output
 import (
 	"context"
 	"fmt"
+	"github.com/rotisserie/eris"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/solo-io/skv2/pkg/verifier"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -169,8 +171,8 @@ type ResourceList struct {
 	// if true, resources will not be upserted or garbage collected.
 	StatusUpdate bool
 
-	// name of resource Kind, used for debugging only
-	ResourceKind string
+	// GVK of the resources in the list
+	GVK schema.GroupVersionKind
 }
 
 // partition the resource list by the ClusterName of each object.
@@ -222,32 +224,17 @@ type OutputOpts struct {
 // Note that Syncing snapshots in this way adds the label
 func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, opts OutputOpts) {
 
-	var presentResources []ezkube.Object
 	for _, list := range s.ListsToSync {
 		listForLocalCluster := list.SplitByClusterName()[multicluster.LocalCluster]
 
-		for _, resource := range listForLocalCluster {
-			if opts.Verifier != nil {
-				gvk := resource.GetObjectKind().GroupVersionKind()
-				resourceRegistered, _ := opts.Verifier.VerifyServerResource(
-					multicluster.LocalCluster,
-					gvk,
-				)
-
-				if resourceRegistered {
-					presentResources = append(presentResources, resource)
-				}
-			}
-		}
-
 		resourcesForLocalCluster := ResourceList{
-			Resources:    presentResources,
+			Resources:    listForLocalCluster,
 			ListFunc:     list.ListFunc,
-			ResourceKind: list.ResourceKind,
+			GVK:          list.GVK,
 			StatusUpdate: list.StatusUpdate,
 		}
 
-		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, opts.ErrHandler)
+		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, opts.Verifier, opts.ErrHandler)
 	}
 }
 
@@ -287,12 +274,12 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 			}
 
 			resourcesForCluster := ResourceList{
-				Resources:    presentResources,
-				ListFunc:     list.ListFunc,
-				ResourceKind: list.ResourceKind,
+				Resources: presentResources,
+				ListFunc:  list.ListFunc,
+				GVK:       list.GVK,
 			}
 
-			s.syncList(ctx, cluster, cli, resourcesForCluster, opts.ErrHandler)
+			s.syncList(ctx, cluster, cli, resourcesForCluster, opts.Verifier, opts.ErrHandler)
 		}
 	}
 }
@@ -306,8 +293,24 @@ func (s Snapshot) syncList(
 	clientCluster string,
 	cli client.Client,
 	list ResourceList,
+	verifier verifier.OutputResourceVerifier,
 	errHandler ErrorHandler,
 ) {
+
+	if verifier != nil {
+		resourceRegistered, err := verifier.VerifyServerResource(
+			clientCluster,
+			list.GVK,
+		)
+		if err != nil {
+			errHandler.HandleListError(eris.Wrapf(err, "failed to verify if resource is supported by server"))
+		}
+
+		if !resourceRegistered {
+			return
+		}
+	}
+
 	for _, obj := range list.Resources {
 
 		// upsert all desired resources
@@ -325,7 +328,7 @@ func (s Snapshot) syncList(
 	existingList, err := list.ListFunc(ctx, cli)
 	if err != nil {
 		// cache read should never error
-		contextutils.LoggerFrom(ctx).Errorf("failed to read from cache for kind %v: %v", list.ResourceKind, err)
+		contextutils.LoggerFrom(ctx).Errorf("failed to read from cache for kind %v: %v", list.GVK.String(), err)
 		return
 	}
 

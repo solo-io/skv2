@@ -31,8 +31,8 @@ import (
 
 // this error can occur if constructing a Partitioned Snapshot from a resource
 // that is missing the partition label
-var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.ResourceId) error {
-    return eris.Errorf("expected label %v not on labels of %v %v", labelKey, resourceKind, sets.Key(obj))
+var MissingRequiredLabelError = func(labelKey, gvk schema.GroupVersionKind, obj ezkube.ResourceId) error {
+    return eris.Errorf("expected label %v not on labels of %v %v", labelKey, gvk.String(), sets.Key(obj))
 }
 
 // SnapshotGVKs is a list of the GVKs included in this snapshot
@@ -448,7 +448,11 @@ func (l labeled{{ $resource.Kind }}Set) Generic() output.ResourceList {
     return output.ResourceList{
         Resources: desiredResources,
         ListFunc: listFunc,
-        ResourceKind: "{{ $resource.Kind }}",
+        GVK: schema.GroupVersionKind{
+            Group: "{{ $resource.Group.Group }}",
+            Version: "{{ $resource.Version }}",
+            Kind: "{{ $resource.Kind }}",
+        },
     }
 }
 
