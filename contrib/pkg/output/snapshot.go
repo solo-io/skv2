@@ -3,6 +3,7 @@ package output
 import (
 	"context"
 	"fmt"
+
 	"github.com/rotisserie/eris"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
