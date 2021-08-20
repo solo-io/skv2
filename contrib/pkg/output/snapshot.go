@@ -211,7 +211,7 @@ type Snapshot struct {
 // Options for writing resources of a given type
 type OutputOpts struct {
 	// error handler
-	errHandler ErrorHandler
+	ErrHandler ErrorHandler
 
 	// If provided, ensure the resource has been verified before adding it to snapshots
 	Verifier verifier.OutputResourceVerifier
@@ -247,7 +247,7 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, opts 
 			StatusUpdate: list.StatusUpdate,
 		}
 
-		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, opts.errHandler)
+		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, opts.ErrHandler)
 	}
 }
 
@@ -267,7 +267,7 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 			if err != nil {
 				for _, object := range listForCluster {
 					// send a write error for every object in the cluster
-					opts.errHandler.HandleWriteError(object, err)
+					opts.ErrHandler.HandleWriteError(object, err)
 				}
 				continue
 			}
@@ -292,7 +292,7 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 				ResourceKind: list.ResourceKind,
 			}
 
-			s.syncList(ctx, cluster, cli, resourcesForCluster, opts.errHandler)
+			s.syncList(ctx, cluster, cli, resourcesForCluster, opts.ErrHandler)
 		}
 	}
 }
