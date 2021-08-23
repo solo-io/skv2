@@ -249,7 +249,6 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 		// if the cluster is not available, we will not error (simply skip writing the resources here)
 		for _, cluster := range s.Clusters {
 			listForCluster := listsByCluster[cluster]
-			var presentResources []ezkube.Object
 
 			cli, err := mcClient.Cluster(cluster)
 			if err != nil {
@@ -260,22 +259,8 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 				continue
 			}
 
-			for _, resource := range listForCluster {
-				if opts.Verifier != nil {
-					gvk := resource.GetObjectKind().GroupVersionKind()
-					resourceRegistered, _ := opts.Verifier.VerifyServerResource(
-						cluster,
-						gvk,
-					)
-
-					if resourceRegistered {
-						presentResources = append(presentResources, resource)
-					}
-				}
-			}
-
 			resourcesForCluster := ResourceList{
-				Resources: presentResources,
+				Resources: listForCluster,
 				ListFunc:  list.ListFunc,
 				GVK:       list.GVK,
 			}
