@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rotisserie/eris"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/solo-io/skv2/pkg/verifier"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -168,8 +172,8 @@ type ResourceList struct {
 	// if true, resources will not be upserted or garbage collected.
 	StatusUpdate bool
 
-	// name of resource Kind, used for debugging only
-	ResourceKind string
+	// GVK of the resources in the list
+	GVK schema.GroupVersionKind
 }
 
 // partition the resource list by the ClusterName of each object.
@@ -207,10 +211,19 @@ type Snapshot struct {
 	ListsToSync []ResourceList
 }
 
+// Options for writing resources of a given type
+type OutputOpts struct {
+	// error handler
+	ErrHandler ErrorHandler
+
+	// If provided, ensure the resource has been verified before adding it to snapshots
+	Verifier verifier.OutputResourceVerifier
+}
+
 // sync the output snapshot to local cluster storage.
 // only writes resources intended for the local cluster (with ClusterName == "")
 // Note that Syncing snapshots in this way adds the label
-func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHandler ErrorHandler) {
+func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, opts OutputOpts) {
 
 	for _, list := range s.ListsToSync {
 		listForLocalCluster := list.SplitByClusterName()[multicluster.LocalCluster]
@@ -218,18 +231,17 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, errHa
 		resourcesForLocalCluster := ResourceList{
 			Resources:    listForLocalCluster,
 			ListFunc:     list.ListFunc,
-			ResourceKind: list.ResourceKind,
+			GVK:          list.GVK,
 			StatusUpdate: list.StatusUpdate,
 		}
 
-		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, errHandler)
+		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, opts.Verifier, opts.ErrHandler)
 	}
 }
 
 // sync the output snapshot to storage across multiple clusters.
 // uses the object's ClusterName to determine the correct destination cluster.
-func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Client, errHandler ErrorHandler) {
-
+func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Client, opts OutputOpts) {
 	for _, list := range s.ListsToSync {
 		listsByCluster := list.SplitByClusterName()
 		// TODO(ilackarms): possible error case that we're ignoring here;
@@ -242,18 +254,18 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 			if err != nil {
 				for _, object := range listForCluster {
 					// send a write error for every object in the cluster
-					errHandler.HandleWriteError(object, err)
+					opts.ErrHandler.HandleWriteError(object, err)
 				}
 				continue
 			}
 
 			resourcesForCluster := ResourceList{
-				Resources:    listForCluster,
-				ListFunc:     list.ListFunc,
-				ResourceKind: list.ResourceKind,
+				Resources: listForCluster,
+				ListFunc:  list.ListFunc,
+				GVK:       list.GVK,
 			}
 
-			s.syncList(ctx, cluster, cli, resourcesForCluster, errHandler)
+			s.syncList(ctx, cluster, cli, resourcesForCluster, opts.Verifier, opts.ErrHandler)
 		}
 	}
 }
@@ -267,8 +279,24 @@ func (s Snapshot) syncList(
 	clientCluster string,
 	cli client.Client,
 	list ResourceList,
+	verifier verifier.OutputResourceVerifier,
 	errHandler ErrorHandler,
 ) {
+
+	if verifier != nil {
+		resourceRegistered, err := verifier.VerifyServerResource(
+			clientCluster,
+			list.GVK,
+		)
+		if err != nil {
+			errHandler.HandleListError(eris.Wrapf(err, "failed to verify if resource is supported by server"))
+		}
+
+		if !resourceRegistered {
+			return
+		}
+	}
+
 	for _, obj := range list.Resources {
 
 		// upsert all desired resources
@@ -286,7 +314,7 @@ func (s Snapshot) syncList(
 	existingList, err := list.ListFunc(ctx, cli)
 	if err != nil {
 		// cache read should never error
-		contextutils.LoggerFrom(ctx).Errorf("failed to read from cache for kind %v: %v", list.ResourceKind, err)
+		contextutils.LoggerFrom(ctx).Errorf("failed to read from cache for kind %v: %v", list.GVK.String(), err)
 		return
 	}
 
