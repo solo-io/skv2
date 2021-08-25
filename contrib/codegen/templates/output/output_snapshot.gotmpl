@@ -8,6 +8,8 @@ import (
     "encoding/json"
     "sort"
 
+    snapshotutils "github.com/solo-io/skv2/contrib/pkg/snapshot"
+
     "github.com/solo-io/skv2/pkg/multicluster"
     "github.com/solo-io/skv2/pkg/resource"
     "k8s.io/apimachinery/pkg/runtime/schema"
@@ -363,7 +365,11 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
     for _, set := range s.{{ $kindLowerCamelPlural }} {
-        {{ $kindLowerCamel }}Set = {{ $kindLowerCamel }}Set.Union(set.Set() )
+        for _, obj := range set.List() {
+        	// redact secret data from the snapshot
+            obj := snapshotutils.RedactSecretData(obj)
+            {{ $kindLowerCamel }}Set.Insert(obj)
+        }
     }
     snapshotMap["{{ $kindLowerCamelPlural }}"] = {{ $kindLowerCamel }}Set.List()
 {{- end }}

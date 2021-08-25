@@ -22,6 +22,8 @@ import (
     "context"
     "encoding/json"
 
+    snapshotutils "github.com/solo-io/skv2/contrib/pkg/snapshot"
+
     "k8s.io/apimachinery/pkg/labels"
     "k8s.io/apimachinery/pkg/runtime/schema"
     "github.com/solo-io/skv2/pkg/resource"
@@ -293,10 +295,17 @@ func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
     snapshotMap := map[string]interface{}{"name": s.name}
 {{/* add map contents here */}}
 {{- range $group := $groups }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    snapshotMap["{{ $kindLowerCamelPlural }}"] = s.{{ $kindLowerCamelPlural }}.List()
+    {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    for _, obj := range set.List() {
+        // redact secret data from the snapshot
+        obj := snapshotutils.RedactSecretData(obj)
+        {{ $kindLowerCamel }}Set.Insert(obj)
+    }
+    snapshotMap["{{ $kindLowerCamelPlural }}"] = {{ $kindLowerCamel }}Set.List()
 {{- end }}
 {{- end }}
 	return json.Marshal(snapshotMap)
