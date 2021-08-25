@@ -190,6 +190,169 @@ var _ = Describe("Cmd", func() {
 		Entry("floatingUserId enabled", true, 10101, 0),
 	)
 
+	It("supports disabling the deployment and service specs via helm values", func() {
+		cmd := &Command{
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name: "painter",
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+
+								Args: []string{"foo"},
+								Env: []v1.EnvVar{
+									{
+										Name:  "FOO",
+										Value: "BAR",
+									},
+								},
+								ReadinessProbe: &v1.Probe{
+									Handler: v1.Handler{
+										HTTPGet: &v1.HTTPGetAction{
+											Path: "/",
+											Port: intstr.FromInt(8080),
+										},
+									},
+									PeriodSeconds:       10,
+									InitialDelaySeconds: 5,
+								},
+							},
+
+							Sidecars: []Sidecar{
+								{
+									Name: "palette",
+									Container: Container{
+										Image: Image{
+											Tag:        "v0.0.0",
+											Repository: "palette",
+											Registry:   "quay.io/solo-io",
+											PullPolicy: "IfNotPresent",
+										},
+										Args: []string{"bar", "baz"},
+										VolumeMounts: []v1.VolumeMount{
+											{
+												Name:      "paint",
+												MountPath: "/etc/paint",
+											},
+										},
+										LivenessProbe: &v1.Probe{
+											Handler: v1.Handler{
+												HTTPGet: &v1.HTTPGetAction{
+													Path: "/",
+													Port: intstr.FromInt(8080),
+												},
+											},
+											PeriodSeconds:       60,
+											InitialDelaySeconds: 30,
+										},
+									},
+								},
+							},
+
+							Volumes: []v1.Volume{
+								{
+									Name: "paint",
+									VolumeSource: v1.VolumeSource{
+										EmptyDir: &v1.EmptyDirVolumeSource{},
+									},
+								},
+							},
+
+							CustomDeploymentAnnotations: map[string]string{
+								"deployment": "annotation",
+							},
+							CustomDeploymentLabels: map[string]string{
+								"deployment": "labels",
+							},
+							CustomPodAnnotations: map[string]string{
+								"pod": "annotations",
+							},
+							CustomPodLabels: map[string]string{
+								"pod": "labels",
+							},
+						},
+
+						Service: Service{
+							Ports: []ServicePort{{
+								Name:        "http",
+								DefaultPort: 1234,
+							}},
+							CustomAnnotations: map[string]string{
+								"service": "annotations",
+							},
+							CustomLabels: map[string]string{
+								"service": "labels",
+							},
+						},
+					},
+				},
+
+				Values: nil,
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		helmValues := map[string]interface{}{
+			"painter": map[string]interface{}{
+				"enabled": false,
+			},
+		}
+		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+
+		var (
+			renderedService    *v1.Service
+			renderedDeployment *appsv1.Deployment
+		)
+		decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+		for {
+			obj := &unstructured.Unstructured{}
+			err := decoder.Decode(obj)
+			if err != nil {
+				break
+			}
+			if obj.GetName() != "painter" {
+				continue
+			}
+
+			switch obj.GetKind() {
+			case "Service":
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedService = &v1.Service{}
+				err = json.Unmarshal(bytes, renderedService)
+				Expect(err).NotTo(HaveOccurred())
+			case "Deployment":
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+		}
+		Expect(renderedDeployment).To(BeNil())
+		Expect(renderedService).To(BeNil())
+	})
+
 	It("supports overriding the deployment and service specs via helm values", func() {
 
 		cmd := &Command{

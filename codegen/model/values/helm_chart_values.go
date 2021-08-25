@@ -30,6 +30,8 @@ type UserValues struct {
 	// Overrides which can be set by the user
 	DeploymentOverrides *appsv1.Deployment `json:"deploymentOverrides,omitempty" desc:"Provide arbitrary overrides for the component's [deployment template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)" omitChildren:"true"`
 	ServiceOverrides    *v1.Service        `json:"serviceOverrides,omitempty" desc:"Provide arbitrary overrides for the component's [service template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/)." omitChildren:"true"`
+
+	Enabled bool `json:"enabled" desc:"Enables or disables creation of the operator deployment/service"`
 }
 
 // document values structure for a container
