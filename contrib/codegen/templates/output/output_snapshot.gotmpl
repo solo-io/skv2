@@ -362,6 +362,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 {{/* add map contents here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $type_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
