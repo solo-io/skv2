@@ -125,7 +125,6 @@ func NewSnapshot(
 func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
-	gvk schema.GroupVersionKind,
 {{/* generate partitioned constructor params here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -144,7 +143,7 @@ func NewLabelPartitionedSnapshot(
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    partitioned{{ $kindPlural }}, err := partition{{ $kindPlural }}ByLabel(labelKey, gvk, {{ $kindLowerCamelPlural }})
+    partitioned{{ $kindPlural }}, err := partition{{ $kindPlural }}ByLabel(labelKey, {{ $kindLowerCamelPlural }})
     if err != nil {
     	return nil, err
     }
@@ -297,16 +296,16 @@ func (s *snapshot) ForEachObject(handleObject func(cluster string, gvk schema.Gr
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func partition{{ $kindPlural }}ByLabel(labelKey string, gvk schema.GroupVersionKind, set {{ $set_import_prefix }}.{{ $resource.Kind }}Set) ([]Labeled{{ $resource.Kind }}Set, error) {
+func partition{{ $kindPlural }}ByLabel(labelKey string, set {{ $set_import_prefix }}.{{ $resource.Kind }}Set) ([]Labeled{{ $resource.Kind }}Set, error) {
     setsByLabel := map[string]{{ $set_import_prefix }}.{{ $resource.Kind }}Set{}
 
     for _, obj := range set.List() {
         if obj.Labels == nil {
-            return nil, MissingRequiredLabelError(labelKey, gvk, obj)
+            return nil, MissingRequiredLabelError(labelKey, obj.GVK(), obj)
         }
         labelValue := obj.Labels[labelKey]
         if labelValue == "" {
-            return nil, MissingRequiredLabelError(labelKey, gvk, obj)
+            return nil, MissingRequiredLabelError(labelKey, obj.GVK(), obj)
         }
 
         setForValue, ok := setsByLabel[labelValue]
