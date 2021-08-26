@@ -367,7 +367,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
     for _, set := range s.{{ $kindLowerCamelPlural }} {
-        for _, obj := range set.List() {
+        for _, obj := range set.Set().UnsortedList() {
         	// redact secret data from the snapshot
             obj := snapshotutils.RedactSecretData(obj)
             {{ $kindLowerCamel }}Set.Insert(obj)
