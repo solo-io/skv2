@@ -36,30 +36,16 @@ var MissingRequiredLabelError = func(labelKey string, gvk schema.GroupVersionKin
     return eris.Errorf("expected label %v not on labels of %v %v", labelKey, gvk.String(), sets.Key(obj))
 }
 
-var (
-{{- range $group := $groups }}
-{{- $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-   {{ $kindLowerCamel }}GVK = schema.GroupVersionKind{
-       Group: "{{ $resource.Group.Group }}",
-       Version: "{{ $resource.Version }}",
-       Kind: "{{ $resource.Kind }}",
-   }
-{{- end }}
-{{- end }}
-)
-
 // SnapshotGVKs is a list of the GVKs included in this snapshot
 var SnapshotGVKs = []schema.GroupVersionKind{
     {{- range $group := $groups }}
-    {{- $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     {{- $kindPlural := pluralize $resource.Kind }}
-    {{- $kindLowerCamel := lower_camel $resource.Kind }}
-    {{ $kindLowerCamel }}GVK,
+    schema.GroupVersionKind{
+		Group: "{{ $resource.Group.Group }}",
+		Version: "{{ $resource.Version }}",
+		Kind: "{{ $resource.Kind }}",
+    },
     {{- end }}
     {{- end }}
 }
@@ -310,12 +296,17 @@ func partition{{ $kindPlural }}ByLabel(labelKey string, set {{ $set_import_prefi
     setsByLabel := map[string]{{ $set_import_prefix }}.{{ $resource.Kind }}Set{}
 
     for _, obj := range set.List() {
+        objGVK := schema.GroupVersionKind{
+            Group: "{{ $resource.Group.Group }}",
+            Version: "{{ $resource.Version }}",
+            Kind: "{{ $resource.Kind }}",
+        }
         if obj.Labels == nil {
-            return nil, MissingRequiredLabelError(labelKey, {{ $kindLowerCamel}}GVK, obj)
+            return nil, MissingRequiredLabelError(labelKey, objGVK, obj)
         }
         labelValue := obj.Labels[labelKey]
         if labelValue == "" {
-            return nil, MissingRequiredLabelError(labelKey, {{ $kindLowerCamel}}GVK, obj)
+            return nil, MissingRequiredLabelError(labelKey, objGVK, obj)
         }
 
         setForValue, ok := setsByLabel[labelValue]

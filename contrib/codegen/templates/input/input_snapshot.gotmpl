@@ -60,11 +60,7 @@ import (
 // SnapshotGVKs is a list of the GVKs included in this snapshot
 var {{ $snapshotName }}SnapshotGVKs = []schema.GroupVersionKind{
     {{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
-    {{- $kindPlural := pluralize $resource.Kind }}
-    {{- $kindLowerCamel := lower_camel $resource.Kind }}
-    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     schema.GroupVersionKind{
         Group: "{{ $resource.Group.Group }}",
         Version: "{{ $resource.Version }}",
@@ -296,10 +292,10 @@ func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
 {{/* add map contents here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-{{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
     {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
     for _, obj := range {{ $kindLowerCamel }}Set.UnsortedList() {
         // redact secret data from the snapshot
