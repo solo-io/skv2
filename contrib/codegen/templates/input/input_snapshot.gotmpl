@@ -299,11 +299,12 @@ func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
 {{- range $resource := $group.Resources }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
     {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
     for _, obj := range {{ $kindLowerCamel }}Set.UnsortedList() {
         // redact secret data from the snapshot
         obj := snapshotutils.RedactSecretData(obj)
-        {{ $kindLowerCamel }}Set.Insert(obj.(*{{ $type_import_prefix }}.{{ $resource.Kind }}))
+        {{ $kindLowerCamel }}Set.Insert(obj*{{ $types_import_prefix }}.{{ $resource.Kind }})
     }
     snapshotMap["{{ $kindLowerCamelPlural }}"] = {{ $kindLowerCamel }}Set.List()
 {{- end }}
