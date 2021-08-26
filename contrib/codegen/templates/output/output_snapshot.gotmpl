@@ -8,6 +8,8 @@ import (
     "encoding/json"
     "sort"
 
+    snapshotutils "github.com/solo-io/skv2/contrib/pkg/snapshot"
+
     "github.com/solo-io/skv2/pkg/multicluster"
     "github.com/solo-io/skv2/pkg/resource"
     "k8s.io/apimachinery/pkg/runtime/schema"
@@ -17,7 +19,6 @@ import (
     "github.com/solo-io/skv2/contrib/pkg/output"
     "github.com/solo-io/skv2/pkg/ezkube"
     "sigs.k8s.io/controller-runtime/pkg/client"
-    "github.com/solo-io/skv2/pkg/verifier"
 
 
 {{- range $group := $groups }}
@@ -38,11 +39,8 @@ var MissingRequiredLabelError = func(labelKey string, gvk schema.GroupVersionKin
 // SnapshotGVKs is a list of the GVKs included in this snapshot
 var SnapshotGVKs = []schema.GroupVersionKind{
     {{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     {{- $kindPlural := pluralize $resource.Kind }}
-    {{- $kindLowerCamel := lower_camel $resource.Kind }}
-    {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     schema.GroupVersionKind{
 		Group: "{{ $resource.Group.Group }}",
 		Version: "{{ $resource.Version }}",
@@ -123,7 +121,6 @@ func NewSnapshot(
 func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
-	gvk schema.GroupVersionKind,
 {{/* generate partitioned constructor params here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
@@ -142,7 +139,7 @@ func NewLabelPartitionedSnapshot(
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    partitioned{{ $kindPlural }}, err := partition{{ $kindPlural }}ByLabel(labelKey, gvk, {{ $kindLowerCamelPlural }})
+    partitioned{{ $kindPlural }}, err := partition{{ $kindPlural }}ByLabel(labelKey, {{ $kindLowerCamelPlural }})
     if err != nil {
     	return nil, err
     }
@@ -295,16 +292,21 @@ func (s *snapshot) ForEachObject(handleObject func(cluster string, gvk schema.Gr
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func partition{{ $kindPlural }}ByLabel(labelKey string, gvk schema.GroupVersionKind, set {{ $set_import_prefix }}.{{ $resource.Kind }}Set) ([]Labeled{{ $resource.Kind }}Set, error) {
+func partition{{ $kindPlural }}ByLabel(labelKey string, set {{ $set_import_prefix }}.{{ $resource.Kind }}Set) ([]Labeled{{ $resource.Kind }}Set, error) {
     setsByLabel := map[string]{{ $set_import_prefix }}.{{ $resource.Kind }}Set{}
 
     for _, obj := range set.List() {
+        objGVK := schema.GroupVersionKind{
+            Group: "{{ $resource.Group.Group }}",
+            Version: "{{ $resource.Version }}",
+            Kind: "{{ $resource.Kind }}",
+        }
         if obj.Labels == nil {
-            return nil, MissingRequiredLabelError(labelKey, gvk, obj)
+            return nil, MissingRequiredLabelError(labelKey, objGVK, obj)
         }
         labelValue := obj.Labels[labelKey]
         if labelValue == "" {
-            return nil, MissingRequiredLabelError(labelKey, gvk, obj)
+            return nil, MissingRequiredLabelError(labelKey, objGVK, obj)
         }
 
         setForValue, ok := setsByLabel[labelValue]
@@ -360,12 +362,17 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 {{/* add map contents here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $type_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
     for _, set := range s.{{ $kindLowerCamelPlural }} {
-        {{ $kindLowerCamel }}Set = {{ $kindLowerCamel }}Set.Union(set.Set() )
+        for _, obj := range set.Set().UnsortedList() {
+        	// redact secret data from the snapshot
+            obj := snapshotutils.RedactSecretData(obj)
+            {{ $kindLowerCamel }}Set.Insert(obj.(*{{ $type_import_prefix }}.{{ $resource.Kind }}))
+        }
     }
     snapshotMap["{{ $kindLowerCamelPlural }}"] = {{ $kindLowerCamel }}Set.List()
 {{- end }}
@@ -511,7 +518,7 @@ type Builder interface {
 {{- end }}
 
     // build the collected outputs into a label-partitioned snapshot
-    BuildLabelPartitionedSnapshot(labelKey string, gvk schema.GroupVersionKind) (Snapshot, error)
+    BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
 
     // build the collected outputs into a snapshot with a single partition
     BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
@@ -565,11 +572,10 @@ func (b *builder) Get{{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.K
 {{- end }}
 {{- end }}
 
-func (b *builder) BuildLabelPartitionedSnapshot(labelKey string, gvk schema.GroupVersionKind) (Snapshot, error) {
+func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
     return NewLabelPartitionedSnapshot(
         b.name,
         labelKey,
-        gvk,
 {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
