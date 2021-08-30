@@ -225,7 +225,7 @@ func New{{ $snapshotName }}SnapshotFromGeneric(
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func (s snapshot{{ $snapshotName }}) {{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
+func (s *snapshot{{ $snapshotName }}) {{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
     return s.{{ $kindLowerCamelPlural }}
 }
 {{- end }}
@@ -233,7 +233,7 @@ func (s snapshot{{ $snapshotName }}) {{ $kindPlural }}() {{ $set_import_prefix }
 
 {{- if $needs_sync_status }}
 
-func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts {{ $snapshotName }}SyncStatusOptions) error {
+func (s *snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts {{ $snapshotName }}SyncStatusOptions) error {
 	var errs error
     {{/* generate calls to update status here */}}
     {{- range $group := $groups }}
@@ -262,7 +262,7 @@ func (s snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Contex
 }
 
 
-func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.Client, opts {{ $snapshotName }}SyncStatusOptions) error {
+func (s *snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.Client, opts {{ $snapshotName }}SyncStatusOptions) error {
     var errs error
     {{/* generate calls to update status here */}}
     {{- range $group := $groups }}
@@ -287,7 +287,7 @@ func (s snapshot{{ $snapshotName }}) SyncStatuses(ctx context.Context, c client.
 
 {{- end }}
 
-func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
+func (s *snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
     snapshotMap := map[string]interface{}{"name": s.name}
 {{/* add map contents here */}}
 {{- range $group := $groups }}
@@ -297,7 +297,7 @@ func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
-    for _, obj := range {{ $kindLowerCamel }}Set.UnsortedList() {
+    for _, obj := range s.{{ $kindLowerCamelPlural }}.UnsortedList() {
         // redact secret data from the snapshot
         obj := snapshotutils.RedactSecretData(obj)
         {{ $kindLowerCamel }}Set.Insert(obj.(*{{ $types_import_prefix }}.{{ $resource.Kind }}))
@@ -308,7 +308,7 @@ func (s snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
 	return json.Marshal(snapshotMap)
 }
 
-func (s snapshot{{ $snapshotName }}) Clone() {{ $snapshotName }}Snapshot {
+func (s *snapshot{{ $snapshotName }}) Clone() {{ $snapshotName }}Snapshot {
 	return &snapshot{{ $snapshotName }}{
         name: s.name,
 {{/* add map contents here */}}
@@ -322,7 +322,7 @@ func (s snapshot{{ $snapshotName }}) Clone() {{ $snapshotName }}Snapshot {
     }
 }
 
-func (s snapshot{{ $snapshotName }}) Generic() resource.ClusterSnapshot {
+func (s *snapshot{{ $snapshotName }}) Generic() resource.ClusterSnapshot {
     clusterSnapshots := resource.ClusterSnapshot{}
     s.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject){
         clusterSnapshots.Insert(cluster, gvk, obj)
@@ -332,7 +332,7 @@ func (s snapshot{{ $snapshotName }}) Generic() resource.ClusterSnapshot {
 }
 
 // convert this snapshot to its generic form
-func (s snapshot{{ $snapshotName }}) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject)) {
+func (s *snapshot{{ $snapshotName }}) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject)) {
     {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
