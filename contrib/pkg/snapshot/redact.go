@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	redactedString              = "redacted"
+	redactedString              = "<redacted>"
 )
 
 // RedactSecretData returns a copy with sensitive information redacted
