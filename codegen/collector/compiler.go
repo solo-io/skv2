@@ -78,14 +78,19 @@ func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []strin
 		defer mutex.Unlock()
 		descriptors = append(descriptors, &f)
 	}
-	maxProtocs := 10
-	if n, err := strconv.Atoi(os.Getenv("MAX_CONCURRENT_PROTOCS")); err == nil {
-		maxProtocs = n
-	}
 	var (
 		group errgroup.Group
-		sem   = make(chan struct{}, maxProtocs)
+		sem   chan struct{}
 	)
+	if s := os.Getenv("MAX_CONCURRENT_PROTOCS"); s == "" {
+		sem = make(chan struct{})
+	} else {
+		maxProtocs, err := strconv.Atoi(s)
+		if err != nil {
+			return nil, eris.Wrapf(err, "invalid value for MAX_CONCURRENT_PROTOCS: %s", s)
+		}
+		sem = make(chan struct{}, maxProtocs)
+	}
 	for _, dir := range append([]string{root}) {
 		absoluteDir, err := filepath.Abs(dir)
 		if err != nil {
