@@ -79,17 +79,17 @@ func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []strin
 		descriptors = append(descriptors, &f)
 	}
 	var (
-		group errgroup.Group
-		sem   chan struct{}
+		group            errgroup.Group
+		sem              chan struct{}
+		limitConcurrency bool
 	)
-	if s := os.Getenv("MAX_CONCURRENT_PROTOCS"); s == "" {
-		sem = make(chan struct{})
-	} else {
+	if s := os.Getenv("MAX_CONCURRENT_PROTOCS"); s != "" {
 		maxProtocs, err := strconv.Atoi(s)
 		if err != nil {
 			return nil, eris.Wrapf(err, "invalid value for MAX_CONCURRENT_PROTOCS: %s", s)
 		}
 		sem = make(chan struct{}, maxProtocs)
+		limitConcurrency = true
 	}
 	for _, dir := range append([]string{root}) {
 		absoluteDir, err := filepath.Abs(dir)
@@ -110,9 +110,13 @@ func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []strin
 
 			// parallelize parsing the descriptors as each one requires file i/o and is slow
 			group.Go(func() error {
-				sem <- struct{}{}
+				if limitConcurrency {
+					sem <- struct{}{}
+				}
 				defer func() {
-					<-sem
+					if limitConcurrency {
+						<-sem
+					}
 				}()
 				imports, err := p.collector.CollectImportsForFile(absoluteDir, protoFile)
 				if err != nil {
