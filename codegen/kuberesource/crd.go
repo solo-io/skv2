@@ -23,8 +23,9 @@ func CustomResourceDefinitions(
 ) (objects []metav1.Object, err error) {
 	for _, resource := range group.Resources {
 
+		isExternal := resource.Spec.Type.ProtoPackage != "" && !strings.Contains(resource.Spec.Type.ProtoPackage, "solo.io")
 		var validationSchema *apiextv1beta1.CustomResourceValidation
-		if group.RenderValidationSchemas {
+		if group.RenderValidationSchemas && !isExternal {
 			validationSchema, err = constructValidationSchema(resource, group.OpenApiSchemas)
 			if err != nil {
 				return nil, err
