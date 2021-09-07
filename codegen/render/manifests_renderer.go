@@ -165,8 +165,13 @@ func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[stri
 	protoPkg := grp.Group
 	goPkg := util.GoPackage(grp)
 	for _, res := range grp.Resources {
+		specProtoPkg := protoPkg
+		if res.Spec.Type.ProtoPackage != "" {
+			specProtoPkg = res.Spec.Type.ProtoPackage
+		}
+
 		unstructuredSpecFields, err := opts.GetUnstructuredFields(
-			protoPkg,
+			specProtoPkg,
 			res.Spec.Type.Name,
 		)
 		if err != nil {
@@ -174,8 +179,12 @@ func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[stri
 		}
 		unstructuredFields[goPkg] = append(unstructuredFields[goPkg], unstructuredSpecFields...)
 		if res.Status != nil {
+			statusProtoPkg := protoPkg
+			if res.Status.Type.ProtoPackage != "" {
+				statusProtoPkg = res.Status.Type.ProtoPackage
+			}
 			unstructuredStatusFields, err := opts.GetUnstructuredFields(
-				protoPkg,
+				statusProtoPkg,
 				res.Status.Type.Name,
 			)
 			if err != nil {

@@ -1,0 +1,3 @@
+changelog:
+  - type: FIX
+    description: Update proto API generation so that we are using the proto package if defined
