@@ -22,7 +22,13 @@ type TransitionFunc func(existing, desired runtime.Object) error
 //
 // If the desired object (after applying transition funcs) is semantically equal
 // to the existing object, the update is skipped.
-func Upsert(ctx context.Context, c client.Client, obj client.Object, transitionFuncs ...TransitionFunc) (controllerutil.OperationResult, error) {
+func Upsert(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+	// objCreator runtime.ObjectCreater,
+	transitionFuncs ...TransitionFunc,
+) (controllerutil.OperationResult, error) {
 	key := client.ObjectKeyFromObject(obj)
 
 	// Always valid because obj is client.Object
@@ -66,12 +72,62 @@ func transition(existing, desired runtime.Object, transitionFuncs []TransitionFu
 	return nil
 }
 
+func upsert(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+objCreator runtime.ObjectCreater,
+	transitionFuncs ...TransitionFunc,
+) (controllerutil.OperationResult, error) {
+	key := client.ObjectKeyFromObject(obj)
+	objCreator.New(obj.GetResourceVersion())
+	// Always valid because obj is client.Object
+	existing := obj.DeepCopyObject().(client.Object)
+
+	if err := c.Get(ctx, key, existing); err != nil {
+		if !errors.IsNotFound(err) {
+			return controllerutil.OperationResultNone, err
+		}
+		if err := c.Create(ctx, obj); err != nil {
+			return controllerutil.OperationResultNone, err
+		}
+		return controllerutil.OperationResultCreated, nil
+	}
+
+	if err := transition(existing, obj, transitionFuncs); err != nil {
+		return controllerutil.OperationResultNone, err
+	}
+
+	if ObjectsEqual(existing, obj) {
+		return controllerutil.OperationResultNone, nil
+	}
+
+	if err := c.Update(ctx, obj); err != nil {
+		return controllerutil.OperationResultNone, err
+	}
+	return controllerutil.OperationResultUpdated, nil
+}
+
+func UpsertWithCreator(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+// objCreator runtime.ObjectCreater,
+	transitionFuncs ...TransitionFunc,
+) (controllerutil.OperationResult, error) {
+
+}
+
 // Easily Update the Status of a desired object in the cluster.
 // Requires that the object already exists (will only attempt to update).
 //
 // If the desired object status is semantically equal
 // to the existing object status, the update is skipped.
-func UpdateStatus(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
+func UpdateStatus(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+) (controllerutil.OperationResult, error) {
 	updateNeeded, err := needUpdate(ctx, c, obj)
 	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
@@ -86,7 +142,11 @@ func UpdateStatus(ctx context.Context, c client.Client, obj client.Object) (cont
 // If the desired object status is semantically equal
 // to the existing object status, the update is skipped.
 // Unlike the method above, this method does not update obj.
-func UpdateStatusImmutable(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
+func UpdateStatusImmutable(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+) (controllerutil.OperationResult, error) {
 	updateNeeded, err := needUpdate(ctx, c, obj)
 	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
@@ -112,7 +172,11 @@ func needUpdate(ctx context.Context, c client.Client, obj client.Object) (bool, 
 	return true, nil
 }
 
-func update(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
+func update(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+) (controllerutil.OperationResult, error) {
 	if err := c.Status().Update(ctx, obj); err != nil {
 		return controllerutil.OperationResultNone, err
 	}
