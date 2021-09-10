@@ -56,7 +56,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
-	if err := rbac_authorization_k8s_io_v1.AddToScheme(scheme); err != nil {
+	if err := rbac_authorization_k8s_io_v1.SchemeBuilder.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	client, err := client.New(cfg, client.Options{
