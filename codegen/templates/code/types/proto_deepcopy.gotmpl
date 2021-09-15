@@ -4,20 +4,31 @@ package {{ .PackageName }}
 
 import (
     proto "github.com/golang/protobuf/proto"
+	"github.com/solo-io/protoc-gen-ext/pkg/clone"
 )
 
 {{- range $resource := $.Resources }}
 
 // DeepCopyInto for the {{ $resource.Kind }}.Spec
 func (in *{{ $resource.Spec.Type.Name }}) DeepCopyInto(out *{{ $resource.Spec.Type.Name }}) {
-    p := proto.Clone(in).(*{{ $resource.Spec.Type.Name }})
+    var p *{{ $resource.Spec.Type.Name }}
+    if h, ok := interface{}(in).(clone.Cloner); ok {
+        p = h.Clone().(*{{ $resource.Spec.Type.Name }})
+    } else {
+        p = proto.Clone(in).(*{{ $resource.Spec.Type.Name }})
+    }
     *out = *p
 }
 
 {{- if $resource.Status }}
 // DeepCopyInto for the {{ $resource.Kind }}.Status
 func (in *{{ $resource.Status.Type.Name }}) DeepCopyInto(out *{{ $resource.Status.Type.Name }}) {
-    p := proto.Clone(in).(*{{ $resource.Status.Type.Name }})
+    var p *{{ $resource.Status.Type.Name }}
+    if h, ok := interface{}(in).(clone.Cloner); ok {
+        p = h.Clone().(*{{ $resource.Status.Type.Name }})
+    } else {
+        p = proto.Clone(in).(*{{ $resource.Status.Type.Name }})
+    }
     *out = *p
 }
 {{- end }}
