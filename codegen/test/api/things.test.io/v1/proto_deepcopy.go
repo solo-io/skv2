@@ -6,22 +6,38 @@ package v1
 
 import (
 	proto "github.com/golang/protobuf/proto"
+	"github.com/solo-io/protoc-gen-ext/pkg/clone"
 )
 
 // DeepCopyInto for the Paint.Spec
 func (in *PaintSpec) DeepCopyInto(out *PaintSpec) {
-	p := proto.Clone(in).(*PaintSpec)
+	var p *PaintSpec
+	if h, ok := interface{}(in).(clone.Cloner); ok {
+		p = h.Clone().(*PaintSpec)
+	} else {
+		p = proto.Clone(in).(*PaintSpec)
+	}
 	*out = *p
 }
 
 // DeepCopyInto for the Paint.Status
 func (in *PaintStatus) DeepCopyInto(out *PaintStatus) {
-	p := proto.Clone(in).(*PaintStatus)
+	var p *PaintStatus
+	if h, ok := interface{}(in).(clone.Cloner); ok {
+		p = h.Clone().(*PaintStatus)
+	} else {
+		p = proto.Clone(in).(*PaintStatus)
+	}
 	*out = *p
 }
 
 // DeepCopyInto for the ClusterResource.Spec
 func (in *ClusterResourceSpec) DeepCopyInto(out *ClusterResourceSpec) {
-	p := proto.Clone(in).(*ClusterResourceSpec)
+	var p *ClusterResourceSpec
+	if h, ok := interface{}(in).(clone.Cloner); ok {
+		p = h.Clone().(*ClusterResourceSpec)
+	} else {
+		p = proto.Clone(in).(*ClusterResourceSpec)
+	}
 	*out = *p
 }

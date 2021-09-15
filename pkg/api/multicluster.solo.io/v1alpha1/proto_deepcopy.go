@@ -6,16 +6,27 @@ package v1alpha1
 
 import (
 	proto "github.com/golang/protobuf/proto"
+	"github.com/solo-io/protoc-gen-ext/pkg/clone"
 )
 
 // DeepCopyInto for the KubernetesCluster.Spec
 func (in *KubernetesClusterSpec) DeepCopyInto(out *KubernetesClusterSpec) {
-	p := proto.Clone(in).(*KubernetesClusterSpec)
+	var p *KubernetesClusterSpec
+	if h, ok := interface{}(in).(clone.Cloner); ok {
+		p = h.Clone().(*KubernetesClusterSpec)
+	} else {
+		p = proto.Clone(in).(*KubernetesClusterSpec)
+	}
 	*out = *p
 }
 
 // DeepCopyInto for the KubernetesCluster.Status
 func (in *KubernetesClusterStatus) DeepCopyInto(out *KubernetesClusterStatus) {
-	p := proto.Clone(in).(*KubernetesClusterStatus)
+	var p *KubernetesClusterStatus
+	if h, ok := interface{}(in).(clone.Cloner); ok {
+		p = h.Clone().(*KubernetesClusterStatus)
+	} else {
+		p = proto.Clone(in).(*KubernetesClusterStatus)
+	}
 	*out = *p
 }

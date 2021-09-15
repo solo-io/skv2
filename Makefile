@@ -19,7 +19,7 @@ install-go-tools: mod-download
 	go install github.com/gobuffalo/packr/packr
 	go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
 	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
-	go install github.com/solo-io/protoc-gen-ext
+	go install github.com/solo-io/protoc-gen-ext@a842d70d967f4444013df01fa6c4feb4f508c838
 	go install github.com/golang/mock/mockgen@v1.4.4
 	go install golang.org/x/tools/cmd/goimports
 
