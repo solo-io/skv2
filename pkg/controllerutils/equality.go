@@ -94,7 +94,7 @@ func ObjectMetasEqual(obj1, obj2 metav1.Object) bool {
 
 func mapStringEqual(map1, map2 map[string]string) bool {
 	if map1 == nil && map2 == nil {
-		return false
+		return true
 	}
 
 	if len(map1) != len(map2) {
