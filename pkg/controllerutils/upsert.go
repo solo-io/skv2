@@ -26,55 +26,18 @@ func Upsert(
 	ctx context.Context,
 	c client.Client,
 	obj client.Object,
-	// objCreator runtime.ObjectCreater,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
-	// Always valid because obj is client.Object
-	existing := obj.DeepCopyObject().(client.Object)
-	return upsert(ctx, c, obj, existing, transitionFuncs...)
-}
-
-func UpsertNoCopy(
-	ctx context.Context,
-	c client.Client,
-	obj client.Object,
-	scheme *runtime.Scheme,
-	transitionFuncs ...TransitionFunc,
-) (controllerutil.OperationResult, error) {
-	gvk, err := apiutil.GVKForObject(obj, scheme)
+	gvk, err := apiutil.GVKForObject(obj, c.Scheme())
 	if err != nil {
 		return controllerutil.OperationResultNone, err
 	}
-	newObj, err := scheme.New(gvk)
+	newObj, err := c.Scheme().New(gvk)
 	if err != nil {
 		return controllerutil.OperationResultNone, err
 	}
 	// Always valid because obj is client.Object
 	existing := newObj.(client.Object)
-
-	return upsert(ctx, c, obj, existing, transitionFuncs...)
-}
-
-func transition(existing, desired runtime.Object, transitionFuncs []TransitionFunc) error {
-	for _, txFunc := range transitionFuncs {
-		if err := txFunc(existing, desired); err != nil {
-			return err
-		}
-	}
-
-	if existingMeta, ok := existing.(metav1.Object); ok {
-		desired.(metav1.Object).SetResourceVersion(existingMeta.GetResourceVersion())
-	}
-
-	return nil
-}
-
-func upsert(
-	ctx context.Context,
-	c client.Client,
-	obj, existing client.Object,
-	transitionFuncs ...TransitionFunc,
-) (controllerutil.OperationResult, error) {
 
 	key := client.ObjectKeyFromObject(obj)
 	if err := c.Get(ctx, key, existing); err != nil {
@@ -99,6 +62,20 @@ func upsert(
 		return controllerutil.OperationResultNone, err
 	}
 	return controllerutil.OperationResultUpdated, nil
+}
+
+func transition(existing, desired runtime.Object, transitionFuncs []TransitionFunc) error {
+	for _, txFunc := range transitionFuncs {
+		if err := txFunc(existing, desired); err != nil {
+			return err
+		}
+	}
+
+	if existingMeta, ok := existing.(metav1.Object); ok {
+		desired.(metav1.Object).SetResourceVersion(existingMeta.GetResourceVersion())
+	}
+
+	return nil
 }
 
 // Easily Update the Status of a desired object in the cluster.
