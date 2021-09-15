@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -77,7 +78,19 @@ func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []strin
 		defer mutex.Unlock()
 		descriptors = append(descriptors, &f)
 	}
-	var group errgroup.Group
+	var (
+		group            errgroup.Group
+		sem              chan struct{}
+		limitConcurrency bool
+	)
+	if s := os.Getenv("MAX_CONCURRENT_PROTOCS"); s != "" {
+		maxProtocs, err := strconv.Atoi(s)
+		if err != nil {
+			return nil, eris.Wrapf(err, "invalid value for MAX_CONCURRENT_PROTOCS: %s", s)
+		}
+		sem = make(chan struct{}, maxProtocs)
+		limitConcurrency = true
+	}
 	for _, dir := range append([]string{root}) {
 		absoluteDir, err := filepath.Abs(dir)
 		if err != nil {
@@ -97,6 +110,14 @@ func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []strin
 
 			// parallelize parsing the descriptors as each one requires file i/o and is slow
 			group.Go(func() error {
+				if limitConcurrency {
+					sem <- struct{}{}
+				}
+				defer func() {
+					if limitConcurrency {
+						<-sem
+					}
+				}()
 				imports, err := p.collector.CollectImportsForFile(absoluteDir, protoFile)
 				if err != nil {
 					return err
@@ -123,7 +144,11 @@ func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []strin
 	return filterDuplicateDescriptors(descriptors), nil
 }
 
-func (p *protoCompiler) addDescriptorsForFile(addDescriptor func(f DescriptorWithPath), imports []string, protoFile string) error {
+func (p *protoCompiler) addDescriptorsForFile(
+	addDescriptor func(f DescriptorWithPath),
+	imports []string,
+	protoFile string,
+) error {
 	log.Printf("processing proto file input %v", protoFile)
 	// don't generate protos for non-project files
 	compile := p.wantCompile(protoFile)
