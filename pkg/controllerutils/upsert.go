@@ -5,10 +5,10 @@ import (
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -29,33 +29,30 @@ func Upsert(
 	// objCreator runtime.ObjectCreater,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
-	key := client.ObjectKeyFromObject(obj)
-
 	// Always valid because obj is client.Object
 	existing := obj.DeepCopyObject().(client.Object)
+	return upsert(ctx, c, obj, existing, transitionFuncs...)
+}
 
-	if err := c.Get(ctx, key, existing); err != nil {
-		if !errors.IsNotFound(err) {
-			return controllerutil.OperationResultNone, err
-		}
-		if err := c.Create(ctx, obj); err != nil {
-			return controllerutil.OperationResultNone, err
-		}
-		return controllerutil.OperationResultCreated, nil
-	}
-
-	if err := transition(existing, obj, transitionFuncs); err != nil {
+func UpsertNoCopy(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+	scheme *runtime.Scheme,
+	transitionFuncs ...TransitionFunc,
+) (controllerutil.OperationResult, error) {
+	gvk, err := apiutil.GVKForObject(obj, scheme)
+	if err != nil {
 		return controllerutil.OperationResultNone, err
 	}
-
-	if ObjectsEqual(existing, obj) {
-		return controllerutil.OperationResultNone, nil
-	}
-
-	if err := c.Update(ctx, obj); err != nil {
+	newObj, err := scheme.New(gvk)
+	if err != nil {
 		return controllerutil.OperationResultNone, err
 	}
-	return controllerutil.OperationResultUpdated, nil
+	// Always valid because obj is client.Object
+	existing := newObj.(client.Object)
+
+	return upsert(ctx, c, obj, existing, transitionFuncs...)
 }
 
 func transition(existing, desired runtime.Object, transitionFuncs []TransitionFunc) error {
@@ -75,15 +72,11 @@ func transition(existing, desired runtime.Object, transitionFuncs []TransitionFu
 func upsert(
 	ctx context.Context,
 	c client.Client,
-	obj client.Object,
-objCreator runtime.ObjectCreater,
+	obj, existing client.Object,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
-	key := client.ObjectKeyFromObject(obj)
-	objCreator.New(obj.GetResourceVersion())
-	// Always valid because obj is client.Object
-	existing := obj.DeepCopyObject().(client.Object)
 
+	key := client.ObjectKeyFromObject(obj)
 	if err := c.Get(ctx, key, existing); err != nil {
 		if !errors.IsNotFound(err) {
 			return controllerutil.OperationResultNone, err
@@ -106,16 +99,6 @@ objCreator runtime.ObjectCreater,
 		return controllerutil.OperationResultNone, err
 	}
 	return controllerutil.OperationResultUpdated, nil
-}
-
-func UpsertWithCreator(
-	ctx context.Context,
-	c client.Client,
-	obj client.Object,
-// objCreator runtime.ObjectCreater,
-	transitionFuncs ...TransitionFunc,
-) (controllerutil.OperationResult, error) {
-
 }
 
 // Easily Update the Status of a desired object in the cluster.

@@ -48,11 +48,9 @@ require (
 	google.golang.org/api v0.38.0
 	google.golang.org/genproto v0.0.0-20210218151259-fe80b386bf06
 	google.golang.org/protobuf v1.27.1
-	istio.io/api v0.0.0-20210420211535-1c598ea4139c // indirect
-	istio.io/gogo-genproto v0.0.0-20210113155706-4daf5697332f // indirect
-	k8s.io/api v0.20.2
+	k8s.io/api v0.19.6
 	k8s.io/apiextensions-apiserver v0.19.6
-	k8s.io/apimachinery v0.20.2
+	k8s.io/apimachinery v0.19.6
 	k8s.io/client-go v0.19.6
 	k8s.io/code-generator v0.19.6
 	k8s.io/klog/v2 v2.5.0
