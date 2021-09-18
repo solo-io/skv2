@@ -1,23 +1,23 @@
 package predicate
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 var _ predicate.Predicate = SimplePredicate{}
 
-type SimpleEventFilterFunc func(obj v1.Object) bool
+type SimpleEventFilterFunc func(obj client.Object) bool
 
-func (f SimpleEventFilterFunc) FilterEvent(obj v1.Object) bool {
+func (f SimpleEventFilterFunc) FilterEvent(obj client.Object) bool {
 	return f(obj)
 }
 
 // SimpleEventFilter filters events for a single object type
 type SimpleEventFilter interface {
 	// return True to filter out the event
-	FilterEvent(obj v1.Object) bool
+	FilterEvent(obj client.Object) bool
 }
 
 // SimplePredicate filters events based on a ShouldSync function
