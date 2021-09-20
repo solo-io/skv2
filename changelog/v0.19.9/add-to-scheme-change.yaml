@@ -1,0 +1,6 @@
+changelog:
+  - dependencyOwner: solo-io
+    dependencyRepo: protoc-gen-ext
+    dependencyTag: v0.0.16
+    description: Update protoc-gen-ext to pick up Clone() functions
+    type: DEPENDENCY_BUMP
