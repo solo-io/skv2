@@ -879,8 +879,8 @@ github.com/solo-io/go-utils v0.21.4 h1:BUOrGNV+zQGIEKTS02SyPqevmkyG+AMl+0+czBg9a
 github.com/solo-io/go-utils v0.21.4/go.mod h1:6e8K1spnMWwlnJRSNp/J84GEyJbrcK4Gm7i+ehzCi8c=
 github.com/solo-io/k8s-utils v0.0.1 h1:e2alFsqTT7GU10d6cFDX2y+86J142DrsRwy5itvvZOI=
 github.com/solo-io/k8s-utils v0.0.1/go.mod h1:53N9+9Gl2MwqIZJ7/ocA9gKvWt+6z7MPD2qKQix7oFE=
-github.com/solo-io/protoc-gen-ext v0.0.16-0.20210915161940-a842d70d967f h1:9UI3W0KfzpPuVBSdysTQ0XNsGyI6C1SBzYPmIGzZ5sk=
-github.com/solo-io/protoc-gen-ext v0.0.16-0.20210915161940-a842d70d967f/go.mod h1:j5wvKW5B7oes0hf46IxPDEkDK0pNNQ1Nbfrr1P+xBQo=
+github.com/solo-io/protoc-gen-ext v0.0.16 h1:PHPzkmK6FVtMlDe95WSOcSXKSdnfUxuwJMfet/PaLhU=
+github.com/solo-io/protoc-gen-ext v0.0.16/go.mod h1:j5wvKW5B7oes0hf46IxPDEkDK0pNNQ1Nbfrr1P+xBQo=
 github.com/sony/gobreaker v0.4.1/go.mod h1:ZKptC7FHNvhBz7dN2LGjPVBz2sZJmc0/PkyDJOjmxWY=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
 github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B0CQ=

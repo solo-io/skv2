@@ -56,7 +56,7 @@ func (m *KubernetesClusterStatus) Clone() proto.Message {
 	}
 	target = &KubernetesClusterStatus{}
 
-	if len(m.GetStatus()) > 0 {
+	if m.GetStatus() != nil {
 		target.Status = make([]*github_com_solo_io_skv2_pkg_api_core_skv2_solo_io_v1.Status, len(m.GetStatus()))
 		for idx, v := range m.GetStatus() {
 
@@ -71,7 +71,7 @@ func (m *KubernetesClusterStatus) Clone() proto.Message {
 
 	target.Namespace = m.GetNamespace()
 
-	if len(m.GetPolicyRules()) > 0 {
+	if m.GetPolicyRules() != nil {
 		target.PolicyRules = make([]*PolicyRule, len(m.GetPolicyRules()))
 		for idx, v := range m.GetPolicyRules() {
 
@@ -95,7 +95,7 @@ func (m *PolicyRule) Clone() proto.Message {
 	}
 	target = &PolicyRule{}
 
-	if len(m.GetVerbs()) > 0 {
+	if m.GetVerbs() != nil {
 		target.Verbs = make([]string, len(m.GetVerbs()))
 		for idx, v := range m.GetVerbs() {
 
@@ -104,7 +104,7 @@ func (m *PolicyRule) Clone() proto.Message {
 		}
 	}
 
-	if len(m.GetApiGroups()) > 0 {
+	if m.GetApiGroups() != nil {
 		target.ApiGroups = make([]string, len(m.GetApiGroups()))
 		for idx, v := range m.GetApiGroups() {
 
@@ -113,7 +113,7 @@ func (m *PolicyRule) Clone() proto.Message {
 		}
 	}
 
-	if len(m.GetResources()) > 0 {
+	if m.GetResources() != nil {
 		target.Resources = make([]string, len(m.GetResources()))
 		for idx, v := range m.GetResources() {
 
@@ -122,7 +122,7 @@ func (m *PolicyRule) Clone() proto.Message {
 		}
 	}
 
-	if len(m.GetResourceNames()) > 0 {
+	if m.GetResourceNames() != nil {
 		target.ResourceNames = make([]string, len(m.GetResourceNames()))
 		for idx, v := range m.GetResourceNames() {
 
@@ -131,7 +131,7 @@ func (m *PolicyRule) Clone() proto.Message {
 		}
 	}
 
-	if len(m.GetNonResourceUrls()) > 0 {
+	if m.GetNonResourceUrls() != nil {
 		target.NonResourceUrls = make([]string, len(m.GetNonResourceUrls()))
 		for idx, v := range m.GetNonResourceUrls() {
 

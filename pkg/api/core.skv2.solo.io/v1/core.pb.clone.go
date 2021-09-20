@@ -52,7 +52,7 @@ func (m *ObjectRefList) Clone() proto.Message {
 	}
 	target = &ObjectRefList{}
 
-	if len(m.GetRefs()) > 0 {
+	if m.GetRefs() != nil {
 		target.Refs = make([]*ObjectRef, len(m.GetRefs()))
 		for idx, v := range m.GetRefs() {
 
@@ -178,7 +178,7 @@ func (m *ObjectSelector) Clone() proto.Message {
 	}
 	target = &ObjectSelector{}
 
-	if len(m.GetNamespaces()) > 0 {
+	if m.GetNamespaces() != nil {
 		target.Namespaces = make([]string, len(m.GetNamespaces()))
 		for idx, v := range m.GetNamespaces() {
 
@@ -187,7 +187,7 @@ func (m *ObjectSelector) Clone() proto.Message {
 		}
 	}
 
-	if len(m.GetLabels()) > 0 {
+	if m.GetLabels() != nil {
 		target.Labels = make(map[string]string, len(m.GetLabels()))
 		for k, v := range m.GetLabels() {
 
@@ -196,7 +196,7 @@ func (m *ObjectSelector) Clone() proto.Message {
 		}
 	}
 
-	if len(m.GetExpressions()) > 0 {
+	if m.GetExpressions() != nil {
 		target.Expressions = make([]*ObjectSelector_Expression, len(m.GetExpressions()))
 		for idx, v := range m.GetExpressions() {
 
@@ -224,7 +224,7 @@ func (m *ObjectSelector_Expression) Clone() proto.Message {
 
 	target.Operator = m.GetOperator()
 
-	if len(m.GetValues()) > 0 {
+	if m.GetValues() != nil {
 		target.Values = make([]string, len(m.GetValues()))
 		for idx, v := range m.GetValues() {
 
