@@ -14,6 +14,7 @@ require (
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v0.4.0
 	github.com/go-logr/zapr v0.2.0
+	github.com/go-test/deep v1.0.7
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr v1.30.1
 	github.com/golang/mock v1.6.0
