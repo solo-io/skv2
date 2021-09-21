@@ -49,23 +49,6 @@ func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, o
 	}
 }
 
-func (s ClusterSnapshot) ForEachObject(
-	handleObject func(
-		cluster string,
-		gvk schema.GroupVersionKind,
-		obj TypedObject,
-	),
-) {
-	if s == nil {
-		return
-	}
-	for cluster, snap := range s {
-		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj TypedObject) {
-			handleObject(cluster, gvk, obj)
-		})
-	}
-}
-
 func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
 	clone := Snapshot{}
 	for k, v := range s {
@@ -86,6 +69,26 @@ func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
 		}
 	}
 	return clone
+}
+
+// ClusterSnapshot represents a set of snapshots partitioned by cluster
+type ClusterSnapshot map[string]Snapshot
+
+func (s ClusterSnapshot) ForEachObject(
+	handleObject func(
+		cluster string,
+		gvk schema.GroupVersionKind,
+		obj TypedObject,
+	),
+) {
+	if s == nil {
+		return
+	}
+	for cluster, snap := range s {
+		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj TypedObject) {
+			handleObject(cluster, gvk, obj)
+		})
+	}
 }
 
 func copyNnsMap(m map[types.NamespacedName]TypedObject) map[types.NamespacedName]TypedObject {
@@ -125,6 +128,3 @@ func (cs ClusterSnapshot) Clone(selectors ...GVKSelectorFunc) ClusterSnapshot {
 	}
 	return clone
 }
-
-// ClusterSnapshot represents a set of snapshots partitioned by cluster
-type ClusterSnapshot map[string]Snapshot
