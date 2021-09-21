@@ -1,9 +1,11 @@
 package resource_test
 
 import (
+	"github.com/go-test/deep"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	testv1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/resource"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -136,42 +138,93 @@ var _ = Describe("Snapshot", func() {
 			Expect(seenPaint).To(BeTrue())
 			Expect(seenSecret).To(BeTrue())
 		})
-	})
+		It("will list each object", func() {
+			name := types.NamespacedName{
+				Namespace: "a",
+				Name:      "b",
+			}
+			paint := &testv1.Paint{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: name.Namespace,
+					Name:      name.Name,
+				},
+				Spec: testv1.PaintSpec{
+					Color: &testv1.PaintColor{
+						Hue:   "hello",
+						Value: 2,
+					},
+				},
+			}
+			secret := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: name.Namespace,
+					Name:      name.Name,
+				},
+				Data: map[string][]byte{
+					"hello": []byte("world"),
+				},
+			}
+			cluster1 := "cluster1"
+			cluster2 := "cluster2"
+			secretGVK := schema.GroupVersionKind{
+				Kind:    "Secret",
+				Version: "v1",
+			}
+			snapshot := resource.ClusterSnapshot{
+				cluster1: resource.Snapshot{
+					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+						name: paint,
+					},
+				},
+				cluster2: resource.Snapshot{
+					secretGVK: map[types.NamespacedName]resource.TypedObject{
+						name: secret,
+					},
+				},
+			}
 
-	// It("will list clone properly", func() {
-	// 	name := types.NamespacedName{
-	// 		Namespace: "a",
-	// 		Name:      "b",
-	// 	}
-	// 	paint := &testv1.Paint{
-	// 		ObjectMeta: metav1.ObjectMeta{
-	// 			Namespace: name.Namespace,
-	// 			Name:      name.Name,
-	// 		},
-	// 	}
-	// 	snapshot := resource.Snapshot{
-	// 		testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
-	// 			name: paint,
-	// 		},
-	// 	}
-	//
-	// 	emptySnap := snapshot.Clone()
-	//
-	// 	var (
-	// 		seenSecret, seenPaint bool
-	// 	)
-	// 	snapshot.ForEachObject(func(gvk schema.GroupVersionKind, obj resource.TypedObject) {
-	// 		if expected, ok := obj.(*v1.Secret); ok {
-	// 			Expect(secret).To(Equal(expected))
-	// 			seenSecret = true
-	// 		}
-	// 		if expected, ok := obj.(*testv1.Paint); ok {
-	// 			Expect(paint).To(Equal(expected))
-	// 			seenPaint = true
-	// 		}
-	// 	})
-	// 	Expect(seenPaint).To(BeTrue())
-	// 	Expect(seenSecret).To(BeTrue())
-	// })
+			fullClone := snapshot.Clone()
+			paintClone := snapshot.Clone(func(GVK schema.GroupVersionKind) bool {
+				return GVK == testv1.PaintGVK
+			})
+			secretClone := snapshot.Clone(func(GVK schema.GroupVersionKind) bool {
+				return GVK == secretGVK
+			})
+
+			Expect(deep.Equal(fullClone, snapshot)).To(HaveLen(0))
+			Expect(deep.Equal(paintClone, snapshot)).NotTo(HaveLen(0))
+			Expect(deep.Equal(secretClone, snapshot)).NotTo(HaveLen(0))
+
+			fullClonePaint, _ := paintClone[cluster1][testv1.PaintGVK][name]
+			Expect(fullClonePaint).NotTo(BeNil())
+			Expect(controllerutils.ObjectsEqual(fullClonePaint, paint)).To(BeTrue())
+
+			fullCopiedSecret, _ := secretClone[cluster2][secretGVK][name]
+			Expect(fullCopiedSecret).NotTo(BeNil())
+			Expect(controllerutils.ObjectsEqual(fullCopiedSecret, secret)).To(BeTrue())
+
+			copiedPaint, _ := paintClone[cluster1][testv1.PaintGVK][name]
+			Expect(copiedPaint).NotTo(BeNil())
+			Expect(controllerutils.ObjectsEqual(copiedPaint, paint)).To(BeTrue())
+
+			copiedPaintNil, _ := paintClone[cluster2][testv1.PaintGVK][name]
+			Expect(copiedPaintNil).To(BeNil())
+
+			copiedSecret, _ := secretClone[cluster2][secretGVK][name]
+			Expect(copiedSecret).NotTo(BeNil())
+			Expect(controllerutils.ObjectsEqual(copiedSecret, secret)).To(BeTrue())
+
+			copiedSecretNil, _ := secretClone[cluster1][secretGVK][name]
+			Expect(copiedSecretNil).To(BeNil())
+
+			// Check that object was deep copied
+			copiedSecret.(*v1.Secret).Data["hello"] = []byte("seven")
+			Expect(controllerutils.ObjectsEqual(copiedSecret, secret)).To(BeFalse())
+
+			copiedPaint.(*testv1.Paint).Spec.Color.Hue = "seven"
+			Expect(controllerutils.ObjectsEqual(copiedPaint, paint)).To(BeFalse())
+		})
+
+	})
 
 })
