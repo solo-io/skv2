@@ -232,6 +232,9 @@ func (m *KubernetesClusterSpec_ProviderInfo) Equal(that interface{}) bool {
 	switch m.ProviderInfoType.(type) {
 
 	case *KubernetesClusterSpec_ProviderInfo_Eks:
+		if _, ok := target.ProviderInfoType.(*KubernetesClusterSpec_ProviderInfo_Eks); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetEks()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetEks()) {
@@ -243,6 +246,11 @@ func (m *KubernetesClusterSpec_ProviderInfo) Equal(that interface{}) bool {
 			}
 		}
 
+	default:
+		// m is nil but target is not nil
+		if m.ProviderInfoType != target.ProviderInfoType {
+			return false
+		}
 	}
 
 	return true

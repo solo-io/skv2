@@ -37,7 +37,7 @@ require (
 	github.com/solo-io/go-list-licenses v0.0.4
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.1
-	github.com/solo-io/protoc-gen-ext v0.0.13
+	github.com/solo-io/protoc-gen-ext v0.0.16
 	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0 // indirect
