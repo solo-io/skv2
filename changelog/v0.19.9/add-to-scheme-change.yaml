@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    description: Update DeepEqual function to check for generated Equal() functions.
+    issueLink: github.com/solo-io/skv2/issues/295
+  - type: FIX
+    description: Update Upsert function to use scheme.New() rather than DeepCopy().
+    issueLink: github.com/solo-io/skv2/issues/296
