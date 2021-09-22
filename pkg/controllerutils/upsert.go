@@ -5,10 +5,10 @@ import (
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -22,12 +22,24 @@ type TransitionFunc func(existing, desired runtime.Object) error
 //
 // If the desired object (after applying transition funcs) is semantically equal
 // to the existing object, the update is skipped.
-func Upsert(ctx context.Context, c client.Client, obj client.Object, transitionFuncs ...TransitionFunc) (controllerutil.OperationResult, error) {
-	key := client.ObjectKeyFromObject(obj)
-
+func Upsert(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+	transitionFuncs ...TransitionFunc,
+) (controllerutil.OperationResult, error) {
+	gvk, err := apiutil.GVKForObject(obj, c.Scheme())
+	if err != nil {
+		return controllerutil.OperationResultNone, err
+	}
+	newObj, err := c.Scheme().New(gvk)
+	if err != nil {
+		return controllerutil.OperationResultNone, err
+	}
 	// Always valid because obj is client.Object
-	existing := obj.DeepCopyObject().(client.Object)
+	existing := newObj.(client.Object)
 
+	key := client.ObjectKeyFromObject(obj)
 	if err := c.Get(ctx, key, existing); err != nil {
 		if !errors.IsNotFound(err) {
 			return controllerutil.OperationResultNone, err
@@ -71,7 +83,11 @@ func transition(existing, desired runtime.Object, transitionFuncs []TransitionFu
 //
 // If the desired object status is semantically equal
 // to the existing object status, the update is skipped.
-func UpdateStatus(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
+func UpdateStatus(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+) (controllerutil.OperationResult, error) {
 	updateNeeded, err := needUpdate(ctx, c, obj)
 	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
@@ -86,7 +102,11 @@ func UpdateStatus(ctx context.Context, c client.Client, obj client.Object) (cont
 // If the desired object status is semantically equal
 // to the existing object status, the update is skipped.
 // Unlike the method above, this method does not update obj.
-func UpdateStatusImmutable(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
+func UpdateStatusImmutable(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+) (controllerutil.OperationResult, error) {
 	updateNeeded, err := needUpdate(ctx, c, obj)
 	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
@@ -112,7 +132,11 @@ func needUpdate(ctx context.Context, c client.Client, obj client.Object) (bool, 
 	return true, nil
 }
 
-func update(ctx context.Context, c client.Client, obj client.Object) (controllerutil.OperationResult, error) {
+func update(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+) (controllerutil.OperationResult, error) {
 	if err := c.Status().Update(ctx, obj); err != nil {
 		return controllerutil.OperationResultNone, err
 	}

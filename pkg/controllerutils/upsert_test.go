@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 	controller_client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -41,7 +42,8 @@ var _ = Describe("Upsert", func() {
 		ctl.Finish()
 	})
 	It("creates when resource is not found", func() {
-		client.EXPECT().Get(ctx, resource.ToClientKey(desired), desired).Return(makeErr(metav1.StatusReasonNotFound))
+		client.EXPECT().Scheme().Return(scheme.Scheme).Times(2)
+		client.EXPECT().Get(ctx, resource.ToClientKey(desired), &v1.ConfigMap{}).Return(makeErr(metav1.StatusReasonNotFound))
 		client.EXPECT().Create(ctx, desired).Return(nil)
 
 		result, err := Upsert(ctx, client, desired)
@@ -51,7 +53,8 @@ var _ = Describe("Upsert", func() {
 	It("updates + calls tx funcs when resource is found", func() {
 		var called bool
 
-		client.EXPECT().Get(ctx, resource.ToClientKey(desired), desired).Return(nil)
+		client.EXPECT().Scheme().Return(scheme.Scheme).Times(2)
+		client.EXPECT().Get(ctx, resource.ToClientKey(desired), &v1.ConfigMap{}).Return(nil)
 		client.EXPECT().Update(ctx, desired).Return(nil)
 
 		existingTest := desired.DeepCopyObject().(*v1.ConfigMap)

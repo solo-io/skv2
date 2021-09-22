@@ -6,6 +6,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type GVKSelectorFunc = func(GVK schema.GroupVersionKind) bool
+
 // a typed object is a client.Object with a TypeMeta
 type TypedObject interface {
 	client.Object
@@ -47,7 +49,38 @@ func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, o
 	}
 }
 
-func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, obj TypedObject)) {
+func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
+	clone := Snapshot{}
+	for k, v := range s {
+		if len(selectors) == 0 {
+			clone[k] = copyNnsMap(v)
+			continue
+		}
+		selected := false
+		for _, selector := range selectors {
+			if selector(k) {
+				selected = true
+				break
+			}
+		}
+		if selected {
+			clone[k] = copyNnsMap(v)
+			continue
+		}
+	}
+	return clone
+}
+
+// ClusterSnapshot represents a set of snapshots partitioned by cluster
+type ClusterSnapshot map[string]Snapshot
+
+func (s ClusterSnapshot) ForEachObject(
+	handleObject func(
+		cluster string,
+		gvk schema.GroupVersionKind,
+		obj TypedObject,
+	),
+) {
 	if s == nil {
 		return
 	}
@@ -56,14 +89,6 @@ func (s ClusterSnapshot) ForEachObject(handleObject func(cluster string, gvk sch
 			handleObject(cluster, gvk, obj)
 		})
 	}
-}
-
-func (s Snapshot) Clone() Snapshot {
-	clone := Snapshot{}
-	for k, v := range s {
-		clone[k] = copyNnsMap(v)
-	}
-	return clone
 }
 
 func copyNnsMap(m map[types.NamespacedName]TypedObject) map[types.NamespacedName]TypedObject {
@@ -83,7 +108,11 @@ func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, ob
 	cs[cluster] = snapshot
 }
 
-func (cs ClusterSnapshot) Delete(cluster string, gvk schema.GroupVersionKind, id types.NamespacedName) {
+func (cs ClusterSnapshot) Delete(
+	cluster string,
+	gvk schema.GroupVersionKind,
+	id types.NamespacedName,
+) {
 	snapshot, ok := cs[cluster]
 	if !ok {
 		return
@@ -92,13 +121,10 @@ func (cs ClusterSnapshot) Delete(cluster string, gvk schema.GroupVersionKind, id
 	cs[cluster] = snapshot
 }
 
-func (cs ClusterSnapshot) Clone() ClusterSnapshot {
+func (cs ClusterSnapshot) Clone(selectors ...GVKSelectorFunc) ClusterSnapshot {
 	clone := ClusterSnapshot{}
 	for k, v := range cs {
-		clone[k] = v.Clone()
+		clone[k] = v.Clone(selectors...)
 	}
 	return clone
 }
-
-// ClusterSnapshot represents a set of snapshots partitioned by cluster
-type ClusterSnapshot map[string]Snapshot

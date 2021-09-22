@@ -88,8 +88,29 @@ func mkPointer(val reflect.Value) interface{} {
 func ObjectMetasEqual(obj1, obj2 metav1.Object) bool {
 	return obj1.GetNamespace() == obj2.GetNamespace() &&
 		obj1.GetName() == obj2.GetName() &&
-		reflect.DeepEqual(obj1.GetLabels(), obj2.GetLabels()) &&
-		reflect.DeepEqual(obj1.GetAnnotations(), obj2.GetAnnotations())
+		mapStringEqual(obj1.GetLabels(), obj2.GetLabels()) &&
+		mapStringEqual(obj1.GetAnnotations(), obj2.GetAnnotations())
+}
+
+func mapStringEqual(map1, map2 map[string]string) bool {
+	if map1 == nil && map2 == nil {
+		return true
+	}
+
+	if len(map1) != len(map2) {
+		return false
+	}
+
+	for key1, val1 := range map1 {
+		val2, ok := map2[key1]
+		if !ok {
+			return false
+		}
+		if val1 != val2 {
+			return false
+		}
+	}
+	return true
 }
 
 // returns true if the Status of obj1 and obj2 are equal.
