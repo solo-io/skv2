@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/solo-io/skv2/pkg/crdutils"
@@ -35,7 +35,7 @@ var _ = Describe("CrdUtils", func() {
 		)
 
 		It("should return CrdNeedsUpgrade", func() {
-			crd := apiextv1beta1.CustomResourceDefinition{
+			crd := apiextv1.CustomResourceDefinition{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo",
 					Annotations: map[string]string{
@@ -54,11 +54,11 @@ var _ = Describe("CrdUtils", func() {
 				},
 			}
 
-			errmap := DoCrdsNeedUpgrade(newProdCrdInfo, []apiextv1beta1.CustomResourceDefinition{crd})
+			errmap := DoCrdsNeedUpgrade(newProdCrdInfo, []apiextv1.CustomResourceDefinition{crd})
 			Expect(errmap).To(HaveKeyWithValue(crd.Name, BeAssignableToTypeOf(&CrdNeedsUpgrade{})))
 		})
 		It("should return CrdNotFound", func() {
-			crd1 := apiextv1beta1.CustomResourceDefinition{
+			crd1 := apiextv1.CustomResourceDefinition{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo",
 					Annotations: map[string]string{
@@ -67,7 +67,7 @@ var _ = Describe("CrdUtils", func() {
 					},
 				},
 			}
-			crd2 := apiextv1beta1.CustomResourceDefinition{
+			crd2 := apiextv1.CustomResourceDefinition{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "bar",
 					Annotations: map[string]string{
@@ -90,7 +90,7 @@ var _ = Describe("CrdUtils", func() {
 				},
 			}
 
-			errmap := DoCrdsNeedUpgrade(newProdCrdInfo, []apiextv1beta1.CustomResourceDefinition{crd1, crd2})
+			errmap := DoCrdsNeedUpgrade(newProdCrdInfo, []apiextv1.CustomResourceDefinition{crd1, crd2})
 			// crd in deployment matches the one in the cluster.
 			Expect(errmap).NotTo(HaveKey(crd1.Name))
 			// if CRD exists in the cluster and not here, we don't care.

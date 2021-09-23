@@ -8,7 +8,7 @@ package controller
 import (
 	"context"
 
-	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apiextensions_k8s_io_v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -20,7 +20,7 @@ import (
 // Reconcile Upsert events for the CustomResourceDefinition Resource.
 // implemented by the user
 type CustomResourceDefinitionReconciler interface {
-	ReconcileCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error)
+	ReconcileCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the CustomResourceDefinition Resource.
@@ -32,11 +32,11 @@ type CustomResourceDefinitionDeletionReconciler interface {
 }
 
 type CustomResourceDefinitionReconcilerFuncs struct {
-	OnReconcileCustomResourceDefinition         func(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error)
+	OnReconcileCustomResourceDefinition         func(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) (reconcile.Result, error)
 	OnReconcileCustomResourceDefinitionDeletion func(req reconcile.Request) error
 }
 
-func (f *CustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error) {
+func (f *CustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) (reconcile.Result, error) {
 	if f.OnReconcileCustomResourceDefinition == nil {
 		return reconcile.Result{}, nil
 	}
@@ -61,7 +61,7 @@ type CustomResourceDefinitionFinalizer interface {
 
 	// finalize the object before it is deleted.
 	// Watchers created with a finalizing handler will a
-	FinalizeCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
+	FinalizeCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error
 }
 
 type CustomResourceDefinitionReconcileLoop interface {
@@ -75,7 +75,7 @@ type customResourceDefinitionReconcileLoop struct {
 func NewCustomResourceDefinitionReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) CustomResourceDefinitionReconcileLoop {
 	return &customResourceDefinitionReconcileLoop{
 		// empty cluster indicates this reconciler is built for the local cluster
-		loop: reconcile.NewLoop(name, "", mgr, &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, options),
+		loop: reconcile.NewLoop(name, "", mgr, &apiextensions_k8s_io_v1.CustomResourceDefinition{}, options),
 	}
 }
 
@@ -102,7 +102,7 @@ type genericCustomResourceDefinitionReconciler struct {
 }
 
 func (r genericCustomResourceDefinitionReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	obj, ok := object.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	if !ok {
 		return reconcile.Result{}, errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)
 	}
@@ -127,7 +127,7 @@ func (r genericCustomResourceDefinitionFinalizer) FinalizerName() string {
 }
 
 func (r genericCustomResourceDefinitionFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	obj, ok := object.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	if !ok {
 		return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)
 	}

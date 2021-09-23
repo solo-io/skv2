@@ -8,7 +8,7 @@ package controller
 import (
 	"context"
 
-	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apiextensions_k8s_io_v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
@@ -20,41 +20,41 @@ import (
 // Handle events for the CustomResourceDefinition Resource
 // DEPRECATED: Prefer reconciler pattern.
 type CustomResourceDefinitionEventHandler interface {
-	CreateCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
-	UpdateCustomResourceDefinition(old, new *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
-	DeleteCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
-	GenericCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
+	CreateCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error
+	UpdateCustomResourceDefinition(old, new *apiextensions_k8s_io_v1.CustomResourceDefinition) error
+	DeleteCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error
+	GenericCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error
 }
 
 type CustomResourceDefinitionEventHandlerFuncs struct {
-	OnCreate  func(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
-	OnUpdate  func(old, new *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
-	OnDelete  func(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
-	OnGeneric func(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
+	OnCreate  func(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error
+	OnUpdate  func(old, new *apiextensions_k8s_io_v1.CustomResourceDefinition) error
+	OnDelete  func(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error
+	OnGeneric func(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error
 }
 
-func (f *CustomResourceDefinitionEventHandlerFuncs) CreateCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error {
+func (f *CustomResourceDefinitionEventHandlerFuncs) CreateCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *CustomResourceDefinitionEventHandlerFuncs) DeleteCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error {
+func (f *CustomResourceDefinitionEventHandlerFuncs) DeleteCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *CustomResourceDefinitionEventHandlerFuncs) UpdateCustomResourceDefinition(objOld, objNew *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error {
+func (f *CustomResourceDefinitionEventHandlerFuncs) UpdateCustomResourceDefinition(objOld, objNew *apiextensions_k8s_io_v1.CustomResourceDefinition) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *CustomResourceDefinitionEventHandlerFuncs) GenericCustomResourceDefinition(obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error {
+func (f *CustomResourceDefinitionEventHandlerFuncs) GenericCustomResourceDefinition(obj *apiextensions_k8s_io_v1.CustomResourceDefinition) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
@@ -71,7 +71,7 @@ type customResourceDefinitionEventWatcher struct {
 
 func NewCustomResourceDefinitionEventWatcher(name string, mgr manager.Manager) CustomResourceDefinitionEventWatcher {
 	return &customResourceDefinitionEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}),
+		watcher: events.NewWatcher(name, mgr, &apiextensions_k8s_io_v1.CustomResourceDefinition{}),
 	}
 }
 
@@ -89,7 +89,7 @@ type genericCustomResourceDefinitionHandler struct {
 }
 
 func (h genericCustomResourceDefinitionHandler) Create(object client.Object) error {
-	obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	obj, ok := object.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	if !ok {
 		return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)
 	}
@@ -97,7 +97,7 @@ func (h genericCustomResourceDefinitionHandler) Create(object client.Object) err
 }
 
 func (h genericCustomResourceDefinitionHandler) Delete(object client.Object) error {
-	obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	obj, ok := object.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	if !ok {
 		return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)
 	}
@@ -105,11 +105,11 @@ func (h genericCustomResourceDefinitionHandler) Delete(object client.Object) err
 }
 
 func (h genericCustomResourceDefinitionHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	objOld, ok := old.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	if !ok {
 		return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", old)
 	}
-	objNew, ok := new.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	objNew, ok := new.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	if !ok {
 		return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", new)
 	}
@@ -117,7 +117,7 @@ func (h genericCustomResourceDefinitionHandler) Update(old, new client.Object) e
 }
 
 func (h genericCustomResourceDefinitionHandler) Generic(object client.Object) error {
-	obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	obj, ok := object.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	if !ok {
 		return errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)
 	}
