@@ -121,7 +121,7 @@ func (c Command) Execute() error {
 		return err
 	}
 
-	if c.Chart.ChartOnly {
+	if c.Chart != nil && c.Chart.ChartOnly {
 		return nil
 	}
 
