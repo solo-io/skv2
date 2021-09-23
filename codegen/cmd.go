@@ -117,6 +117,14 @@ func (c Command) Execute() error {
 		c.GeneratedHeader = DefaultHeader
 	}
 
+	if err := c.generateChart(); err != nil {
+		return err
+	}
+
+	if c.Chart.ChartOnly {
+		return nil
+	}
+
 	descriptors, err := c.renderProtos()
 	if err != nil {
 		return err
@@ -125,10 +133,6 @@ func (c Command) Execute() error {
 	// get api-level code gen options from descriptors
 	protoOpts, err := proto.ParseOptions(descriptors)
 	if err != nil {
-		return err
-	}
-
-	if err := c.generateChart(); err != nil {
 		return err
 	}
 
@@ -218,7 +222,11 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 	return descriptors, nil
 }
 
-func (c Command) generateGroup(grp model.Group, descriptors []*collector.DescriptorWithPath, protoOpts proto.Options) error {
+func (c Command) generateGroup(
+	grp model.Group,
+	descriptors []*collector.DescriptorWithPath,
+	protoOpts proto.Options,
+) error {
 	c.addDescriptorsToGroup(&grp, descriptors)
 
 	fileWriter := &writer.DefaultFileWriter{
@@ -286,7 +294,10 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 // compiles protos and attaches descriptors to the group and its resources
 // it is important to run this func before rendering as it attaches protos to the
 // group model
-func (c Command) addDescriptorsToGroup(grp *render.Group, descriptors []*collector.DescriptorWithPath) {
+func (c Command) addDescriptorsToGroup(
+	grp *render.Group,
+	descriptors []*collector.DescriptorWithPath,
+) {
 	if len(descriptors) == 0 {
 		logrus.Debugf("no descriptors generated")
 		return
