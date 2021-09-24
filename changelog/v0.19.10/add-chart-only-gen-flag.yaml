@@ -1,0 +1,5 @@
+changelog:
+- type: NON_USER_FACING
+  description: >
+    Add ChartOnly option for codegen so that we do not have to do a full
+    generation when we only want to generate charts
