@@ -6,7 +6,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/rotisserie/eris"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // Chart provides the input data structure for generating Helm charts from the skv2 chart "meta-templates" (templates whose outputs are templates and other files used by generated Helm charts)
@@ -43,8 +43,8 @@ func (e *CrdNotFound) Error() string {
 	return fmt.Sprintf("CRD %s not found", e.CRDName)
 }
 
-func DoCrdsNeedUpgrade(newProdCrdInfo CRDMetadata, deployedInClusterCrds []apiextv1beta1.CustomResourceDefinition) ErrMap {
-	crdMap := make(map[string]apiextv1beta1.CustomResourceDefinition)
+func DoCrdsNeedUpgrade(newProdCrdInfo CRDMetadata, deployedInClusterCrds []apiextv1.CustomResourceDefinition) ErrMap {
+	crdMap := make(map[string]apiextv1.CustomResourceDefinition)
 	for _, crd := range deployedInClusterCrds {
 		crdMap[crd.Name] = crd
 	}

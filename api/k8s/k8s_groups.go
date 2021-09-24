@@ -7,7 +7,7 @@ import (
 	certificatesv1beta1 "k8s.io/api/certificates/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 const (
@@ -78,7 +78,7 @@ func Groups() []model.Group {
 			ApiRoot:               k8sApiRoot,
 		},
 		{
-			GroupVersion: apiextensionsv1beta1.SchemeGroupVersion,
+			GroupVersion: apiextensionsv1.SchemeGroupVersion,
 			Module:       "k8s.io/apiextensions-apiserver",
 			Resources: []model.Resource{
 				{
@@ -86,7 +86,7 @@ func Groups() []model.Group {
 					ClusterScoped: true,
 				},
 			},
-			CustomTypesImportPath: "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
+			CustomTypesImportPath: "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1",
 			ApiRoot:               k8sApiRoot,
 		},
 	}

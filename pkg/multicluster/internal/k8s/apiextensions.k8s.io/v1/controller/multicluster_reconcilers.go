@@ -8,7 +8,7 @@ package controller
 import (
 	"context"
 
-	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apiextensions_k8s_io_v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -21,7 +21,7 @@ import (
 // Reconcile Upsert events for the CustomResourceDefinition Resource across clusters.
 // implemented by the user
 type MulticlusterCustomResourceDefinitionReconciler interface {
-	ReconcileCustomResourceDefinition(clusterName string, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error)
+	ReconcileCustomResourceDefinition(clusterName string, obj *apiextensions_k8s_io_v1.CustomResourceDefinition) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the CustomResourceDefinition Resource across clusters.
@@ -33,11 +33,11 @@ type MulticlusterCustomResourceDefinitionDeletionReconciler interface {
 }
 
 type MulticlusterCustomResourceDefinitionReconcilerFuncs struct {
-	OnReconcileCustomResourceDefinition         func(clusterName string, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error)
+	OnReconcileCustomResourceDefinition         func(clusterName string, obj *apiextensions_k8s_io_v1.CustomResourceDefinition) (reconcile.Result, error)
 	OnReconcileCustomResourceDefinitionDeletion func(clusterName string, req reconcile.Request) error
 }
 
-func (f *MulticlusterCustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinition(clusterName string, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) (reconcile.Result, error) {
+func (f *MulticlusterCustomResourceDefinitionReconcilerFuncs) ReconcileCustomResourceDefinition(clusterName string, obj *apiextensions_k8s_io_v1.CustomResourceDefinition) (reconcile.Result, error) {
 	if f.OnReconcileCustomResourceDefinition == nil {
 		return reconcile.Result{}, nil
 	}
@@ -67,7 +67,7 @@ func (m *multiclusterCustomResourceDefinitionReconcileLoop) AddMulticlusterCusto
 }
 
 func NewMulticlusterCustomResourceDefinitionReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterCustomResourceDefinitionReconcileLoop {
-	return &multiclusterCustomResourceDefinitionReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}, options)}
+	return &multiclusterCustomResourceDefinitionReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &apiextensions_k8s_io_v1.CustomResourceDefinition{}, options)}
 }
 
 type genericCustomResourceDefinitionMulticlusterReconciler struct {
@@ -82,7 +82,7 @@ func (g genericCustomResourceDefinitionMulticlusterReconciler) ReconcileDeletion
 }
 
 func (g genericCustomResourceDefinitionMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
+	obj, ok := object.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	if !ok {
 		return reconcile.Result{}, errors.Errorf("internal error: CustomResourceDefinition handler received event for %T", object)
 	}

@@ -18,7 +18,7 @@ import (
 	"github.com/solo-io/go-utils/stringutils"
 	"github.com/solo-io/skv2/codegen/kuberesource"
 	"github.com/solo-io/skv2/codegen/model"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -278,7 +278,7 @@ func marshalObjToYaml(appName string, obj metav1.Object) (string, error) {
 	return string(yam), err
 }
 
-func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1beta1.JSONSchemaProps, error) {
+func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1.JSONSchemaProps, error) {
 	oapiJson, err := oapi.MarshalJSON()
 	if err != nil {
 		return nil, err
@@ -295,7 +295,7 @@ func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1beta1.JSONS
 	if err != nil {
 		return nil, err
 	}
-	jsonSchema := &apiextv1beta1.JSONSchemaProps{}
+	jsonSchema := &apiextv1.JSONSchemaProps{}
 	if err = json.Unmarshal(bytes, jsonSchema); err != nil {
 		return nil, err
 	}
