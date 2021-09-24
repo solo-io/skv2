@@ -27,6 +27,9 @@ type Chart struct {
 
 	// inline string of custom _helpers.tpl which can be provided for the generated chart
 	HelpersTpl string
+
+	// Only generate the chart
+	ChartOnly bool
 }
 
 type Operator struct {
