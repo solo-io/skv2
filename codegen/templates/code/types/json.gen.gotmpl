@@ -46,7 +46,7 @@ func (this *{{ $resource.Spec.Type.Name }}) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON is a custom unmarshaler for {{ $resource.Spec.Type.Name }}
 func (this *{{ $resource.Spec.Type.Name }}) UnmarshalJSON(b []byte) error {
 	{{- if and $.ImportGogoPackages $resource.Spec.Type.IncludesGogoTypes }}
-	str, err := gogo_unmarshaller.Unmarshal(bytes.NewReader(b), this)
+	return gogo_unmarshaller.Unmarshal(bytes.NewReader(b), this)
 	{{- else }}
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 	{{- end }}
