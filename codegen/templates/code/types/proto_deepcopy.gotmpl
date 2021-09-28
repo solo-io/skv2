@@ -5,6 +5,10 @@ package {{ .PackageName }}
 import (
     proto "github.com/golang/protobuf/proto"
 	"github.com/solo-io/protoc-gen-ext/pkg/clone"
+
+    {{- if $.ImportGogoPackages }}
+    gogo_proto "github.com/gogo/protobuf/proto"
+    {{- end}}
 )
 
 {{- range $resource := $.Resources }}
@@ -15,7 +19,11 @@ func (in *{{ $resource.Spec.Type.Name }}) DeepCopyInto(out *{{ $resource.Spec.Ty
     if h, ok := interface{}(in).(clone.Cloner); ok {
         p = h.Clone().(*{{ $resource.Spec.Type.Name }})
     } else {
+        {{- if and $.ImportGogoPackages $resource.Spec.Type.IncludesGogoTypes }}
+        p = gogo_proto.Clone(in).(*{{ $resource.Spec.Type.Name }})
+        {{- else }}
         p = proto.Clone(in).(*{{ $resource.Spec.Type.Name }})
+        {{- end }}
     }
     *out = *p
 }

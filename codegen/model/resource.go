@@ -95,7 +95,8 @@ type Group struct {
 	// for types in an external project
 	CustomTypesImportPath string
 
-	ImportGogoJsonpb bool
+	// Import Gogo for the group's generated code
+	ImportGogoPackages bool
 
 	// proto descriptors will be available to the templates if the group was compiled with them.
 	Descriptors []*collector.DescriptorWithPath
@@ -151,8 +152,7 @@ type Resource struct {
 }
 
 type Field struct {
-	Type          Type
-	UseGogoJsonpb bool
+	Type Type
 }
 
 type Type struct {
@@ -176,4 +176,8 @@ type Type struct {
 		If unset, SKv2 uses the Group name of the Resource that specifies this Type.
 	*/
 	ProtoPackage string
+
+	// If Gogo packages is imported for the group and those types are used, the gogo
+	// package should be used
+	IncludesGogoTypes bool
 }

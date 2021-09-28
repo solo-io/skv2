@@ -11,7 +11,7 @@ import (
     jsonpb "github.com/golang/protobuf/jsonpb"
     proto "github.com/golang/protobuf/proto"
 
-		{{- if $.ImportGogoJsonpb }}
+		{{- if $.ImportGogoPackages }}
     gogo_jsonpb "github.com/gogo/protobuf/jsonpb"
     {{- end}}
 )
@@ -25,7 +25,7 @@ var (
 	marshaller = &skv2jsonpb.Marshaler{}
 	unmarshaller = &jsonpb.Unmarshaler{}
 
-	{{- if $.ImportGogoJsonpb }}
+	{{- if $.ImportGogoPackages }}
 	gogo_marshaller = &gogo_jsonpb.Marshaler{}
 	gogo_unmarshaller = &gogo_jsonpb.Unmarshaler{}
 	{{- end}}
@@ -35,7 +35,7 @@ var (
 
 // MarshalJSON is a custom marshaler for {{ $resource.Spec.Type.Name }}
 func (this *{{ $resource.Spec.Type.Name }}) MarshalJSON() ([]byte, error) {
-	{{- if and $.ImportGogoJsonpb $resource.Spec.UseGogoJsonpb }}
+	{{- if and $.ImportGogoPackages $resource.Spec.Type.IncludesGogoTypes }}
 	str, err := gogo_marshaller.MarshalToString(this)
 	{{- else }}
 	str, err := marshaller.MarshalToString(this)
@@ -45,7 +45,7 @@ func (this *{{ $resource.Spec.Type.Name }}) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for {{ $resource.Spec.Type.Name }}
 func (this *{{ $resource.Spec.Type.Name }}) UnmarshalJSON(b []byte) error {
-	{{- if and $.ImportGogoJsonpb $resource.Spec.UseGogoJsonpb }}
+	{{- if and $.ImportGogoPackages $resource.Spec.Type.IncludesGogoTypes }}
 	str, err := gogo_unmarshaller.Unmarshal(bytes.NewReader(b), this)
 	{{- else }}
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)

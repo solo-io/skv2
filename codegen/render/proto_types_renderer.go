@@ -78,7 +78,7 @@ type descriptorsWithGopath struct {
 	// set of descriptors to find the relevant messages
 	goPackageToMatch string
 
-	ImportGogoJsonpb bool
+	ImportGogoPackages bool
 }
 
 /*
@@ -125,12 +125,12 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 		packageName := filepath.Base(pkgForGroup)
 
 		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
-			Descriptors:      grp.Descriptors,
-			Resources:        grp.Resources,
-			PackageName:      packageName,
-			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
-			goPackageToMatch: pkgForGroup,
-			ImportGogoJsonpb: grp.ImportGogoJsonpb,
+			Descriptors:        grp.Descriptors,
+			Resources:          grp.Resources,
+			PackageName:        packageName,
+			rootGoPackage:      filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			goPackageToMatch:   pkgForGroup,
+			ImportGogoPackages: grp.ImportGogoPackages,
 		})
 		if err != nil {
 			return nil, err
@@ -162,13 +162,13 @@ func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
 		packageName := filepath.Base(pkgForGroup)
 
 		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
-			Descriptors:      grp.Descriptors,
-			Resources:        grp.Resources,
-			PackageName:      packageName,
-			GroupName:        grp.Group,
-			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
-			goPackageToMatch: pkgForGroup,
-			ImportGogoJsonpb: grp.ImportGogoJsonpb,
+			Descriptors:        grp.Descriptors,
+			Resources:          grp.Resources,
+			PackageName:        packageName,
+			GroupName:          grp.Group,
+			rootGoPackage:      filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			goPackageToMatch:   pkgForGroup,
+			ImportGogoPackages: grp.ImportGogoPackages,
 		})
 		if err != nil {
 			return nil, err
