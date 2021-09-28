@@ -77,6 +77,8 @@ type descriptorsWithGopath struct {
 	// full go package which the template render funcs will use to match against the
 	// set of descriptors to find the relevant messages
 	goPackageToMatch string
+
+	ImportGogoJsonpb bool
 }
 
 /*
@@ -128,6 +130,7 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 			PackageName:      packageName,
 			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
 			goPackageToMatch: pkgForGroup,
+			ImportGogoJsonpb: grp.ImportGogoJsonpb,
 		})
 		if err != nil {
 			return nil, err
@@ -165,6 +168,7 @@ func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
 			GroupName:        grp.Group,
 			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
 			goPackageToMatch: pkgForGroup,
+			ImportGogoJsonpb: grp.ImportGogoJsonpb,
 		})
 		if err != nil {
 			return nil, err

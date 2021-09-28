@@ -1,6 +1,6 @@
 module github.com/solo-io/skv2
 
-go 1.13
+go 1.16
 
 require (
 	cloud.google.com/go v0.76.0

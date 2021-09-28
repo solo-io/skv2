@@ -95,6 +95,8 @@ type Group struct {
 	// for types in an external project
 	CustomTypesImportPath string
 
+	ImportGogoJsonpb bool
+
 	// proto descriptors will be available to the templates if the group was compiled with them.
 	Descriptors []*collector.DescriptorWithPath
 
@@ -149,7 +151,8 @@ type Resource struct {
 }
 
 type Field struct {
-	Type Type
+	Type          Type
+	UseGogoJsonpb bool
 }
 
 type Type struct {

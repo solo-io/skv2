@@ -50,7 +50,7 @@ var _ = Describe("Cmd", func() {
 					Resources: []Resource{
 						{
 							Kind:   "Paint",
-							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Spec:   Field{Type: Type{Name: "PaintSpec"}, UseGogoJsonpb: true},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
 						},
 						{
@@ -66,6 +66,7 @@ var _ = Describe("Cmd", func() {
 					MockgenDirective: true,
 					ApiRoot:          "codegen/test/api",
 					CustomTemplates:  contrib.AllGroupCustomTemplates,
+					ImportGogoJsonpb: true,
 				},
 			},
 			AnyVendorConfig: skv2Imports,

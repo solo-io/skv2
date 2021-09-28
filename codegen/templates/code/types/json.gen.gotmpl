@@ -10,6 +10,10 @@ import (
     skv2jsonpb "github.com/solo-io/skv2/pkg/kube_jsonpb"
     jsonpb "github.com/golang/protobuf/jsonpb"
     proto "github.com/golang/protobuf/proto"
+
+		{{- if $.ImportGogoJsonpb }}
+    gogo_jsonpb "github.com/gogo/protobuf/jsonpb"
+    {{- end}}
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -20,19 +24,32 @@ var _ = math.Inf
 var (
 	marshaller = &skv2jsonpb.Marshaler{}
 	unmarshaller = &jsonpb.Unmarshaler{}
+
+	{{- if $.ImportGogoJsonpb }}
+	gogo_marshaller = &gogo_jsonpb.Marshaler{}
+	gogo_unmarshaller = &gogo_jsonpb.Unmarshaller{}
+	{{- end}}
 )
 
 {{- range $resource := $.Resources }}
 
 // MarshalJSON is a custom marshaler for {{ $resource.Spec.Type.Name }}
 func (this *{{ $resource.Spec.Type.Name }}) MarshalJSON() ([]byte, error) {
+	{{- if and $.ImportGogoJsonpb $resource.Spec.UseGogoJsonpb }}
+	str, err := gogo_marshaller.MarshalToString(this)
+	{{- else }}
 	str, err := marshaller.MarshalToString(this)
+	{{- end }}
 	return []byte(str), err
 }
 
 // UnmarshalJSON is a custom unmarshaler for {{ $resource.Spec.Type.Name }}
 func (this *{{ $resource.Spec.Type.Name }}) UnmarshalJSON(b []byte) error {
+	{{- if and $.ImportGogoJsonpb $resource.Spec.UseGogoJsonpb }}
+	str, err := gogo_unmarshaller.Unmarshal(bytes.NewReader(b), this)
+	{{- else }}
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+	{{- end }}
 }
 
 
