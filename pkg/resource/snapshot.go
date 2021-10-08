@@ -71,6 +71,20 @@ func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
 	return clone
 }
 
+func (s Snapshot) Merge(toMerge Snapshot) Snapshot {
+	merged := s.Clone()
+	for gvk, objectsMap := range toMerge {
+		if _, ok := s[gvk]; ok {
+			for name, object := range objectsMap {
+				s[gvk][name] = object
+			}
+		} else {
+			s[gvk] = objectsMap
+		}
+	}
+	return merged
+}
+
 // ClusterSnapshot represents a set of snapshots partitioned by cluster
 type ClusterSnapshot map[string]Snapshot
 
@@ -127,4 +141,16 @@ func (cs ClusterSnapshot) Clone(selectors ...GVKSelectorFunc) ClusterSnapshot {
 		clone[k] = v.Clone(selectors...)
 	}
 	return clone
+}
+
+func (cs ClusterSnapshot) Merge(toMerge ClusterSnapshot) ClusterSnapshot {
+	merged := cs.Clone()
+	for cluster, snapshot := range toMerge {
+		if leftSnap, ok := cs[cluster]; ok {
+			cs[cluster] = leftSnap.Merge(snapshot)
+		} else {
+			cs[cluster] = snapshot
+		}
+	}
+	return merged
 }
