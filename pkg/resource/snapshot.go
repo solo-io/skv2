@@ -74,8 +74,10 @@ func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
 func (s Snapshot) Merge(toMerge Snapshot) Snapshot {
 	merged := s.Clone()
 	for gvk, objectsMap := range toMerge {
-		if _, ok := s[gvk]; ok {
+		if _, ok := merged[gvk]; ok {
 			for name, object := range objectsMap {
+				// If there is already an object specified here, the object from toMerge
+				// will replace it
 				merged[gvk][name] = object
 			}
 		} else {
@@ -146,8 +148,8 @@ func (cs ClusterSnapshot) Clone(selectors ...GVKSelectorFunc) ClusterSnapshot {
 func (cs ClusterSnapshot) Merge(toMerge ClusterSnapshot) ClusterSnapshot {
 	merged := cs.Clone()
 	for cluster, snapshot := range toMerge {
-		if leftSnap, ok := cs[cluster]; ok {
-			merged[cluster] = leftSnap.Merge(snapshot)
+		if baseSnap, ok := merged[cluster]; ok {
+			merged[cluster] = baseSnap.Merge(snapshot)
 		} else {
 			merged[cluster] = snapshot
 		}
