@@ -76,10 +76,10 @@ func (s Snapshot) Merge(toMerge Snapshot) Snapshot {
 	for gvk, objectsMap := range toMerge {
 		if _, ok := s[gvk]; ok {
 			for name, object := range objectsMap {
-				s[gvk][name] = object
+				merged[gvk][name] = object
 			}
 		} else {
-			s[gvk] = objectsMap
+			merged[gvk] = objectsMap
 		}
 	}
 	return merged
@@ -147,9 +147,9 @@ func (cs ClusterSnapshot) Merge(toMerge ClusterSnapshot) ClusterSnapshot {
 	merged := cs.Clone()
 	for cluster, snapshot := range toMerge {
 		if leftSnap, ok := cs[cluster]; ok {
-			cs[cluster] = leftSnap.Merge(snapshot)
+			merged[cluster] = leftSnap.Merge(snapshot)
 		} else {
-			cs[cluster] = snapshot
+			merged[cluster] = snapshot
 		}
 	}
 	return merged

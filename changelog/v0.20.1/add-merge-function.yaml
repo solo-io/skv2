@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Adds a `Merge` function to Snapshot and ClusterSnapshot so that two snapshots can be merged.
+    issueLink: https://github.com/solo-io/skv2/issues/302
