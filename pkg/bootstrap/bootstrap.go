@@ -66,6 +66,7 @@ type Options struct {
 	VerboseMode bool
 
 	// enables json logger (instead of table logger)
+	// NOTE: DO NOT set this to false in Prod, it will crash on DPanic
 	JSONLogger bool
 
 	// ManagementContext if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster.
@@ -83,6 +84,11 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&opts.ManagementContext, "context", "", "If specified, use this context from the selected KubeConfig to connect to the local (management) cluster.")
 	flags.StringVar(&opts.SettingsRef.Name, "settings-name", opts.SettingsRef.Name, "The name of the Settings object this controller should use.")
 	flags.StringVar(&opts.SettingsRef.Namespace, "settings-namespace", opts.SettingsRef.Namespace, "The namespace of the Settings object this controller should use.")
+
+	// This flag disables prod mode when set to false, in other words setting debug to true,
+	// Which will cause the app to panic on DPanic.
+	flags.BoolVar(&opts.JSONLogger, "prod-logging-mode", true, "Default: true. Set this value to false to enable debug panic logs for development.")
+	flags.MarkHidden("prod-logging-mode")
 }
 
 // Start a controller with the given start func. The StartFunc will be called with a bootstrapped local manager. If localMode is false, the StartParameters will include initialized multicluster components.
