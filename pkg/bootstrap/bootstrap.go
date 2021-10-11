@@ -65,9 +65,9 @@ type Options struct {
 	// enables verbose mode
 	VerboseMode bool
 
-	// enables json logger (instead of table logger)
-	// NOTE: DO NOT set this to false in Prod, it will crash on DPanic
-	JSONLogger bool
+	// enables dev logger (instead of prod logger)
+	// NOTE: DO NOT set this to true in Prod, it will crash on DPanic
+	DevLogger bool
 
 	// ManagementContext if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster.
 	ManagementContext string
@@ -87,8 +87,8 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 
 	// This flag disables prod mode when set to false, in other words setting debug to true,
 	// Which will cause the app to panic on DPanic.
-	flags.BoolVar(&opts.JSONLogger, "prod-logging-mode", true, "Default: true. Set this value to false to enable debug panic logs for development.")
-	flags.MarkHidden("prod-logging-mode")
+	flags.BoolVar(&opts.DevLogger, "dev-logger", false, "Default: false. Set this value to true to enable debug panic logs for development.")
+	flags.MarkHidden("dev-logger")
 }
 
 // Start a controller with the given start func. The StartFunc will be called with a bootstrapped local manager. If localMode is false, the StartParameters will include initialized multicluster components.
@@ -98,7 +98,7 @@ func Start(ctx context.Context, start StartFunc, opts Options, schemes runtime.S
 
 // Like Start, but runs multiple StartFuncs concurrently
 func StartMulti(ctx context.Context, startFuncs map[string]StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool, addStatsHandlers ...func(mux *http.ServeMux, profiles map[string]string)) error {
-	setupLogging(opts.VerboseMode, opts.JSONLogger)
+	setupLogging(opts.VerboseMode, opts.DevLogger)
 
 	mgr, err := makeMasterManager(opts, schemes)
 	if err != nil {
@@ -197,7 +197,7 @@ func makeMasterManager(opts Options, schemes runtime.SchemeBuilder) (manager.Man
 	return mgr, nil
 }
 
-func setupLogging(verboseMode, jsonLogging bool) {
+func setupLogging(verboseMode, devLogging bool) {
 	level := zapcore.InfoLevel
 	if verboseMode {
 		level = zapcore.DebugLevel
@@ -206,7 +206,7 @@ func setupLogging(verboseMode, jsonLogging bool) {
 	zapOpts := []zaputil.Opts{
 		zaputil.Level(&atomicLevel),
 	}
-	if !jsonLogging {
+	if devLogging {
 		zapOpts = append(zapOpts,
 			// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
 			// to use any json parsing tools for the log. Should only be enabled explicitly
