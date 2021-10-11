@@ -71,6 +71,25 @@ func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
 	return clone
 }
 
+// Merges the Snapshot with a Snapshot passed in as an argument. The values
+// in the passed in Snapshot will take precedence when there is an object mapped
+// to the same gvk and name in both Snapshots.
+func (s Snapshot) Merge(toMerge Snapshot) Snapshot {
+	merged := s.Clone()
+	for gvk, objectsMap := range toMerge {
+		if _, ok := merged[gvk]; ok {
+			for name, object := range objectsMap {
+				// If there is already an object specified here, the object from toMerge
+				// will replace it
+				merged[gvk][name] = object
+			}
+		} else {
+			merged[gvk] = objectsMap
+		}
+	}
+	return merged
+}
+
 // ClusterSnapshot represents a set of snapshots partitioned by cluster
 type ClusterSnapshot map[string]Snapshot
 
@@ -127,4 +146,20 @@ func (cs ClusterSnapshot) Clone(selectors ...GVKSelectorFunc) ClusterSnapshot {
 		clone[k] = v.Clone(selectors...)
 	}
 	return clone
+}
+
+// Merges the ClusterSnapshot with a ClusterSnapshot passed in as an argument.
+// If a cluster exists in both ClusterSnapshots, then both Snapshots for the
+// cluster is merged; with the passed in ClusterSnapshot's corresponding Snapshot
+// taking precedence in case of conflicts.
+func (cs ClusterSnapshot) Merge(toMerge ClusterSnapshot) ClusterSnapshot {
+	merged := cs.Clone()
+	for cluster, snapshot := range toMerge {
+		if baseSnap, ok := merged[cluster]; ok {
+			merged[cluster] = baseSnap.Merge(snapshot)
+		} else {
+			merged[cluster] = snapshot
+		}
+	}
+	return merged
 }

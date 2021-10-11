@@ -225,6 +225,55 @@ var _ = Describe("Snapshot", func() {
 			Expect(controllerutils.ObjectsEqual(copiedPaint, paint)).To(BeFalse())
 		})
 
+		It("will merge two snapshots properly", func() {
+			paint := &testv1.Paint{
+				ObjectMeta: metav1.ObjectMeta{Name: "paint", Namespace: "x"},
+			}
+			paintOverride := &testv1.Paint{
+				ObjectMeta: metav1.ObjectMeta{Name: "override", Namespace: "x"},
+			}
+			paint2 := &testv1.Paint{
+				ObjectMeta: metav1.ObjectMeta{Name: "paint2", Namespace: "y"},
+			}
+			name := types.NamespacedName{
+				Namespace: "x",
+				Name:      "paint",
+			}
+			name2 := types.NamespacedName{
+				Namespace: "y",
+				Name:      "paint2",
+			}
+			cluster1Name := "cluster1"
+			cluster2Name := "cluster2"
+			leftSnapshot := resource.ClusterSnapshot{
+				cluster1Name: resource.Snapshot{
+					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+						name:  paint,
+						name2: paint2,
+					},
+				},
+			}
+			rightSnapshot := resource.ClusterSnapshot{
+				cluster1Name: resource.Snapshot{
+					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+						name: paintOverride,
+					},
+				},
+				cluster2Name: resource.Snapshot{
+					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+						name: paint,
+					},
+				},
+			}
+
+			snap := leftSnapshot.Merge(rightSnapshot)
+			Expect(snap[cluster1Name][testv1.PaintGVK][name].GetName()).
+				To(Equal(paintOverride.Name))
+			Expect(snap[cluster1Name][testv1.PaintGVK][name2].GetName()).
+				To(Equal(paint2.Name))
+			Expect(snap[cluster2Name][testv1.PaintGVK][name].GetName()).
+				To(Equal(paint.Name))
+		})
 	})
 
 })
