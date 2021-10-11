@@ -1,0 +1,6 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: >
+      Change Logging options to be more clear. This will only affect bootstrap.Start() and
+      bootstrap.StartMulti() functions.
+    issueLink: https://github.com/solo-io/skv2/issues/304

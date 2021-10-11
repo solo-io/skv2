@@ -1,4 +1,0 @@
-changelog:
-  - type: BREAKING_CHANGE
-    description: Change Logging options to be more clear
-    issueLink: https://github.com/solo-io/skv2/issues/304
