@@ -28,7 +28,7 @@ func ParseCRDs(f fs.FS, ignoredFiles map[string]struct{}) (crdutils.CRDMetadata,
 
 	for _, dir := range dirList {
 		// Skip files that should be ignored while parsing directory
-		if _, ok := ignoredFiles[dir.Name()]; !ok {
+		if _, ok := ignoredFiles[dir.Name()]; ok {
 			continue
 		}
 
