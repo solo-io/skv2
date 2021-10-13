@@ -40,9 +40,9 @@ var _ = Describe("Crd", func() {
 			o, err := CustomResourceDefinitions(grp)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(o).To(HaveLen(1))
-			// note: we intentionally provide the "c7fe90c34aa430b" hash in the test, as it shouldn't change
+			// note: we intentionally provide the "5770277ee8c9bc92" hash in the test, as it shouldn't change
 			// between runs.
-			Expect(o[0].GetAnnotations()).To(HaveKeyWithValue(crdutils.CRDSpecHashKey, "c7fe90c34aa430b"))
+			Expect(o[0].GetAnnotations()).To(HaveKeyWithValue(crdutils.CRDSpecHashKey, "5770277ee8c9bc92"))
 
 		})
 		It("should not generate spec hash", func() {
