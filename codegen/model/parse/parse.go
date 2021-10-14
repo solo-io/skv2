@@ -15,7 +15,7 @@ import (
  * This is used by downstream projects to collect the spec hashes of all CRDs, and the version of the product.
  * the resulting CRDMetadata will most likely end up on the downstream project's deployment annotations.
  */
-func ParseCRDs(f fs.FS, ignoredFiles []string) (crdutils.CRDMetadata, error) {
+func ParseCRDs(f fs.FS, ignoredFiles ...string) (crdutils.CRDMetadata, error) {
 	var ret crdutils.CRDMetadata
 	// read all crds from the specified directory
 	// generate a file with all the versions and hashes of the crds
