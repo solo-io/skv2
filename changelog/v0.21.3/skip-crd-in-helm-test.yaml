@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Provide a way to specify skipping of CRD parsing for a file. This will
+      allow us to not run include a CRD as part of our helm test.
