@@ -15,7 +15,7 @@ import (
  * This is used by downstream projects to collect the spec hashes of all CRDs, and the version of the product.
  * the resulting CRDMetadata will most likely end up on the downstream project's deployment annotations.
  */
-func ParseCRDs(f fs.FS, ignoredFiles map[string]struct{}) (crdutils.CRDMetadata, error) {
+func ParseCRDs(f fs.FS, ignoredFiles []string) (crdutils.CRDMetadata, error) {
 	var ret crdutils.CRDMetadata
 	// read all crds from the specified directory
 	// generate a file with all the versions and hashes of the crds
@@ -28,7 +28,14 @@ func ParseCRDs(f fs.FS, ignoredFiles map[string]struct{}) (crdutils.CRDMetadata,
 
 	for _, dir := range dirList {
 		// Skip files that should be ignored while parsing directory
-		if _, ok := ignoredFiles[dir.Name()]; ok {
+		var ignored bool
+		for _, filename := range ignoredFiles {
+			if dir.Name() == filename {
+				ignored = true
+				break
+			}
+		}
+		if ignored {
 			continue
 		}
 
