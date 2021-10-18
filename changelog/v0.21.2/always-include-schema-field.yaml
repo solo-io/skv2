@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Add the Schema field with preserve unknown fields even if we should not render schemas
+    issueLink: https://github.com/solo-io/skv2/issues/306

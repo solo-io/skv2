@@ -23,11 +23,13 @@ func CustomResourceDefinitions(
 	for _, resource := range group.Resources {
 
 		var validationSchema *apiextv1.CustomResourceValidation
-		if group.RenderValidationSchemas {
-			validationSchema, err = constructValidationSchema(resource, group.OpenApiSchemas)
-			if err != nil {
-				return nil, err
-			}
+		validationSchema, err = constructValidationSchema(
+			group.RenderValidationSchemas,
+			resource,
+			group.OpenApiSchemas,
+		)
+		if err != nil {
+			return nil, err
 		}
 
 		objects = append(objects, CustomResourceDefinition(resource, validationSchema, group.SkipSpecHash))
@@ -36,9 +38,22 @@ func CustomResourceDefinitions(
 }
 
 func constructValidationSchema(
+	renderValidationSchema bool,
 	resource model.Resource,
 	oapiSchemas model.OpenApiSchemas,
 ) (*apiextv1.CustomResourceValidation, error) {
+	// Even if we do not want to render validation schemas, we should include
+	// the top level schema definition and preserve unknown fields since Helm
+	// requires that some sort of schema is defined
+	if !renderValidationSchema {
+		preserveUnknownFields := true
+		return &apiextv1.CustomResourceValidation{
+			OpenAPIV3Schema: &apiextv1.JSONSchemaProps{
+				Type:                   "object",
+				XPreserveUnknownFields: &preserveUnknownFields,
+			},
+		}, nil
+	}
 	validationSchema := &apiextv1.CustomResourceValidation{
 		OpenAPIV3Schema: &apiextv1.JSONSchemaProps{
 			Type:       "object",
