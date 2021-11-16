@@ -18,6 +18,11 @@ var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) err
 
 // k8s resources are uniquely identified by their name and namespace
 func Key(id ezkube.ResourceId) string {
+	// When kubernetes objects are passed in here, a call to the GetX() functions will panic, so
+	// this will return "<unknown>" always if the input is nil.
+	if id == nil {
+		return "<unknown>"
+	}
 	if clusterId, ok := id.(ezkube.ClusterResourceId); ok {
 		return clusterId.GetName() + "." + clusterId.GetNamespace() + "." + clusterId.GetClusterName()
 	}

@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix nil deref error in `sets.Key()`.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/1938
