@@ -54,10 +54,19 @@ func (o Options) getUnstructuredFields(protoPkg string, rootMessage []string) ([
 	}
 	var unstructuredFields [][]string
 	for _, field := range root.Fields {
-		fieldPath := []string{strcase.ToLowerCamel(field.Field.GetName())}
+		rawFieldPath := []string{strcase.ToLowerCamel(field.Field.GetName())}
 		if field.Field.GetLabel() == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 			// arrays become the path element '*' in the cue openapi builder
-			fieldPath = append(fieldPath, "*")
+			rawFieldPath = append(rawFieldPath, "*")
+		}
+
+		// Cue does not include "value" in it's path so we have to remove it from
+		// the fieldPath when it's included in map messages
+		var fieldPath []string
+		for _, fieldStr := range rawFieldPath {
+			if fieldStr != "value" {
+				fieldPath = append(fieldPath, fieldStr)
+			}
 		}
 
 		if field.OpenAPIValidationDisabled {
@@ -71,7 +80,6 @@ func (o Options) getUnstructuredFields(protoPkg string, rootMessage []string) ([
 			// the field is a primitive type
 			continue
 		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-			// TODO: verify this works with map types
 		}
 
 		// check if this field has any unstructured fields in its children

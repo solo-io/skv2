@@ -54,6 +54,12 @@ message OilType {
 message PaintStatus {
     int64 observedGeneration = 1;
     int64 percentRemaining = 2;
+    map<string, Location> nearbyPaints = 3;
+
+    message Location {
+        string x = 1 [(cue.opt).disable_openapi_validation = true];
+        string y = 2 [(cue.opt).disable_openapi_validation = true];
+    }
 }
 
 message ClusterResourceSpec {
