@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix CRD rendering for unstructured map fields
+    issueLink: https://github.com/solo-io/skv2/issues/311
