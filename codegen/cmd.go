@@ -136,11 +136,16 @@ func (c Command) Execute() error {
 		return err
 	}
 
+	var groups []*model.Group
 	for _, group := range c.Groups {
-		// init connects children to their parents
-		group.Init()
+		group := group // pike
+		groups = append(groups, &group)
+	}
+	for _, group := range groups {
+		group := group // pike
+		c.initGroup(group, descriptors)
 
-		if err := c.generateGroup(group, descriptors, protoOpts); err != nil {
+		if err := c.generateGroup(*group, protoOpts); err != nil {
 			return err
 		}
 	}
@@ -224,10 +229,8 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 
 func (c Command) generateGroup(
 	grp model.Group,
-	descriptors []*collector.DescriptorWithPath,
 	protoOpts proto.Options,
 ) error {
-	c.addDescriptorsToGroup(&grp, descriptors)
 
 	fileWriter := &writer.DefaultFileWriter{
 		Root:   c.moduleRoot,
@@ -294,10 +297,12 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 // compiles protos and attaches descriptors to the group and its resources
 // it is important to run this func before rendering as it attaches protos to the
 // group model
-func (c Command) addDescriptorsToGroup(
+func (c Command) initGroup(
 	grp *render.Group,
 	descriptors []*collector.DescriptorWithPath,
 ) {
+	grp.Init()
+
 	if len(descriptors) == 0 {
 		logrus.Debugf("no descriptors generated")
 		return
