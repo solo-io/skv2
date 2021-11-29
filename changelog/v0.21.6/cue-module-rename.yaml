@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Depend on solo-io/cue fork directly
+    issueLink: https://github.com/solo-io/solo-apis/issues/257
+    resolvesIssue: false

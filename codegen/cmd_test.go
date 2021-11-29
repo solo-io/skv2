@@ -33,7 +33,7 @@ var _ = Describe("Cmd", func() {
 	)
 
 	// used for a proto option which disables openapi validation on fields
-	skv2Imports.External["cuelang.org/go"] = []string{
+	skv2Imports.External["github.com/solo-io/cue"] = []string{
 		"encoding/protobuf/cue/cue.proto",
 	}
 
