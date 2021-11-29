@@ -10,9 +10,9 @@ import (
 	reflect "reflect"
 	sync "sync"
 
-	_ "cuelang.org/go/encoding/protobuf/cue"
 	any "github.com/golang/protobuf/ptypes/any"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
+	_ "github.com/solo-io/cue/encoding/protobuf/cue"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )

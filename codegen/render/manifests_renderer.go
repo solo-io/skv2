@@ -10,11 +10,11 @@ import (
 
 	protoutil "github.com/solo-io/skv2/codegen/proto"
 
-	"cuelang.org/go/cue"
-	"cuelang.org/go/encoding/openapi"
-	"cuelang.org/go/encoding/protobuf"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/anyvendor/anyvendor"
+	"github.com/solo-io/cue/cue"
+	"github.com/solo-io/cue/encoding/openapi"
+	"github.com/solo-io/cue/encoding/protobuf"
 	"github.com/solo-io/go-utils/stringutils"
 	"github.com/solo-io/skv2/codegen/kuberesource"
 	"github.com/solo-io/skv2/codegen/model"

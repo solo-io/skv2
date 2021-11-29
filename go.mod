@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.76.0
-	cuelang.org/go v0.2.2
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/semver v1.4.2
 	github.com/Masterminds/sprig/v3 v3.1.0
@@ -34,6 +33,7 @@ require (
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.4
+	github.com/solo-io/cue v0.4.1-0.20211129194743-fcfaa00e6d56
 	github.com/solo-io/go-list-licenses v0.0.4
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.1
@@ -62,10 +62,6 @@ require (
 )
 
 replace (
-	// pinned to solo-io's fork of cue version 308aee4ff0928a8e0ec25b9cbbdc445264038463
-	// note(ilackarms): this replace must be shared in any skv2-based go module due to incompatibility with upstream versions of cue
-	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210623143425-308aee4ff092
-
 	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
 	// down. The github mirror should be used instead.
 	// Locking to a specific version (from 'go mod graph'):

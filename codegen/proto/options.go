@@ -4,11 +4,11 @@ import (
 	"strings"
 	"unicode"
 
-	"cuelang.org/go/encoding/protobuf/cue"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/iancoleman/strcase"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/cue/encoding/protobuf/cue"
 	"github.com/solo-io/skv2/codegen/collector"
 )
 
