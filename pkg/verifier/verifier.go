@@ -164,7 +164,7 @@ func verifyServerResource(
 	if err != nil {
 		return true, err
 	}
-	rss, err := disc.ServerResourcesForGroupVersion(gvk.Group + "/" + gvk.Version)
+	rss, err := disc.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
 	if err != nil {
 		verifyFailed := !apierrors.IsNotFound(err)
 		return verifyFailed, err
