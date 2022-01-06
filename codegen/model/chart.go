@@ -41,9 +41,6 @@ type Operator struct {
 	// these populate the generated ClusterRole for the operator
 	Rbac []rbacv1.PolicyRule
 
-	// add a manifest for each configmap
-	ConfigMaps []v1.ConfigMap
-
 	// if at least one port is defined, create a service for the
 	Service Service
 }
