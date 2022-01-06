@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/rotisserie/eris"
+
 	protovendor "github.com/solo-io/anyvendor/pkg/proto"
 	"github.com/solo-io/skv2/codegen/metrics"
 
@@ -181,6 +183,10 @@ func (c Command) generateChart() error {
 		}
 
 		if err := writer.WriteFiles(files); err != nil {
+			return err
+		}
+
+		if err := makeHelmValuesReferenceDoc(c.ManifestRoot, c.Chart); err != nil {
 			return err
 		}
 	}
@@ -418,4 +424,28 @@ func (c Command) buildPushImage(build model.Build) error {
 	log.Printf("Pushing docker image %v ...", fullImageName)
 
 	return c.Builder.Docker("push", fullImageName)
+}
+
+// generate reference doc for Helm Values
+func makeHelmValuesReferenceDoc(helmDir string, chart *model.Chart) error {
+
+	if chart.ValuesReferenceDocs.Filename == "" {
+		return nil
+	}
+
+	doc := chart.GenerateHelmDoc()
+
+	filename := filepath.Join(helmDir, chart.ValuesReferenceDocs.Filename)
+
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0777)
+	if err != nil {
+		return eris.Errorf("error generating Helm values reference doc: %v", err)
+	}
+	defer f.Close()
+
+	if _, err := f.Write([]byte(doc)); err != nil {
+		return eris.Errorf("error generating Helm values reference doc: %v", err)
+	}
+
+	return nil
 }
