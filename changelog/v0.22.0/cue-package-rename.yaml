@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Prefix cue protos with solo.io to avoid protobuf registration conflicts
+      when importing cue fork and istio (which depends on upstream cue)
