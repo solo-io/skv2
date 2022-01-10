@@ -1,5 +1,6 @@
 changelog:
-  - type: NON_USER_FACING
+  - type: BREAKING_CHANGE
     description: >
       Prefix cue protos with solo.io to avoid protobuf registration conflicts
       when importing cue fork and istio (which depends on upstream cue)
+    issueLink: https://github.com/solo-io/skv2/issues/315
