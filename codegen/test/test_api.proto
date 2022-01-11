@@ -25,6 +25,10 @@ message PaintSpec {
     message RecursiveType {
         RecursiveType recursive_field = 1 [(solo.io.cue.opt).disable_openapi_validation = true];
         repeated RecursiveType repeated_recursive_field = 2 [(solo.io.cue.opt).disable_openapi_validation = true];
+
+        // Ensure that FieldOptions can be defined using package name resolution that starts from the
+        // outermost scope: https://developers.google.com/protocol-buffers/docs/proto3#packages_and_name_resolution
+        RecursiveType recursive_field_outermost_scope = 3 [(.solo.io.cue.opt).disable_openapi_validation = true];
     }
 }
 
