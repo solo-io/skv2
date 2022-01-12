@@ -33,7 +33,7 @@ require (
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.4
-	github.com/solo-io/cue v0.4.2
+	github.com/solo-io/cue v0.4.3
 	github.com/solo-io/go-list-licenses v0.0.4
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.1
