@@ -4,3 +4,8 @@ changelog:
       Prefix cue protos with solo.io to avoid protobuf registration conflicts
       when importing cue fork and istio (which depends on upstream cue)
     issueLink: https://github.com/solo-io/skv2/issues/315
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: cue
+    dependencyTag: v0.4.2
+    description: Update cue to avoid protobuf registration conflicts
