@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix infinite recursions when generating crd schemas for protos.
+    issueLink: https://github.com/solo-io/skv2/issues/315
