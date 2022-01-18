@@ -27,8 +27,8 @@ message Options {
 }
 
 message RecursiveType {
-    RecursiveType recursive_field = 1 [(cue.opt).disable_openapi_validation = true];
-    repeated RecursiveType repeated_recursive_field = 2 [(cue.opt).disable_openapi_validation = true];
+    RecursiveType recursive_field = 1 [(solo.io.cue.opt).disable_openapi_validation = true];
+    repeated RecursiveType repeated_recursive_field = 2 [(solo.io.cue.opt).disable_openapi_validation = true];
 }
 
 The unstructured fields of `MyCRDSpec` would be returned as:

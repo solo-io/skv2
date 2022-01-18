@@ -23,8 +23,12 @@ message PaintSpec {
 
     // tests OpenAPI schema gen for Recursive types
     message RecursiveType {
-        RecursiveType recursive_field = 1 [(cue.opt).disable_openapi_validation = true];
-        repeated RecursiveType repeated_recursive_field = 2 [(cue.opt).disable_openapi_validation = true];
+        RecursiveType recursive_field = 1 [(solo.io.cue.opt).disable_openapi_validation = true];
+        repeated RecursiveType repeated_recursive_field = 2 [(solo.io.cue.opt).disable_openapi_validation = true];
+
+        // Ensure that FieldOptions can be defined using package name resolution that starts from the
+        // outermost scope: https://developers.google.com/protocol-buffers/docs/proto3#packages_and_name_resolution
+        RecursiveType recursive_field_outermost_scope = 3 [(.solo.io.cue.opt).disable_openapi_validation = true];
     }
 }
 
@@ -57,8 +61,8 @@ message PaintStatus {
     map<string, Location> nearbyPaints = 3;
 
     message Location {
-        string x = 1 [(cue.opt).disable_openapi_validation = true];
-        string y = 2 [(cue.opt).disable_openapi_validation = true];
+        string x = 1 [(solo.io.cue.opt).disable_openapi_validation = true];
+        string y = 2 [(solo.io.cue.opt).disable_openapi_validation = true];
     }
 }
 
