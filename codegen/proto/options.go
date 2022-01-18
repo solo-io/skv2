@@ -69,7 +69,7 @@ func (o Options) getUnstructuredFields(protoPkg string, rootMessage []string) ([
 			}
 		}
 
-		if field.OpenAPIValidationDisabled {
+		if field.OpenAPIValidationDisabled || isUnstructuredMessage(protoPkg, root) {
 			// we are in a leaf, return a single-level path
 			unstructuredFields = append(unstructuredFields, fieldPath)
 			continue
@@ -100,6 +100,15 @@ func (o Options) getUnstructuredFields(protoPkg string, rootMessage []string) ([
 		}
 	}
 	return unstructuredFields, nil
+}
+
+// returns true for proto struct type, which is recursive
+func isUnstructuredMessage(protoPkg string, m MessageOptions) bool {
+	switch {
+	case m.Message.GetName() == "Struct" && protoPkg == "google.protobuf":
+		return true
+	}
+	return false
 }
 
 func findNestedMsg(parent MessageOptions, nestedName string) (MessageOptions, error) {

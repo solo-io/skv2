@@ -104,6 +104,9 @@ type Group struct {
 	// Mapping from protobuf message name to generated open api structural schema
 	// This is populated during skv2 generation by the manifests renderer.
 	OpenApiSchemas OpenApiSchemas
+
+	// Custom properties used for custom templates
+	Properties
 }
 
 func (g Group) HasProtos() bool {
@@ -123,16 +126,21 @@ type CustomTemplates struct {
 	Funcs template.FuncMap
 }
 
+func (g *Group) InitDescriptors(descriptors []*collector.DescriptorWithPath) {
+	g.Descriptors = descriptors
+	g.Init()
+}
+
 // ensures the resources point to this group
 func (g *Group) Init() {
 	for i, resource := range g.Resources {
-		resource.Group = *g
+		resource.Group = g
 		g.Resources[i] = resource
 	}
 }
 
 type Resource struct {
-	Group  // the group I belong to
+	*Group // the group I belong to
 	Kind   string
 	Spec   Field
 	Status *Field
@@ -173,4 +181,14 @@ type Type struct {
 		If unset, SKv2 uses the Group name of the Resource that specifies this Type.
 	*/
 	ProtoPackage string
+}
+
+// Properties is an arbitrary set of KV properties which can be associated to an skv2 resource. Can be used in conjunction with custom templates
+type Properties map[string]string
+
+func (p Properties) Property(key string) string {
+	if p == nil {
+		return ""
+	}
+	return p[key]
 }

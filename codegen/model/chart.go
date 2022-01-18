@@ -30,6 +30,14 @@ type Chart struct {
 
 	// Only generate the chart
 	ChartOnly bool
+
+	// if specified, generate refernece docs for the chart values to the provided filename
+	ValuesReferenceDocs ValuesReferenceDocs
+}
+
+type ValuesReferenceDocs struct {
+	Title    string
+	Filename string
 }
 
 type Operator struct {
@@ -40,9 +48,6 @@ type Operator struct {
 
 	// these populate the generated ClusterRole for the operator
 	Rbac []rbacv1.PolicyRule
-
-	// add a manifest for each configmap
-	ConfigMaps []v1.ConfigMap
 
 	// if at least one port is defined, create a service for the
 	Service Service
@@ -155,7 +160,7 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 	return helmValues
 }
 
-func (c Chart) GenerateHelmDoc(title string) string {
+func (c Chart) GenerateHelmDoc() string {
 	helmValues := c.BuildChartValues()
 
 	// generate documentation for custom values
@@ -176,5 +181,5 @@ func (c Chart) GenerateHelmDoc(title string) string {
 		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
 
-	return helmValuesForDoc.ToMarkdown(title)
+	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
 }
