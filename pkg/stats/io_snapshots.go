@@ -25,7 +25,10 @@ type snapshotHistory struct {
 }
 
 func NewSnapshotHistory() SnapshotHistory {
-	return &snapshotHistory{}
+	return &snapshotHistory{
+		latestInput:  map[string]json.Marshaler{},
+		latestOutput: map[string]json.Marshaler{},
+	}
 }
 
 func (h *snapshotHistory) SetInput(id string, latestInput json.Marshaler) {
