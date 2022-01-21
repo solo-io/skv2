@@ -49,11 +49,11 @@ func (h *snapshotHistory) GetInput() ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		future := map[string]interface{}{}
-		if err := json.Unmarshal(jsn, &future); err != nil {
+		genericMap := map[string]interface{}{}
+		if err := json.Unmarshal(jsn, &genericMap); err != nil {
 			return nil, err
 		}
-		result[id] = future
+		result[id] = genericMap
 	}
 	return json.Marshal(result)
 }
@@ -76,11 +76,11 @@ func (h *snapshotHistory) GetOutput() ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		future := map[string]interface{}{}
-		if err := json.Unmarshal(jsn, &future); err != nil {
+		genericMap := map[string]interface{}{}
+		if err := json.Unmarshal(jsn, &genericMap); err != nil {
 			return nil, err
 		}
-		result[id] = future
+		result[id] = genericMap
 	}
 	return json.Marshal(result)
 }
