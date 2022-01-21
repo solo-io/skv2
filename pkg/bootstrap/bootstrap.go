@@ -36,7 +36,7 @@ type StartParameters struct {
 	MasterManager   manager.Manager
 	McClient        multicluster.Client    // nil if running in agent mode
 	Clusters        multicluster.Interface // nil if running in agent mode
-	SnapshotHistory *stats.SnapshotHistory
+	SnapshotHistory stats.SnapshotHistory
 	// Reference to Settings object this controller uses.
 	SettingsRef v1.ObjectRef
 	// enable additional logging
@@ -78,16 +78,47 @@ type Options struct {
 
 // convenience function for setting these options via spf13 flags
 func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&opts.MasterNamespace, "namespace", "n", metav1.NamespaceAll, "if specified restricts the master manager's cache to watch objects in the desired namespace.")
-	flags.Uint32Var(&opts.MetricsBindPort, "metrics-port", opts.MetricsBindPort, "port on which to serve Prometheus metrics. set to 0 to disable")
+	flags.StringVarP(
+		&opts.MasterNamespace,
+		"namespace",
+		"n",
+		metav1.NamespaceAll,
+		"if specified restricts the master manager's cache to watch objects in the desired namespace.",
+	)
+	flags.Uint32Var(
+		&opts.MetricsBindPort,
+		"metrics-port",
+		opts.MetricsBindPort,
+		"port on which to serve Prometheus metrics. set to 0 to disable",
+	)
 	flags.BoolVar(&opts.VerboseMode, "verbose", true, "enables verbose/debug logging")
-	flags.StringVar(&opts.ManagementContext, "context", "", "If specified, use this context from the selected KubeConfig to connect to the local (management) cluster.")
-	flags.StringVar(&opts.SettingsRef.Name, "settings-name", opts.SettingsRef.Name, "The name of the Settings object this controller should use.")
-	flags.StringVar(&opts.SettingsRef.Namespace, "settings-namespace", opts.SettingsRef.Namespace, "The namespace of the Settings object this controller should use.")
+	flags.StringVar(
+		&opts.ManagementContext,
+		"context",
+		"",
+		"If specified, use this context from the selected KubeConfig to connect to the local (management) cluster.",
+	)
+	flags.StringVar(
+		&opts.SettingsRef.Name,
+		"settings-name",
+		opts.SettingsRef.Name,
+		"The name of the Settings object this controller should use.",
+	)
+	flags.StringVar(
+		&opts.SettingsRef.Namespace,
+		"settings-namespace",
+		opts.SettingsRef.Namespace,
+		"The namespace of the Settings object this controller should use.",
+	)
 
 	// This flag disables prod mode when set to false, in other words setting debug to true,
 	// Which will cause the app to panic on DPanic.
-	flags.BoolVar(&opts.DevLogger, "dev-logger", false, "Default: false. Set this value to true to enable debug panic logs for development.")
+	flags.BoolVar(
+		&opts.DevLogger,
+		"dev-logger",
+		false,
+		"Default: false. Set this value to true to enable debug panic logs for development.",
+	)
 	flags.MarkHidden("dev-logger")
 }
 
@@ -97,7 +128,14 @@ func Start(ctx context.Context, start StartFunc, opts Options, schemes runtime.S
 }
 
 // Like Start, but runs multiple StartFuncs concurrently
-func StartMulti(ctx context.Context, startFuncs map[string]StartFunc, opts Options, schemes runtime.SchemeBuilder, localMode bool, addStatsHandlers ...func(mux *http.ServeMux, profiles map[string]string)) error {
+func StartMulti(
+	ctx context.Context,
+	startFuncs map[string]StartFunc,
+	opts Options,
+	schemes runtime.SchemeBuilder,
+	localMode bool,
+	addStatsHandlers ...func(mux *http.ServeMux, profiles map[string]string),
+) error {
 	setupLogging(opts.VerboseMode, opts.DevLogger)
 
 	mgr, err := makeMasterManager(opts, schemes)
@@ -116,10 +154,12 @@ func StartMulti(ctx context.Context, startFuncs map[string]StartFunc, opts Optio
 
 	if !localMode {
 		// construct multicluster watcher and client
-		clusterWatcher = watch.NewClusterWatcher(ctx, manager.Options{
-			Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
-			Scheme:    mgr.GetScheme(),
-		})
+		clusterWatcher = watch.NewClusterWatcher(
+			ctx, manager.Options{
+				Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
+				Scheme:    mgr.GetScheme(),
+			},
+		)
 
 		mcClient = multicluster.NewClient(clusterWatcher)
 	}
@@ -141,35 +181,41 @@ func StartMulti(ctx context.Context, startFuncs map[string]StartFunc, opts Optio
 		if name != "" {
 			namedCtx = contextutils.WithLogger(namedCtx, name)
 		}
-		eg.Go(func() error {
-			contextutils.LoggerFrom(namedCtx).Debugf("starting main goroutine")
-			if synced := params.MasterManager.GetCache().WaitForCacheSync(namedCtx); !synced {
-				return eris.Errorf("caches failed to sync")
-			}
-			err := start(namedCtx, params)
-			if err != nil {
-				contextutils.LoggerFrom(namedCtx).Errorf("main goroutine failed: %v", err)
-			}
-			return err
-		})
+		eg.Go(
+			func() error {
+				contextutils.LoggerFrom(namedCtx).Debugf("starting main goroutine")
+				if synced := params.MasterManager.GetCache().WaitForCacheSync(namedCtx); !synced {
+					return eris.Errorf("caches failed to sync")
+				}
+				err := start(namedCtx, params)
+				if err != nil {
+					contextutils.LoggerFrom(namedCtx).Errorf("main goroutine failed: %v", err)
+				}
+				return err
+			},
+		)
 	}
 
 	if clusterWatcher != nil {
 		// start multicluster watches
-		eg.Go(func() error {
-			if synced := params.MasterManager.GetCache().WaitForCacheSync(ctx); !synced {
-				return eris.Errorf("caches failed to sync")
-			}
-			return clusterWatcher.Run(mgr)
-		})
+		eg.Go(
+			func() error {
+				if synced := params.MasterManager.GetCache().WaitForCacheSync(ctx); !synced {
+					return eris.Errorf("caches failed to sync")
+				}
+				return clusterWatcher.Run(mgr)
+			},
+		)
 	}
 
-	eg.Go(func() error {
-		// start the local manager
-		ctx := contextutils.WithLogger(ctx, "controller-runtime-manager")
-		contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
-		return mgr.Start(ctx)
-	})
+	eg.Go(
+		func() error {
+			// start the local manager
+			ctx := contextutils.WithLogger(ctx, "controller-runtime-manager")
+			contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
+			return mgr.Start(ctx)
+		},
+	)
 
 	return eg.Wait()
 }
@@ -181,10 +227,12 @@ func makeMasterManager(opts Options, schemes runtime.SchemeBuilder) (manager.Man
 		return nil, err
 	}
 
-	mgr, err := manager.New(cfg, manager.Options{
-		Namespace:          opts.MasterNamespace, // TODO (ilackarms): support configuring multiple watch namespaces on master cluster
-		MetricsBindAddress: "0",                  // serve metrics using custom stats server
-	})
+	mgr, err := manager.New(
+		cfg, manager.Options{
+			Namespace:          opts.MasterNamespace, // TODO (ilackarms): support configuring multiple watch namespaces on master cluster
+			MetricsBindAddress: "0",                  // serve metrics using custom stats server
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +255,8 @@ func setupLogging(verboseMode, devLogging bool) {
 		zaputil.Level(&atomicLevel),
 	}
 	if devLogging {
-		zapOpts = append(zapOpts,
+		zapOpts = append(
+			zapOpts,
 			// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
 			// to use any json parsing tools for the log. Should only be enabled explicitly
 			zaputil.UseDevMode(true),
