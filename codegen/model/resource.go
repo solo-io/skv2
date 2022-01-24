@@ -134,13 +134,13 @@ func (g *Group) InitDescriptors(descriptors []*collector.DescriptorWithPath) {
 // ensures the resources point to this group
 func (g *Group) Init() {
 	for i, resource := range g.Resources {
-		resource.Group = *g
+		resource.Group = g
 		g.Resources[i] = resource
 	}
 }
 
 type Resource struct {
-	Group  // the group I belong to
+	*Group // the group I belong to
 	Kind   string
 	Spec   Field
 	Status *Field

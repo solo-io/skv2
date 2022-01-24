@@ -69,6 +69,7 @@ func getImportedGroups(selectFromGroups map[string][]model.Group, resourcesToSel
 	groupImports := map[schema.GroupVersion]importedGroup{}
 
 	for _, grp := range importedGroups {
+		grp := grp
 		grp.Init()
 		groups = append(groups, grp.Group)
 		groupImports[grp.GroupVersion] = grp
