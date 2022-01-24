@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix bug where resources had wrong groups in generated snapshot.
+    issueLink: https://github.com/solo-io/skv2/issues/317
