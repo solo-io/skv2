@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix bug where helm docs were being generated to the wrong place.
+    issueLink: https://github.com/solo-io/skv2/issues/319
