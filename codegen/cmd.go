@@ -186,7 +186,7 @@ func (c Command) generateChart() error {
 			return err
 		}
 
-		if err := makeHelmValuesReferenceDoc(c.ManifestRoot, c.Chart); err != nil {
+		if err := makeHelmValuesReferenceDoc(filepath.Join(c.moduleRoot, c.ManifestRoot), c.Chart); err != nil {
 			return err
 		}
 	}
