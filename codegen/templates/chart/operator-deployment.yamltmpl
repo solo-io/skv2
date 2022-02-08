@@ -173,7 +173,7 @@ spec:
   type: {{ $[[ $operatorVar ]].serviceType }}
   ports:
   [[- range $port := $operator.Service.Ports ]]
-  - name: [[ $port.Name ]]
+  - name: [[ lower $port.Name ]]
     port: {{ $[[ $operatorVar ]].ports.[[ $port.Name ]] }}
   [[- end ]]
 [[ end ]]

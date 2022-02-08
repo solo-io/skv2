@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Ensure that all port names are lowercased, due to the k8s restriction that
+      names for ports must only contain lowercase alphanumeric characters and -.
