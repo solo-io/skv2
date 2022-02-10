@@ -28,7 +28,7 @@ func Upsert(
 	obj client.Object,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
-	return upsert(ctx, c, obj, false, transitionFuncs...)
+	return upsert(ctx, c, obj, transitionFuncs...)
 }
 
 // UpsertImmutable functions similarly to it's Upsert counterpart,
@@ -39,14 +39,13 @@ func UpsertImmutable(
 	obj client.Object,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
-	return upsert(ctx, c, obj, true, transitionFuncs...)
+	return upsert(ctx, c, obj.DeepCopyObject().(client.Object), transitionFuncs...)
 }
 
 func upsert(
 	ctx context.Context,
 	c client.Client,
 	obj client.Object,
-	immutable bool,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
 
@@ -65,16 +64,8 @@ func upsert(
 		if !errors.IsNotFound(err) {
 			return controllerutil.OperationResultNone, err
 		}
-		// If immutable copy the object before passing it into create, as create will
-		// modify the object in place with it's live counterpart.
-		if immutable {
-			if err := c.Create(ctx, obj.DeepCopyObject().(client.Object)); err != nil {
-				return controllerutil.OperationResultNone, err
-			}
-		} else {
-			if err := c.Create(ctx, obj); err != nil {
-				return controllerutil.OperationResultNone, err
-			}
+		if err := c.Create(ctx, obj); err != nil {
+			return controllerutil.OperationResultNone, err
 		}
 		return controllerutil.OperationResultCreated, nil
 	}
