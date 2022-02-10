@@ -16,7 +16,7 @@ export PATH:=$(GOBIN):$(PATH)
 .PHONY: install-go-tools
 install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
-	go install github.com/gobuffalo/packr/packr
+	go install github.com/gobuffalo/packr/packr@v1.30.1
 	go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
 	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 	go install github.com/solo-io/protoc-gen-ext@v0.0.16
