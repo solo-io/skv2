@@ -188,6 +188,12 @@ spec:
 {{- $[[ $operatorVar ]]ServiceOverrides = $[[ $operatorVar ]].serviceOverrides  }}
 {{- end }}
 
+---
+
+{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
+{{- end }}
+
+---
 
 {{- define "[[ $operator.Name ]].adminServiceSpec"}}
 [[ if gt (len $operator.AdminService.Ports) 0 ]]
@@ -220,10 +226,5 @@ spec:
   [[- end ]]
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].adminServiceSpec" */}}
-
-
----
-{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
-{{- end }}
 
 [[ end ]]
