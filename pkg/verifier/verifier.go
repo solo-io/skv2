@@ -90,7 +90,8 @@ func (c *cachedVerificationResponses) setCachedResponse(cluster string, gvk sche
 	defer c.lock.Unlock()
 	verifiedResources, ok := c.verifiedClusterResources[cluster]
 	if !ok {
-		verifiedResources = map[schema.GroupVersionKind]bool{}
+		c.verifiedClusterResources[cluster] = map[schema.GroupVersionKind]bool{}
+		verifiedResources = c.verifiedClusterResources[cluster]
 	}
 	verifiedResources[gvk] = registered
 }
@@ -127,7 +128,11 @@ func (v *verifier) VerifyServerResource(cluster string, cfg *rest.Config, gvk sc
 	}
 
 	var resourceRegistered bool
-	if verifyFailed, err := verifyServerResource(cfg, gvk); err != nil {
+	disc, err := discovery.NewDiscoveryClientForConfig(cfg)
+	if err != nil {
+		return true, err
+	}
+	if verifyFailed, err := verifyServerResource(disc, gvk); err != nil {
 		if verifyFailed {
 			return false, eris.Wrap(err, "resource verify failed")
 		}
@@ -157,13 +162,9 @@ func (v *verifier) VerifyServerResource(cluster string, cfg *rest.Config, gvk sc
 // The boolean return return argument indicates whether a resulting error was caused by
 // a failure to run the verification verify.
 func verifyServerResource(
-	cfg *rest.Config,
+	disc discovery.DiscoveryInterface,
 	gvk schema.GroupVersionKind,
 ) (bool, error) {
-	disc, err := discovery.NewDiscoveryClientForConfig(cfg)
-	if err != nil {
-		return true, err
-	}
 	rss, err := disc.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
 	if err != nil {
 		verifyFailed := !apierrors.IsNotFound(err)

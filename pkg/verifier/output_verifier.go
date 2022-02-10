@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/discovery"
 )
 
 // ServerResourceVerifier verifies whether a given cluster server supports a given resource.
@@ -33,12 +33,12 @@ type outputVerifier struct {
 	// resources have already been verified for the cluster.
 	cachedVerificationResponses *cachedVerificationResponses
 
-	cfg *rest.Config
+	discClient discovery.DiscoveryInterface
 }
 
 func NewOutputVerifier(
 	ctx context.Context,
-	cfg *rest.Config,
+	discClient discovery.DiscoveryInterface,
 	options map[schema.GroupVersionKind]ServerVerifyOption,
 ) *outputVerifier {
 	if options == nil {
@@ -46,7 +46,7 @@ func NewOutputVerifier(
 	}
 	return &outputVerifier{
 		ctx:                         ctx,
-		cfg:                         cfg,
+		discClient:                  discClient,
 		options:                     options,
 		cachedVerificationResponses: newCachedVerificationResponses(),
 	}
@@ -70,7 +70,7 @@ func (v *outputVerifier) VerifyServerResource(cluster string, gvk schema.GroupVe
 	}
 
 	var resourceRegistered bool
-	if verifyFailed, err := verifyServerResource(v.cfg, gvk); err != nil {
+	if verifyFailed, err := verifyServerResource(v.discClient, gvk); err != nil {
 		if verifyFailed {
 			return false, eris.Wrap(err, "resource verify failed")
 		}

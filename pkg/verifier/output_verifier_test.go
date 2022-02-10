@@ -3,50 +3,105 @@ package verifier_test
 import (
 	"context"
 
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
-
 	. "github.com/solo-io/skv2/pkg/verifier"
+	mock_discovery "github.com/solo-io/skv2/pkg/verifier/mocks"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-var _ = Describe("Output Verifier", func() {
-	It("verifies the server resources", func() {
-		cfg, err := config.GetConfig()
-		if err != nil {
-			Skip("skipping verifier test, requires active kubernetes cluster, failed to get rest config: " + err.Error())
-		}
+//go:generate mockgen -destination mocks/discovery.go k8s.io/client-go/discovery DiscoveryInterface
 
-		gvkDoesntExist := schema.GroupVersionKind{
-			Group:   "doesnt",
-			Version: "v1",
-			Kind:    "Exist",
-		}
-		gvkDoesExist := schema.GroupVersionKind{
-			Group:   "",
-			Version: "v1",
-			Kind:    "Secret",
-		}
+var _ = Describe(
+	"Output Verifier", func() {
 
-		v := NewOutputVerifier(context.TODO(), cfg, map[schema.GroupVersionKind]ServerVerifyOption{
-			gvkDoesntExist: ServerVerifyOption_ErrorIfNotPresent,
-		})
+		var (
+			ctrl *gomock.Controller
 
-		resourceExists, err := v.VerifyServerResource("", gvkDoesntExist)
-		Expect(err).To(HaveOccurred())
+			mockDiscovery *mock_discovery.MockDiscoveryInterface
+		)
 
-		resourceExists, err = v.VerifyServerResource("", gvkDoesExist)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(resourceExists).To(BeTrue())
+		BeforeEach(
+			func() {
+				ctrl = gomock.NewController(GinkgoT())
 
-		// ignore errors on doesn't exist
-		v = NewOutputVerifier(context.TODO(), cfg, map[schema.GroupVersionKind]ServerVerifyOption{
-			gvkDoesntExist: ServerVerifyOption_WarnIfNotPresent,
-		})
+				mockDiscovery = mock_discovery.NewMockDiscoveryInterface(ctrl)
+			},
+		)
 
-		resourceExists, err = v.VerifyServerResource("", gvkDoesntExist)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(resourceExists).To(BeFalse())
-	})
-})
+		AfterEach(
+			func() {
+				ctrl.Finish()
+			},
+		)
+
+		It(
+			"verifies the server resources", func() {
+
+				gvkDoesntExist := schema.GroupVersionKind{
+					Group:   "doesnt",
+					Version: "v1",
+					Kind:    "Exist",
+				}
+				gvkDoesExist := schema.GroupVersionKind{
+					Group:   "",
+					Version: "v1",
+					Kind:    "Secret",
+				}
+
+				v := NewOutputVerifier(
+					context.TODO(), mockDiscovery, map[schema.GroupVersionKind]ServerVerifyOption{
+						gvkDoesntExist: ServerVerifyOption_ErrorIfNotPresent,
+						gvkDoesExist:   ServerVerifyOption_WarnIfNotPresent,
+					},
+				)
+
+				mockDiscovery.EXPECT().
+					ServerResourcesForGroupVersion(gvkDoesntExist.GroupVersion().String()).
+					Return(nil, errors.NewNotFound(schema.GroupResource{}, "")).
+					Times(2)
+
+				resourceExists, err := v.VerifyServerResource("", gvkDoesntExist)
+				Expect(err).To(HaveOccurred())
+
+				mockDiscovery.EXPECT().
+					ServerResourcesForGroupVersion(gvkDoesExist.GroupVersion().String()).
+					Return(
+						&metav1.APIResourceList{
+							TypeMeta:     metav1.TypeMeta{},
+							GroupVersion: gvkDoesExist.GroupVersion().String(),
+							APIResources: []metav1.APIResource{
+								{
+									Kind: "Secret",
+								},
+							},
+						},
+						nil,
+					)
+
+				resourceExists, err = v.VerifyServerResource("", gvkDoesExist)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(resourceExists).To(BeTrue())
+
+				// Test mock doesn't get called twice
+				resourceExists, err = v.VerifyServerResource("", gvkDoesExist)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(resourceExists).To(BeTrue())
+
+				// ignore errors on doesn't exist
+				v = NewOutputVerifier(
+					context.TODO(), mockDiscovery, map[schema.GroupVersionKind]ServerVerifyOption{
+						gvkDoesntExist: ServerVerifyOption_WarnIfNotPresent,
+					},
+				)
+
+				resourceExists, err = v.VerifyServerResource("", gvkDoesntExist)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(resourceExists).To(BeFalse())
+			},
+		)
+	},
+)
