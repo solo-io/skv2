@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	. "github.com/solo-io/skv2/pkg/verifier"
@@ -17,6 +18,7 @@ var _ = Describe("Output Verifier", func() {
 		if err != nil {
 			Skip("skipping verifier test, requires active kubernetes cluster, failed to get rest config: " + err.Error())
 		}
+		disc := discovery.NewDiscoveryClientForConfigOrDie(cfg)
 
 		gvkDoesntExist := schema.GroupVersionKind{
 			Group:   "doesnt",
@@ -29,7 +31,7 @@ var _ = Describe("Output Verifier", func() {
 			Kind:    "Secret",
 		}
 
-		v := NewOutputVerifier(context.TODO(), cfg, map[schema.GroupVersionKind]ServerVerifyOption{
+		v := NewOutputVerifier(context.TODO(), disc, map[schema.GroupVersionKind]ServerVerifyOption{
 			gvkDoesntExist: ServerVerifyOption_ErrorIfNotPresent,
 		})
 
@@ -41,7 +43,7 @@ var _ = Describe("Output Verifier", func() {
 		Expect(resourceExists).To(BeTrue())
 
 		// ignore errors on doesn't exist
-		v = NewOutputVerifier(context.TODO(), cfg, map[schema.GroupVersionKind]ServerVerifyOption{
+		v = NewOutputVerifier(context.TODO(), disc, map[schema.GroupVersionKind]ServerVerifyOption{
 			gvkDoesntExist: ServerVerifyOption_WarnIfNotPresent,
 		})
 
