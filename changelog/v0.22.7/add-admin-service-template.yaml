@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add the Admin Service template for the operator.
+    issueLink: https://github.com/solo-io/skv2/issues/322 
