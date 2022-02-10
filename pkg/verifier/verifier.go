@@ -90,7 +90,8 @@ func (c *cachedVerificationResponses) setCachedResponse(cluster string, gvk sche
 	defer c.lock.Unlock()
 	verifiedResources, ok := c.verifiedClusterResources[cluster]
 	if !ok {
-		verifiedResources = map[schema.GroupVersionKind]bool{}
+		c.verifiedClusterResources[cluster] = map[schema.GroupVersionKind]bool{}
+		verifiedResources = c.verifiedClusterResources[cluster]
 	}
 	verifiedResources[gvk] = registered
 }
