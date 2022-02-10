@@ -1,3 +1,4 @@
 changelog:
-  - type: NEW_FEATURE
+  - type: FIX
     description: Fix verifier cache to the yaml
+    issueLink: https://github.com/solo-io/skv2/issues/327
