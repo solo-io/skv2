@@ -101,6 +101,7 @@ var _ = Describe("Update Status", func() {
 				Message: "Test1",
 			},
 		}
+		// This seems to default the resource version to "999"...
 		cl = fake.NewClientBuilder().
 			WithObjects(pv).
 			Build()
@@ -114,7 +115,7 @@ var _ = Describe("Update Status", func() {
 		Expect(err).To(BeNil())
 		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
 		// make sure object was updated
-		Expect(pv.ResourceVersion).NotTo(Equal(""))
+		Expect(pv.ResourceVersion).NotTo(Equal("1000"))
 	})
 	It("updates status when resource is found; but not the object", func() {
 		// update status
@@ -122,7 +123,7 @@ var _ = Describe("Update Status", func() {
 		Expect(err).To(BeNil())
 		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
 		// make sure object was not updated
-		Expect(pv.ResourceVersion).To(Equal(""))
+		Expect(pv.ResourceVersion).To(Equal("999"))
 	})
 })
 
