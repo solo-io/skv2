@@ -15,7 +15,7 @@ import (
 // TransitionFunc performs a comparison of the the existing object with the desired object before a desired object is Upserted to kube storage.
 type TransitionFunc func(existing, desired runtime.Object) error
 
-// Easily Upsert a desired object to the cluster.
+// Upsert a desired object to the cluster.
 //
 // If the object exists, the provided TransitionFuncs will be called.
 // Resource version for the desired object will be set automatically.
@@ -28,6 +28,28 @@ func Upsert(
 	obj client.Object,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
+	return upsert(ctx, c, obj, false, transitionFuncs...)
+}
+
+// UpsertImmutable functions similarly to it's Upsert counterpart,
+// but it will copy obj before saving it.
+func UpsertImmutable(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+	transitionFuncs ...TransitionFunc,
+) (controllerutil.OperationResult, error) {
+	return upsert(ctx, c, obj, true, transitionFuncs...)
+}
+
+func upsert(
+	ctx context.Context,
+	c client.Client,
+	obj client.Object,
+	immutable bool,
+	transitionFuncs ...TransitionFunc,
+) (controllerutil.OperationResult, error) {
+
 	gvk, err := apiutil.GVKForObject(obj, c.Scheme())
 	if err != nil {
 		return controllerutil.OperationResultNone, err
@@ -38,14 +60,21 @@ func Upsert(
 	}
 	// Always valid because obj is client.Object
 	existing := newObj.(client.Object)
-
 	key := client.ObjectKeyFromObject(obj)
 	if err := c.Get(ctx, key, existing); err != nil {
 		if !errors.IsNotFound(err) {
 			return controllerutil.OperationResultNone, err
 		}
-		if err := c.Create(ctx, obj); err != nil {
-			return controllerutil.OperationResultNone, err
+		// If immutable copy the object before passing it into create, as create will
+		// modify the object in place with it's live counterpart.
+		if immutable {
+			if err := c.Create(ctx, obj.DeepCopyObject().(client.Object)); err != nil {
+				return controllerutil.OperationResultNone, err
+			}
+		} else {
+			if err := c.Create(ctx, obj); err != nil {
+				return controllerutil.OperationResultNone, err
+			}
 		}
 		return controllerutil.OperationResultCreated, nil
 	}
