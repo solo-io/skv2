@@ -115,7 +115,7 @@ var _ = Describe("Update Status", func() {
 		Expect(err).To(BeNil())
 		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
 		// make sure object was updated
-		Expect(pv.ResourceVersion).NotTo(Equal("1000"))
+		Expect(pv.ResourceVersion).To(Equal("1000"))
 	})
 	It("updates status when resource is found; but not the object", func() {
 		// update status
