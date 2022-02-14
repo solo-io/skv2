@@ -6,7 +6,75 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type GVKSelectorFunc = func(GVK schema.GroupVersionKind) bool
+type Selector struct {
+	// A GVK to match, this will be used as a selector to call IsSelected with all GVKs in a
+	// given snapshot
+	GVK *schema.GroupVersionKind
+}
+
+type ClusterSelector struct {
+	Selector
+
+	// A list of clusters to match, leave nil to include all
+	Clusters []string
+}
+
+func MatchesClusterSelector(cluster string, selector ClusterSelector) bool {
+	included := len(selector.Clusters) == 0
+	for _, v := range selector.Clusters {
+		if cluster == v {
+			included = true
+			break
+		}
+	}
+	return included
+}
+
+func downgradeClusterSelectors(selectors ...ClusterSelector) []Selector {
+	result := make([]Selector, len(selectors))
+	for idx, selector := range selectors {
+		selector := selector
+		result[idx] = selector.Selector
+	}
+	return result
+}
+
+// IsSelected returns true if `selector` selects `x`; otherwise, false.
+// If `selector` and `x` are the same, return true.
+// If `selector` is nil, it is considered a wildcard match, returning true.
+// If selector fields are empty, they are considered wildcards matching
+// anything in the corresponding fields, e.g.
+//
+// this item:
+//       <Group: "extensions", Version: "v1beta1", Kind: "Deployment">
+//
+// is selected by
+//       <Group: "",           Version: "",        Kind: "Deployment">
+//
+// but rejected by
+//       <Group: "apps",       Version: "",        Kind: "Deployment">
+//
+func IsSelected(selector *schema.GroupVersionKind, gvk schema.GroupVersionKind) bool {
+	if selector == nil {
+		return true
+	}
+	if len(selector.Group) > 0 {
+		if gvk.Group != selector.Group {
+			return false
+		}
+	}
+	if len(selector.Version) > 0 {
+		if gvk.Version != selector.Version {
+			return false
+		}
+	}
+	if len(selector.Kind) > 0 {
+		if gvk.Kind != selector.Kind {
+			return false
+		}
+	}
+	return true
+}
 
 // a typed object is a client.Object with a TypeMeta
 type TypedObject interface {
@@ -49,7 +117,7 @@ func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, o
 	}
 }
 
-func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
+func (s Snapshot) Clone(selectors ...Selector) Snapshot {
 	clone := Snapshot{}
 	for k, v := range s {
 		if len(selectors) == 0 {
@@ -58,7 +126,7 @@ func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
 		}
 		selected := false
 		for _, selector := range selectors {
-			if selector(k) {
+			if IsSelected(selector.GVK, k) {
 				selected = true
 				break
 			}
@@ -104,9 +172,11 @@ func (s ClusterSnapshot) ForEachObject(
 		return
 	}
 	for cluster, snap := range s {
-		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj TypedObject) {
-			handleObject(cluster, gvk, obj)
-		})
+		snap.ForEachObject(
+			func(gvk schema.GroupVersionKind, obj TypedObject) {
+				handleObject(cluster, gvk, obj)
+			},
+		)
 	}
 }
 
@@ -140,10 +210,21 @@ func (cs ClusterSnapshot) Delete(
 	cs[cluster] = snapshot
 }
 
-func (cs ClusterSnapshot) Clone(selectors ...GVKSelectorFunc) ClusterSnapshot {
+func (cs ClusterSnapshot) Clone(selectors ...ClusterSelector) ClusterSnapshot {
 	clone := ClusterSnapshot{}
 	for k, v := range cs {
-		clone[k] = v.Clone(selectors...)
+		// If no clusters, assume all
+		var included bool
+		for _, selector := range selectors {
+			if MatchesClusterSelector(k, selector) {
+				included = true
+				break
+			}
+		}
+		// only add if included
+		if included {
+			clone[k] = v.Clone(downgradeClusterSelectors(selectors...)...)
+		}
 	}
 	return clone
 }
