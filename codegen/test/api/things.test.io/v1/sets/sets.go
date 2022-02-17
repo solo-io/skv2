@@ -85,6 +85,7 @@ func (s *paintSet) List(filterResource ...func(*things_test_io_v1.Paint) bool) [
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*things_test_io_v1.Paint))
 		})
@@ -104,6 +105,7 @@ func (s *paintSet) UnsortedList(filterResource ...func(*things_test_io_v1.Paint)
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*things_test_io_v1.Paint))
 		})
@@ -304,6 +306,7 @@ func (s *clusterResourceSet) List(filterResource ...func(*things_test_io_v1.Clus
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*things_test_io_v1.ClusterResource))
 		})
@@ -323,6 +326,7 @@ func (s *clusterResourceSet) UnsortedList(filterResource ...func(*things_test_io
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*things_test_io_v1.ClusterResource))
 		})

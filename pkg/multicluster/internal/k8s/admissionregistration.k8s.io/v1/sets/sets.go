@@ -85,6 +85,7 @@ func (s *validatingWebhookConfigurationSet) List(filterResource ...func(*admissi
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		})
@@ -104,6 +105,7 @@ func (s *validatingWebhookConfigurationSet) UnsortedList(filterResource ...func(
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		})

@@ -85,6 +85,7 @@ func (s *customResourceDefinitionSet) List(filterResource ...func(*apiextensions
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		})
@@ -104,6 +105,7 @@ func (s *customResourceDefinitionSet) UnsortedList(filterResource ...func(*apiex
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		})

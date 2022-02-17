@@ -87,6 +87,7 @@ func (s *{{ $kindLowerCamel }}Set) List(filterResource ... func(*{{ $import_pref
     }
     var genericFilters []func(ezkube.ResourceId) bool
     for _, filter := range filterResource {
+        filter := filter
         genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
             return filter(obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
         })
@@ -106,6 +107,7 @@ func (s *{{ $kindLowerCamel }}Set) UnsortedList(filterResource ... func(*{{ $imp
     }
     var genericFilters []func(ezkube.ResourceId) bool
     for _, filter := range filterResource {
+        filter := filter
         genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
             return filter(obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
         })
