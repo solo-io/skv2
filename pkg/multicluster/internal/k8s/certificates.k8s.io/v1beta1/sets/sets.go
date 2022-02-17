@@ -85,6 +85,7 @@ func (s *certificateSigningRequestSet) List(filterResource ...func(*certificates
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		})
@@ -104,6 +105,7 @@ func (s *certificateSigningRequestSet) UnsortedList(filterResource ...func(*cert
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		})

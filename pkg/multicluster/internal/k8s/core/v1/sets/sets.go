@@ -85,6 +85,7 @@ func (s *secretSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*v1.Secret))
 		})
@@ -104,6 +105,7 @@ func (s *secretSet) UnsortedList(filterResource ...func(*v1.Secret) bool) []*v1.
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*v1.Secret))
 		})
@@ -304,6 +306,7 @@ func (s *serviceAccountSet) List(filterResource ...func(*v1.ServiceAccount) bool
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*v1.ServiceAccount))
 		})
@@ -323,6 +326,7 @@ func (s *serviceAccountSet) UnsortedList(filterResource ...func(*v1.ServiceAccou
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*v1.ServiceAccount))
 		})
@@ -523,6 +527,7 @@ func (s *namespaceSet) List(filterResource ...func(*v1.Namespace) bool) []*v1.Na
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*v1.Namespace))
 		})
@@ -542,6 +547,7 @@ func (s *namespaceSet) UnsortedList(filterResource ...func(*v1.Namespace) bool) 
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
+		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
 			return filter(obj.(*v1.Namespace))
 		})

@@ -66,6 +66,49 @@ var _ = Describe("PaintSet", func() {
 		Expect(setA.Has(paintA)).To(BeFalse())
 	})
 
+	It("should filter UnsortedList", func() {
+		setA.Insert(paintA, paintB, paintC)
+		Expect(setA.Has(paintA)).To(BeTrue())
+		filtered := setA.UnsortedList(func(p *v1.Paint) bool {
+			return p.Name == "nameA"
+		})
+		Expect(filtered).To(HaveLen(2))
+		Expect(filtered).To(ContainElements(paintB, paintC))
+	})
+
+	It("should double filter UnsortedList", func() {
+		setA.Insert(paintA, paintB, paintC)
+		Expect(setA.Has(paintA)).To(BeTrue())
+		filtered := setA.UnsortedList(func(p *v1.Paint) bool {
+			return p.Name == "nameA"
+		}, func(p *v1.Paint) bool {
+			return p.Name == "nameB"
+		})
+		Expect(filtered).To(HaveLen(1))
+		Expect(filtered).To(ContainElement(paintC))
+	})
+	It("should filter List", func() {
+		setA.Insert(paintA, paintB, paintC)
+		Expect(setA.Has(paintA)).To(BeTrue())
+		filtered := setA.List(func(p *v1.Paint) bool {
+			return p.Name == "nameA"
+		})
+		Expect(filtered).To(HaveLen(2))
+		Expect(filtered).To(ContainElements(paintB, paintC))
+	})
+
+	It("should double filter List", func() {
+		setA.Insert(paintA, paintB, paintC)
+		Expect(setA.Has(paintA)).To(BeTrue())
+		filtered := setA.List(func(p *v1.Paint) bool {
+			return p.Name == "nameA"
+		}, func(p *v1.Paint) bool {
+			return p.Name == "nameB"
+		})
+		Expect(filtered).To(HaveLen(1))
+		Expect(filtered).To(ContainElement(paintC))
+	})
+
 	It("should union two sets and return new set", func() {
 		setA.Insert(paintA, paintB)
 		setB.Insert(paintA, paintB, paintC)
