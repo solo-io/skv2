@@ -58,12 +58,10 @@ type addValue func(HelmValue)
 func GenerateHelmValuesDoc(s interface{}, topLevelKey string, topLevelDesc string) HelmValues {
 	var values []HelmValue
 	cfgT := reflect.ValueOf(s)
-
 	// If s is nil, we need to return early
 	if reflect.DeepEqual(cfgT, reflect.Value{}) {
 		return nil
 	}
-
 	addValue := func(v HelmValue) { values = append(values, v) }
 
 	var path []string
@@ -87,14 +85,7 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 	case reflect.Map:
 
 		// add entry for map itself
-		addValue(
-			HelmValue{
-				Key:          strings.Join(path, "."),
-				Type:         getMapType(typ),
-				DefaultValue: valToString(val),
-				Description:  desc,
-			},
-		)
+		addValue(HelmValue{Key: strings.Join(path, "."), Type: getMapType(typ), DefaultValue: valToString(val), Description: desc})
 
 		if typ.Key().Kind() == reflect.String {
 			docReflect(addValue, append(path, "<MAP_KEY>"), desc, typ.Elem(), reflect.Value{})
@@ -102,11 +93,9 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 			if (val != reflect.Value{}) {
 				// sort map keys for deterministic generation
 				sortedKeys := val.MapKeys()
-				sort.Slice(
-					sortedKeys, func(i, j int) bool {
-						return sortedKeys[i].String() < sortedKeys[j].String()
-					},
-				)
+				sort.Slice(sortedKeys, func(i, j int) bool {
+					return sortedKeys[i].String() < sortedKeys[j].String()
+				})
 
 				for _, k := range sortedKeys {
 					elemPath := append(path, k.String())
@@ -114,14 +103,7 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 					if typ.Elem().Kind() <= reflect.Float64 || typ.Elem().Kind() == reflect.String {
 						// primitive type, print it as default value
 						valStr := valToString(defaultVal)
-						addValue(
-							HelmValue{
-								Key:          strings.Join(elemPath, "."),
-								Type:         typ.Elem().Kind().String(),
-								DefaultValue: valStr,
-								Description:  desc,
-							},
-						)
+						addValue(HelmValue{Key: strings.Join(elemPath, "."), Type: typ.Elem().Kind().String(), DefaultValue: valStr, Description: desc})
 					} else {
 						// non primitive type, descend
 						docReflect(addValue, elemPath, desc, typ.Elem(), defaultVal)
@@ -134,28 +116,14 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 		path[lst] = path[lst] + "[]"
 
 		// add entry for slice field itself
-		addValue(
-			HelmValue{
-				Key:          strings.Join(path, "."),
-				Type:         "[]" + typ.Elem().Kind().String(),
-				DefaultValue: valToString(val),
-				Description:  desc,
-			},
-		)
+		addValue(HelmValue{Key: strings.Join(path, "."), Type: "[]" + typ.Elem().Kind().String(), DefaultValue: valToString(val), Description: desc})
 
 		docReflect(addValue, path, desc, typ.Elem(), reflect.Value{})
 	case reflect.Struct:
 
 		// add entry for struct field itself, ignoring the top level struct
 		if len(path) > 0 {
-			addValue(
-				HelmValue{
-					Key:          strings.Join(path, "."),
-					Type:         typ.Kind().String(),
-					DefaultValue: valToString(val),
-					Description:  desc,
-				},
-			)
+			addValue(HelmValue{Key: strings.Join(path, "."), Type: typ.Kind().String(), DefaultValue: valToString(val), Description: desc})
 		}
 
 		for i := 0; i < typ.NumField(); i++ {
@@ -198,14 +166,7 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 			docReflect(addValue, fieldPath, desc, field.Type, fieldVal)
 		}
 	default:
-		addValue(
-			HelmValue{
-				Key:          strings.Join(path, "."),
-				Type:         typ.Kind().String(),
-				DefaultValue: valToString(val),
-				Description:  desc,
-			},
-		)
+		addValue(HelmValue{Key: strings.Join(path, "."), Type: typ.Kind().String(), DefaultValue: valToString(val), Description: desc})
 	}
 }
 
