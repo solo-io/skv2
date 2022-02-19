@@ -58,6 +58,10 @@ type addValue func(HelmValue)
 func GenerateHelmValuesDoc(s interface{}, topLevelKey string, topLevelDesc string) HelmValues {
 	var values []HelmValue
 	cfgT := reflect.ValueOf(s)
+	// If s is nil, we need to return early
+	if reflect.DeepEqual(cfgT, reflect.Value{}) {
+		return nil
+	}
 	addValue := func(v HelmValue) { values = append(values, v) }
 
 	var path []string
