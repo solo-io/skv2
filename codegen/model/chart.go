@@ -54,6 +54,9 @@ type Operator struct {
 
 	// set up an additional service for an admin service
 	AdminService AdminService
+
+	// Custom values to include at operator level
+	Values interface{}
 }
 
 // values for Deployment template
@@ -169,6 +172,7 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 				ServicePorts:        servicePorts,
 				Enabled:             true,
 			},
+			CustomValues: operator.Values,
 		})
 	}
 

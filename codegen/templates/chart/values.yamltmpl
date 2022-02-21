@@ -7,4 +7,7 @@
 [[ range $_, $operator := $values.Operators ]]
 [[ lower_camel $operator.Name ]]:
 [[ toYaml $operator.Values | indent 2]]
+[[- if $operator.CustomValues ]]
+[[ toYaml $operator.CustomValues | indent 2 ]]
+[[- end ]]
 [[- end ]]
