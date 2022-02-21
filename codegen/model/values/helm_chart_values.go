@@ -12,8 +12,9 @@ type UserHelmValues struct {
 }
 
 type UserOperatorValues struct {
-	Name   string
-	Values UserValues
+	Name         string
+	Values       UserValues
+	CustomValues interface{}
 }
 
 // document values structure for an operator
