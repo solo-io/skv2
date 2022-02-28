@@ -31,7 +31,7 @@ type Chart struct {
 	// Only generate the chart
 	ChartOnly bool
 
-	// if specified, generate refernece docs for the chart values to the provided filename
+	// if specified, generate reference docs for the chart values to the provided filename
 	ValuesReferenceDocs ValuesReferenceDocs
 }
 
@@ -197,6 +197,7 @@ func (c Chart) GenerateHelmDoc() string {
 			values.Sidecars[name] = container
 		}
 
+		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(operatorWithValues.CustomValues, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
 
