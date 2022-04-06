@@ -124,6 +124,10 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 		ExpandReferences:   true,
 		UnstructuredFields: unstructuredFieldsMap,
 	}
+	if grp.SkipSchemaDescriptions {
+		// returning empty from this func results in no description field being added
+		generator.DescriptionFunc = func(_ cue.Value) string { return "" }
+	}
 	built := cue.Build(instances)
 	for _, builtInstance := range built {
 		// Avoid generating openapi for irrelevant proto imports.

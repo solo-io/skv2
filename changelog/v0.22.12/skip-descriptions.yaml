@@ -1,0 +1,6 @@
+changelog:
+  - type: NEW_FEATURE
+    description: >
+      Add a new `SkipSchemaDescriptions` flag for Groups. If set to true, descriptions will
+      not be included in generated openapi schemas. This can be used to reduce CRD size.
+    issueLink: https://github.com/solo-io/skv2/issues/333
