@@ -750,6 +750,11 @@ var _ = Describe("Cmd", func() {
 			}
 		})
 
+		AfterEach(func() {
+			err := os.Remove(crdFilePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
 		It("can include field descriptions", func() {
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
