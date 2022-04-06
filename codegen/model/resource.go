@@ -68,6 +68,10 @@ type Group struct {
 	// Should we generate validating schemas for CRDs?
 	RenderValidationSchemas bool
 
+	// Should we exclude descriptions in the validation schemas?
+	// Set this to true to make the CRD size smaller.
+	SkipSchemaDescriptions bool
+
 	// Should we generate deepcopy functions for non-proto Spec/Status fields?
 	RenderFieldJsonDeepcopy bool
 
