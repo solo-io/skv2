@@ -614,7 +614,6 @@ var _ = Describe("Cmd", func() {
 		Expect(*renderedDeployment.Spec.Replicas).To(Equal(replicas))
 	})
 	Context("generates CRD with validation schema for a proto file", func() {
-		crdFilePath := filepath.Join(util.GetModuleRoot(), "codegen/test/chart/crds/things.test.io_v1_crds.yaml")
 		var cmd *Command
 
 		BeforeEach(func() {
@@ -750,12 +749,9 @@ var _ = Describe("Cmd", func() {
 			}
 		})
 
-		AfterEach(func() {
-			err := os.Remove(crdFilePath)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
 		It("can include field descriptions", func() {
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -765,6 +761,11 @@ var _ = Describe("Cmd", func() {
 		})
 
 		It("can exclude field descriptions", func() {
+			// write this manifest to a different dir to avoid modifying the crd file from the
+			// above test, which other tests seem to depend on
+			cmd.ManifestRoot = "codegen/test/chart-no-desc"
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+
 			cmd.Groups[0].SkipSchemaDescriptions = true
 
 			err := cmd.Execute()
