@@ -1,0 +1,3 @@
+changelog:
+  - type: FIX
+    description: Wrap reconcile error instead of logging before returning to avoid reduntant error logging
