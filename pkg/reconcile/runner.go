@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rotisserie/eris"
+
 	"github.com/solo-io/skv2/pkg/verifier"
 
 	"github.com/go-logr/logr"
@@ -203,8 +205,7 @@ func (ec *runnerReconciler) Reconcile(ctx context.Context, request Request) (rec
 
 	result, err := ec.reconciler.Reconcile(obj)
 	if err != nil {
-		logger.Error(err, "handler error. retrying")
-		return result, err
+		return result, eris.Wrap(err, "handler error. retrying")
 	}
 	logger.V(2).Info("handler success.", "result", result)
 
