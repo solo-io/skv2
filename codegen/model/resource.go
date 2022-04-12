@@ -158,6 +158,9 @@ type Resource struct {
 
 	// The set of additional printer columns to apply to the CustomResourceDefinition
 	AdditionalPrinterColumns []apiextv1.CustomResourceColumnDefinition
+
+	// Custom properties used for custom templates
+	Properties
 }
 
 type Field struct {
