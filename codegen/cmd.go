@@ -153,7 +153,7 @@ func (c Command) Execute() error {
 	}
 
 	for _, template := range c.TopLevelTemplates {
-		if err := c.generateTopLevelTemplates(template); err != nil {
+		if err := c.generateTopLevelTemplates(template, groups); err != nil {
 			return err
 		}
 	}
@@ -277,14 +277,14 @@ func (c Command) generateGroup(
 	return nil
 }
 
-func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) error {
+func (c Command) generateTopLevelTemplates(templates model.CustomTemplates, groups []*model.Group) error {
 
 	fileWriter := &writer.DefaultFileWriter{
 		Root:   c.moduleRoot,
 		Header: c.GeneratedHeader,
 	}
 
-	customCode, err := render.DefaultTemplateRenderer.RenderCustomTemplates(templates.Templates, templates.Funcs, c.Groups)
+	customCode, err := render.DefaultTemplateRenderer.RenderCustomTemplates(templates.Templates, templates.Funcs, groups)
 	if err != nil {
 		return err
 	}
