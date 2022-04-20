@@ -143,17 +143,20 @@ func (c Command) Execute() error {
 		group := group // pike
 		groups = append(groups, &group)
 	}
-	for _, group := range groups {
+	for i, group := range groups {
 		group := group // pike
 		c.initGroup(group, descriptors)
 
 		if err := c.generateGroup(*group, protoOpts); err != nil {
 			return err
 		}
+
+		// replace group in Groups array with the group including generated fields
+		c.Groups[i] = *group
 	}
 
 	for _, template := range c.TopLevelTemplates {
-		if err := c.generateTopLevelTemplates(template, groups); err != nil {
+		if err := c.generateTopLevelTemplates(template); err != nil {
 			return err
 		}
 	}
@@ -277,14 +280,14 @@ func (c Command) generateGroup(
 	return nil
 }
 
-func (c Command) generateTopLevelTemplates(templates model.CustomTemplates, groups []*model.Group) error {
+func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) error {
 
 	fileWriter := &writer.DefaultFileWriter{
 		Root:   c.moduleRoot,
 		Header: c.GeneratedHeader,
 	}
 
-	customCode, err := render.DefaultTemplateRenderer.RenderCustomTemplates(templates.Templates, templates.Funcs, groups)
+	customCode, err := render.DefaultTemplateRenderer.RenderCustomTemplates(templates.Templates, templates.Funcs, c.Groups)
 	if err != nil {
 		return err
 	}
