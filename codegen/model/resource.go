@@ -156,6 +156,9 @@ type Resource struct {
 	// Set the short name of the resource
 	ShortNames []string
 
+	// Set the categories of the resource
+	Categories []string
+
 	// The set of additional printer columns to apply to the CustomResourceDefinition
 	AdditionalPrinterColumns []apiextv1.CustomResourceColumnDefinition
 }
