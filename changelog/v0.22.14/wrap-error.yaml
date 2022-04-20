@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Update the groups passed throughout codegen after it's been properly
+      initialized with proto value.
