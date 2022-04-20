@@ -143,13 +143,16 @@ func (c Command) Execute() error {
 		group := group // pike
 		groups = append(groups, &group)
 	}
-	for _, group := range groups {
+	for i, group := range groups {
 		group := group // pike
 		c.initGroup(group, descriptors)
 
 		if err := c.generateGroup(*group, protoOpts); err != nil {
 			return err
 		}
+
+		// replace group in Groups array with the group including generated fields
+		c.Groups[i] = *group
 	}
 
 	for _, template := range c.TopLevelTemplates {
