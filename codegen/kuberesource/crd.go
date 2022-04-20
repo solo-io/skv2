@@ -167,6 +167,7 @@ func CustomResourceDefinition(
 				Kind:       kind,
 				ShortNames: resource.ShortNames,
 				ListKind:   kind + "List",
+				Categories: resource.Categories,
 			},
 		},
 	}
