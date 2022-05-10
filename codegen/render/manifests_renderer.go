@@ -2,7 +2,6 @@ package render
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -171,7 +170,7 @@ func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[stri
 	defaultGoPkg := util.GoPackage(grp)
 	for _, res := range grp.Resources {
 		unstructuredSpecFields, err := opts.GetUnstructuredFields(
-			ifDefined(res.Spec.Type.ProtoPackage, defaultProtoPkg)
+			ifDefined(res.Spec.Type.ProtoPackage, defaultProtoPkg),
 			res.Spec.Type.Name,
 		)
 		if err != nil {
