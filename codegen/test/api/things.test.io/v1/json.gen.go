@@ -23,7 +23,6 @@ var (
 	marshaller = &skv2jsonpb.Marshaler{}
 	unmarshaller = &jsonpb.Unmarshaler{}
 )
-
 // MarshalJSON is a custom marshaler for PaintSpec
 func (this *PaintSpec) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
@@ -44,7 +43,6 @@ func (this *PaintStatus) MarshalJSON() ([]byte, error) {
 func (this *PaintStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
-
 // MarshalJSON is a custom marshaler for ClusterResourceSpec
 func (this *ClusterResourceSpec) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)

@@ -24,6 +24,7 @@ var (
 
 {{- range $resource := $.Resources }}
 
+{{- if or (eq $resource.Spec.Type.GoPackage "") (eq $resource.Spec.Type.GoPackage $.RootGoPackage)}}
 // MarshalJSON is a custom marshaler for {{ $resource.Spec.Type.Name }}
 func (this *{{ $resource.Spec.Type.Name }}) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
@@ -34,9 +35,11 @@ func (this *{{ $resource.Spec.Type.Name }}) MarshalJSON() ([]byte, error) {
 func (this *{{ $resource.Spec.Type.Name }}) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+{{- end }}
 
 
 {{- if $resource.Status }}
+{{- if or (eq $resource.Status.Type.GoPackage "") (eq $resource.Status.Type.GoPackage $.RootGoPackage) }}
 // MarshalJSON is a custom marshaler for {{ $resource.Status.Type.Name }}
 func (this *{{ $resource.Status.Type.Name }}) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
@@ -47,6 +50,7 @@ func (this *{{ $resource.Status.Type.Name }}) MarshalJSON() ([]byte, error) {
 func (this *{{ $resource.Status.Type.Name }}) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+{{- end }}
 {{- end }}
 
 {{- end }}

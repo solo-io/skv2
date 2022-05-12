@@ -123,23 +123,11 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 			},
 		}
 		packageName := filepath.Base(pkgForGroup)
-		rootGoPackage  := filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String())
-
-
-		// We can only define DeepCopy methods for types defined in the same package as the root,
-		// so elide resources that neither hace a spec nor a status in the root pkg (a rare edge case)
-		var resources []model.Resource
-		for  _, r := range grp.Resources {
-			if (r.Spec.Type.GoPackage != "" && r.Spec.Type.GoPackage != rootGoPackage) &&
-				(r.Status == nil || (r.Status.Type.GoPackage != "" && r.Status.Type.GoPackage != rootGoPackage)) {
-					continue
-				}
-			resources = append(resources, r)
-		}
+		rootGoPackage := filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String())
 
 		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
 			Descriptors:      grp.Descriptors,
-			Resources:        resources,
+			Resources:        specOrStatusInRootPkg(grp.Resources, rootGoPackage),
 			PackageName:      packageName,
 			RootGoPackage:    rootGoPackage,
 			goPackageToMatch: pkgForGroup,
@@ -173,12 +161,14 @@ func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
 		}
 		packageName := filepath.Base(pkgForGroup)
 
+		rootGoPackage := filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String())
+
 		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
 			Descriptors:      grp.Descriptors,
-			Resources:        grp.Resources,
+			Resources:        specOrStatusInRootPkg(grp.Resources, rootGoPackage),
 			PackageName:      packageName,
 			GroupName:        grp.Group,
-			RootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			RootGoPackage:    rootGoPackage,
 			goPackageToMatch: pkgForGroup,
 		})
 		if err != nil {
@@ -213,4 +203,19 @@ func uniqueGoImportPathsForGroup(grp Group) []string {
 	}
 	sort.Strings(result)
 	return result
+}
+
+// We can only define methods for types defined in the same package as the root,
+// so elide resources that neither hace a spec nor a status in the root pkg (a rare edge case)
+func specOrStatusInRootPkg(unfiltered []model.Resource, rootGoPackage string) []model.Resource {
+	var resources []model.Resource
+	for _, r := range unfiltered {
+		if (r.Spec.Type.GoPackage != "" && r.Spec.Type.GoPackage != rootGoPackage) &&
+			(r.Status == nil || (r.Status.Type.GoPackage != "" && r.Status.Type.GoPackage != rootGoPackage)) {
+			continue
+		}
+		resources = append(resources, r)
+	}
+
+	return resources
 }
