@@ -32,6 +32,7 @@ preferences: {}
 users:
 - name: test-name
   user:
+    as-user-extra: null
     token: alphanumericgarbage
 `
 		namespace     = "secret-namespace"
@@ -64,6 +65,7 @@ users:
 			}
 			secret, err := ToSecret(namespace, clusterName, expectedLabels, *config)
 			Expect(err).NotTo(HaveOccurred())
+			fmt.Printf(string(secret.Data["kubeconfig"]))
 			Expect(secret).To(Equal(expectedSecret))
 		})
 
