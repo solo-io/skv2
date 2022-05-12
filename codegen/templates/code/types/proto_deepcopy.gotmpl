@@ -23,7 +23,7 @@ func (in *{{ $resource.Spec.Type.Name }}) DeepCopyInto(out *{{ $resource.Spec.Ty
 {{- end }}
 
 {{- if $resource.Status }}
-{{- if or (eq $resource.Spec.Type.GoPackage "") (eq $resource.Spec.Type.GoPackage $.RootGoPackage) }}
+{{- if or (eq $resource.Status.Type.GoPackage "") (eq $resource.Status.Type.GoPackage $.RootGoPackage) }}
 // DeepCopyInto for the {{ $resource.Kind }}.Status
 func (in *{{ $resource.Status.Type.Name }}) DeepCopyInto(out *{{ $resource.Status.Type.Name }}) {
     var p *{{ $resource.Status.Type.Name }}
