@@ -8,7 +8,6 @@ import (
     proto "github.com/golang/protobuf/proto"
 	"github.com/solo-io/protoc-gen-ext/pkg/clone"
 )
-
 // DeepCopyInto for the Paint.Spec
 func (in *PaintSpec) DeepCopyInto(out *PaintSpec) {
     var p *PaintSpec
@@ -29,7 +28,6 @@ func (in *PaintStatus) DeepCopyInto(out *PaintStatus) {
     }
     *out = *p
 }
-
 // DeepCopyInto for the ClusterResource.Spec
 func (in *ClusterResourceSpec) DeepCopyInto(out *ClusterResourceSpec) {
     var p *ClusterResourceSpec

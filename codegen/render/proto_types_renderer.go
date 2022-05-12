@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/skv2/codegen/collector"
+	"github.com/solo-io/skv2/codegen/model"
 )
 
 // renders kubernetes from templates
@@ -73,7 +74,7 @@ type descriptorsWithGopath struct {
 	// group name
 	GroupName string
 	// go package of the group api root
-	rootGoPackage string
+	RootGoPackage string
 	// full go package which the template render funcs will use to match against the
 	// set of descriptors to find the relevant messages
 	goPackageToMatch string
@@ -108,6 +109,7 @@ func (grp descriptorsWithGopath) getUniqueDescriptorsWithPath() []*collector.Des
 
 	Any other package name is than rendered to the relative path supplied.
 */
+
 func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 	var result []OutFile
 	for _, pkgForGroup := range uniqueGoImportPathsForGroup(grp) {
@@ -121,12 +123,25 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 			},
 		}
 		packageName := filepath.Base(pkgForGroup)
+		rootGoPackage  := filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String())
+
+
+		// We can only define DeepCopy methods for types defined in the same package as the root,
+		// so elide resources that neither hace a spec nor a status in the root pkg (a rare edge case)
+		var resources []model.Resource
+		for  _, r := range grp.Resources {
+			if (r.Spec.Type.GoPackage != "" && r.Spec.Type.GoPackage != rootGoPackage) &&
+				(r.Status == nil || (r.Status.Type.GoPackage != "" && r.Status.Type.GoPackage != rootGoPackage)) {
+					continue
+				}
+			resources = append(resources, r)
+		}
 
 		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
 			Descriptors:      grp.Descriptors,
-			Resources:        grp.Resources,
+			Resources:        resources,
 			PackageName:      packageName,
-			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			RootGoPackage:    rootGoPackage,
 			goPackageToMatch: pkgForGroup,
 		})
 		if err != nil {
@@ -163,7 +178,7 @@ func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
 			Resources:        grp.Resources,
 			PackageName:      packageName,
 			GroupName:        grp.Group,
-			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			RootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
 			goPackageToMatch: pkgForGroup,
 		})
 		if err != nil {

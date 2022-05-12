@@ -69,6 +69,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"type_name": func(t model.Type, g model.Group) string {
+			// If the type's go package isn't the current package, give its package name an alias (don't dot import!)
 			if t.GoPackage != "" && t.GoPackage != util.GoPackage(g) {
 				return fmt.Sprintf("%s.%s", util.AliasFor(t.GoPackage), t.Name)
 			}
