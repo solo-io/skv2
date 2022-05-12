@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/gobuffalo/packr"
+	"github.com/rotisserie/eris"
 )
 
 // exported interface for using to render templates
@@ -68,7 +69,7 @@ func (r templateRenderer) RenderCustomTemplates(customTemplates map[string]strin
 	for outPath, templateText := range customTemplates {
 		content, err := r.executeTemplate(outPath, templateText, customFuncs, data)
 		if err != nil {
-			return nil, err
+			return nil, eris.Wrapf(err, "error executing template for %s", outPath)
 		}
 		out := OutFile{
 			Path:    outPath,
