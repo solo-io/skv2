@@ -55,7 +55,7 @@ jobs:
           ./ci/setup-kind.sh skv2-test-remote
       - uses: azure/setup-kubectl@v1
         with:
-          version: 'v1.18.0'
+          version: 'v1.23.d'
       - uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
