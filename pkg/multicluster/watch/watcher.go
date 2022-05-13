@@ -94,7 +94,14 @@ func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
 	go func() {
 		err := mgr.Start(ctx)
 		if err != nil {
-			contextutils.LoggerFrom(ctx).DPanicf("manager start failed for cluster %v: %v", clusterName, err)
+			/* err has been downgraded from DPanicf --> Errorf.  This case is encountered consistently in `gloo` when a client
+			   attempts to run `glooctl cluster register` on a cluster that _does not contain_ a `gloo` install.  Previously, this would put
+			   the `gloo-fed` pod into a failure state, which prevented...
+			   	* new clusters from being registered
+				* old cluster from successfully being registered
+			*/
+			contextutils.LoggerFrom(ctx).Errorf("manager start failed for cluster %v: %v.  This is likely because a `gloo` instance is not installed to %v.  Recommendation:  run `glooctl cluster deregister --cluster-name=kind-remote` to deregisted the failed `remote`, install `gloo`, then attempt again.", clusterName, err, clusterName)
+			return
 		}
 	}()
 
