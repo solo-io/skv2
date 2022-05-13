@@ -65,7 +65,6 @@ users:
 			}
 			secret, err := ToSecret(namespace, clusterName, expectedLabels, *config)
 			Expect(err).NotTo(HaveOccurred())
-			fmt.Printf(string(secret.Data["kubeconfig"]))
 			Expect(secret).To(Equal(expectedSecret))
 		})
 
