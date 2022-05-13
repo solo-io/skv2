@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 	sync "sync"
 
-	any1 "github.com/golang/protobuf/ptypes/any"
+	any "github.com/golang/protobuf/ptypes/any"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	_ "github.com/solo-io/cue/encoding/protobuf/cue"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -83,7 +83,7 @@ type PaintSpec struct {
 	//	*PaintSpec_Acrylic
 	//	*PaintSpec_Oil
 	PaintType  isPaintSpec_PaintType `protobuf_oneof:"paintType"`
-	MyFavorite *any1.Any             `protobuf:"bytes,4,opt,name=my_favorite,json=myFavorite,proto3" json:"my_favorite,omitempty"`
+	MyFavorite *any.Any              `protobuf:"bytes,4,opt,name=my_favorite,json=myFavorite,proto3" json:"my_favorite,omitempty"`
 	// OpenAPI gen test for recursive fields
 	RecursiveType *PaintSpec_RecursiveType `protobuf:"bytes,5,opt,name=recursive_type,json=recursiveType,proto3" json:"recursive_type,omitempty"`
 }
@@ -148,7 +148,7 @@ func (x *PaintSpec) GetOil() *OilType {
 	return nil
 }
 
-func (x *PaintSpec) GetMyFavorite() *any1.Any {
+func (x *PaintSpec) GetMyFavorite() *any.Any {
 	if x != nil {
 		return x.MyFavorite
 	}
@@ -728,7 +728,7 @@ var file_github_com_solo_io_skv2_codegen_test_test_api_proto_goTypes = []interfa
 	(*PaintSpec_RecursiveType)(nil), // 7: things.test.io.PaintSpec.RecursiveType
 	nil,                             // 8: things.test.io.PaintStatus.NearbyPaintsEntry
 	(*PaintStatus_Location)(nil),    // 9: things.test.io.PaintStatus.Location
-	(*any1.Any)(nil),                // 10: google.protobuf.Any
+	(*any.Any)(nil),                 // 10: google.protobuf.Any
 	(*wrappers.StringValue)(nil),    // 11: google.protobuf.StringValue
 }
 var file_github_com_solo_io_skv2_codegen_test_test_api_proto_depIdxs = []int32{
