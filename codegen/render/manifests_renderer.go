@@ -332,10 +332,10 @@ func removeProtoAnyValidation(d map[string]interface{}) {
 	}
 }
 
-func ifDefined(val, defaultVal string) string {
+func ifDefined(val, defaultValue string) string {
 	if val != "" {
 		return val
 	}
 
-	return defaultVal
+	return defaultValue
 }
