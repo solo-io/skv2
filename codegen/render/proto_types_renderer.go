@@ -206,7 +206,7 @@ func uniqueGoImportPathsForGroup(grp Group) []string {
 }
 
 // We can only define methods for types defined in the same package as the root,
-// so elide resources that neither hace a spec nor a status in the root pkg (a rare edge case)
+// so elide resources that neither have a spec nor a status in the root pkg (a rare edge case)
 func specOrStatusInRootPkg(unfiltered []model.Resource, rootGoPackage string) []model.Resource {
 	var resources []model.Resource
 	for _, r := range unfiltered {
