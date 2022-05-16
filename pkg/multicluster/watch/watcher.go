@@ -100,8 +100,8 @@ func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
 			   	* new clusters from being registered
 				* old cluster from successfully being registered
 			*/
+			contextutils.LoggerFrom(ctx).Debug("grep me | if you see this, you are in debug mode, which explains the panic")
 			contextutils.LoggerFrom(ctx).Errorf("manager start failed for cluster %v: %v.  This is likely because a `gloo` instance is not installed to %v.  Recommendation:  run `glooctl cluster deregister --cluster-name=kind-remote` to deregisted the failed `remote`, install `gloo`, then attempt again.", clusterName, err)
-			return
 		}
 	}()
 
