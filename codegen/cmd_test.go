@@ -144,13 +144,14 @@ var _ = Describe("Cmd", func() {
 			},
 			AnyVendorConfig: skv2Imports,
 			RenderProtos:    true,
+			ManifestRoot:    "codegen/test/chart",
 		}
 
 		err := cmd.Execute()
 		Expect(err).NotTo(HaveOccurred())
 
 		// Make sure all generated code compiles
-		err = exec.Command("go", "build", "codegen/test/api/otherthings.test.io/v1/...").Run()
+		err = exec.Command("go", "build", "codegen/test/api/other.things.test.io/v1/...").Run()
 		Expect(err).NotTo(HaveOccurred())
 	})
 
