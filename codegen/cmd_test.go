@@ -110,6 +110,50 @@ var _ = Describe("Cmd", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	// note that there is no .proto file this is generated from; it simply pulls in field definitions
+	// from other packages
+	It("allows fields from other packages", func() {
+
+		// note that there is no .proto file this is generated from; it simply pulls in field definitions
+		// from other packages
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "other.things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "KubernetesCluster",
+							Spec:   Field{Type: Type{
+								Name: "KubernetesCluster",
+								GoPackage: "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1",
+							}},
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		// Make sure all generated code compiles
+		err = exec.Command("go", "build", "codegen/test/api/otherthings.test.io/v1/...").Run()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
 	DescribeTable("configuring the runAsUser value",
 		func(floatingUserId bool, runAsUser, expectedRunAsUser int) {
 			cmd := &Command{
