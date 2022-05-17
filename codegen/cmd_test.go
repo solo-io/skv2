@@ -126,9 +126,9 @@ var _ = Describe("Cmd", func() {
 					Module: "github.com/solo-io/skv2",
 					Resources: []Resource{
 						{
-							Kind:   "KubernetesCluster",
-							Spec:   Field{Type: Type{
-								Name: "KubernetesCluster",
+							Kind: "KubernetesCluster",
+							Spec: Field{Type: Type{
+								Name:      "KubernetesCluster",
 								GoPackage: "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1",
 							}},
 						},
