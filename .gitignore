@@ -1,6 +1,7 @@
 # build artifacts
 _output/
 vendor*/
+other.things.test.io*
 
 .idea/
 .vscode/

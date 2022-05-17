@@ -6,7 +6,7 @@ import (
     "k8s.io/apimachinery/pkg/runtime/schema"
 
 {{- range $import := imports_for_group . }}
-    . "{{ $import }}"
+    {{ alias_for $import }} "{{ $import }}"
 {{ end -}}
 )
 
@@ -35,9 +35,9 @@ type {{ $resource.Kind }} struct {
     metav1.TypeMeta   `json:",inline"`
     metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec {{ $resource.Spec.Type.Name }} `json:"spec,omitempty"`
+    Spec {{ type_name $resource.Spec.Type $resource.Group }} `json:"spec,omitempty"`
 {{- if $resource.Status }}
-    Status {{ $resource.Status.Type.Name }} `json:"status,omitempty"`
+    Status {{ type_name $resource.Status.Type $resource.Group }} `json:"status,omitempty"`
 {{- end }}
 }
 

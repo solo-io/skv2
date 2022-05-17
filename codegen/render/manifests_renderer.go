@@ -166,25 +166,27 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[string][][]string, error) {
 
 	unstructuredFields := map[string][][]string{}
-	protoPkg := grp.Group
-	goPkg := util.GoPackage(grp)
+	defaultProtoPkg := grp.Group
+	defaultGoPkg := util.GoPackage(grp)
 	for _, res := range grp.Resources {
 		unstructuredSpecFields, err := opts.GetUnstructuredFields(
-			protoPkg,
+			ifDefined(res.Spec.Type.ProtoPackage, defaultProtoPkg),
 			res.Spec.Type.Name,
 		)
 		if err != nil {
 			return nil, err
 		}
+		goPkg := ifDefined(res.Spec.Type.GoPackage, defaultGoPkg)
 		unstructuredFields[goPkg] = append(unstructuredFields[goPkg], unstructuredSpecFields...)
 		if res.Status != nil {
 			unstructuredStatusFields, err := opts.GetUnstructuredFields(
-				protoPkg,
+				ifDefined(res.Status.Type.ProtoPackage, defaultProtoPkg),
 				res.Status.Type.Name,
 			)
 			if err != nil {
 				return nil, err
 			}
+			goPkg := ifDefined(res.Status.Type.GoPackage, defaultGoPkg)
 			if len(unstructuredStatusFields) > 0 {
 				unstructuredFields[goPkg] = append(unstructuredFields[goPkg], unstructuredStatusFields...)
 			}
@@ -328,4 +330,12 @@ func removeProtoAnyValidation(d map[string]interface{}) {
 		// see https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#specifying-a-structural-schema
 		values["x-kubernetes-preserve-unknown-fields"] = true
 	}
+}
+
+func ifDefined(val, defaultValue string) string {
+	if val != "" {
+		return val
+	}
+
+	return defaultValue
 }

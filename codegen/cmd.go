@@ -157,7 +157,7 @@ func (c Command) Execute() error {
 
 	for _, template := range c.TopLevelTemplates {
 		if err := c.generateTopLevelTemplates(template); err != nil {
-			return err
+			return eris.Wrap(err, "could not generate toplevel template")
 		}
 	}
 
