@@ -184,7 +184,7 @@ func valToString(val reflect.Value) string {
 			valStr = fmt.Sprint(val.Uint())
 		case reflect.Ptr:
 			return valToString(val.Elem())
-		case reflect.Slice, reflect.Struct:
+		case reflect.Slice, reflect.Struct, reflect.Map:
 			j, err := json.Marshal(val.Interface())
 			if err != nil {
 				contextutils.LoggerFrom(context.Background()).Warnf("failed to marshal value to json: %v", err)
