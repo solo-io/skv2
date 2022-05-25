@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/3877
+    resolvesIssue: false
+    description: >
+      When generating helm docs with mapped custom values, print them out explicitly.
