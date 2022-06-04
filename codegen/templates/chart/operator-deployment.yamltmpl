@@ -103,6 +103,9 @@ spec:
             memory: 256Mi
 {{- end}}
         securityContext:
+{{- if and (ne nil [[ $containerVar ]].securityContext) (ge 0 (len [[ $containerVar ]].securityContext)) }}
+{{ toYaml [[ $containerVar ]].securityContext | indent 10}}
+{{- else}}
           runAsNonRoot: true
           {{- if not $[[ $operatorVar ]].floatingUserId }}
           runAsUser: {{ printf "%.0f" (float64 $[[ $operatorVar ]].runAsUser) }}
@@ -112,6 +115,7 @@ spec:
           capabilities:
             drop:
             - ALL
+{{- end}}
 [[- if $container.ReadinessProbe ]]
         readinessProbe:
 [[ toYaml $container.ReadinessProbe | indent 10 ]]
