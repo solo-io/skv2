@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Allows the default container security context to be overriden.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/4000
+    resolvesIssue: false 
