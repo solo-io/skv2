@@ -103,7 +103,7 @@ spec:
             memory: 256Mi
 {{- end}}
         securityContext:
-{{- if and (ne nil [[ $containerVar ]].securityContext) (ge 0 (len [[ $containerVar ]].securityContext)) }}
+{{- if or ([[ $containerVar ]].securityContext) (eq "map[string]interface {}" (printf "%T" [[ $containerVar ]].securityContext)) }}
 {{ toYaml [[ $containerVar ]].securityContext | indent 10}}
 {{- else}}
           runAsNonRoot: true
