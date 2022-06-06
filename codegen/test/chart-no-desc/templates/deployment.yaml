@@ -62,6 +62,9 @@ spec:
             memory: 256Mi
 {{- end}}
         securityContext:
+{{- if or ($painter.securityContext) (eq "map[]" (printf "%v" $painter.securityContext)) }}
+{{ toYaml $painter.securityContext | indent 10}}
+{{- else}}
           runAsNonRoot: true
           {{- if not $painter.floatingUserId }}
           runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
@@ -71,6 +74,7 @@ spec:
           capabilities:
             drop:
             - ALL
+{{- end}}
         readinessProbe:
           httpGet:
             path: /
@@ -101,6 +105,9 @@ spec:
             memory: 256Mi
 {{- end}}
         securityContext:
+{{- if or ($palette.securityContext) (eq "map[]" (printf "%v" $palette.securityContext)) }}
+{{ toYaml $palette.securityContext | indent 10}}
+{{- else}}
           runAsNonRoot: true
           {{- if not $painter.floatingUserId }}
           runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
@@ -110,6 +117,7 @@ spec:
           capabilities:
             drop:
             - ALL
+{{- end}}
         livenessProbe:
           httpGet:
             path: /
