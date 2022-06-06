@@ -234,6 +234,95 @@ var _ = Describe("Cmd", func() {
 		Entry("floatingUserId enabled", true, 10101, 0),
 	)
 
+	DescribeTable("supports overriding the container security context",
+		func(securityContext *v1.SecurityContext) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+									SecurityContext: securityContext,
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart",
+			}
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			helmValues := map[string]interface{}{}
+			renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+
+			pointerBool := func(b bool) *bool { return &b }
+			pointerInt64 := func(i int64) *int64 { return &i }
+			defaultSecurityContext := v1.SecurityContext{
+				RunAsNonRoot:             pointerBool(true),
+				RunAsUser:                pointerInt64(10101),
+				ReadOnlyRootFilesystem:   pointerBool(true),
+				AllowPrivilegeEscalation: pointerBool(false),
+				Capabilities: &v1.Capabilities{
+					Drop: []v1.Capability{"ALL"},
+				},
+			}
+
+			renderedSecurityContext := renderedDeployment.Spec.Template.Spec.Containers[0].SecurityContext
+			if securityContext == nil {
+				Expect(*renderedSecurityContext).To(Equal(defaultSecurityContext))
+			} else {
+				Expect(*renderedSecurityContext).To(Equal(*securityContext))
+			}
+		},
+		Entry("default container security context", nil),
+		Entry("override container security context with empty object", &v1.SecurityContext{}),
+		Entry("override container security context", &v1.SecurityContext{
+			RunAsNonRoot: func(b bool) *bool { return &b }(true),
+			RunAsUser:    func(i int64) *int64 { return &i }(20202),
+		}),
+	)
+
 	It("supports disabling the deployment and service specs via helm values", func() {
 		cmd := &Command{
 			Chart: &Chart{
