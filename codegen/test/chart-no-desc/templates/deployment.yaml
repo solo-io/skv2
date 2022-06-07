@@ -61,9 +61,15 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+        {{/*
+          Render securityContext configs if it is set or an empty map.
+          Otherwise if it is false render an empty map. If securityContext is not set render default securityContext.
+        */}}
         securityContext:
 {{- if or ($painter.securityContext) (eq "map[]" (printf "%v" $painter.securityContext)) }}
 {{ toYaml $painter.securityContext | indent 10}}
+{{- else if eq false $painter.securityContext }}
+          {}
 {{- else}}
           runAsNonRoot: true
           {{- if not $painter.floatingUserId }}
@@ -104,9 +110,15 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+        {{/*
+          Render securityContext configs if it is set or an empty map.
+          Otherwise if it is false render an empty map. If securityContext is not set render default securityContext.
+        */}}
         securityContext:
 {{- if or ($palette.securityContext) (eq "map[]" (printf "%v" $palette.securityContext)) }}
 {{ toYaml $palette.securityContext | indent 10}}
+{{- else if eq false $palette.securityContext }}
+          {}
 {{- else}}
           runAsNonRoot: true
           {{- if not $painter.floatingUserId }}
