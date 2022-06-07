@@ -102,9 +102,15 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+        {{/*
+          Render securityContext configs if it is set or an empty map.
+          Otherwise if it is false render an empty map. If securityContext is not set render default securityContext.
+        */}}
         securityContext:
 {{- if or ([[ $containerVar ]].securityContext) (eq "map[]" (printf "%v" [[ $containerVar ]].securityContext)) }}
 {{ toYaml [[ $containerVar ]].securityContext | indent 10}}
+{{- else if eq false [[ $containerVar ]].securityContext }}
+          {}
 {{- else}}
           runAsNonRoot: true
           {{- if not $[[ $operatorVar ]].floatingUserId }}

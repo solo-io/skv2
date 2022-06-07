@@ -235,7 +235,7 @@ var _ = Describe("Cmd", func() {
 	)
 
 	DescribeTable("supports overriding the container security context",
-		func(securityContext *v1.SecurityContext) {
+		func(securityContext *v1.SecurityContext, omitSecurityContext bool) {
 			cmd := &Command{
 				Chart: &Chart{
 					Operators: []Operator{
@@ -274,6 +274,10 @@ var _ = Describe("Cmd", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			helmValues := map[string]interface{}{}
+			if omitSecurityContext {
+				helmValues["painter"] = map[string]interface{}{"securityContext": false}
+			}
+
 			renderedManifests := helmTemplate("codegen/test/chart", helmValues)
 
 			var renderedDeployment *appsv1.Deployment
@@ -309,18 +313,22 @@ var _ = Describe("Cmd", func() {
 			}
 
 			renderedSecurityContext := renderedDeployment.Spec.Template.Spec.Containers[0].SecurityContext
-			if securityContext == nil {
+
+			if securityContext == nil && !omitSecurityContext {
 				Expect(*renderedSecurityContext).To(Equal(defaultSecurityContext))
+			} else if securityContext == nil && omitSecurityContext {
+				Expect(*renderedSecurityContext).To(Equal(v1.SecurityContext{}))
 			} else {
 				Expect(*renderedSecurityContext).To(Equal(*securityContext))
 			}
 		},
-		Entry("default container security context", nil),
-		Entry("override container security context with empty object", &v1.SecurityContext{}),
-		Entry("override container security context", &v1.SecurityContext{
+		Entry("renders default container security context", nil, false),
+		Entry("renders empty map for container security context when set as false via helm cli", nil, true),
+		Entry("overrides container security context with empty map", &v1.SecurityContext{}, false),
+		Entry("overrides container security context", &v1.SecurityContext{
 			RunAsNonRoot: func(b bool) *bool { return &b }(true),
 			RunAsUser:    func(i int64) *int64 { return &i }(20202),
-		}),
+		}, false),
 	)
 
 	It("supports disabling the deployment and service specs via helm values", func() {
@@ -915,7 +923,6 @@ var _ = Describe("Cmd", func() {
 func helmTemplate(path string, values interface{}) []byte {
 	raw, err := yaml.Marshal(values)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
-
 	helmValuesFile, err := ioutil.TempFile("", "-helm-values-skv2-test")
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
