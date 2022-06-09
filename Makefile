@@ -16,23 +16,23 @@ export PATH:=$(GOBIN):$(PATH)
 .PHONY: install-go-tools
 install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
-	go1.16 install github.com/gobuffalo/packr/packr@v1.30.1
-	go1.16 install github.com/golang/protobuf/protoc-gen-go@v1.5.2
-	go1.16 install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
-	go1.16 install github.com/solo-io/protoc-gen-ext@v0.0.16
-	go1.16 install github.com/golang/mock/mockgen@v1.4.4
-	go1.16 install golang.org/x/tools/cmd/goimports
+	go install github.com/gobuffalo/packr/packr@v1.30.1
+	go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
+	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
+	go install github.com/solo-io/protoc-gen-ext@v0.0.16
+	go install github.com/golang/mock/mockgen@v1.4.4
+	go install golang.org/x/tools/cmd/goimports
 
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
 generated-code: install-go-tools update-licenses
-	go1.16 run api/generate.go
+	go run api/generate.go
 	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
 # this re-gens test protos
-	go1.16 test ./codegen
-	go1.16 generate -v ./...
+	go test ./codegen
+	go generate -v ./...
 	goimports -w .
-	go1.16 mod tidy
+	go mod tidy
 
 #----------------------------------------------------------------------------------
 # Test
