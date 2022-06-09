@@ -108,10 +108,13 @@ func UpdateStatus(
 	c client.Client,
 	obj client.Object,
 ) (controllerutil.OperationResult, error) {
-	updateNeeded, err := needUpdate(ctx, c, obj)
+	existing, updateNeeded, err := needUpdate(ctx, c, obj)
 	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
 	}
+
+	// https://github.com/solo-io/gloo-mesh-enterprise/issues/3923
+	obj.SetUID(existing.GetUID())
 
 	return update(ctx, c, obj)
 }
@@ -127,29 +130,33 @@ func UpdateStatusImmutable(
 	c client.Client,
 	obj client.Object,
 ) (controllerutil.OperationResult, error) {
-	updateNeeded, err := needUpdate(ctx, c, obj)
+	existing, updateNeeded, err := needUpdate(ctx, c, obj)
 	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
 	}
 
 	// Always valid because obj is client.Object
 	copyOfObj := obj.DeepCopyObject().(client.Object)
+
+	// https://github.com/solo-io/gloo-mesh-enterprise/issues/3923
+	copyOfObj.SetUID(existing.GetUID())
+
 	return update(ctx, c, copyOfObj)
 }
 
-func needUpdate(ctx context.Context, c client.Client, obj client.Object) (bool, error) {
+func needUpdate(ctx context.Context, c client.Client, obj client.Object) (client.Object, bool, error) {
 	key := client.ObjectKeyFromObject(obj)
 
 	// create empty object of the same type so that Get will work
 	existing := reflect.New(reflect.TypeOf(obj).Elem()).Interface().(client.Object)
 	if err := c.Get(ctx, key, existing); err != nil {
-		return false, err
+		return nil, false, err
 	}
 
 	if ObjectStatusesEqual(existing, obj) {
-		return false, nil
+		return nil, false, nil
 	}
-	return true, nil
+	return existing, true, nil
 }
 
 func update(
