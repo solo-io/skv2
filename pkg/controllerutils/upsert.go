@@ -113,7 +113,7 @@ func UpdateStatus(
 		return controllerutil.OperationResultNone, err
 	}
 
-	// https://github.com/solo-io/gloo-mesh-enterprise/issues/3923
+	// https://github.com/solo-io/skv2/issues/344
 	obj.SetUID(existing.GetUID())
 
 	return update(ctx, c, obj)
@@ -138,7 +138,7 @@ func UpdateStatusImmutable(
 	// Always valid because obj is client.Object
 	copyOfObj := obj.DeepCopyObject().(client.Object)
 
-	// https://github.com/solo-io/gloo-mesh-enterprise/issues/3923
+	// https://github.com/solo-io/skv2/issues/344
 	copyOfObj.SetUID(existing.GetUID())
 
 	return update(ctx, c, copyOfObj)
