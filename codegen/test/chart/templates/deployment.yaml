@@ -68,7 +68,8 @@ spec:
         securityContext:
 {{- if or ($painter.securityContext) (eq "map[]" (printf "%v" $painter.securityContext)) }}
 {{ toYaml $painter.securityContext | indent 10}}
-{{- else if eq false $painter.securityContext }}
+{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
+{{- else if eq (ternary $painter.securityContext true (eq "bool" (printf "%T" $painter.securityContext))) false }}
           {}
 {{- else}}
           runAsNonRoot: true
@@ -117,7 +118,8 @@ spec:
         securityContext:
 {{- if or ($palette.securityContext) (eq "map[]" (printf "%v" $palette.securityContext)) }}
 {{ toYaml $palette.securityContext | indent 10}}
-{{- else if eq false $palette.securityContext }}
+{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
+{{- else if eq (ternary $palette.securityContext true (eq "bool" (printf "%T" $palette.securityContext))) false }}
           {}
 {{- else}}
           runAsNonRoot: true

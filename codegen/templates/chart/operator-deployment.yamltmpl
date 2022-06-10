@@ -109,7 +109,8 @@ spec:
         securityContext:
 {{- if or ([[ $containerVar ]].securityContext) (eq "map[]" (printf "%v" [[ $containerVar ]].securityContext)) }}
 {{ toYaml [[ $containerVar ]].securityContext | indent 10}}
-{{- else if eq ([[ $containerVar ]].securityContext | default true) false }}
+{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
+{{- else if eq (ternary [[ $containerVar ]].securityContext true (eq "bool" (printf "%T" [[ $containerVar ]].securityContext))) false }}
           {}
 {{- else}}
           runAsNonRoot: true
