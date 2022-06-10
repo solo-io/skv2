@@ -1,5 +1,0 @@
-changelog:
-  - type: FIX
-    description: Downgrade `water` DPanicf --> Errorf (and abort compute).  This enables `gloo-fed` pods to fail without crashing when registering an empty `gloo` cluster.
-    issueLink: https://github.com/solo-io/gloo/issues/5832
-    resolvesIssue: false
