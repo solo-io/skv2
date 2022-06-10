@@ -109,7 +109,7 @@ spec:
         securityContext:
 {{- if or ([[ $containerVar ]].securityContext) (eq "map[]" (printf "%v" [[ $containerVar ]].securityContext)) }}
 {{ toYaml [[ $containerVar ]].securityContext | indent 10}}
-{{- else if eq false [[ $containerVar ]].securityContext }}
+{{- else if eq ([[ $containerVar ]].securityContext | default true) false }}
           {}
 {{- else}}
           runAsNonRoot: true
