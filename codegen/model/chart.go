@@ -80,10 +80,9 @@ type Container struct {
 	ReadinessProbe *v1.Probe
 	LivenessProbe  *v1.Probe
 
-	Image           Image
-	Env             []v1.EnvVar
-	Resources       *v1.ResourceRequirements
-	SecurityContext *v1.SecurityContext
+	Image     Image
+	Env       []v1.EnvVar
+	Resources *v1.ResourceRequirements
 }
 
 // sidecars require a container config and a unique name
@@ -140,10 +139,9 @@ type Data struct {
 
 func makeContainerDocs(c Container) values.UserContainerValues {
 	return values.UserContainerValues{
-		Image:           c.Image,
-		Env:             c.Env,
-		Resources:       c.Resources,
-		SecurityContext: c.SecurityContext,
+		Image:     c.Image,
+		Env:       c.Env,
+		Resources: c.Resources,
 	}
 }
 
