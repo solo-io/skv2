@@ -40,7 +40,7 @@ type UserContainerValues struct {
 	Image           Image                    `json:"image" desc:"Specify the container image"`
 	Env             []v1.EnvVar              `json:"env" desc:"Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details." omitChildren:"true"`
 	Resources       *v1.ResourceRequirements `json:"resources,omitempty" desc:"Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details."`
-	SecurityContext *v1.SecurityContext      `json:"securityContext,omitempty" desc:"Specify container security context. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core) for specification details."`
+	SecurityContext *v1.SecurityContext      `json:"securityContext,omitempty" desc:"Specify container security context. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core) for specification details. Can be set to false to omit rendering of securityContext for the container."`
 }
 
 // this image type is shared with the skv2 Chart model
