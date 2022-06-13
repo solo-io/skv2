@@ -62,8 +62,9 @@ spec:
             memory: 256Mi
 {{- end}}
         {{/*
-          Render securityContext configs if it is set or an empty map.
-          Otherwise if it is false render an empty map. If securityContext is not set render default securityContext.
+          Render securityContext configs if it is set.
+          If securityContext is not set, render the default securityContext.
+          If securityContext is set to 'false', render an empty map.
         */}}
         securityContext:
 {{- if or ($painter.securityContext) (eq "map[]" (printf "%v" $painter.securityContext)) }}
@@ -112,8 +113,9 @@ spec:
             memory: 256Mi
 {{- end}}
         {{/*
-          Render securityContext configs if it is set or an empty map.
-          Otherwise if it is false render an empty map. If securityContext is not set render default securityContext.
+          Render securityContext configs if it is set.
+          If securityContext is not set, render the default securityContext.
+          If securityContext is set to 'false', render an empty map.
         */}}
         securityContext:
 {{- if or ($palette.securityContext) (eq "map[]" (printf "%v" $palette.securityContext)) }}
