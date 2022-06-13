@@ -102,7 +102,17 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+        {{/*
+          Render securityContext configs if it is set or an empty map.
+          Otherwise if it is false render an empty map. If securityContext is not set render default securityContext.
+        */}}
         securityContext:
+{{- if or ([[ $containerVar ]].securityContext) (eq "map[]" (printf "%v" [[ $containerVar ]].securityContext)) }}
+{{ toYaml [[ $containerVar ]].securityContext | indent 10}}
+{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
+{{- else if eq (ternary [[ $containerVar ]].securityContext true (eq "bool" (printf "%T" [[ $containerVar ]].securityContext))) false }}
+          {}
+{{- else}}
           runAsNonRoot: true
           {{- if not $[[ $operatorVar ]].floatingUserId }}
           runAsUser: {{ printf "%.0f" (float64 $[[ $operatorVar ]].runAsUser) }}
@@ -112,6 +122,7 @@ spec:
           capabilities:
             drop:
             - ALL
+{{- end}}
 [[- if $container.ReadinessProbe ]]
         readinessProbe:
 [[ toYaml $container.ReadinessProbe | indent 10 ]]
