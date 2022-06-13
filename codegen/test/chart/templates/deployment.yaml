@@ -61,17 +61,7 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
-        {{/*
-          Render securityContext configs if it is set or an empty map.
-          Otherwise if it is false render an empty map. If securityContext is not set render default securityContext.
-        */}}
         securityContext:
-{{- if or ($painter.securityContext) (eq "map[]" (printf "%v" $painter.securityContext)) }}
-{{ toYaml $painter.securityContext | indent 10}}
-{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
-{{- else if eq (ternary $painter.securityContext true (eq "bool" (printf "%T" $painter.securityContext))) false }}
-          {}
-{{- else}}
           runAsNonRoot: true
           {{- if not $painter.floatingUserId }}
           runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
@@ -81,7 +71,6 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- end}}
         readinessProbe:
           httpGet:
             path: /
@@ -111,17 +100,7 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
-        {{/*
-          Render securityContext configs if it is set or an empty map.
-          Otherwise if it is false render an empty map. If securityContext is not set render default securityContext.
-        */}}
         securityContext:
-{{- if or ($palette.securityContext) (eq "map[]" (printf "%v" $palette.securityContext)) }}
-{{ toYaml $palette.securityContext | indent 10}}
-{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
-{{- else if eq (ternary $palette.securityContext true (eq "bool" (printf "%T" $palette.securityContext))) false }}
-          {}
-{{- else}}
           runAsNonRoot: true
           {{- if not $painter.floatingUserId }}
           runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
@@ -131,7 +110,6 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- end}}
         livenessProbe:
           httpGet:
             path: /
