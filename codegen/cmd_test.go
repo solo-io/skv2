@@ -923,6 +923,7 @@ var _ = Describe("Cmd", func() {
 func helmTemplate(path string, values interface{}) []byte {
 	raw, err := yaml.Marshal(values)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
 	helmValuesFile, err := ioutil.TempFile("", "-helm-values-skv2-test")
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
