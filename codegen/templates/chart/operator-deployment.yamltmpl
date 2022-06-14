@@ -102,7 +102,7 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
-        {{/*
+        {{- /*
           Render securityContext configs if it is set.
           If securityContext is not set, render the default securityContext.
           If securityContext is set to 'false', render an empty map.
