@@ -24,7 +24,8 @@ func StartServer(
 	addHandlers ...func(mux *http.ServeMux, profiles map[string]string),
 ) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", Index)
+	index := NewIndex()
+	mux.HandleFunc("/", index.Generate)
 	AddPprof(mux)
 	AddMetrics(mux)
 	AddSnapshots(mux, snapshotHistory)
