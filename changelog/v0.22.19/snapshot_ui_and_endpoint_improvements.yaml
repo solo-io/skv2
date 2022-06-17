@@ -2,4 +2,3 @@ changelog:
   - type: NEW_FEATURE
     description: Improve snapshot endpoints & UI.
     issueLink: https://github.com/solo-io/skv2/issues/347
-    resolvesIssue: true 
