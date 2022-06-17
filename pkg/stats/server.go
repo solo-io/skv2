@@ -28,7 +28,7 @@ func StartServer(
 	mux.HandleFunc("/", index.Generate)
 	AddPprof(mux)
 	AddMetrics(mux)
-	AddSnapshots(mux, snapshotHistory, index)
+	AddSnapshots(mux, snapshotHistory)
 	for _, h := range addHandlers {
 		h(mux, profileDescriptions)
 	}

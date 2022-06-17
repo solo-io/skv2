@@ -177,7 +177,7 @@ func (h *snapshotHistory) GetOutput(format string, clusters []string, namespaces
 	}
 }
 
-func AddSnapshots(mux *http.ServeMux, history SnapshotHistory, index Index) {
+func AddSnapshots(mux *http.ServeMux, history SnapshotHistory) {
 
 	mux.HandleFunc(
 		"/snapshots/input", func(w http.ResponseWriter, r *http.Request) {
