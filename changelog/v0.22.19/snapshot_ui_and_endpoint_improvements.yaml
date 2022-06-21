@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
-    description: Improve snapshot endpoints & UI.
+    description: Improved snapshot endpoints. Added new params to snapshots/output & snapshots/input including format, clusters, namespaces, and resourceTypes. Improved UI to utilize these new options.
     issueLink: https://github.com/solo-io/skv2/issues/347
