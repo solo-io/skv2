@@ -45,7 +45,7 @@ type SnapshotHistory interface {
 	SetInput(id string, latestInput json.Marshaler)
 	// GetInputCopy gets an in-memory copy of the output snapshot for all components.
 	GetInputCopy() (map[string]interface{}, error)
-	// GetInput gets the input snapshot for all components. DEPRECIATED - Use GetFilteredInput or GetInputCopy instead
+	// GetInput gets the input snapshot for all components.
 	GetInput() ([]byte, error)
 	// GetFilteredInput gets the input snapshot for all components and applies filters
 	GetFilteredInput(format string, filters Filters) ([]byte, error)
@@ -53,7 +53,7 @@ type SnapshotHistory interface {
 	SetOutput(id string, latestOutput json.Marshaler)
 	// GetOutputCopy gets an in-memory copy of the output snapshot for all components.
 	GetOutputCopy() (map[string]interface{}, error)
-	// GetOutput gets the output snapshot for all component. DEPRECIATED - Use GetFilteredOutput or GetOutputCopy instead
+	// GetOutput gets the output snapshot for all component.
 	GetOutput() ([]byte, error)
 	// GetFilteredOutput gets the output snapshot for all components and applies filters
 	GetFilteredOutput(format string, filters Filters) ([]byte, error)
@@ -90,13 +90,8 @@ func (h *snapshotHistory) GetInputCopy() (map[string]interface{}, error) {
 	return genericMaps, nil
 }
 
-// DEPRECIATED - Use GetFilteredInput or GetInputCopy instead
 func (h *snapshotHistory) GetInput() ([]byte, error) {
-	input, err := h.GetInputCopy()
-	if err != nil {
-		return nil, err
-	}
-	return formatMap("json", input)
+	return h.GetFilteredInput("json_compact", NewFilters(nil, nil, nil))
 }
 
 func (h *snapshotHistory) GetFilteredInput(format string, filters Filters) ([]byte, error) {
@@ -173,13 +168,8 @@ func (h *snapshotHistory) GetOutputCopy() (map[string]interface{}, error) {
 	return genericMaps, nil
 }
 
-// DEPRECIATED - Use GetFilteredOutput or GetOutputCopy instead
 func (h *snapshotHistory) GetOutput() ([]byte, error) {
-	output, err := h.GetOutputCopy()
-	if err != nil {
-		return nil, err
-	}
-	return formatMap("json", output)
+	return h.GetFilteredOutput("json_compact", NewFilters(nil, nil, nil))
 }
 
 func (h *snapshotHistory) GetFilteredOutput(format string, filters Filters) ([]byte, error) {
