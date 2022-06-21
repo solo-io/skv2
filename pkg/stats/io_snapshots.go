@@ -10,19 +10,54 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Could be good to enhance this interface to use more defined types/structs. Right now they are mostly generics which relies on a lot of type assertion.
+// If we did maintain the format here it would need to be checked when set
+/*
+INPUT FORMAT
+{
+    "cert-issuer": {
+        "<resourceType>": [...],
+        "<resourceType>": [...]
+    },
+    "translator": {
+        "<resourceType>": [resources .....],
+	}
+}
+
+OUTPUT FORMAT
+{
+    "roottrust": {...},
+    "translator": {
+        "<cluster>/<namespace>": {
+            "<name>~<namespace>~<cluster>~<resourceType>": {
+                "Err": null,
+                "Outputs": {
+                    "<resourceType>": [resources .....]
+                },
+                "Warnings": null
+            },
+		}
+	}
+}
+*/
 type SnapshotHistory interface {
 	// SetInput Sets the input snapshot for the given component
 	SetInput(id string, latestInput json.Marshaler)
-	// GetInput gets the input snapshot for all components
-	GetInput(format string, clusters []string, namespaces []string, resourceTypes []string) ([]byte, error)
-	// GetMapInput gets the input snapshot for all components as in in-memory map
-	GetMapInput() (map[string]interface{}, error)
+	// GetInputCopy gets an in-memory copy of the output snapshot for all components.
+	GetInputCopy() (map[string]interface{}, error)
+	// GetInput gets the input snapshot for all components. DEPRECIATED - Use GetFilteredInput or GetInputCopy instead
+	GetInput() ([]byte, error)
+	// GetFilteredInput gets the input snapshot for all components and applies filters
+	GetFilteredInput(format string, filters Filters) ([]byte, error)
 	// SetOutput Sets the output snapshot for the given component
 	SetOutput(id string, latestOutput json.Marshaler)
-	// GetOutput gets the output snapshot for all component
-	GetOutput(format string, clusters []string, namespaces []string, resourceTypes []string) ([]byte, error)
+	// GetOutputCopy gets an in-memory copy of the output snapshot for all components.
+	GetOutputCopy() (map[string]interface{}, error)
+	// GetOutput gets the output snapshot for all component. DEPRECIATED - Use GetFilteredOutput or GetOutputCopy instead
+	GetOutput() ([]byte, error)
+	// GetFilteredOutput gets the output snapshot for all components and applies filters
+	GetFilteredOutput(format string, filters Filters) ([]byte, error)
 }
-
 type snapshotHistory struct {
 	lock         sync.RWMutex
 	latestInput  map[string]json.Marshaler
@@ -42,29 +77,51 @@ func (h *snapshotHistory) SetInput(id string, latestInput json.Marshaler) {
 	h.latestInput[id] = latestInput
 }
 
-func (h *snapshotHistory) GetInput(format string, clusters []string, namespaces []string, resourceTypes []string) ([]byte, error) {
+func (h *snapshotHistory) GetInputCopy() (map[string]interface{}, error) {
 	h.lock.RLock()
 	defer h.lock.RUnlock()
 	if h.latestInput == nil {
-		return []byte{}, nil
+		return map[string]interface{}{}, nil
 	}
 	genericMaps, err := getGenericMaps(h.latestInput)
 	if err != nil {
 		return nil, err
 	}
+	return genericMaps, nil
+}
 
-	translator := genericMaps["translator"].(map[string]interface{})
+// DEPRECIATED - Use GetFilteredInput or GetInputCopy instead
+func (h *snapshotHistory) GetInput() ([]byte, error) {
+	input, err := h.GetInputCopy()
+	if err != nil {
+		return nil, err
+	}
+	return formatMap("json", input)
+}
+
+func (h *snapshotHistory) GetFilteredInput(format string, filters Filters) ([]byte, error) {
+	input, err := h.GetInputCopy()
+	if err != nil {
+		return nil, err
+	}
+
+	// short circuit if no filters
+	if !filters.clusters.Exists() && !filters.namespaces.Exists() && !filters.resourceTypes.Exists() {
+		return formatMap(format, input)
+	}
+
+	translator := input["translator"].(map[string]interface{})
 	// Filter resource types
-	if resourceTypes != nil {
-		for k := range translator {
-			if !contains(resourceTypes, k) {
-				delete(translator, k)
+	if filters.resourceTypes.Exists() {
+		for resourceType := range translator {
+			if !filters.resourceTypes.Contains(resourceType) {
+				delete(translator, resourceType)
 			}
 		}
 	}
 
 	// Filter cluster and namespaces
-	if clusters != nil || namespaces != nil {
+	if filters.clusters.Exists() || filters.namespaces.Exists() {
 		for k, resources := range translator {
 			newResources := []interface{}{}
 			for _, resource := range resources.([]interface{}) {
@@ -72,14 +129,14 @@ func (h *snapshotHistory) GetInput(format string, clusters []string, namespaces 
 				metadata := resource["metadata"].(map[string]interface{})
 				cluster, ok := metadata["clusterName"].(string)
 				include := true
-				if clusters != nil && ok && !contains(clusters, cluster) {
+				if filters.clusters.Exists() && ok && !filters.clusters.Contains(cluster) {
 					include = false
 				}
 				namespace, ok := metadata["namespace"].(string)
 				if k == "/v1, Kind=Namespace" {
 					namespace, ok = metadata["name"].(string)
 				}
-				if namespaces != nil && ok && !contains(namespaces, namespace) {
+				if filters.namespaces.Exists() && ok && !filters.namespaces.Contains(namespace) {
 					include = false
 				}
 				if include {
@@ -94,26 +151,7 @@ func (h *snapshotHistory) GetInput(format string, clusters []string, namespaces 
 		}
 	}
 
-	// If filters enabled only return translator section
-	if clusters != nil || namespaces != nil || resourceTypes != nil {
-		return formatMap(format, translator)
-	} else {
-		return formatMap(format, genericMaps)
-	}
-
-}
-
-func (h *snapshotHistory) GetMapInput() (map[string]interface{}, error) {
-	h.lock.RLock()
-	defer h.lock.RUnlock()
-	if h.latestInput == nil {
-		return map[string]interface{}{}, nil
-	}
-	genericMaps, err := getGenericMaps(h.latestInput)
-	if err != nil {
-		return nil, err
-	}
-	return genericMaps, nil
+	return formatMap(format, translator)
 }
 
 func (h *snapshotHistory) SetOutput(id string, latestOutput json.Marshaler) {
@@ -122,29 +160,51 @@ func (h *snapshotHistory) SetOutput(id string, latestOutput json.Marshaler) {
 	h.latestOutput[id] = latestOutput
 }
 
-func (h *snapshotHistory) GetOutput(format string, clusters []string, namespaces []string, resourceTypes []string) ([]byte, error) {
+func (h *snapshotHistory) GetOutputCopy() (map[string]interface{}, error) {
 	h.lock.RLock()
 	defer h.lock.RUnlock()
 	if h.latestOutput == nil {
-		return []byte{}, nil
+		return map[string]interface{}{}, nil
 	}
 	genericMaps, err := getGenericMaps(h.latestOutput)
 	if err != nil {
 		return nil, err
 	}
+	return genericMaps, nil
+}
 
-	translator := genericMaps["translator"].(map[string]interface{})
+// DEPRECIATED - Use GetFilteredOutput or GetOutputCopy instead
+func (h *snapshotHistory) GetOutput() ([]byte, error) {
+	output, err := h.GetOutputCopy()
+	if err != nil {
+		return nil, err
+	}
+	return formatMap("json", output)
+}
+
+func (h *snapshotHistory) GetFilteredOutput(format string, filters Filters) ([]byte, error) {
+	output, err := h.GetOutputCopy()
+	if err != nil {
+		return nil, err
+	}
+
+	// short circuit if no filters
+	if !filters.clusters.Exists() && !filters.namespaces.Exists() && !filters.resourceTypes.Exists() {
+		return formatMap(format, output)
+	}
+
+	translator := output["translator"].(map[string]interface{})
 	// Filter resource types
-	if clusters != nil || namespaces != nil {
+	if filters.clusters.Exists() || filters.namespaces.Exists() {
 		for k := range translator {
 			splitKey := strings.Split(k, "/")
 			cluster := splitKey[0]
 			namespace := splitKey[1]
 			include := true
-			if clusters != nil && !contains(clusters, cluster) {
+			if filters.clusters.Exists() && !filters.clusters.Contains(cluster) {
 				include = false
 			}
-			if namespaces != nil && !contains(namespaces, namespace) {
+			if filters.namespaces.Exists() && !filters.namespaces.Contains(namespace) {
 				include = false
 			}
 			if !include {
@@ -154,12 +214,12 @@ func (h *snapshotHistory) GetOutput(format string, clusters []string, namespaces
 	}
 
 	// Filter cluster and namespaces
-	if resourceTypes != nil {
+	if filters.resourceTypes.Exists() {
 		for cluster_ns, resources := range translator {
 			for k := range resources.(map[string]interface{}) {
 				splitKey := strings.Split(k, "~")
 				resourceType := splitKey[len(splitKey)-1]
-				if !contains(resourceTypes, resourceType) {
+				if !filters.resourceTypes.Contains(resourceType) {
 					delete(translator[cluster_ns].(map[string]interface{}), k)
 				}
 			}
@@ -169,11 +229,55 @@ func (h *snapshotHistory) GetOutput(format string, clusters []string, namespaces
 		}
 	}
 
-	// If filters enabled only return translator section
-	if clusters != nil || namespaces != nil || resourceTypes != nil {
-		return formatMap(format, translator)
+	return formatMap(format, translator)
+
+}
+
+type filter interface {
+	// Check if filter constains this value
+	Contains(s string) bool
+	// Check if filter exists
+	Exists() bool
+}
+
+type filterMap map[string]bool
+
+func newFilter(selectedFilters []string) filter {
+	var fMap filterMap
+	fMap = make(map[string]bool)
+	for _, f := range selectedFilters {
+		fMap[f] = true
+	}
+	return fMap
+}
+
+type Filters struct {
+	clusters      filter
+	namespaces    filter
+	resourceTypes filter
+}
+
+func NewFilters(includedClusters []string, includedNamespaces []string, includedResourceTypes []string) Filters {
+	return Filters{
+		clusters:      newFilter(includedClusters),
+		namespaces:    newFilter(includedNamespaces),
+		resourceTypes: newFilter(includedResourceTypes),
+	}
+}
+
+func (f filterMap) Contains(s string) bool {
+	if _, ok := f[s]; ok {
+		return true
 	} else {
-		return formatMap(format, genericMaps)
+		return false
+	}
+}
+
+func (f filterMap) Exists() bool {
+	if len(f) != 0 {
+		return true
+	} else {
+		return false
 	}
 }
 
@@ -182,7 +286,7 @@ func AddSnapshots(mux *http.ServeMux, history SnapshotHistory) {
 	mux.HandleFunc(
 		"/snapshots/input", func(w http.ResponseWriter, r *http.Request) {
 
-			b, err := history.GetInput(getUrlParams(r))
+			b, err := history.GetFilteredInput(getUrlParams(r))
 			// Gives download correct file extension
 			w.Header().Set("Content-Type", getContentType(r))
 			if err != nil {
@@ -195,7 +299,7 @@ func AddSnapshots(mux *http.ServeMux, history SnapshotHistory) {
 
 	mux.HandleFunc(
 		"/snapshots/output", func(w http.ResponseWriter, r *http.Request) {
-			b, err := history.GetOutput(getUrlParams(r))
+			b, err := history.GetFilteredOutput(getUrlParams(r))
 			// Gives download correct file extension
 			w.Header().Set("Content-Type", getContentType(r))
 			if err != nil {
@@ -207,7 +311,7 @@ func AddSnapshots(mux *http.ServeMux, history SnapshotHistory) {
 	)
 }
 
-func getUrlParams(r *http.Request) (string, []string, []string, []string) {
+func getUrlParams(r *http.Request) (string, Filters) {
 	clustersS := r.FormValue("clusters")
 	namespacesS := r.FormValue("namespaces")
 	resourceTypesS := r.FormValue("resourceTypes")
@@ -223,7 +327,7 @@ func getUrlParams(r *http.Request) (string, []string, []string, []string) {
 	if resourceTypesS != "" {
 		resourceTypes = strings.Split(resourceTypesS, "::")
 	}
-	return r.FormValue("format"), clusters, namespaces, resourceTypes
+	return r.FormValue("format"), NewFilters(clusters, namespaces, resourceTypes)
 }
 
 func getGenericMaps(snapshot map[string]json.Marshaler) (map[string]interface{}, error) {
@@ -265,13 +369,4 @@ func getContentType(r *http.Request) string {
 	default:
 		return "application/json"
 	}
-}
-
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
 }

@@ -18,6 +18,7 @@ func NewIndex(history SnapshotHistory) Index {
 	}
 }
 
+// TODO - Use https://pkg.go.dev/embed once skv2 is upgraded to > go1.16
 var indexTmpl = template.Must(template.New("index").Parse(`<!DOCTYPE html><html>
 <head>
 <script>
@@ -128,7 +129,7 @@ Things to do now:
 <br>
 <br>
 <h2>Snapshot Format & Filters</h2>
-<p>All options apply to both snapshots. Filtering is inclusive and filters strictly by input resources.</p>
+<p>All options apply to both snapshots. Filters are inclusive.</p>
 <br>
 <label style="vertical-align:top" for="format">Choose a format:</label>
 <select style="vertical-align:top" name="format" id="format" onchange="changeFormat()">
@@ -183,18 +184,18 @@ func (index Index) Generate(w http.ResponseWriter, r *http.Request) {
 
 	// Capture clusters, namespaces, resourceTypes from input.
 	// We can use these as filters for both output & input
-	input, err := index.history.GetMapInput()
+	input, err := index.history.GetInputCopy()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	translator := input["translator"].(map[string]interface{})
 	resourceTypes := make([]string, 0, len(translator))
-	for k := range translator {
-		resourceTypes = append(resourceTypes, k)
+	for id := range translator {
+		resourceTypes = append(resourceTypes, id)
 	}
 
-	for k, resources := range translator {
+	for resourceType, resources := range translator {
 		for _, resource := range resources.([]interface{}) {
 			resource := resource.(map[string]interface{})
 			metadata := resource["metadata"].(map[string]interface{})
@@ -203,7 +204,7 @@ func (index Index) Generate(w http.ResponseWriter, r *http.Request) {
 				clusters[cluster] = true
 			}
 			namespace, ok := metadata["namespace"].(string)
-			if k == "/v1, Kind=Namespace" {
+			if resourceType == "/v1, Kind=Namespace" {
 				namespace, ok = metadata["name"].(string)
 			}
 			if ok && namespace != "" {
