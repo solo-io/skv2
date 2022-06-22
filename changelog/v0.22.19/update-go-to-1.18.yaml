@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Update go version to 1.18 for module.
+    issueLink: https://github.com/solo-io/skv2/issues/349
