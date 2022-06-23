@@ -83,7 +83,7 @@ func getTemplate(index Index, profiles []profile) (*template.Template, pageData)
 		return getFallbackTemplate(index, profiles)
 	case result := <-result:
 		if result.Error != nil {
-			log.Printf("Unhandled error. Revert to fallback template. Error: %s", result.Error.Error())
+			log.Printf("Unhandled error. Revert to fallback template. Error: %s\n", result.Error.Error())
 			return getFallbackTemplate(index, profiles)
 		}
 		return result.Template, result.PageData
