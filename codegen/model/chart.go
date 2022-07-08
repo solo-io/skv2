@@ -125,6 +125,7 @@ type Dependency struct {
 	Version    string `json:"version,omitempty"`
 	Repository string `json:"repository,omitempty"`
 	Condition  string `json:"condition,omitempty"`
+	Alias      string `json:"alias,omitempty"`
 }
 
 type Data struct {
