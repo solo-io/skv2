@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/skv2/codegen/collector"
+	"github.com/solo-io/skv2/codegen/model"
 )
 
 // renders kubernetes from templates
@@ -73,7 +74,7 @@ type descriptorsWithGopath struct {
 	// group name
 	GroupName string
 	// go package of the group api root
-	rootGoPackage string
+	RootGoPackage string
 	// full go package which the template render funcs will use to match against the
 	// set of descriptors to find the relevant messages
 	goPackageToMatch string
@@ -108,6 +109,7 @@ func (grp descriptorsWithGopath) getUniqueDescriptorsWithPath() []*collector.Des
 
 	Any other package name is than rendered to the relative path supplied.
 */
+
 func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 	var result []OutFile
 	for _, pkgForGroup := range uniqueGoImportPathsForGroup(grp) {
@@ -121,12 +123,13 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 			},
 		}
 		packageName := filepath.Base(pkgForGroup)
+		rootGoPackage := filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String())
 
 		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
 			Descriptors:      grp.Descriptors,
-			Resources:        grp.Resources,
+			Resources:        specOrStatusInRootPkg(grp.Resources, rootGoPackage),
 			PackageName:      packageName,
-			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			RootGoPackage:    rootGoPackage,
 			goPackageToMatch: pkgForGroup,
 		})
 		if err != nil {
@@ -158,12 +161,14 @@ func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
 		}
 		packageName := filepath.Base(pkgForGroup)
 
+		rootGoPackage := filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String())
+
 		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
 			Descriptors:      grp.Descriptors,
-			Resources:        grp.Resources,
+			Resources:        specOrStatusInRootPkg(grp.Resources, rootGoPackage),
 			PackageName:      packageName,
 			GroupName:        grp.Group,
-			rootGoPackage:    filepath.Join(grp.Module, grp.ApiRoot, grp.GroupVersion.String()),
+			RootGoPackage:    rootGoPackage,
 			goPackageToMatch: pkgForGroup,
 		})
 		if err != nil {
@@ -198,4 +203,19 @@ func uniqueGoImportPathsForGroup(grp Group) []string {
 	}
 	sort.Strings(result)
 	return result
+}
+
+// We can only define methods for types defined in the same package as the root,
+// so elide resources that neither have a spec nor a status in the root pkg (a rare edge case)
+func specOrStatusInRootPkg(unfiltered []model.Resource, rootGoPackage string) []model.Resource {
+	var resources []model.Resource
+	for _, r := range unfiltered {
+		if (r.Spec.Type.GoPackage != "" && r.Spec.Type.GoPackage != rootGoPackage) &&
+			(r.Status == nil || (r.Status.Type.GoPackage != "" && r.Status.Type.GoPackage != rootGoPackage)) {
+			continue
+		}
+		resources = append(resources, r)
+	}
+
+	return resources
 }

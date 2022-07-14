@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Expose Alias in Helm chart dependencies.
+    issueLink: https://github.com/solo-io/skv2/issues/352

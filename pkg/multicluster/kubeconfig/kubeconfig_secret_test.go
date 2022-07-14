@@ -32,6 +32,7 @@ preferences: {}
 users:
 - name: test-name
   user:
+    as-user-extra: null
     token: alphanumericgarbage
 `
 		namespace     = "secret-namespace"

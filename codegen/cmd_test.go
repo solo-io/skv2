@@ -110,6 +110,51 @@ var _ = Describe("Cmd", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	// note that there is no .proto file this is generated from; it simply pulls in field definitions
+	// from other packages
+	It("allows fields from other packages", func() {
+
+		// note that there is no .proto file this is generated from; it simply pulls in field definitions
+		// from other packages
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "other.things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind: "KubernetesCluster",
+							Spec: Field{Type: Type{
+								Name:      "KubernetesCluster",
+								GoPackage: "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1",
+							}},
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+			ManifestRoot:    "codegen/test/chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		// Make sure all generated code compiles
+		err = exec.Command("go", "build", "codegen/test/api/other.things.test.io/v1/...").Run()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
 	DescribeTable("configuring the runAsUser value",
 		func(floatingUserId bool, runAsUser, expectedRunAsUser int) {
 			cmd := &Command{
@@ -187,6 +232,103 @@ var _ = Describe("Cmd", func() {
 		Entry("default values", false, 0, 10101),
 		Entry("set runAsUser value", false, 20202, 20202),
 		Entry("floatingUserId enabled", true, 10101, 0),
+	)
+
+	DescribeTable("supports overriding the container security context",
+		func(securityContext *v1.SecurityContext, omitSecurityContext bool) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+									SecurityContext: securityContext,
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart",
+			}
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			helmValues := map[string]interface{}{}
+			if omitSecurityContext {
+				helmValues["painter"] = map[string]interface{}{"securityContext": false}
+			}
+
+			renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+
+			pointerBool := func(b bool) *bool { return &b }
+			pointerInt64 := func(i int64) *int64 { return &i }
+			defaultSecurityContext := v1.SecurityContext{
+				RunAsNonRoot:             pointerBool(true),
+				RunAsUser:                pointerInt64(10101),
+				ReadOnlyRootFilesystem:   pointerBool(true),
+				AllowPrivilegeEscalation: pointerBool(false),
+				Capabilities: &v1.Capabilities{
+					Drop: []v1.Capability{"ALL"},
+				},
+			}
+
+			renderedSecurityContext := renderedDeployment.Spec.Template.Spec.Containers[0].SecurityContext
+
+			if securityContext == nil && !omitSecurityContext {
+				Expect(*renderedSecurityContext).To(Equal(defaultSecurityContext))
+			} else if securityContext == nil && omitSecurityContext {
+				Expect(*renderedSecurityContext).To(Equal(v1.SecurityContext{}))
+			} else {
+				Expect(*renderedSecurityContext).To(Equal(*securityContext))
+			}
+		},
+		Entry("renders default container security context", nil, false),
+		Entry("renders empty map for container security context when set as false via helm cli", nil, true),
+		Entry("overrides container security context with empty map", &v1.SecurityContext{}, false),
+		Entry("overrides container security context", &v1.SecurityContext{
+			RunAsNonRoot: func(b bool) *bool { return &b }(true),
+			RunAsUser:    func(i int64) *int64 { return &i }(20202),
+		}, false),
 	)
 
 	It("supports disabling the deployment and service specs via helm values", func() {

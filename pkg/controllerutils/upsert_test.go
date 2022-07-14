@@ -96,6 +96,7 @@ var _ = Describe("Update Status", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-pv",
 				Namespace: "ns",
+				UID:       "123",
 			},
 			Status: v1.PersistentVolumeStatus{
 				Message: "Test1",
@@ -116,6 +117,16 @@ var _ = Describe("Update Status", func() {
 		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
 		// make sure object was updated
 		Expect(pv.ResourceVersion).To(Equal("1000"))
+	})
+	It("updates status when resource is found but uid has changed (rapid recreation)", func() {
+		pv.SetUID("456")
+		// update status
+		result, err := UpdateStatus(ctx, cl, pv)
+		Expect(err).To(BeNil())
+		Expect(result).To(Equal(controllerutil.OperationResultUpdated))
+		// make sure object was updated
+		Expect(pv.ResourceVersion).To(Equal("1000"))
+		Expect(pv.GetUID()).To(BeEquivalentTo("123"))
 	})
 	It("updates status when resource is found; but not the object", func() {
 		// update status

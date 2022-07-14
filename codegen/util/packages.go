@@ -1,6 +1,8 @@
 package util
 
 import (
+	"crypto/md5"
+	"fmt"
 	"strings"
 
 	"github.com/solo-io/skv2/codegen/model"
@@ -41,4 +43,10 @@ func GeneratedGoPackage(grp model.Group) string {
 	)
 
 	return s
+}
+
+// Generate a package alias, eg 'import alias github.com/my/package'
+// TODO:  Do something prettier if this works
+func AliasFor(pkg string) string {
+	return fmt.Sprintf("i%x", md5.Sum([]byte(pkg)))
 }

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script>
+        var format = "";
+
+        const init = () => {
+            changeFormat()
+        };
+
+        const generateUrls = () => {
+            var input = document.getElementById('input_url');
+            var output = document.getElementById('output_url');
+            var input_d = document.getElementById('input_url_download');
+            var output_d = document.getElementById('output_url_download');
+            if (format === '') {
+                input.href = "/snapshots/input";
+                output.href = "/snapshots/output";
+                input_d.href = "/snapshots/input";
+                output_d.href = "/snapshots/output";
+                return;
+            }
+
+            var params = [];
+            if (format !== '') {
+                params.push("format=" + format);
+                input_d.download = "input." + format
+                output_d.download = "output." + format
+            } else {
+                input_d.download = "input.json"
+                output_d.download = "output.json"
+            }
+
+            input.href = encodeURI("/snapshots/input?" + params.join("&"));
+            output.href = encodeURI("/snapshots/output?" + params.join("&"));
+            input_d.href = encodeURI("/snapshots/input?" + params.join("&"));
+            output_d.href = encodeURI("/snapshots/output?" + params.join("&"));
+        }
+        const changeFormat = () => {
+            var e = document.getElementById("format");
+            if (e && e.options) {
+                format = e.options[e.selectedIndex].text;
+            }
+            generateUrls();
+        };
+        init()
+    </script>
+    <title>/debug/pprof/</title>
+    <style>
+        .profile-name {
+            display: inline-block;
+            width: 6rem;
+        }
+    </style>
+</head>
+
+<body>
+    Things to do now:
+    {{range .Profiles}}
+    <h2><a href={{.Href}}>{{.Name}}</a></h2>
+    <p>
+        {{.Desc}}
+    </p>
+    {{end}}
+    <br>
+    <br>
+    <h2>Snapshot Format</h2>
+    <p>All options apply to both snapshots.</p>
+    <br>
+    <table>
+        <tr>
+            <th><label for="format">Choose a
+                    format:</label>
+            </th>
+        </tr>
+        <tr valign="top">
+            <td><select name="format" id="format" onchange="changeFormat()">
+                    {{range .Formats}}
+                    <option value="{{.}}">{{.}}</option>
+                    {{end}}
+                </select></td>
+        </tr>
+    </table>
+    <h2>Input</h2>
+    <a href="/snapshots/input" id="input_url">View</a>
+    <a href="/snapshots/input" id="input_url_download" download="input.json">Download</a>
+    <h2>Output</h2>
+    <a href="/snapshots/output" id="output_url">View</a>
+    <a href="/snapshots/output" id="output_url_download" download="output.json">Download</a>
+</body>
+
+</html>

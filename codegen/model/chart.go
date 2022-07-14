@@ -80,9 +80,10 @@ type Container struct {
 	ReadinessProbe *v1.Probe
 	LivenessProbe  *v1.Probe
 
-	Image     Image
-	Env       []v1.EnvVar
-	Resources *v1.ResourceRequirements
+	Image           Image
+	Env             []v1.EnvVar
+	Resources       *v1.ResourceRequirements
+	SecurityContext *v1.SecurityContext
 }
 
 // sidecars require a container config and a unique name
@@ -124,6 +125,7 @@ type Dependency struct {
 	Version    string `json:"version,omitempty"`
 	Repository string `json:"repository,omitempty"`
 	Condition  string `json:"condition,omitempty"`
+	Alias      string `json:"alias,omitempty"`
 }
 
 type Data struct {
@@ -139,9 +141,10 @@ type Data struct {
 
 func makeContainerDocs(c Container) values.UserContainerValues {
 	return values.UserContainerValues{
-		Image:     c.Image,
-		Env:       c.Env,
-		Resources: c.Resources,
+		Image:           c.Image,
+		Env:             c.Env,
+		Resources:       c.Resources,
+		SecurityContext: c.SecurityContext,
 	}
 }
 

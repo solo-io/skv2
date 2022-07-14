@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/344
+    resolvesIssue: false
+    description: >
+      Ensure the uid of the resource being writen is the same as the uid that exists when doing a status update

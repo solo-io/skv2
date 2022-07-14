@@ -29,7 +29,7 @@ Name|Version|License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.19.0|MIT License
 [x/net](https://golang.org/x/net)|v0.0.0-20210614182718-04defd469f4e|BSD 3-clause "New" or "Revised" License
 [oauth2/internal](https://golang.org/x/oauth2/internal)|v0.0.0-20210201163806-010130855d6c|BSD 3-clause "New" or "Revised" License
-[x/sys](https://golang.org/x/sys)|v0.0.0-20210817190340-bfb29a6856f2|BSD 3-clause "New" or "Revised" License
+[x/sys](https://golang.org/x/sys)|v0.0.0-20220520151302-bc2c85ada10a|BSD 3-clause "New" or "Revised" License
 [x/term](https://golang.org/x/term)|v0.0.0-20210220032956-6a3ed077a48d|BSD 3-clause "New" or "Revised" License
 [x/text](https://golang.org/x/text)|v0.3.6|BSD 3-clause "New" or "Revised" License
 [time/rate](https://golang.org/x/time/rate)|v0.0.0-20210723032227-1f47c861a9ac|BSD 3-clause "New" or "Revised" License
