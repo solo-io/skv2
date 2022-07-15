@@ -4,7 +4,9 @@ import (
 	"context"
 	"sort"
 	"sync"
+	"time"
 
+	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -13,6 +15,7 @@ import (
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -58,12 +61,7 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		c.removeCluster(clusterName)
 	}
 
-	mgr, err := manager.New(restCfg, c.optionsWithDefaults())
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	c.startManager(clusterName, mgr)
+	c.startManager(clusterName, restCfg)
 
 	return reconcile.Result{}, nil
 }
@@ -88,18 +86,35 @@ func (s *clusterWatcher) ListClusters() []string {
 	return s.managers.list()
 }
 
-func (c *clusterWatcher) startManager(clusterName string, mgr manager.Manager) {
-	ctx, cancel := context.WithCancel(
-		contextutils.WithLoggerValues(context.WithValue(c.ctx, "cluster", clusterName), zap.String("cluster", clusterName)))
-	go func() {
-		err := mgr.Start(ctx)
-		if err != nil {
-			contextutils.LoggerFrom(ctx).DPanicf("manager start failed for cluster %v: %v", clusterName, err)
+func (c *clusterWatcher) startManager(clusterName string, restCfg *rest.Config) {
+	go func() { // this must be async because mgr.Start(ctx) is blocking
+		retryOptions := []retry.Option{
+			retry.Delay(time.Second),
+			retry.Attempts(12),
+			retry.DelayType(retry.BackOffDelay),
 		}
-	}()
 
-	c.managers.set(clusterName, mgr, ctx, cancel)
-	c.handlers.AddCluster(ctx, clusterName, mgr)
+		retry.Do(func() error {
+			ctx, cancel := context.WithCancel(contextutils.WithLoggerValues(context.WithValue(c.ctx, "cluster", clusterName), zap.String("cluster", clusterName)))
+			mgr, _ := manager.New(restCfg, c.optionsWithDefaults())
+
+			// add manager to managers+handlers.  It may fail to start and need to be removed ¯\_(ツ)_/¯
+			c.managers.set(clusterName, mgr, ctx, cancel)
+			c.handlers.AddCluster(ctx, clusterName, mgr)
+
+			err := mgr.Start(ctx) // blocking until error is thrown
+			if err != nil {
+				contextutils.LoggerFrom(ctx).Errorf("Manager creation/start failed for cluster %v: %v", clusterName, err)
+
+				// remove failed manager from managers+handlers
+				c.managers.delete(clusterName)
+				c.handlers.RemoveCluster(clusterName)
+			}
+
+			// continue the exponentially-backing-off retry
+			return err
+		}, retryOptions...)
+	}()
 }
 
 func (c *clusterWatcher) removeCluster(clusterName string) {
