@@ -23,10 +23,15 @@ func Key(id ezkube.ResourceId) string {
 	if id == nil {
 		return "<unknown>"
 	}
-	if clusterId, ok := id.(ezkube.ClusterResourceId); ok {
-		return clusterId.GetName() + "." + clusterId.GetNamespace() + "." + clusterId.GetClusterName()
+
+	switch obj := id.(type) {
+	case client.Object:
+		return obj.GetName() + "." + obj.GetNamespace() + "." + obj.GetClusterName()
+	case ezkube.ClusterResourceId:
+		return obj.GetName() + "." + obj.GetNamespace() + "." + obj.GetClusterName()
+	default:
+		return id.GetName() + "." + id.GetNamespace() + "."
 	}
-	return id.GetName() + "." + id.GetNamespace() + "."
 }
 
 // typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
