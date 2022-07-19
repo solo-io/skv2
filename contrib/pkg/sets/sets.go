@@ -16,6 +16,12 @@ var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) err
 	return eris.Errorf("%T with id %v not found", resourceType, Key(id))
 }
 
+type Custom interface {
+	GetName() string
+	GetNamespace() string
+	GetCluster() string
+}
+
 // k8s resources are uniquely identified by their name and namespace
 func Key(id ezkube.ResourceId) string {
 	// When kubernetes objects are passed in here, a call to the GetX() functions will panic, so
@@ -25,12 +31,12 @@ func Key(id ezkube.ResourceId) string {
 	}
 
 	switch obj := id.(type) {
-	case client.Object:
-		return obj.GetName() + "." + obj.GetNamespace() + "." + obj.GetClusterName()
+	case Custom:
+		return obj.GetName() + "." + obj.GetNamespace() + "." + obj.GetCluster()
 	case ezkube.ClusterResourceId:
 		return obj.GetName() + "." + obj.GetNamespace() + "." + obj.GetClusterName()
 	default:
-		return id.GetName() + "." + id.GetNamespace() + "."
+		return id.GetName() + "." + id.GetNamespace()
 	}
 }
 
