@@ -97,10 +97,12 @@ func (e ErrorHandlerFuncs) HandleListError(err error) {
 
 var (
 	// resources_synced_total holds the total number of times a resource is synced successfully to storage.
-	resourcesSyncedTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "resources_synced_total",
-		Help: "Total number of successful resource writes to storage. result indicates the result of the write, i.e. created, updated, unchanged",
-	}, []string{"snapshot", "result", "type", "ref"})
+	resourcesSyncedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "resources_synced_total",
+			Help: "Total number of successful resource writes to storage. result indicates the result of the write, i.e. created, updated, unchanged",
+		}, []string{"snapshot", "result", "type", "ref"},
+	)
 
 	incrementResourcesSyncedTotal = func(snapshot, result string, obj ezkube.Object) {
 		resourcesSyncedTotal.WithLabelValues(
@@ -112,10 +114,12 @@ var (
 	}
 
 	// resources_deleted_total holds the total number of times a resource is deleted from storage.
-	resourcesDeletedTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "resources_deleted_total",
-		Help: "Total number of successful resource deletes to storage.",
-	}, []string{"snapshot", "type", "ref"})
+	resourcesDeletedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "resources_deleted_total",
+			Help: "Total number of successful resource deletes to storage.",
+		}, []string{"snapshot", "type", "ref"},
+	)
 
 	incrementResourcesDeletedTotal = func(snapshot string, obj ezkube.Object) {
 		resourcesDeletedTotal.WithLabelValues(
@@ -126,10 +130,12 @@ var (
 	}
 
 	// resource_write_fails_total holds the total number of failed attempts to write to storage (either as a delete or create)
-	resourcesWriteFailsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "resource_write_fails_total",
-		Help: "Total number of failures encountered when attempting to write a resource to storage. action indicates whether this was an upsert or a delete",
-	}, []string{"snapshot", "type", "ref", "action"})
+	resourcesWriteFailsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "resource_write_fails_total",
+			Help: "Total number of failures encountered when attempting to write a resource to storage. action indicates whether this was an upsert or a delete",
+		}, []string{"snapshot", "type", "ref", "action"},
+	)
 
 	incrementResourcesWriteFailsTotal = func(snapshot, action string, obj ezkube.Object) {
 		resourcesWriteFailsTotal.WithLabelValues(
@@ -218,6 +224,10 @@ type OutputOpts struct {
 
 	// If provided, ensure the resource has been verified before adding it to snapshots
 	Verifier verifier.OutputResourceVerifier
+
+	// If provided, the resource will be updated before syncing it to the cluster.
+	// This argument will not apply for status updates
+	TransitionFuncs []controllerutils.TransitionFunc
 }
 
 // sync the output snapshot to local cluster storage.
@@ -235,7 +245,15 @@ func (s Snapshot) SyncLocalCluster(ctx context.Context, cli client.Client, opts 
 			StatusUpdate: list.StatusUpdate,
 		}
 
-		s.syncList(ctx, multicluster.LocalCluster, cli, resourcesForLocalCluster, opts.Verifier, opts.ErrHandler)
+		s.syncList(
+			ctx,
+			multicluster.LocalCluster,
+			cli,
+			resourcesForLocalCluster,
+			opts.Verifier,
+			opts.ErrHandler,
+			opts.TransitionFuncs,
+		)
 	}
 }
 
@@ -265,7 +283,7 @@ func (s Snapshot) SyncMultiCluster(ctx context.Context, mcClient multicluster.Cl
 				GVK:       list.GVK,
 			}
 
-			s.syncList(ctx, cluster, cli, resourcesForCluster, opts.Verifier, opts.ErrHandler)
+			s.syncList(ctx, cluster, cli, resourcesForCluster, opts.Verifier, opts.ErrHandler, opts.TransitionFuncs)
 		}
 	}
 }
@@ -281,6 +299,7 @@ func (s Snapshot) syncList(
 	list ResourceList,
 	verifier verifier.OutputResourceVerifier,
 	errHandler ErrorHandler,
+	transitionFuncs []controllerutils.TransitionFunc,
 ) {
 
 	if verifier != nil {
@@ -300,7 +319,7 @@ func (s Snapshot) syncList(
 	for _, obj := range list.Resources {
 
 		// upsert all desired resources
-		if err := s.upsert(ctx, cli, obj, list.StatusUpdate); err != nil {
+		if err := s.upsert(ctx, cli, obj, list.StatusUpdate, transitionFuncs); err != nil {
 			errHandler.HandleWriteError(obj, err)
 		}
 	}
@@ -351,7 +370,13 @@ func (s Snapshot) syncList(
 	}
 }
 
-func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Object, statusUpdate bool) error {
+func (s Snapshot) upsert(
+	ctx context.Context,
+	cli client.Client,
+	obj ezkube.Object,
+	statusUpdate bool,
+	transitionFuncs []controllerutils.TransitionFunc,
+) error {
 	// add cluster label to object
 	obj.SetLabels(
 		AddClusterLabels(obj.GetClusterName(), obj.GetLabels()),
@@ -364,17 +389,33 @@ func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Obje
 	if statusUpdate {
 		result, err = controllerutils.UpdateStatus(ctx, cli, obj)
 	} else {
-		result, err = controllerutils.Upsert(ctx, cli, obj)
+		result, err = controllerutils.Upsert(ctx, cli, obj, transitionFuncs...)
 	}
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Errorw("failed upserting resource", "resource", sets.TypedKey(obj), "status_update", statusUpdate, "err", err)
+		contextutils.LoggerFrom(ctx).Errorw(
+			"failed upserting resource",
+			"resource",
+			sets.TypedKey(obj),
+			"status_update",
+			statusUpdate,
+			"err",
+			err,
+		)
 
 		incrementResourcesWriteFailsTotal(s.Name, "upsert", obj)
 
 		return err
 	}
 	if result != controllerutil.OperationResultNone {
-		contextutils.LoggerFrom(ctx).Debugw("upserted resource", "resource", sets.TypedKey(obj), "result", result, "status_update", statusUpdate)
+		contextutils.LoggerFrom(ctx).Debugw(
+			"upserted resource",
+			"resource",
+			sets.TypedKey(obj),
+			"result",
+			result,
+			"status_update",
+			statusUpdate,
+		)
 
 		incrementResourcesSyncedTotal(
 			s.Name,
