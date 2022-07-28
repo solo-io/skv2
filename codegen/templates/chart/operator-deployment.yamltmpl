@@ -239,4 +239,11 @@ spec:
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].adminServiceSpec" */}}
 
+---
+
+{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]AdminServiceOverrides "[[ $operator.Name ]].adminServiceSpec") }}
+{{- end }}
+
+---
+
 [[ end ]]
