@@ -223,7 +223,7 @@ type OutputOpts struct {
 	ErrHandler ErrorHandler
 
 	// If provided, ensure the resource has been verified before adding it to snapshots
-	Verifier verifier.OutputResourceVerifier
+	Verifier verifier.ServerResourceVerifier
 
 	// If provided, the resource will be updated before syncing it to the cluster.
 	// This argument will not apply for status updates
@@ -297,7 +297,7 @@ func (s Snapshot) syncList(
 	clientCluster string,
 	cli client.Client,
 	list ResourceList,
-	verifier verifier.OutputResourceVerifier,
+	verifier verifier.ServerResourceVerifier,
 	errHandler ErrorHandler,
 	transitionFuncs []controllerutils.TransitionFunc,
 ) {
