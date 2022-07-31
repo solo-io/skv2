@@ -107,8 +107,8 @@ func (c *cachedVerificationResponses) clearedCachedResponses() {
 	c.verifiedClusterResources = map[string]map[schema.GroupVersionKind]bool{}
 }
 
-// NewServerResourceVerifier returns a new verifier
-func NewServerResourceVerifier(
+// NewVerifier returns a new verifier
+func NewVerifier(
 	ctx context.Context,
 	options map[schema.GroupVersionKind]ServerVerifyOption,
 ) *verifier {
