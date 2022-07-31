@@ -101,7 +101,7 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	}
 
 	if r.options.Verifier != nil {
-		if resourceRegistered, err := r.options.Verifier.VerifyServerResource(r.cluster, gvk); err != nil {
+		if resourceRegistered, err := r.options.Verifier.VerifyServerResource(r.cluster, r.mgr.GetConfig(), gvk); err != nil {
 			return err
 		} else if !resourceRegistered {
 			return nil
