@@ -11,14 +11,15 @@ type ClearableCache interface {
 	ResetCache(ctx context.Context)
 }
 
+
 type Factory interface {
-	// NewVerifier returns a new verifier with the given options
+	// NewOutputResourceVerifier returns a new output verifier with the given options
 	NewOutputResourceVerifier(
 		ctx context.Context,
 		discoveryClient discovery.DiscoveryInterface,
 		options map[schema.GroupVersionKind]ServerVerifyOption,
 	) OutputResourceVerifier
-
+	// NewServerResourceVerifier returns a new server verifier with the given options
 	NewServerResourceVerifier(
 		ctx context.Context,
 		options map[schema.GroupVersionKind]ServerVerifyOption,
