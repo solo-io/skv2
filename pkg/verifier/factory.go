@@ -62,7 +62,7 @@ func (f *factory) NewServerResourceVerifier(
 	ctx context.Context,
 	options map[schema.GroupVersionKind]ServerVerifyOption,
 ) ServerResourceVerifier {
-	newVerifier := NewServerResourceVerifier(ctx, options)
+	newVerifier := NewVerifier(ctx, options)
 	f.serverVerifiers = append(f.serverVerifiers, newVerifier)
 	return newVerifier
 }
