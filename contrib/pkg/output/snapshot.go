@@ -217,7 +217,7 @@ type OutputOpts struct {
 	ErrHandler ErrorHandler
 
 	// If provided, ensure the resource has been verified before adding it to snapshots
-	Verifier verifier.ServerResourceVerifier
+	Verifier verifier.OutputResourceVerifier
 }
 
 // sync the output snapshot to local cluster storage.
@@ -279,7 +279,7 @@ func (s Snapshot) syncList(
 	clientCluster string,
 	cli client.Client,
 	list ResourceList,
-	verifier verifier.ServerResourceVerifier,
+	verifier verifier.OutputResourceVerifier,
 	errHandler ErrorHandler,
 ) {
 

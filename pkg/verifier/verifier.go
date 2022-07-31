@@ -9,6 +9,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
 )
 
 // ServerVerifyOption is used to specify one of several options on
@@ -37,53 +38,13 @@ const (
 
 // ServerResourceVerifier verifies whether a given cluster server supports a given resource.
 type ServerResourceVerifier interface {
+	ClearableCache
 	// VerifyServerResource verifies whether the API server for the given rest.Config supports the resource with the given GVK.
 	// For the "local/management" cluster, set cluster to ""
 	// Note that once a resource has been verified, the result will be cached for subsequent calls.
 	// Returns true if the resource is registered, false otherwise.
 	// an error will be returned if the ErrorIfNotPresent option is selected for the given GVK
-	VerifyServerResource(cluster string, gvk schema.GroupVersionKind) (bool, error)
-	// ResetCache invalidates the cache for the previously verified resources
-	ResetCache(
-		ctx context.Context,
-	)
-}
-
-type Factory interface {
-	// NewVerifier returns a new verifier with the given options
-	NewVerifier(
-		ctx context.Context,
-		discoveryClient discovery.DiscoveryInterface,
-		options map[schema.GroupVersionKind]ServerVerifyOption,
-	) ServerResourceVerifier
-	// ResetAllCaches invalidates the caches of each verifier created by this factory
-	ResetAllCaches(
-		ctx context.Context,
-	)
-}
-
-func NewVerifierFactory() Factory {
-	return &factory{}
-}
-
-type factory struct {
-	verifiers []*verifier
-}
-
-func (f *factory) ResetAllCaches(ctx context.Context) {
-	for _, cache := range f.verifiers {
-		cache.ResetCache(ctx)
-	}
-}
-
-func (f *factory) NewVerifier(
-	ctx context.Context,
-	discoveryClient discovery.DiscoveryInterface,
-	options map[schema.GroupVersionKind]ServerVerifyOption,
-) ServerResourceVerifier {
-	newVerifier := NewVerifier(ctx, discoveryClient, options)
-	f.verifiers = append(f.verifiers, newVerifier)
-	return newVerifier
+	VerifyServerResource(cluster string, cfg *rest.Config, gvk schema.GroupVersionKind) (bool, error)
 }
 
 type verifier struct {
@@ -98,8 +59,10 @@ type verifier struct {
 	// future calls to VerifyServerResource will return quickly if the
 	// resources have already been verified for the cluster.
 	cachedVerificationResponses *cachedVerificationResponses
+}
 
-	discClient discovery.DiscoveryInterface
+func (v *verifier) ResetCache(_ context.Context) {
+	v.cachedVerificationResponses.clearedCachedResponses()
 }
 
 type cachedVerificationResponses struct {
@@ -144,11 +107,9 @@ func (c *cachedVerificationResponses) clearedCachedResponses() {
 	c.verifiedClusterResources = map[string]map[schema.GroupVersionKind]bool{}
 }
 
-// NewVerifier returns a new verifier
-// Deprecated: use VerifierFactory instead
-func NewVerifier(
+// NewServerResourceVerifier returns a new verifier
+func NewServerResourceVerifier(
 	ctx context.Context,
-	discoveryClient discovery.DiscoveryInterface,
 	options map[schema.GroupVersionKind]ServerVerifyOption,
 ) *verifier {
 	if options == nil {
@@ -157,17 +118,12 @@ func NewVerifier(
 	return &verifier{
 		ctx:                         ctx,
 		options:                     options,
-		discClient:                  discoveryClient,
 		cachedVerificationResponses: newCachedVerificationResponses(),
 	}
 }
 
-func (v *verifier) ResetCache(_ context.Context) {
-	v.cachedVerificationResponses.clearedCachedResponses()
-}
-
 // Verify whether the API server for the given rest.Config supports the resource with the given GVK.
-func (v *verifier) VerifyServerResource(cluster string, gvk schema.GroupVersionKind) (bool, error) {
+func (v *verifier) VerifyServerResource(cluster string, cfg *rest.Config, gvk schema.GroupVersionKind) (bool, error) {
 	responseCached, resourceVerified := v.cachedVerificationResponses.getCachedResponse(cluster, gvk)
 	if responseCached {
 		return resourceVerified, nil
@@ -184,7 +140,11 @@ func (v *verifier) VerifyServerResource(cluster string, gvk schema.GroupVersionK
 	}
 
 	var resourceRegistered bool
-	if verifyFailed, err := verifyServerResource(v.discClient, gvk); err != nil {
+	disc, err := discovery.NewDiscoveryClientForConfig(cfg)
+	if err != nil {
+		return true, err
+	}
+	if verifyFailed, err := verifyServerResource(disc, gvk); err != nil {
 		if verifyFailed {
 			return false, eris.Wrap(err, "resource verify failed")
 		}
