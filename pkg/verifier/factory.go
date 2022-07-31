@@ -2,6 +2,7 @@ package verifier
 
 import (
 	"context"
+	"sync"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
@@ -35,11 +36,14 @@ func NewVerifierFactory() Factory {
 }
 
 type factory struct {
+	lock sync.RWMutex
 	serverVerifiers []*verifier
 	outputVerifiers []*outputVerifier
 }
 
 func (f *factory) ResetAllCaches(ctx context.Context) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	for _, cache := range f.serverVerifiers {
 		cache.ResetCache(ctx)
 	}
@@ -53,6 +57,8 @@ func (f *factory) NewOutputResourceVerifier(
 	discoveryClient discovery.DiscoveryInterface,
 	options map[schema.GroupVersionKind]ServerVerifyOption,
 ) OutputResourceVerifier {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	newVerifier := NewOutputVerifier(ctx, discoveryClient, options)
 	f.outputVerifiers = append(f.outputVerifiers, newVerifier)
 	return newVerifier
@@ -62,6 +68,8 @@ func (f *factory) NewServerResourceVerifier(
 	ctx context.Context,
 	options map[schema.GroupVersionKind]ServerVerifyOption,
 ) ServerResourceVerifier {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	newVerifier := NewVerifier(ctx, options)
 	f.serverVerifiers = append(f.serverVerifiers, newVerifier)
 	return newVerifier
