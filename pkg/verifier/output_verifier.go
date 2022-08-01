@@ -12,6 +12,7 @@ import (
 
 // ServerResourceVerifier verifies whether a given cluster server supports a given resource.
 type OutputResourceVerifier interface {
+	ClearableCache
 	// VerifyServerResource verifies whether the API server for the given rest.Config supports the resource with the given GVK.
 	// For the "local/management" cluster, set cluster to ""
 	// Note that once a resource has been verified, the result will be cached for subsequent calls.
@@ -50,6 +51,10 @@ func NewOutputVerifier(
 		options:                     options,
 		cachedVerificationResponses: newCachedVerificationResponses(),
 	}
+}
+
+func (v *outputVerifier) ResetCache(_ context.Context) {
+	v.cachedVerificationResponses.clearedCachedResponses()
 }
 
 // Verify whether the API server for the given rest.Config supports the resource with the given GVK.

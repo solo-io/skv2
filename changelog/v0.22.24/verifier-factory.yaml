@@ -1,0 +1,6 @@
+changelog:
+  - type: NEW_FEATURE
+    description: |
+      Adds a factory for creating verifiers. This factory allows the caller to reset all caches simultaneously.
+      This can be used when CRDs are added to the cluster later.
+    issueLink: https://github.com/solo-io/skv2/issues/356
