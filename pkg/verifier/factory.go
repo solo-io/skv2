@@ -12,7 +12,6 @@ type ClearableCache interface {
 	ResetCache(ctx context.Context)
 }
 
-
 type Factory interface {
 	// NewOutputResourceVerifier returns a new output verifier with the given options
 	NewOutputResourceVerifier(
@@ -36,7 +35,7 @@ func NewVerifierFactory() Factory {
 }
 
 type factory struct {
-	lock sync.RWMutex
+	lock            sync.RWMutex
 	serverVerifiers []*verifier
 	outputVerifiers []*outputVerifier
 }
