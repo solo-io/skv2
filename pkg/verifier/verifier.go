@@ -38,6 +38,7 @@ const (
 
 // ServerResourceVerifier verifies whether a given cluster server supports a given resource.
 type ServerResourceVerifier interface {
+	ClearableCache
 	// VerifyServerResource verifies whether the API server for the given rest.Config supports the resource with the given GVK.
 	// For the "local/management" cluster, set cluster to ""
 	// Note that once a resource has been verified, the result will be cached for subsequent calls.
@@ -58,6 +59,10 @@ type verifier struct {
 	// future calls to VerifyServerResource will return quickly if the
 	// resources have already been verified for the cluster.
 	cachedVerificationResponses *cachedVerificationResponses
+}
+
+func (v *verifier) ResetCache(_ context.Context) {
+	v.cachedVerificationResponses.clearedCachedResponses()
 }
 
 type cachedVerificationResponses struct {
@@ -96,6 +101,13 @@ func (c *cachedVerificationResponses) setCachedResponse(cluster string, gvk sche
 	verifiedResources[gvk] = registered
 }
 
+func (c *cachedVerificationResponses) clearedCachedResponses() {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.verifiedClusterResources = map[string]map[schema.GroupVersionKind]bool{}
+}
+
+// NewVerifier returns a new verifier
 func NewVerifier(
 	ctx context.Context,
 	options map[schema.GroupVersionKind]ServerVerifyOption,
