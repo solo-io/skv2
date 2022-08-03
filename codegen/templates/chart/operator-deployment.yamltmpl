@@ -241,8 +241,7 @@ spec:
 
 ---
 
-{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].adminServiceSpec") }}
-{{- end }}
+{{- template "[[ $operator.Name ]].adminServiceSpec"}}
 
 ---
 
