@@ -241,7 +241,7 @@ spec:
 
 ---
 
-{{- template "[[ $operator.Name ]].adminServiceSpec"}}
+{{ include "[[ $operator.Name ]].adminServiceSpec"}}
 
 ---
 
