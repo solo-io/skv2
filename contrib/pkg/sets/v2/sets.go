@@ -27,6 +27,8 @@ type ResourceSet[T client.Object] interface {
 	Delta(newSet ResourceSet[T]) ResourceDelta[T]
 	// Clone returns a deep copy of the set
 	Clone() ResourceSet[T]
+
+	SetsV1() sk_sets.ResourceSet
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -35,6 +37,13 @@ type ResourceDelta[T client.Object] struct {
 	Inserted ResourceSet[T]
 	// the resources removed from the set
 	Removed ResourceSet[T]
+}
+
+func (r *ResourceDelta[T]) DeltaV1() sk_sets.ResourceDelta {
+	return sk_sets.ResourceDelta{
+		Inserted: r.Inserted.SetsV1(),
+		Removed:  r.Removed.SetsV1(),
+	}
 }
 
 type resourceSet[T client.Object] struct {
@@ -239,4 +248,12 @@ func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 		return true
 	})
 	return new
+}
+
+func (s *resourceSet[T]) SetsV1() sk_sets.ResourceSet {
+	set := sk_sets.NewResourceSet()
+	for _, v := range s.List() {
+		set.Insert(v)
+	}
+	return set
 }
