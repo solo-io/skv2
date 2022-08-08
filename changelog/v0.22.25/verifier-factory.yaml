@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add generic versions of the reconciler, and sets. These are placed in `<original>/v2`
+    issueLink: https://github.com/solo-io/skv2/issues/360
+    resolvesIssue: false
