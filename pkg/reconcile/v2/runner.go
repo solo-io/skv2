@@ -6,9 +6,9 @@ import (
 
 	"github.com/rotisserie/eris"
 
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/verifier"
 
-	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/utils"
@@ -16,7 +16,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -26,7 +25,7 @@ import (
 type Request = reconcile.Request
 type Result = reconcile.Result
 
-type Reconciler[T ezkube.Object] interface {
+type Reconciler[T client.Object] interface {
 	// reconcile an object
 	// requeue the object if returning an error, or a non-zero "requeue-after" duration
 	Reconcile(ctx context.Context, object T) (Result, error)
@@ -38,7 +37,7 @@ type DeletionReconciler interface {
 	ReconcileDeletion(ctx context.Context, request Request) error
 }
 
-type ReconcileFuncs[T ezkube.Object] struct {
+type ReconcileFuncs[T client.Object] struct {
 	ReconcileFunc          func(ctx context.Context, object T) (Result, error)
 	DeletionReconcilerFunc func(ctx context.Context, request Request) error
 }
@@ -57,7 +56,7 @@ func (r *ReconcileFuncs[T]) DeletionReconciler(ctx context.Context, request Requ
 	return r.DeletionReconcilerFunc(ctx, request)
 }
 
-type FinalizingReconciler[T ezkube.Object] interface {
+type FinalizingReconciler[T client.Object] interface {
 	Reconciler[T]
 
 	// name of the finalizer used by this handler.
@@ -70,11 +69,11 @@ type FinalizingReconciler[T ezkube.Object] interface {
 }
 
 // a Reconcile Loop runs resource reconcilers until the context gets cancelled
-type Loop[T ezkube.Object] interface {
+type Loop[T client.Object] interface {
 	RunReconciler(ctx context.Context, reconciler Reconciler[T], predicates ...predicate.Predicate) error
 }
 
-type runner[T ezkube.Object] struct {
+type runner[T client.Object] struct {
 	name     string
 	mgr      manager.Manager
 	resource T
@@ -89,7 +88,7 @@ type Options struct {
 	Verifier verifier.ServerResourceVerifier
 }
 
-func NewLoop[T ezkube.Object](
+func NewLoop[T client.Object](
 	name string,
 	mgr manager.Manager,
 	resource T,
@@ -103,10 +102,9 @@ func NewLoop[T ezkube.Object](
 	}
 }
 
-type runnerReconciler[T ezkube.Object] struct {
+type runnerReconciler[T client.Object] struct {
 	mgr        manager.Manager
 	resource   T
-	logger     logr.Logger
 	reconciler Reconciler[T]
 }
 
@@ -126,7 +124,6 @@ func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T],
 	}
 
 	rec := &runnerReconciler[T]{
-		logger:     log.Log.WithName("event-controller").WithValues("kind", gvk).WithName(r.name),
 		mgr:        r.mgr,
 		resource:   r.resource,
 		reconciler: reconciler,
@@ -146,7 +143,7 @@ func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T],
 
 	// Only wait for cache sync if specified in options
 	if r.options.WaitForCacheSync {
-		rec.logger.V(1).Info("waiting for cache sync...")
+		contextutils.LoggerFrom(ctx).Debug("waiting for cache sync...")
 		if synced := r.mgr.GetCache().WaitForCacheSync(ctx); !synced {
 			return errors.Errorf("waiting for cache sync failed")
 		}
@@ -156,8 +153,7 @@ func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T],
 }
 
 func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (reconcile.Result, error) {
-	logger := ec.logger.WithValues("event", request)
-	logger.V(2).Info("handling event", "event", request)
+	contextutils.LoggerFrom(ctx).Debug("handling event", "event", request)
 
 	// get the object from our cache
 	restClient := ezkube.NewRestClient(ec.mgr)
@@ -169,7 +165,7 @@ func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (
 		if err := client.IgnoreNotFound(err); err != nil {
 			return reconcile.Result{}, err
 		}
-		logger.V(2).Info(fmt.Sprintf("unable to fetch %T", obj), "request", request, "err", err)
+		contextutils.LoggerFrom(ctx).Debug(fmt.Sprintf("unable to fetch %T", obj), "request", request, "err", err)
 
 		// call OnDelete
 		if deletionReconciler, ok := ec.reconciler.(DeletionReconciler); ok {
@@ -224,7 +220,7 @@ func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (
 	if err != nil {
 		return result, eris.Wrap(err, "handler error. retrying")
 	}
-	logger.V(2).Info("handler success.", "result", result)
+	contextutils.LoggerFrom(ctx).Debug("handler success.", "result", result)
 
 	return result, nil
 }
