@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
@@ -22,6 +23,8 @@ type Reader[T client.Object, L client.ObjectList] interface {
 	List(ctx context.Context, opts ...client.ListOption) (L, error)
 }
 
+type TransitionFunction[T client.Object] func(existing, desired T) error
+
 type Writer[T client.Object] interface {
 	// Create saves the object obj in the Kubernetes cluster.
 	Create(ctx context.Context, obj T, opts ...client.CreateOption) error
@@ -39,6 +42,9 @@ type Writer[T client.Object] interface {
 
 	// DeleteAllOf deletes all objects of the given type matching the given options.
 	DeleteAllOf(ctx context.Context, obj T, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the passed in object.
+	Upsert(ctx context.Context, obj T, transitionFuncs ...TransitionFunction[T]) error
 }
 
 // StatusClient knows how to create a client which can update status subresource
@@ -60,7 +66,7 @@ type StatusWriter[T client.Object] interface {
 	Patch(ctx context.Context, obj T, patch client.Patch, opts ...client.PatchOption) error
 }
 
-type GenericClient[T client.Object,  L client.ObjectList] interface {
+type GenericClient[T client.Object, L client.ObjectList] interface {
 	Reader[T, L]
 	Writer[T]
 	StatusClient[T]
@@ -71,21 +77,21 @@ type GenericClient[T client.Object,  L client.ObjectList] interface {
 	RESTMapper() meta.RESTMapper
 }
 
-func NewClientset[T client.Object,  L client.ObjectList](cli client.Client) GenericClient[T, L] {
+func NewGenericClient[T client.Object, L client.ObjectList](cli client.Client) GenericClient[T, L] {
 	return &genericClient[T, L]{
 		genericClient: cli,
 	}
 }
 
-func NewClientsetFromConfig[T client.Object,  L client.ObjectList](cfg *rest.Config) (GenericClient[T, L], error) {
+func NewGenericClientFromConfig[T client.Object, L client.ObjectList](cfg *rest.Config) (GenericClient[T, L], error) {
 	cli, err := client.New(cfg, client.Options{})
 	if err != nil {
 		return nil, err
 	}
-	return NewClientset[T, L](cli), nil
+	return NewGenericClient[T, L](cli), nil
 }
 
-type genericClient[T client.Object,  L client.ObjectList] struct {
+type genericClient[T client.Object, L client.ObjectList] struct {
 	genericClient client.Client
 }
 
@@ -123,6 +129,19 @@ func (g *genericClient[T, L]) Patch(ctx context.Context, obj T, patch client.Pat
 
 func (g *genericClient[T, L]) DeleteAllOf(ctx context.Context, obj T, opts ...client.DeleteAllOfOption) error {
 	return g.genericClient.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (g *genericClient[T, L]) Upsert(ctx context.Context, obj T, transitionFuncs ...TransitionFunction[T]) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(T), desired.(T)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, g.genericClient, obj, genericTxFunc)
+	return err
 }
 
 func (g *genericClient[T, L]) Status() StatusWriter[T] {

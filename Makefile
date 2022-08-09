@@ -30,7 +30,7 @@ generated-code: install-go-tools update-licenses
 # this re-gens test protos
 	go test ./codegen
 	go generate -v ./...
-	goimports -w .
+	$(DEPSGOBIN)/goimports -w .
 	go mod tidy
 
 #----------------------------------------------------------------------------------
