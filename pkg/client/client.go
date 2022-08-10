@@ -98,7 +98,7 @@ type genericClient[T client.Object, L client.ObjectList] struct {
 func (g *genericClient[T, L]) Get(ctx context.Context, key client.ObjectKey) (T, error) {
 	obj := new(T)
 	if err := g.genericClient.Get(ctx, key, *obj); err != nil {
-		return nil, err
+		return *obj, err
 	}
 	return *obj, nil
 }
@@ -106,7 +106,7 @@ func (g *genericClient[T, L]) Get(ctx context.Context, key client.ObjectKey) (T,
 func (g *genericClient[T, L]) List(ctx context.Context, opts ...client.ListOption) (L, error) {
 	list := new(L)
 	if err := g.genericClient.List(ctx, *list, opts...); err != nil {
-		return nil, err
+		return *list, err
 	}
 	return *list, nil
 }
