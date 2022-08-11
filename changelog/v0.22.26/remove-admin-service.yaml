@@ -5,3 +5,4 @@ changelog:
       wasn't actually being used in generated templates; this PR reverts those changes to go back to one-off
       generated charts for use cases that need it.
     issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/4209
+    resolvesIssue: false
