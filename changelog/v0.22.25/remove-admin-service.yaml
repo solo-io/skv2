@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    description: |
+      Remove unused admin service from Operator definitions. Following the refactor in #324, admin service generation
+      wasn't actually being used in generated templates; this PR reverts those changes to go back to one-off
+      generated charts for use cases that need it.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/4209
