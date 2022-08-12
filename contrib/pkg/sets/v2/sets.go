@@ -10,25 +10,38 @@ import (
 )
 
 type ResourceSet[T client.Object] interface {
+	// Get the set stored keys
 	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(T) bool) []T
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
 	UnsortedList(filterResource ...func(T) bool) []T
+	// Return the Set as a map of key to resource.
 	Map() map[string]T
+	// Insert a resource into the set.
 	Insert(resource ...T)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(set ResourceSet[T]) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
 	Has(resource T) bool
+	// Delete the key matching the resource
 	Delete(resource T)
+	// Return the union with the provided set
 	Union(set ResourceSet[T]) ResourceSet[T]
+	// Return the difference with the provided set
 	Difference(set ResourceSet[T]) ResourceSet[T]
+	// Return the intersection with the provided set
 	Intersection(set ResourceSet[T]) ResourceSet[T]
+	// Find the resource with the given ID
 	Find(resourceType, id T) (T, error)
+	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sk_sets.ResourceSet
 	// returns the delta between this and and another ResourceSet[T]
-	Delta(newSet ResourceSet[T]) ResourceDelta[T]
+	Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 	// Clone returns a deep copy of the set
 	Clone() ResourceSet[T]
-
-	SetsV1() sk_sets.ResourceSet
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -41,8 +54,8 @@ type ResourceDelta[T client.Object] struct {
 
 func (r *ResourceDelta[T]) DeltaV1() sk_sets.ResourceDelta {
 	return sk_sets.ResourceDelta{
-		Inserted: r.Inserted.SetsV1(),
-		Removed:  r.Removed.SetsV1(),
+		Inserted: r.Inserted.Generic(),
+		Removed:  r.Removed.Generic(),
 	}
 }
 
@@ -204,7 +217,7 @@ func (s *resourceSet[T]) Length() int {
 }
 
 // note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
-func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) ResourceDelta[T] {
+func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta {
 	updated, removed := NewResourceSet[T](), NewResourceSet[T]()
 
 	// find objects updated or removed
@@ -231,11 +244,11 @@ func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) ResourceDelta[T] {
 		}
 		return true // return value ignored
 	})
-	return ResourceDelta[T]{
+	delta := &ResourceDelta[T]{
 		Inserted: updated,
 		Removed:  removed,
 	}
-
+	return delta.DeltaV1()
 }
 
 // Create a clone of the current set
@@ -250,7 +263,7 @@ func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 	return new
 }
 
-func (s *resourceSet[T]) SetsV1() sk_sets.ResourceSet {
+func (s *resourceSet[T]) Generic() sk_sets.ResourceSet {
 	set := sk_sets.NewResourceSet()
 	for _, v := range s.List() {
 		set.Insert(v)

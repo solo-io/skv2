@@ -179,9 +179,9 @@ var _ = Describe("PaintSetV2", func() {
 		}
 		setA.Insert(oldPaintA, oldPaintB, oldPaintD)
 		setB.Insert(newPaintA, newPaintC, newPaintD)
-		Expect(setA.Delta(setB)).To(Equal(sets_v2.ResourceDelta[*v1.Paint]{
-			Inserted: sets_v2.NewResourceSet(newPaintA, newPaintC),
-			Removed:  sets_v2.NewResourceSet(oldPaintB),
+		Expect(setA.Delta(setB)).To(Equal(sets.ResourceDelta{
+			Inserted: sets.NewResourceSet(newPaintA, newPaintC),
+			Removed:  sets.NewResourceSet(oldPaintB),
 		}))
 	})
 })
