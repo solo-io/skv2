@@ -18,8 +18,8 @@ import (
 type clusterLoopRunner[T client.Object] struct {
 	name         string
 	clusterLoops *clusterLoopSet[T]
-	reconcilers *reconcilerList[T]
-	options     reconcile_v2.Options
+	reconcilers  *reconcilerList[T]
+	options      reconcile_v2.Options
 }
 
 var _ multicluster_v2.Loop[client.Object] = &clusterLoopRunner[client.Object]{}

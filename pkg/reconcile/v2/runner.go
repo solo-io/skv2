@@ -74,9 +74,9 @@ type Loop[T client.Object] interface {
 }
 
 type runner[T client.Object] struct {
-	name     string
-	mgr      manager.Manager
-	options  Options
+	name    string
+	mgr     manager.Manager
+	options Options
 	cluster string
 }
 
@@ -94,10 +94,10 @@ func NewLoop[T client.Object](
 	options Options,
 ) *runner[T] {
 	return &runner[T]{
-		name:     name,
-		mgr:      mgr,
+		name:    name,
+		mgr:     mgr,
 		cluster: cluster,
-		options:  options,
+		options: options,
 	}
 }
 

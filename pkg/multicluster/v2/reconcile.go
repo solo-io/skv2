@@ -21,7 +21,7 @@ type DeletionReconciler[T client.Object] interface {
 }
 
 type ReconcilerFuncs[T client.Object] struct {
-	ReconcileFunc func(ctx context.Context, cluster string, object T) (reconcile.Result, error)
+	ReconcileFunc         func(ctx context.Context, cluster string, object T) (reconcile.Result, error)
 	ReconcileDeletionFunc func(ctx context.Context, cluster string, request reconcile.Request) error
 }
 
