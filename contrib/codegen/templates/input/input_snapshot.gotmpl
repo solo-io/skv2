@@ -45,14 +45,12 @@ import (
     "github.com/solo-io/skv2/pkg/multicluster"
     "sigs.k8s.io/controller-runtime/pkg/manager"
     "sigs.k8s.io/controller-runtime/pkg/client"
+    sk_client "github.com/solo-io/skv2/pkg/client"
+    sk_sets "github.com/solo-io/skv2/contrib/pkg/sets/v2"
 
 {{- range $group := $groups }}
-{{ $client_import_prefix := group_import_name $group }}
 {{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
-{{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
     {{ $types_import_prefix }} "{{ group_import_path $group }}"
-    {{ $client_import_prefix }} "{{ client_import_path $group }}"
-    {{ $set_import_prefix }} "{{ set_import_path $group }}"
 {{- end }}
 
 )
@@ -85,11 +83,11 @@ var {{ $snapshotName }}SnapshotGVKs = []schema.GroupVersionKind{
 type {{ $snapshotName }}Snapshot interface {
 {{/* generate a getter for each resource */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
     // return the set of input {{ $kindPlural }}
-    {{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+    {{ $kindPlural }}() sk_sets.ResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}]
 {{- end }}
 {{- end }}
 {{- if $needs_sync_status }}
@@ -117,7 +115,6 @@ type {{ $snapshotName }}Snapshot interface {
 type {{ $snapshotName }}SyncStatusOptions struct {
     {{/* generate fields of the real snapshot impl here */}}
     {{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     // sync status of {{ $resource.Kind }} objects
     {{ $resource.Kind }} bool
@@ -129,11 +126,11 @@ type snapshot{{ $snapshotName }} struct {
     name string
 {{/* generate fields of the real snapshot impl here */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+    {{ $kindLowerCamelPlural }} sk_sets.ResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}]
 {{- end }}
 {{- end }}
 
@@ -143,11 +140,11 @@ func New{{ $snapshotName }}Snapshot(
 	name string,
 {{/* generate constructor params here */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set,
+{{ $kindLowerCamelPlural }} sk_sets.ResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}],
 {{- end }}
 {{- end }}
 
@@ -170,12 +167,12 @@ func New{{ $snapshotName }}SnapshotFromGeneric(
     genericSnapshot resource.ClusterSnapshot,
 ) {{ $snapshotName }}Snapshot {
     {{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     {{- $kindPlural := pluralize $resource.Kind }}
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    {{ $kindLowerCamel }}Set := sk_sets.NewResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}]()
     {{- end }}
     {{- end }}
 
@@ -219,13 +216,13 @@ func New{{ $snapshotName }}SnapshotFromGeneric(
 
 {{/* generate getters here */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func (s *snapshot{{ $snapshotName }}) {{ $kindPlural }}() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
+func (s *snapshot{{ $snapshotName }}) {{ $kindPlural }}() sk_sets.ResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}] {
     return s.{{ $kindLowerCamelPlural }}
 }
 {{- end }}
@@ -291,12 +288,11 @@ func (s *snapshot{{ $snapshotName }}) MarshalJSON() ([]byte, error) {
     snapshotMap := map[string]interface{}{"name": s.name}
 {{/* add map contents here */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 {{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamel }}Set := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    {{ $kindLowerCamel }}Set := sk_sets.NewResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}]()
     for _, obj := range s.{{ $kindLowerCamelPlural }}.UnsortedList() {
         // redact secret data from the snapshot
         obj := snapshotutils.RedactSecretData(obj)
@@ -334,7 +330,6 @@ func (s *snapshot{{ $snapshotName }}) Generic() resource.ClusterSnapshot {
 // convert this snapshot to its generic form
 func (s *snapshot{{ $snapshotName }}) ForEachObject(handleObject func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject)) {
     {{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     {{- $kindPlural := pluralize $resource.Kind }}
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -404,12 +399,12 @@ func NewMultiCluster{{ $snapshotName }}Builder(
 func (b *multiCluster{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, name string, opts {{ $snapshotName }}BuildOptions) ({{ $snapshotName }}Snapshot, error) {
 {{/* generate set initialization here */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }} := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    {{ $kindLowerCamelPlural }} := sk_sets.NewResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}]()
 {{- end }}
 {{- end }}
 
@@ -448,17 +443,19 @@ func (b *multiCluster{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Conte
 
 {{/* generate insertion funcs here */}}
 {{- range $group := $groups }}
-{{ $client_import_prefix := group_import_name $group }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-func (b *multiCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}FromCluster(ctx context.Context, cluster string, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts Resource{{ $snapshotName }}BuildOptions) error {
-    {{ $kindLowerCamel }}Client, err := {{ $client_import_prefix }}.NewMulticluster{{ $resource.Kind }}Client(b.client).Cluster(cluster)
+func (b *multiCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}FromCluster(ctx context.Context, cluster string, {{ $kindLowerCamelPlural }} sk_sets.ResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}], opts Resource{{ $snapshotName }}BuildOptions) error {
+    clusterClient, err := b.client.Cluster(cluster)
     if err != nil {
         return err
     }
+
+    {{ $kindLowerCamel }}Client := sk_client.NewGenericClient[*{{ $types_import_prefix }}.{{ $resource.Kind }}, *{{ $types_import_prefix }}.{{ $resource.Kind }}List](clusterClient)
+
 
     if opts.Verifier != nil {
     	mgr, err := b.clusters.Cluster(cluster)
@@ -483,7 +480,7 @@ func (b *multiCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}FromClus
         }
     }
 
-    {{ $kindLowerCamel }}List, err := {{ $kindLowerCamel }}Client.List{{ $resource.Kind }}(ctx, opts.ListOptions...)
+    {{ $kindLowerCamel }}List, err := {{ $kindLowerCamel }}Client.List(ctx, opts.ListOptions...)
     if err != nil {
         return err
     }
@@ -530,12 +527,12 @@ func NewSingleCluster{{ $snapshotName }}BuilderWithClusterName(
 func (b *singleCluster{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, name string, opts {{ $snapshotName }}BuildOptions) ({{ $snapshotName }}Snapshot, error) {
 {{/* generate set initialization here */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }} := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    {{ $kindLowerCamelPlural }} := sk_sets.NewResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}]()
 {{- end }}
 {{- end }}
 
@@ -570,13 +567,12 @@ func (b *singleCluster{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Cont
 
 {{/* generate insertion funcs here */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
-{{ $client_import_prefix := group_import_name $group }}
+{{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx context.Context, {{ $kindLowerCamelPlural }} {{ $set_import_prefix }}.{{ $resource.Kind }}Set, opts Resource{{ $snapshotName }}BuildOptions) error {
+func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx context.Context, {{ $kindLowerCamelPlural }} sk_sets.ResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}], opts Resource{{ $snapshotName }}BuildOptions) error {
 
     if opts.Verifier != nil {
         gvk := schema.GroupVersionKind{
@@ -596,7 +592,9 @@ func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx co
         }
     }
 
-    {{ $kindLowerCamel }}List, err := {{ $client_import_prefix }}.New{{ $resource.Kind }}Client(b.mgr.GetClient()).List{{ $resource.Kind }}(ctx, opts.ListOptions...)
+    {{ $kindLowerCamel }}Client := sk_client.NewGenericClient[*{{ $types_import_prefix }}.{{ $resource.Kind }}, *{{ $types_import_prefix }}.{{ $resource.Kind }}List](b.mgr.GetClient())
+
+    {{ $kindLowerCamel }}List, err := {{ $kindLowerCamel }}Client.List(ctx, opts.ListOptions...)
     if err != nil {
         return err
     }
@@ -636,12 +634,12 @@ func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, 
 
     {{/* generate set initialization here */}}
     {{- range $group := $groups }}
-    {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     {{- $kindPlural := pluralize $resource.Kind }}
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $kindLowerCamelPlural }} := {{ $set_import_prefix }}.New{{ $resource.Kind }}Set()
+    {{ $kindLowerCamelPlural }} := sk_sets.NewResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}]()
     {{- end }}
     {{- end }}
 
@@ -649,7 +647,6 @@ func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, 
         switch obj := obj.(type) {
     {{- range $group := $groups }}
     {{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
-    {{- $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     {{- $kindPlural := pluralize $resource.Kind }}
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -679,7 +676,6 @@ func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, 
 {{/* generate insertion funcs here */}}
 {{- range $group := $groups }}
 {{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
-{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -687,7 +683,7 @@ func (i *inMemory{{ $snapshotName }}Builder) BuildSnapshot(ctx context.Context, 
 func (i *inMemory{{ $snapshotName }}Builder) insert{{ $resource.Kind }}(
     ctx context.Context,
     {{ $kindLowerCamel }} *{{ $types_import_prefix }}.{{ $resource.Kind }},
-    {{ $kindLowerCamel }}Set {{ $set_import_prefix }}.{{ $resource.Kind }}Set,
+    {{ $kindLowerCamel }}Set sk_sets.ResourceSet[*{{ $types_import_prefix }}.{{ $resource.Kind }}],
     buildOpts {{ $snapshotName }}BuildOptions,
 ) {
 
