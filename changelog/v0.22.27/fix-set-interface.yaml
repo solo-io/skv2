@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Fix generic set Find() function to use ResourceId, rather than T.

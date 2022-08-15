@@ -5,6 +5,7 @@ import (
 
 	sk_sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/controllerutils"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -33,7 +34,7 @@ type ResourceSet[T client.Object] interface {
 	// Return the intersection with the provided set
 	Intersection(set ResourceSet[T]) ResourceSet[T]
 	// Find the resource with the given ID
-	Find(resourceType, id T) (T, error)
+	Find(id ezkube.ResourceId) (T, error)
 	// Get the length of the set
 	Length() int
 	// returns the generic implementation of the set
@@ -194,16 +195,14 @@ func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 }
 
 func (s *resourceSet[T]) Find(
-	resourceType,
-	id T,
+	id ezkube.ResourceId,
 ) (T, error) {
-	var resource T
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	key := sk_sets.Key(id)
 	resource, ok := s.mapping[key]
 	if !ok {
-		return resource, sk_sets.NotFoundErr(resourceType, id)
+		return resource, sk_sets.NotFoundErr(resource , id)
 	}
 
 	return resource, nil
@@ -222,7 +221,7 @@ func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 
 	// find objects updated or removed
 	oldSet.List(func(oldObj T) bool {
-		newObj, err := newSet.Find(oldObj, oldObj)
+		newObj, err := newSet.Find(oldObj)
 		switch {
 		case err != nil:
 			// obj removed
@@ -238,7 +237,7 @@ func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 
 	// find objects added
 	newSet.List(func(newObj T) bool {
-		if _, err := oldSet.Find(newObj, newObj); err != nil {
+		if _, err := oldSet.Find(newObj); err != nil {
 			// obj added
 			updated.Insert(newObj)
 		}
