@@ -202,7 +202,7 @@ func (s *resourceSet[T]) Find(
 	key := sk_sets.Key(id)
 	resource, ok := s.mapping[key]
 	if !ok {
-		return resource, sk_sets.NotFoundErr(resource , id)
+		return resource, sk_sets.NotFoundErr(resource, id)
 	}
 
 	return resource, nil
