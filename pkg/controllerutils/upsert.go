@@ -116,6 +116,7 @@ func UpdateStatus(
 	// https://github.com/solo-io/skv2/issues/344
 	obj.SetUID(existing.GetUID())
 	obj.SetCreationTimestamp(existing.GetCreationTimestamp())
+	obj.SetResourceVersion(existing.GetResourceVersion())
 
 	return update(ctx, c, obj)
 }
