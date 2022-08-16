@@ -9,6 +9,9 @@ import (
 	"github.com/solo-io/protoc-gen-ext/pkg/clone"
 )
 
+// testing comment
+// testing stuff looking at Paint Spec
+// github.com/solo-io/skv2/codegen/test/api/things.test.io/v1 github.com/solo-io/skv2/codegen/test/api/things.test.io/v1
 // DeepCopyInto for the Paint.Spec
 func (in *PaintSpec) DeepCopyInto(out *PaintSpec) {
 	var p *PaintSpec
@@ -31,6 +34,8 @@ func (in *PaintStatus) DeepCopyInto(out *PaintStatus) {
 	*out = *p
 }
 
+// testing stuff looking at ClusterResource Spec
+// github.com/solo-io/skv2/codegen/test/api/things.test.io/v1 github.com/solo-io/skv2/codegen/test/api/things.test.io/v1
 // DeepCopyInto for the ClusterResource.Spec
 func (in *ClusterResourceSpec) DeepCopyInto(out *ClusterResourceSpec) {
 	var p *ClusterResourceSpec
