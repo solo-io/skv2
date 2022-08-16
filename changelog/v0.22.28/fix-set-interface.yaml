@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: |
+      Resolve "the object has been modified; please apply your changes to the latest version and try again" errors.
+    issueLink: https://github.com/solo-io/skv2/issues/365
