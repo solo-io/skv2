@@ -127,7 +127,7 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 
 		files, err := r.renderCoreTemplates(inputTmpls, descriptorsWithGopath{
 			Descriptors:      grp.Descriptors,
-			Resources:        specOrStatusInRootPkg(grp.Resources, rootGoPackage),
+			Resources:        grp.Resources, //specOrStatusInRootPkg(grp.Resources, rootGoPackage),
 			PackageName:      packageName,
 			RootGoPackage:    rootGoPackage,
 			goPackageToMatch: pkgForGroup,
