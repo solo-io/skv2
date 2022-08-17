@@ -183,3 +183,10 @@ metadata:
 
 {{ include "skv2.utils.merge" (list . $painterServiceOverrides "painter.serviceSpec") }}
 {{- end }}
+
+---
+
+{{- define "painter.adminServiceSpec"}}
+
+{{- end }} {{/* define "painter.adminServiceSpec" */}}
+
