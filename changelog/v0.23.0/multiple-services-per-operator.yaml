@@ -1,0 +1,7 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: |
+      Re-remove the AdminService model underneath operators, and instead replace it with the ability to specify
+      an array of Services rather than just a single Service per Operator.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/4209
+    resolvesIssue: false
