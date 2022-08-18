@@ -49,8 +49,8 @@ type Operator struct {
 	// these populate the generated ClusterRole for the operator
 	Rbac []rbacv1.PolicyRule
 
-	// list of services with at least
-	Services []Service
+	// if at least one port is defined, create a Service for it
+	Service Service
 
 	// Custom values to include at operator level
 	Values interface{}
@@ -141,10 +141,8 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 
 	for _, operator := range c.Operators {
 		servicePorts := map[string]uint32{}
-		for _, service := range operator.Services {
-			for _, port := range service.Ports {
-				servicePorts[port.Name] = uint32(port.DefaultPort)
-			}
+		for _, port := range operator.Service.Ports {
+			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
 		sidecars := map[string]values.UserContainerValues{}
 		for _, sidecar := range operator.Deployment.Sidecars {
