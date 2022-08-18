@@ -74,10 +74,10 @@ type Loop[T client.Object] interface {
 }
 
 type runner[T client.Object] struct {
-	name     string
-	mgr      manager.Manager
-	resource T
-	options  Options
+	name    string
+	mgr     manager.Manager
+	options Options
+	cluster string
 }
 
 type Options struct {
@@ -89,27 +89,26 @@ type Options struct {
 }
 
 func NewLoop[T client.Object](
-	name string,
+	name, cluster string,
 	mgr manager.Manager,
-	resource T,
 	options Options,
 ) *runner[T] {
 	return &runner[T]{
-		name:     name,
-		mgr:      mgr,
-		resource: resource,
-		options:  options,
+		name:    name,
+		mgr:     mgr,
+		cluster: cluster,
+		options: options,
 	}
 }
 
 type runnerReconciler[T client.Object] struct {
 	mgr        manager.Manager
-	resource   T
 	reconciler Reconciler[T]
 }
 
 func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T], predicates ...predicate.Predicate) error {
-	gvk, err := apiutil.GVKForObject(r.resource, r.mgr.GetScheme())
+	obj := new(T)
+	gvk, err := apiutil.GVKForObject(*obj, r.mgr.GetScheme())
 	if err != nil {
 		return err
 	}
@@ -125,7 +124,6 @@ func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T],
 
 	rec := &runnerReconciler[T]{
 		mgr:        r.mgr,
-		resource:   r.resource,
 		reconciler: reconciler,
 	}
 
@@ -137,7 +135,7 @@ func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T],
 	}
 
 	// send us watch events
-	if err := ctl.Watch(&source.Kind{Type: r.resource}, &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	if err := ctl.Watch(&source.Kind{Type: *obj}, &handler.EnqueueRequestForObject{}, predicates...); err != nil {
 		return err
 	}
 
@@ -158,7 +156,7 @@ func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (
 	// get the object from our cache
 	restClient := ezkube.NewRestClient(ec.mgr)
 
-	obj := ec.resource.DeepCopyObject().(T)
+	obj := *(new(T))
 	obj.SetName(request.Name)
 	obj.SetNamespace(request.Namespace)
 	if err := restClient.Get(ctx, obj); err != nil {
