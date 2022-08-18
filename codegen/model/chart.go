@@ -52,9 +52,6 @@ type Operator struct {
 	// list of services with at least
 	Services []Service
 
-	// set up an additional service for an admin service
-	AdminService AdminService
-
 	// Custom values to include at operator level
 	Values interface{}
 }
@@ -95,15 +92,6 @@ type Sidecar struct {
 // values for struct template
 type Service struct {
 	Type              v1.ServiceType
-	Ports             []ServicePort
-	CustomLabels      map[string]string
-	CustomAnnotations map[string]string
-}
-
-// an admin service will always be of type ClusterIP
-// The name will be appended to the operator name with a '-'
-type AdminService struct {
-	Name              string
 	Ports             []ServicePort
 	CustomLabels      map[string]string
 	CustomAnnotations map[string]string
@@ -157,9 +145,6 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 			for _, port := range service.Ports {
 				servicePorts[port.Name] = uint32(port.DefaultPort)
 			}
-		}
-		for _, port := range operator.AdminService.Ports {
-			servicePorts[port.Name] = uint32(port.DefaultPort)
 		}
 		sidecars := map[string]values.UserContainerValues{}
 		for _, sidecar := range operator.Deployment.Sidecars {
