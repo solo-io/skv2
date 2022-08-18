@@ -1,0 +1,7 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: |
+      Re-remove the AdminService model underneath operators, and add an optional statsPort
+      value for services which still need that port specified in their Helm charts.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/4209
+    resolvesIssue: false
