@@ -190,9 +190,6 @@ spec:
   - name: [[ lower $port.Name ]]
     port: {{ $[[ $operatorVar ]].ports.[[ $port.Name ]] }}
   [[- end ]]
-  [[- if gt $[[ $operatorVar ]].statsPort 0 ]]
-  statsPort: {{$[[ $operatorVar ]].statsPort }}
-  [[- end ]]
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
 
