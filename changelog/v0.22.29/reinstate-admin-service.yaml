@@ -1,0 +1,8 @@
+changelog:
+  - type: FIX
+    description: |
+      Temporarily reinstate the AdminService abstraction removed in https://github.com/solo-io/skv2/pull/358; this
+      change will be reintroduced in a follow-up release, along with a change to the Operator abstraction to allow
+      a similar model for multiple Services under a single Operator.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/4209
+    resolvesIssue: false
