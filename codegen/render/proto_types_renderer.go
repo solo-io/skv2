@@ -210,7 +210,7 @@ func uniqueGoImportPathsForGroup(grp Group) []string {
 func specOrStatusInRootPkg(unfiltered []model.Resource, rootGoPackage string) []model.Resource {
 	var resources []model.Resource
 	for _, r := range unfiltered {
-		if (r.Spec.Type.GoPackage != "" && r.Spec.Type.GoPackage != rootGoPackage) &&
+		if (r.Spec.Type.GoPackage != "" && !strings.HasPrefix(r.Spec.Type.GoPackage, rootGoPackage)) &&
 			(r.Status == nil || (r.Status.Type.GoPackage != "" && r.Status.Type.GoPackage != rootGoPackage)) {
 			continue
 		}
