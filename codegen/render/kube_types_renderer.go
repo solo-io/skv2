@@ -1,7 +1,6 @@
 package render
 
 import (
-	"fmt"
 	"path/filepath"
 )
 
@@ -115,7 +114,6 @@ func (r KubeCodeRenderer) RenderKubeCode(grp Group) ([]OutFile, error) {
 	}
 
 	if grp.MockgenDirective {
-		fmt.Println("elc kube types printing mockgen for ", files)
 		PrependMockgenDirective(files)
 	}
 

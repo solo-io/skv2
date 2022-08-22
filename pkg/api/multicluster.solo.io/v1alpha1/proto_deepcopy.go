@@ -9,9 +9,6 @@ import (
 	"github.com/solo-io/protoc-gen-ext/pkg/clone"
 )
 
-// testing comment
-// testing stuff looking at KubernetesCluster Spec
-// github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1 github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1
 // DeepCopyInto for the KubernetesCluster.Spec
 func (in *KubernetesClusterSpec) DeepCopyInto(out *KubernetesClusterSpec) {
 	var p *KubernetesClusterSpec

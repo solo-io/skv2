@@ -293,7 +293,6 @@ func (c Command) generateTopLevelTemplates(templates model.CustomTemplates) erro
 	}
 
 	if templates.MockgenDirective {
-		log.Println("elc templates adding mockgen directive for ", templates.Templates)
 		render.PrependMockgenDirective(customCode)
 	}
 
