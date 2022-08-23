@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 	"sort"
@@ -216,7 +217,7 @@ func specOrStatusInRootPkg(unfiltered []model.Resource, rootGoPackage string) []
 			log.Println("skipping resource %v %v %v %v", r.Status, r.Spec, r.Status.Type.GoPackage, r.Spec.Type.GoPackage)
 			continue
 		}
-		log.Println("adding resource %v", r)
+		fmt.Printf("adding resource %v %v\n", r, rootGoPackage)
 		resources = append(resources, r)
 	}
 
