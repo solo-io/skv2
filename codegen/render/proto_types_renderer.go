@@ -213,7 +213,7 @@ func specOrStatusInRootPkg(unfiltered []model.Resource, rootGoPackage string) []
 	for _, r := range unfiltered {
 		if (r.Spec.Type.GoPackage != "" && !strings.HasPrefix(r.Spec.Type.GoPackage, rootGoPackage)) &&
 			(r.Status == nil || (r.Status.Type.GoPackage != "" && !strings.HasPrefix(r.Status.Type.GoPackage, rootGoPackage))) {
-			log.Println("skipping resource %v", r)
+			log.Println("skipping resource %v %v %v %v", r.Status, r.Spec, r.Status.Type.GoPackage, r.Spec.Type.GoPackage)
 			continue
 		}
 		log.Println("adding resource %v", r)
