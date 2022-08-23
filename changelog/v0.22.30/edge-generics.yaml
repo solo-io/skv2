@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/solo-projects/issues/3946
+    resolvesIssue: false
+    description: >
+      Use generic groups for the gloo-fed input reconcilers and snapshots so we can remove our dependency on external-apis groups.
+      Also, update the deepcopy generation to account for the package structure used by gloo-fed.
