@@ -1,6 +1,7 @@
 package render
 
 import (
+	"log"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -212,8 +213,10 @@ func specOrStatusInRootPkg(unfiltered []model.Resource, rootGoPackage string) []
 	for _, r := range unfiltered {
 		if (r.Spec.Type.GoPackage != "" && !strings.HasPrefix(r.Spec.Type.GoPackage, rootGoPackage)) &&
 			(r.Status == nil || (r.Status.Type.GoPackage != "" && !strings.HasPrefix(r.Status.Type.GoPackage, rootGoPackage))) {
+			log.Println("skipping resource %v", r)
 			continue
 		}
+		log.Println("adding resource %v", r)
 		resources = append(resources, r)
 	}
 
