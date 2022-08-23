@@ -7,7 +7,9 @@ import (
 	"github.com/solo-io/protoc-gen-ext/pkg/clone"
 )
 
+// root {{ $.RootGoPackage }}
 {{- range $resource := $.Resources }}
+// comment for logging
 // {{ $resource.Spec.Type.GoPackage }} {{ $.RootGoPackage }}
 {{- if or (eq $resource.Spec.Type.GoPackage "") (hasPrefix $.RootGoPackage $resource.Spec.Type.GoPackage)}}
 // DeepCopyInto for the {{ $resource.Kind }}.Spec
