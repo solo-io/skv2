@@ -8,6 +8,7 @@ import (
 )
 
 {{- range $resource := $.Resources }}
+// {{ $resource.Spec.Type.GoPackage }} {{ $.RootGoPackage }}
 {{- if or (eq $resource.Spec.Type.GoPackage "") (hasPrefix $.RootGoPackage $resource.Spec.Type.GoPackage)}}
 // DeepCopyInto for the {{ $resource.Kind }}.Spec
 func (in *{{ $resource.Spec.Type.Name }}) DeepCopyInto(out *{{ $resource.Spec.Type.Name }}) {
