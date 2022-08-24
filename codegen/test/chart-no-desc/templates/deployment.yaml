@@ -186,7 +186,3 @@ metadata:
 
 ---
 
-{{- define "painter.adminServiceSpec"}}
-
-{{- end }} {{/* define "painter.adminServiceSpec" */}}
-

@@ -1,0 +1,7 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: |
+      Re-remove the AdminService model underneath operators; this functionality will now be done directly by
+      GME and other projects that need it with overrides.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/4209
+    resolvesIssue: false
