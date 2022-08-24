@@ -202,4 +202,7 @@ spec:
 
 {{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
 {{- end }}
+
+---
+
 [[ end ]]
