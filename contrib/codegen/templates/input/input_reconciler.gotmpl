@@ -22,35 +22,19 @@ import (
     "github.com/solo-io/skv2/contrib/pkg/input"
     sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
     "github.com/solo-io/skv2/pkg/multicluster"
-    "github.com/solo-io/skv2/pkg/reconcile"
+    multicluster_reconcile_v2 "github.com/solo-io/skv2/pkg/multicluster/reconcile/v2"
+    multicluster_v2 "github.com/solo-io/skv2/pkg/multicluster/v2"
+    reconcile "github.com/solo-io/skv2/pkg/reconcile"
+    reconcile_v2 "github.com/solo-io/skv2/pkg/reconcile/v2"
 
     "sigs.k8s.io/controller-runtime/pkg/manager"
     "sigs.k8s.io/controller-runtime/pkg/predicate"
 
 {{- range $group := $groups }}
-{{ $type_import_prefix := group_import_name $group }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
-    {{ $type_import_prefix }} "{{ group_import_path $group }}"
-    {{ $controller_import_prefix }} "{{ controller_import_path $group }}"
+{{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
+    {{ $types_import_prefix }} "{{ group_import_path $group }}"
 {{- end }}
 )
-
-// the multiCluster{{ $snapshotName }}Reconciler reconciles events for input resources across clusters
-// this private interface is used to ensure that the generated struct implements the intended functions
-type multiCluster{{ $snapshotName }}Reconciler interface {
-{{/* implement reconciler interfaces here */}}
-{{- range $group := $groups }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $controller_import_prefix }}.Multicluster{{ $resource.Kind }}Reconciler
-{{- end }}
-{{- end }}
-}
-
-var _ multiCluster{{ $snapshotName }}Reconciler = &multiCluster{{ $snapshotName }}ReconcilerImpl{}
 
 type multiCluster{{ $snapshotName }}ReconcilerImpl struct {
     base input.InputReconciler
@@ -60,7 +44,6 @@ type multiCluster{{ $snapshotName }}ReconcilerImpl struct {
 type {{ $snapshotName }}ReconcileOptions struct {
 {{/* generate reconcile options here */}}
 {{- range $group := $groups }}
-{{ $client_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -96,61 +79,34 @@ func RegisterMultiCluster{{ $snapshotName }}Reconciler(
 
 // initialize reconcile loops
 {{- range $group := $groups }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+{{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-    {{ $controller_import_prefix }}.NewMulticluster{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", clusters, options.{{ $kindPlural }}).AddMulticluster{{ $resource.Kind }}Reconciler(ctx, r, predicates...)
-
+    multicluster_reconcile_v2.NewLoop[*{{ $types_import_prefix }}.{{ $resource.Kind }}]("das", clusters, reconcile_v2.Options{}).
+        AddReconciler(ctx, &multicluster_v2.ReconcilerFuncs[*{{ $types_import_prefix }}.{{ $resource.Kind }}]{
+            ReconcileFunc: func(ctx context.Context, clusterName string, obj *{{ $types_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
+                obj.ClusterName = clusterName
+                return r.base.ReconcileRemoteGeneric(obj)
+            } ,
+            ReconcileDeletionFunc: func(ctx context.Context, clusterName string, obj reconcile_v2.Request) error {
+                ref := &sk_core_v1.ClusterObjectRef{
+                    Name:                 obj.Name,
+                    Namespace:            obj.Namespace,
+                    ClusterName:          clusterName,
+                }
+                _, err := r.base.ReconcileRemoteGeneric(ref)
+            return err
+        },
+    }, predicates...)
 
 {{- end }}
 {{- end }}
   return r.base
 }
 
-{{- range $group := $groups }}
-{{ $type_import_prefix := group_import_name $group }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-
-func (r *multiCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
-    obj.ClusterName = clusterName
-    return r.base.ReconcileRemoteGeneric(obj)
-}
-
-func (r *multiCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(clusterName string, obj reconcile.Request) error {
-    ref := &sk_core_v1.ClusterObjectRef{
-        Name:                 obj.Name,
-        Namespace:            obj.Namespace,
-        ClusterName:          clusterName,
-    }
-    _, err := r.base.ReconcileRemoteGeneric(ref)
-    return err
-}
-{{- end }}
-{{- end }}
-
-
-// the singleCluster{{ $snapshotName }}Reconciler reconciles events for input resources across clusters
-// this private interface is used to ensure that the generated struct implements the intended functions
-type singleCluster{{ $snapshotName }}Reconciler interface {
-{{/* implement reconciler interfaces here */}}
-{{- range $group := $groups }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    {{ $controller_import_prefix }}.{{ $resource.Kind }}Reconciler
-{{- end }}
-{{- end }}
-}
-var _ singleCluster{{ $snapshotName }}Reconciler = &singleCluster{{ $snapshotName }}ReconcilerImpl{}
 
 type singleCluster{{ $snapshotName }}ReconcilerImpl struct {
     base input.InputReconciler
@@ -160,12 +116,12 @@ type singleCluster{{ $snapshotName }}ReconcilerImpl struct {
 // the reconcileInterval, if greater than 0, will limit the number of reconciles
 // to one per interval.
 func RegisterSingleCluster{{ $snapshotName }}Reconciler(
-        ctx context.Context,
-        mgr manager.Manager,
-        reconcileFunc input.SingleClusterReconcileFunc,
-        reconcileInterval time.Duration,
-        options reconcile.Options,
-        predicates ...predicate.Predicate,
+    ctx context.Context,
+    mgr manager.Manager,
+    reconcileFunc input.SingleClusterReconcileFunc,
+    reconcileInterval time.Duration,
+    options reconcile_v2.Options,
+    predicates ...predicate.Predicate,
 ) (input.InputReconciler, error) {
 
     base := input.NewInputReconciler(
@@ -181,39 +137,29 @@ func RegisterSingleCluster{{ $snapshotName }}Reconciler(
 
 // initialize reconcile loops
 {{- range $group := $groups }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
+    {{ $types_import_prefix := printf "%v_types" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    if err := {{ $controller_import_prefix }}.New{{ $resource.Kind }}ReconcileLoop("{{ $resource.Kind }}", mgr, options).Run{{ $resource.Kind }}Reconciler(ctx, r, predicates...); err != nil {
-    	return nil, err
+    if err := reconcile_v2.NewLoop[*{{ $types_import_prefix }}.{{ $resource.Kind }}]("Service", "", mgr, options).
+        RunReconciler(ctx, &reconcile_v2.ReconcileFuncs[*{{ $types_import_prefix }}.{{ $resource.Kind }}]{
+        ReconcileFunc:func(ctx context.Context, object *{{ $types_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error){
+            return r.base.ReconcileRemoteGeneric(object)
+        },
+        DeletionReconcilerFunc: func(ctx context.Context, obj reconcile_v2.Request) error {
+            ref := &sk_core_v1.ObjectRef{
+            Name:                 obj.Name,
+            Namespace:            obj.Namespace,
+            }
+            _, err := r.base.ReconcileLocalGeneric(ref)
+            return err
+        },
+    }, predicates...); err != nil {
+        return nil, err
     }
 {{- end }}
 {{- end }}
 
     return r.base, nil
 }
-
-{{- range $group := $groups }}
-{{ $type_import_prefix := group_import_name $group }}
-{{ $controller_import_prefix := (printf "%v_controllers" (group_import_name $group)) }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-
-func (r *singleCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}(obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
-    return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *singleCluster{{ $snapshotName }}ReconcilerImpl) Reconcile{{ $resource.Kind }}Deletion(obj reconcile.Request) error {
-    ref := &sk_core_v1.ObjectRef{
-        Name:                 obj.Name,
-        Namespace:            obj.Namespace,
-    }
-    _, err := r.base.ReconcileLocalGeneric(ref)
-    return err
-}
-{{- end }}
-{{- end }}
