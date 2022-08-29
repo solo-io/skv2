@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,6 +37,13 @@ func (s Snapshot) Delete(gvk schema.GroupVersionKind, id types.NamespacedName) {
 	}
 	delete(resources, id)
 	s[gvk] = resources
+}
+
+func (s Snapshot) Clear() {
+	// Clear each map
+	for gvk := range s {
+		maps.Clear(s[gvk])
+	}
 }
 
 func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj TypedObject)) {
@@ -125,6 +133,12 @@ func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, ob
 	}
 	snapshot.Insert(gvk, obj)
 	cs[cluster] = snapshot
+}
+
+func (cs ClusterSnapshot) Clear() {
+	for _, snapshot := range cs {
+		snapshot.Clear()
+	}
 }
 
 func (cs ClusterSnapshot) Delete(
