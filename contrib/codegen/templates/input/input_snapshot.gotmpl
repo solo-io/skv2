@@ -454,7 +454,7 @@ func (b *multiCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}FromClus
         return err
     }
 
-    {{ $kindLowerCamel }}Client := sk_client.NewGenericClient[*{{ $types_import_prefix }}.{{ $resource.Kind }}, *{{ $types_import_prefix }}.{{ $resource.Kind }}List](clusterClient)
+    {{ $kindLowerCamel }}Client := sk_client.NewGenericClient(clusterClient, &{{ $types_import_prefix }}.{{ $resource.Kind }}{}, &{{ $types_import_prefix }}.{{ $resource.Kind }}List{})
 
 
     if opts.Verifier != nil {
@@ -592,7 +592,7 @@ func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx co
         }
     }
 
-    {{ $kindLowerCamel }}Client := sk_client.NewGenericClient[*{{ $types_import_prefix }}.{{ $resource.Kind }}, *{{ $types_import_prefix }}.{{ $resource.Kind }}List](b.mgr.GetClient())
+{{ $kindLowerCamel }}Client := sk_client.NewGenericClient(b.mgr.GetClient(), &{{ $types_import_prefix }}.{{ $resource.Kind }}{}, &{{ $types_import_prefix }}.{{ $resource.Kind }}List{})
 
     {{ $kindLowerCamel }}List, err := {{ $kindLowerCamel }}Client.List(ctx, opts.ListOptions...)
     if err != nil {

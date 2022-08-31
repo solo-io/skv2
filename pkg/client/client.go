@@ -77,38 +77,50 @@ type GenericClient[T client.Object, L client.ObjectList] interface {
 	RESTMapper() meta.RESTMapper
 }
 
-func NewGenericClient[T client.Object, L client.ObjectList](cli client.Client) GenericClient[T, L] {
+func NewGenericClient[T client.Object, L client.ObjectList](
+	cli client.Client,
+	t T,
+	l L,
+) GenericClient[T, L] {
 	return &genericClient[T, L]{
 		genericClient: cli,
+		l:             l,
+		t:             t,
 	}
 }
 
-func NewGenericClientFromConfig[T client.Object, L client.ObjectList](cfg *rest.Config) (GenericClient[T, L], error) {
+func NewGenericClientFromConfig[T client.Object, L client.ObjectList](
+	cfg *rest.Config,
+	t T,
+	l L,
+) (GenericClient[T, L], error) {
 	cli, err := client.New(cfg, client.Options{})
 	if err != nil {
 		return nil, err
 	}
-	return NewGenericClient[T, L](cli), nil
+	return NewGenericClient[T, L](cli, t, l), nil
 }
 
 type genericClient[T client.Object, L client.ObjectList] struct {
+	t             T
+	l             L
 	genericClient client.Client
 }
 
 func (g *genericClient[T, L]) Get(ctx context.Context, key client.ObjectKey) (T, error) {
-	obj := new(T)
-	if err := g.genericClient.Get(ctx, key, *obj); err != nil {
-		return *obj, err
+	obj := g.t.DeepCopyObject().(T)
+	if err := g.genericClient.Get(ctx, key, obj); err != nil {
+		return obj, err
 	}
-	return *obj, nil
+	return obj, nil
 }
 
 func (g *genericClient[T, L]) List(ctx context.Context, opts ...client.ListOption) (L, error) {
-	list := new(L)
-	if err := g.genericClient.List(ctx, *list, opts...); err != nil {
-		return *list, err
+	list := g.l.DeepCopyObject().(L)
+	if err := g.genericClient.List(ctx, list, opts...); err != nil {
+		return list, err
 	}
-	return *list, nil
+	return list, nil
 }
 
 func (g *genericClient[T, L]) Create(ctx context.Context, obj T, opts ...client.CreateOption) error {
