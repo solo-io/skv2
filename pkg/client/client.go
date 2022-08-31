@@ -84,8 +84,8 @@ func NewGenericClient[T client.Object, L client.ObjectList](
 ) GenericClient[T, L] {
 	return &genericClient[T, L]{
 		genericClient: cli,
-		l: l,
-		t: t,
+		l:             l,
+		t:             t,
 	}
 }
 
