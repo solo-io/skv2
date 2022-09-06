@@ -78,6 +78,7 @@ type runner[T client.Object] struct {
 	mgr     manager.Manager
 	options Options
 	cluster string
+	t       T
 }
 
 type Options struct {
@@ -91,6 +92,7 @@ type Options struct {
 func NewLoop[T client.Object](
 	name, cluster string,
 	mgr manager.Manager,
+	t T,
 	options Options,
 ) *runner[T] {
 	return &runner[T]{
@@ -98,17 +100,23 @@ func NewLoop[T client.Object](
 		mgr:     mgr,
 		cluster: cluster,
 		options: options,
+		t:       t,
 	}
 }
 
 type runnerReconciler[T client.Object] struct {
 	mgr        manager.Manager
 	reconciler Reconciler[T]
+	t          T
 }
 
-func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T], predicates ...predicate.Predicate) error {
-	obj := new(T)
-	gvk, err := apiutil.GVKForObject(*obj, r.mgr.GetScheme())
+func (r *runner[T]) RunReconciler(
+	ctx context.Context,
+	reconciler Reconciler[T],
+	predicates ...predicate.Predicate,
+) error {
+	obj := r.t.DeepCopyObject().(T)
+	gvk, err := apiutil.GVKForObject(obj, r.mgr.GetScheme())
 	if err != nil {
 		return err
 	}
@@ -125,17 +133,20 @@ func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T],
 	rec := &runnerReconciler[T]{
 		mgr:        r.mgr,
 		reconciler: reconciler,
+		t:          obj,
 	}
 
-	ctl, err := controller.New(r.name, r.mgr, controller.Options{
-		Reconciler: rec,
-	})
+	ctl, err := controller.New(
+		r.name, r.mgr, controller.Options{
+			Reconciler: rec,
+		},
+	)
 	if err != nil {
 		return err
 	}
 
 	// send us watch events
-	if err := ctl.Watch(&source.Kind{Type: *obj}, &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	if err := ctl.Watch(&source.Kind{Type: obj}, &handler.EnqueueRequestForObject{}, predicates...); err != nil {
 		return err
 	}
 
@@ -150,13 +161,13 @@ func (r *runner[T]) RunReconciler(ctx context.Context, reconciler Reconciler[T],
 	return nil
 }
 
-func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (reconcile.Result, error) {
+func (r *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (reconcile.Result, error) {
 	contextutils.LoggerFrom(ctx).Debug("handling event", "event", request)
 
 	// get the object from our cache
-	restClient := ezkube.NewRestClient(ec.mgr)
+	restClient := ezkube.NewRestClient(r.mgr)
 
-	obj := *(new(T))
+	obj := r.t.DeepCopyObject().(T)
 	obj.SetName(request.Name)
 	obj.SetNamespace(request.Namespace)
 	if err := restClient.Get(ctx, obj); err != nil {
@@ -166,7 +177,7 @@ func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (
 		contextutils.LoggerFrom(ctx).Debug(fmt.Sprintf("unable to fetch %T", obj), "request", request, "err", err)
 
 		// call OnDelete
-		if deletionReconciler, ok := ec.reconciler.(DeletionReconciler); ok {
+		if deletionReconciler, ok := r.reconciler.(DeletionReconciler); ok {
 			return reconcile.Result{}, deletionReconciler.ReconcileDeletion(ctx, request)
 		}
 
@@ -174,7 +185,7 @@ func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (
 	}
 
 	// if the handler is a finalizer, check if we need to finalize
-	if finalizer, ok := ec.reconciler.(FinalizingReconciler[T]); ok {
+	if finalizer, ok := r.reconciler.(FinalizingReconciler[T]); ok {
 		finalizers := obj.GetFinalizers()
 		finalizerName := finalizer.FinalizerName()
 		if obj.GetDeletionTimestamp().IsZero() {
@@ -183,10 +194,12 @@ func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (
 			// registering our finalizer.
 
 			if !utils.ContainsString(finalizers, finalizerName) {
-				obj.SetFinalizers(append(
-					finalizers,
-					finalizerName,
-				))
+				obj.SetFinalizers(
+					append(
+						finalizers,
+						finalizerName,
+					),
+				)
 				if err := restClient.Update(ctx, obj); err != nil {
 					return reconcile.Result{}, err
 				}
@@ -214,7 +227,7 @@ func (ec *runnerReconciler[T]) Reconcile(ctx context.Context, request Request) (
 		}
 	}
 
-	result, err := ec.reconciler.Reconcile(ctx, obj)
+	result, err := r.reconciler.Reconcile(ctx, obj)
 	if err != nil {
 		return result, eris.Wrap(err, "handler error. retrying")
 	}
