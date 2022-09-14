@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -16,6 +17,10 @@ const (
 
 	// if specified, ignore all descendants
 	omitChildrenTag = "omitChildren"
+
+	// if specified, only render this field if the value of the env variable PRODUCT matches
+	productSpecificTag = "product"
+	productEnvVar      = "PRODUCT"
 
 	// the field name
 	jsonTag = "json"
@@ -146,6 +151,12 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 			var fieldVal reflect.Value
 			if val != fieldVal {
 				fieldVal = val.Field(i)
+			}
+
+			if product, ok := field.Tag.Lookup(productSpecificTag); ok {
+				if product != os.Getenv(productEnvVar) {
+					continue
+				}
 			}
 
 			// ignore the children of fields that are marked as such (i.e. don't recurse down)
