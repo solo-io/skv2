@@ -19,7 +19,10 @@ var _ = math.Inf
 
 var (
 	marshaller = &skv2jsonpb.Marshaler{}
-	unmarshaller = &jsonpb.Unmarshaler{}
+	unmarshaller = &jsonpb.Unmarshaler{
+		AllowUnknownFields: true,
+	}
+	strictUnmarshaller = &jsonpb.Unmarshaler{}
 )
 
 {{- range $resource := $.Resources }}
@@ -33,7 +36,11 @@ func (this *{{ $resource.Spec.Type.Name }}) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for {{ $resource.Spec.Type.Name }}
 func (this *{{ $resource.Spec.Type.Name }}) UnmarshalJSON(b []byte) error {
+{{- if $resource.StrictUnmarshal }}
+	return strictUnmarshaller.Unmarshal(bytes.NewReader(b), this)
+{{- else }}
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+{{- end }}
 }
 {{- end }}
 
@@ -48,7 +55,11 @@ func (this *{{ $resource.Status.Type.Name }}) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for {{ $resource.Status.Type.Name }}
 func (this *{{ $resource.Status.Type.Name }}) UnmarshalJSON(b []byte) error {
+{{- if $resource.StrictUnmarshal }}
+	return strictUnmarshaller.Unmarshal(bytes.NewReader(b), this)
+{{- else }}
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+{{- end }}
 }
 {{- end }}
 {{- end }}
