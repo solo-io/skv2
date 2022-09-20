@@ -1,0 +1,8 @@
+changelog:
+  - type: NEW_FEATURE
+    description: >
+      Add a `product` tag to a helm values struct, which functions similarly to the omitChildren tag.
+      When the docs generation code is run, the value of the `product` tag is compared with
+      the value of the PRODUCT env variable, and the rendered doc line for that field is
+      skipped if they do not match.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/4147

@@ -161,6 +161,9 @@ type Resource struct {
 
 	// The set of additional printer columns to apply to the CustomResourceDefinition
 	AdditionalPrinterColumns []apiextv1.CustomResourceColumnDefinition
+
+	// If enabled, the unmarshal will NOT allow unknown fields.
+	StrictUnmarshal bool
 }
 
 type Field struct {
