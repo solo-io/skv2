@@ -5,6 +5,7 @@ package v1alpha1
 import (
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +38,7 @@ type KubernetesClusterClientFromConfigFactory func(cfg *rest.Config) (multiclust
 
 func KubernetesClusterClientFromConfigFactoryProvider() KubernetesClusterClientFromConfigFactory {
 	return func(cfg *rest.Config) (multicluster_solo_io_v1alpha1.KubernetesClusterClient, error) {
-		clients, err := multicluster_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
+		clients, err := multicluster_solo_io_v1alpha1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}

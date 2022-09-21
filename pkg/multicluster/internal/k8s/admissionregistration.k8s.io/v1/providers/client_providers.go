@@ -5,6 +5,7 @@ package v1
 import (
 	admissionregistration_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/admissionregistration.k8s.io/v1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +38,7 @@ type ValidatingWebhookConfigurationClientFromConfigFactory func(cfg *rest.Config
 
 func ValidatingWebhookConfigurationClientFromConfigFactoryProvider() ValidatingWebhookConfigurationClientFromConfigFactory {
 	return func(cfg *rest.Config) (admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient, error) {
-		clients, err := admissionregistration_k8s_io_v1.NewClientsetFromConfig(cfg)
+		clients, err := admissionregistration_k8s_io_v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}

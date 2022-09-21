@@ -5,6 +5,7 @@ package v1
 import (
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +38,7 @@ type PaintClientFromConfigFactory func(cfg *rest.Config) (things_test_io_v1.Pain
 
 func PaintClientFromConfigFactoryProvider() PaintClientFromConfigFactory {
 	return func(cfg *rest.Config) (things_test_io_v1.PaintClient, error) {
-		clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
+		clients, err := things_test_io_v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +66,7 @@ type ClusterResourceClientFromConfigFactory func(cfg *rest.Config) (things_test_
 
 func ClusterResourceClientFromConfigFactoryProvider() ClusterResourceClientFromConfigFactory {
 	return func(cfg *rest.Config) (things_test_io_v1.ClusterResourceClient, error) {
-		clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
+		clients, err := things_test_io_v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}

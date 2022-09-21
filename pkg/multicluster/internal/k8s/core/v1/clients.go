@@ -51,8 +51,10 @@ type clientSet struct {
 	client client.Client
 }
 
-func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
-	scheme := runtime.NewScheme()
+func NewClientsetFromConfig(cfg *rest.Config, scheme *runtime.Scheme) (Clientset, error) {
+	if scheme == nil {
+		scheme = runtime.NewScheme()
+	}
 	if err := v1.SchemeBuilder.AddToScheme(scheme); err != nil {
 		return nil, err
 	}

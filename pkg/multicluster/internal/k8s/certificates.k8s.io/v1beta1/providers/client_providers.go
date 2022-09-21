@@ -5,6 +5,7 @@ package v1beta1
 import (
 	certificates_k8s_io_v1beta1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/certificates.k8s.io/v1beta1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +38,7 @@ type CertificateSigningRequestClientFromConfigFactory func(cfg *rest.Config) (ce
 
 func CertificateSigningRequestClientFromConfigFactoryProvider() CertificateSigningRequestClientFromConfigFactory {
 	return func(cfg *rest.Config) (certificates_k8s_io_v1beta1.CertificateSigningRequestClient, error) {
-		clients, err := certificates_k8s_io_v1beta1.NewClientsetFromConfig(cfg)
+		clients, err := certificates_k8s_io_v1beta1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}

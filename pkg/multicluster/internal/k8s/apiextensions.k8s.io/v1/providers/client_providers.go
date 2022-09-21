@@ -5,6 +5,7 @@ package v1
 import (
 	apiextensions_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/apiextensions.k8s.io/v1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +38,7 @@ type CustomResourceDefinitionClientFromConfigFactory func(cfg *rest.Config) (api
 
 func CustomResourceDefinitionClientFromConfigFactoryProvider() CustomResourceDefinitionClientFromConfigFactory {
 	return func(cfg *rest.Config) (apiextensions_k8s_io_v1.CustomResourceDefinitionClient, error) {
-		clients, err := apiextensions_k8s_io_v1.NewClientsetFromConfig(cfg)
+		clients, err := apiextensions_k8s_io_v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}

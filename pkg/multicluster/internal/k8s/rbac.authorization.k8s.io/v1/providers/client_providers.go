@@ -5,6 +5,7 @@ package v1
 import (
 	rbac_authorization_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +38,7 @@ type RoleClientFromConfigFactory func(cfg *rest.Config) (rbac_authorization_k8s_
 
 func RoleClientFromConfigFactoryProvider() RoleClientFromConfigFactory {
 	return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.RoleClient, error) {
-		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
+		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +66,7 @@ type RoleBindingClientFromConfigFactory func(cfg *rest.Config) (rbac_authorizati
 
 func RoleBindingClientFromConfigFactoryProvider() RoleBindingClientFromConfigFactory {
 	return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.RoleBindingClient, error) {
-		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
+		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +94,7 @@ type ClusterRoleClientFromConfigFactory func(cfg *rest.Config) (rbac_authorizati
 
 func ClusterRoleClientFromConfigFactoryProvider() ClusterRoleClientFromConfigFactory {
 	return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.ClusterRoleClient, error) {
-		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
+		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}
@@ -121,7 +122,7 @@ type ClusterRoleBindingClientFromConfigFactory func(cfg *rest.Config) (rbac_auth
 
 func ClusterRoleBindingClientFromConfigFactoryProvider() ClusterRoleBindingClientFromConfigFactory {
 	return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.ClusterRoleBindingClient, error) {
-		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
+		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}

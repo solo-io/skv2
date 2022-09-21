@@ -5,6 +5,7 @@ package v1
 import (
 	v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +38,7 @@ type SecretClientFromConfigFactory func(cfg *rest.Config) (v1.SecretClient, erro
 
 func SecretClientFromConfigFactoryProvider() SecretClientFromConfigFactory {
 	return func(cfg *rest.Config) (v1.SecretClient, error) {
-		clients, err := v1.NewClientsetFromConfig(cfg)
+		clients, err := v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +66,7 @@ type ServiceAccountClientFromConfigFactory func(cfg *rest.Config) (v1.ServiceAcc
 
 func ServiceAccountClientFromConfigFactoryProvider() ServiceAccountClientFromConfigFactory {
 	return func(cfg *rest.Config) (v1.ServiceAccountClient, error) {
-		clients, err := v1.NewClientsetFromConfig(cfg)
+		clients, err := v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +94,7 @@ type NamespaceClientFromConfigFactory func(cfg *rest.Config) (v1.NamespaceClient
 
 func NamespaceClientFromConfigFactoryProvider() NamespaceClientFromConfigFactory {
 	return func(cfg *rest.Config) (v1.NamespaceClient, error) {
-		clients, err := v1.NewClientsetFromConfig(cfg)
+		clients, err := v1.NewClientsetFromConfig(cfg, runtime.NewScheme())
 		if err != nil {
 			return nil, err
 		}
