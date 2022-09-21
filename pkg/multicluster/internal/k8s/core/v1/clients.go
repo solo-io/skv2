@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -53,7 +52,7 @@ type clientSet struct {
 }
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
-	scheme := scheme.Scheme
+	scheme := runtime.NewScheme()
 	if err := v1.SchemeBuilder.AddToScheme(scheme); err != nil {
 		return nil, err
 	}

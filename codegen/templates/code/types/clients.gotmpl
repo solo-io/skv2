@@ -54,7 +54,7 @@ type clientSet struct {
 }
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
-    scheme := scheme.Scheme
+    scheme := runtime.NewScheme()
     if err := {{ $import_prefix }}SchemeBuilder.AddToScheme(scheme); err != nil{
         return nil, err
     }

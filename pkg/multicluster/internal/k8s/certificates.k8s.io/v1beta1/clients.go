@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	certificates_k8s_io_v1beta1 "k8s.io/api/certificates/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -49,7 +48,7 @@ type clientSet struct {
 }
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
-	scheme := scheme.Scheme
+	scheme := runtime.NewScheme()
 	if err := certificates_k8s_io_v1beta1.SchemeBuilder.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
