@@ -157,11 +157,7 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 			}
 
 			if _, ok := field.Tag.Lookup(hideValueTag); ok {
-				if field.Type.Kind() == reflect.String {
-					fieldVal.SetString("Default value obscured")
-				} else {
-					fieldVal = reflect.Value{}
-				}
+				fieldVal = reflect.Value{}
 			}
 
 			if product, ok := field.Tag.Lookup(productSpecificTag); ok {
