@@ -176,7 +176,6 @@ func CustomResourceDefinition(
 		specHash, err := hashstructure.Hash(crd.Spec, nil)
 		if err != nil {
 			panic(err)
-			return nil
 		}
 		crd.Annotations = map[string]string{
 			crdutils.CRDSpecHashKey: fmt.Sprintf("%x", specHash),

@@ -5,7 +5,6 @@
 package v1beta1sets
 
 import (
-	"github.com/solo-io/go-utils/contextutils"
 	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/rotisserie/eris"
@@ -133,7 +132,7 @@ func (s *customResourceDefinitionSet) Insert(
 	customResourceDefinitionList ...*apiextensions_k8s_io_v1beta1.CustomResourceDefinition,
 ) {
 	if s == nil {
-		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
+		panic("cannot insert into nil set")
 	}
 
 	for _, obj := range customResourceDefinitionList {
