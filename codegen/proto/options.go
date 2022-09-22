@@ -263,6 +263,6 @@ func lowerCamelName(field FieldOptions) string {
 	if name == "k8s" {
 		return name
 	} else {
-		return strcase.ToLowerCamel(field.Field.GetName())
+		return strcase.ToLowerCamel(name)
 	}
 }
