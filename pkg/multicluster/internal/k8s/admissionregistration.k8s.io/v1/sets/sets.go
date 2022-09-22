@@ -8,7 +8,6 @@ import (
 	admissionregistration_k8s_io_v1 "k8s.io/api/admissionregistration/v1"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/contextutils"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -135,7 +134,7 @@ func (s *validatingWebhookConfigurationSet) Insert(
 	validatingWebhookConfigurationList ...*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration,
 ) {
 	if s == nil {
-		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
+		panic("cannot insert into nil set")
 	}
 
 	for _, obj := range validatingWebhookConfigurationList {

@@ -8,7 +8,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/contextutils"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -135,7 +134,7 @@ func (s *secretSet) Insert(
 	secretList ...*v1.Secret,
 ) {
 	if s == nil {
-		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
+		panic("cannot insert into nil set")
 	}
 
 	for _, obj := range secretList {
@@ -356,7 +355,7 @@ func (s *serviceAccountSet) Insert(
 	serviceAccountList ...*v1.ServiceAccount,
 ) {
 	if s == nil {
-		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
+		panic("cannot insert into nil set")
 	}
 
 	for _, obj := range serviceAccountList {
@@ -577,7 +576,7 @@ func (s *namespaceSet) Insert(
 	namespaceList ...*v1.Namespace,
 ) {
 	if s == nil {
-		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
+		panic("cannot insert into nil set")
 	}
 
 	for _, obj := range namespaceList {
