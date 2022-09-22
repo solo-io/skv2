@@ -1,5 +1,0 @@
-changelog:
-  - type: FIX
-    description: Use new scheme rather than shared global scheme to avoid data races.
-    issueLink: https://github.com/solo-io/skv2/issues/375
-
