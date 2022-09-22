@@ -65,6 +65,7 @@ func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Sna
 			if deepCopy {
 				clone[k] = copyNnsMap(v)
 			} else {
+				clone[k] = map[types.NamespacedName]TypedObject{}
 				maps.Copy(clone[k], v)
 			}
 			continue
@@ -80,6 +81,7 @@ func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Sna
 			if deepCopy {
 				clone[k] = copyNnsMap(v)
 			} else {
+				clone[k] = map[types.NamespacedName]TypedObject{}
 				maps.Copy(clone[k], v)
 			}
 			clone[k] = copyNnsMap(v)
