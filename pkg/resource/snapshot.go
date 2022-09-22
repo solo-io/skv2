@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -50,10 +51,22 @@ func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, o
 }
 
 func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
+	return s.cloneInternal(true, selectors...)
+}
+
+func (s Snapshot) ShallowCopy(selectors ...GVKSelectorFunc) Snapshot {
+	return s.cloneInternal(false, selectors...)
+}
+
+func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Snapshot {
 	clone := Snapshot{}
 	for k, v := range s {
 		if len(selectors) == 0 {
-			clone[k] = copyNnsMap(v)
+			if deepCopy {
+				clone[k] = copyNnsMap(v)
+			} else {
+				maps.Copy(clone[k], v)
+			}
 			continue
 		}
 		selected := false
@@ -64,6 +77,11 @@ func (s Snapshot) Clone(selectors ...GVKSelectorFunc) Snapshot {
 			}
 		}
 		if selected {
+			if deepCopy {
+				clone[k] = copyNnsMap(v)
+			} else {
+				maps.Copy(clone[k], v)
+			}
 			clone[k] = copyNnsMap(v)
 			continue
 		}
@@ -144,6 +162,14 @@ func (cs ClusterSnapshot) Clone(selectors ...GVKSelectorFunc) ClusterSnapshot {
 	clone := ClusterSnapshot{}
 	for k, v := range cs {
 		clone[k] = v.Clone(selectors...)
+	}
+	return clone
+}
+
+func (cs ClusterSnapshot) ShallowCopy(selectors ...GVKSelectorFunc) ClusterSnapshot {
+	clone := ClusterSnapshot{}
+	for k, v := range cs {
+		clone[k] = v.ShallowCopy(selectors...)
 	}
 	return clone
 }
