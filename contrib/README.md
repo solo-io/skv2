@@ -20,7 +20,6 @@ var Sets = func() model.CustomTemplates {
 	templateContents, err := templatesBox.FindString(SetCustomTemplatePath)
 	if err != nil {
 		panic(err)
-		return ""
 	}
 	setsTemplates := model.CustomTemplates{
 		Templates: map[string]string{SetOutputFilename: templateContents},

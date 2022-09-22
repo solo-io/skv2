@@ -40,7 +40,6 @@ func MakeHomogenousSnapshotFuncs(
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
 				panic("group not found " + grp.String())
-				return ""
 			}
 			return clientImportPath(grp)
 		},
@@ -48,7 +47,6 @@ func MakeHomogenousSnapshotFuncs(
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
 				panic("group not found " + grp.String())
-				return ""
 			}
 			return clientImportPath(grp) + "/sets"
 		},
@@ -56,7 +54,6 @@ func MakeHomogenousSnapshotFuncs(
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
 				panic("group not found " + grp.String())
-				return ""
 			}
 			return clientImportPath(grp) + "/controller"
 		},
@@ -120,7 +117,6 @@ func MakeHybridSnapshotFuncs(
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
 				panic("group not found " + grp.String())
-				return ""
 			}
 			return clientImportPath(grp)
 		},
@@ -128,7 +124,6 @@ func MakeHybridSnapshotFuncs(
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
 				panic("group not found " + grp.String())
-				return ""
 			}
 			return clientImportPath(grp) + "/sets"
 		},
@@ -136,7 +131,6 @@ func MakeHybridSnapshotFuncs(
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
 				panic("group not found " + grp.String())
-				return ""
 			}
 			return clientImportPath(grp) + "/controller"
 		},
