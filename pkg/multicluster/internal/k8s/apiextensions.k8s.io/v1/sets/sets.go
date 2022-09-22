@@ -8,6 +8,7 @@ import (
 	apiextensions_k8s_io_v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -134,7 +135,7 @@ func (s *customResourceDefinitionSet) Insert(
 	customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition,
 ) {
 	if s == nil {
-		panic("cannot insert into nil set")
+		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
 	}
 
 	for _, obj := range customResourceDefinitionList {

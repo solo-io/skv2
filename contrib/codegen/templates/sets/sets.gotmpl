@@ -6,6 +6,7 @@ import (
     {{ $import_prefix }} "{{ group_import_path $ }}"
 
     "github.com/rotisserie/eris"
+    "github.com/solo-io/go-utils/contextutils"
     sksets "github.com/solo-io/skv2/contrib/pkg/sets"
     "github.com/solo-io/skv2/pkg/ezkube"
     "k8s.io/apimachinery/pkg/util/sets"
@@ -136,7 +137,7 @@ func (s *{{ $kindLowerCamel }}Set) Insert(
         {{ $kindLowerCamel }}List ...*{{ $import_prefix }}.{{ $resource.Kind }},
 ) {
     if s == nil {
-        panic("cannot insert into nil set")
+        contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
     }
 
     for _, obj := range {{ $kindLowerCamel }}List {

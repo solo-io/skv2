@@ -8,6 +8,7 @@ import (
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -134,7 +135,7 @@ func (s *paintSet) Insert(
 	paintList ...*things_test_io_v1.Paint,
 ) {
 	if s == nil {
-		panic("cannot insert into nil set")
+		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
 	}
 
 	for _, obj := range paintList {
@@ -355,7 +356,7 @@ func (s *clusterResourceSet) Insert(
 	clusterResourceList ...*things_test_io_v1.ClusterResource,
 ) {
 	if s == nil {
-		panic("cannot insert into nil set")
+		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
 	}
 
 	for _, obj := range clusterResourceList {

@@ -19,7 +19,8 @@ const (
 var Sets = func() model.CustomTemplates {
 	templateContents, err := templatesBox.FindString(SetCustomTemplatePath)
 	if err != nil {
-		panic(err)
+		contextUtils.LoggerFrom(nil).DPanic(err)
+		return ""
 	}
 	setsTemplates := model.CustomTemplates{
 		Templates: map[string]string{SetOutputFilename: templateContents},

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/solo-io/go-utils/contextutils"
+
 	"github.com/rotisserie/eris"
 
 	"github.com/solo-io/skv2/codegen/model"
@@ -39,21 +41,24 @@ func MakeHomogenousSnapshotFuncs(
 		"client_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
-				panic("group not found " + grp.String())
+				contextutils.LoggerFrom(nil).DPanic("group not found " + grp.String())
+				return ""
 			}
 			return clientImportPath(grp)
 		},
 		"set_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
-				panic("group not found " + grp.String())
+				contextutils.LoggerFrom(nil).DPanic("group not found " + grp.String())
+				return ""
 			}
 			return clientImportPath(grp) + "/sets"
 		},
 		"controller_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
-				panic("group not found " + grp.String())
+				contextutils.LoggerFrom(nil).DPanic("group not found " + grp.String())
+				return ""
 			}
 			return clientImportPath(grp) + "/controller"
 		},
@@ -116,21 +121,24 @@ func MakeHybridSnapshotFuncs(
 		"client_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
-				panic("group not found " + grp.String())
+				contextutils.LoggerFrom(nil).DPanic("group not found " + grp.String())
+				return ""
 			}
 			return clientImportPath(grp)
 		},
 		"set_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
-				panic("group not found " + grp.String())
+				contextutils.LoggerFrom(nil).DPanic("group not found " + grp.String())
+				return ""
 			}
 			return clientImportPath(grp) + "/sets"
 		},
 		"controller_import_path": func(group model.Group) string {
 			grp, ok := groupImports[group.GroupVersion]
 			if !ok {
-				panic("group not found " + grp.String())
+				contextutils.LoggerFrom(nil).DPanic("group not found " + grp.String())
+				return ""
 			}
 			return clientImportPath(grp) + "/controller"
 		},

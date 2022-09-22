@@ -8,6 +8,7 @@ import (
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -134,7 +135,7 @@ func (s *kubernetesClusterSet) Insert(
 	kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) {
 	if s == nil {
-		panic("cannot insert into nil set")
+		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
 	}
 
 	for _, obj := range kubernetesClusterList {

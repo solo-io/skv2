@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/go-utils/contextutils"
+
 	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 	"github.com/solo-io/skv2/pkg/crdutils"
@@ -175,7 +177,8 @@ func CustomResourceDefinition(
 		// hashstructure of the crd spec:
 		specHash, err := hashstructure.Hash(crd.Spec, nil)
 		if err != nil {
-			panic(err)
+			contextutils.LoggerFrom(nil).DPanic(err)
+			return nil
 		}
 		crd.Annotations = map[string]string{
 			crdutils.CRDSpecHashKey: fmt.Sprintf("%x", specHash),

@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"text/template"
 
+	"github.com/solo-io/go-utils/contextutils"
+
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib/codegen/funcs"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -96,10 +98,12 @@ const (
 // Returns the template for generating input snapshots.
 func InputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
 	templateContentsBytes, err := ioutil.ReadFile(templatesDir + InputSnapshotCustomTemplatePath)
+	var templateContents string
 	if err != nil {
-		panic(err)
+		contextutils.LoggerFrom(nil).DPanic(err)
+		templateContents = ""
 	}
-	templateContents := string(templateContentsBytes)
+	templateContents = string(templateContentsBytes)
 	return params.ConstructTemplate(params, templateContents, true)
 }
 
@@ -113,10 +117,14 @@ const (
 // Returns the template for generating input snapshots.
 func InputSnapshotManualBuilder(params SnapshotTemplateParameters) model.CustomTemplates {
 	templateContentsBytes, err := ioutil.ReadFile(templatesDir + InputSnapshotManualBuilderCustomTemplatePath)
+	var templateContents string
 	if err != nil {
-		panic(err)
+		if err != nil {
+			contextutils.LoggerFrom(nil).DPanic(err)
+			templateContents = ""
+		}
 	}
-	templateContents := string(templateContentsBytes)
+	templateContents = string(templateContentsBytes)
 	return params.ConstructTemplate(params, templateContents, true)
 }
 
@@ -136,7 +144,7 @@ func InputReconciler(params SnapshotTemplateParameters) model.CustomTemplates {
 	}
 	templateContentsBytes, err := ioutil.ReadFile(templatesDir + templatePath)
 	if err != nil {
-		panic(err)
+		contextutils.LoggerFrom(nil).DPanic(err)
 	}
 	templateContents := string(templateContentsBytes)
 
@@ -153,9 +161,11 @@ const (
 // Returns the template for generating output snapshots.
 func OutputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
 	templateContentsBytes, err := ioutil.ReadFile(templatesDir + OutputSnapshotCustomTemplatePath)
+	var templateContents string
 	if err != nil {
-		panic(err)
+		contextutils.LoggerFrom(nil).DPanic(err)
+		templateContents = ""
 	}
-	templateContents := string(templateContentsBytes)
+	templateContents = string(templateContentsBytes)
 	return params.ConstructTemplate(params, templateContents, true)
 }

@@ -3,6 +3,8 @@ package events
 import (
 	"context"
 
+	"github.com/rotisserie/eris"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/pkg/errors"
@@ -106,7 +108,7 @@ func (w *eventWatcher) Reconcile(ctx context.Context, request reconcile.Request)
 			return reconcile.Result{}, err
 		}
 	default:
-		panic("invalid event")
+		return reconcile.Result{}, eris.Errorf("invalid event")
 	}
 
 	w.events.Forget(key)

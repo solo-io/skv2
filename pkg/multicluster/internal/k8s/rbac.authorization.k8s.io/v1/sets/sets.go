@@ -8,6 +8,7 @@ import (
 	rbac_authorization_k8s_io_v1 "k8s.io/api/rbac/v1"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -134,7 +135,7 @@ func (s *roleSet) Insert(
 	roleList ...*rbac_authorization_k8s_io_v1.Role,
 ) {
 	if s == nil {
-		panic("cannot insert into nil set")
+		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
 	}
 
 	for _, obj := range roleList {
@@ -355,7 +356,7 @@ func (s *roleBindingSet) Insert(
 	roleBindingList ...*rbac_authorization_k8s_io_v1.RoleBinding,
 ) {
 	if s == nil {
-		panic("cannot insert into nil set")
+		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
 	}
 
 	for _, obj := range roleBindingList {
@@ -576,7 +577,7 @@ func (s *clusterRoleSet) Insert(
 	clusterRoleList ...*rbac_authorization_k8s_io_v1.ClusterRole,
 ) {
 	if s == nil {
-		panic("cannot insert into nil set")
+		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
 	}
 
 	for _, obj := range clusterRoleList {
@@ -797,7 +798,7 @@ func (s *clusterRoleBindingSet) Insert(
 	clusterRoleBindingList ...*rbac_authorization_k8s_io_v1.ClusterRoleBinding,
 ) {
 	if s == nil {
-		panic("cannot insert into nil set")
+		contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
 	}
 
 	for _, obj := range clusterRoleBindingList {
