@@ -54,7 +54,7 @@ func (o Options) getUnstructuredFields(protoPkg string, rootMessage []string) ([
 	}
 	var unstructuredFields [][]string
 	for _, field := range root.Fields {
-		rawFieldPath := []string{strcase.ToLowerCamel(field.Field.GetName())}
+		rawFieldPath := []string{lowerCamelName(field)}
 		if field.Field.GetLabel() == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 			// arrays become the path element '*' in the cue openapi builder
 			rawFieldPath = append(rawFieldPath, "*")
@@ -255,4 +255,14 @@ func getFieldOptionOpenAPIValidationDisabled(field *descriptor.FieldDescriptorPr
 		return cueOpt.DisableOpenapiValidation, nil
 	}
 	return false, nil
+}
+
+func lowerCamelName(field FieldOptions) string {
+	name := field.Field.GetName()
+	// Hack because strcase.ToLowerCamel is not converting string the same as the `cue` lib is
+	if name == "k8s" {
+		return name
+	} else {
+		return strcase.ToLowerCamel(field.Field.GetName())
+	}
 }
