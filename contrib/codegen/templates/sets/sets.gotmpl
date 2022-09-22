@@ -137,7 +137,7 @@ func (s *{{ $kindLowerCamel }}Set) Insert(
         {{ $kindLowerCamel }}List ...*{{ $import_prefix }}.{{ $resource.Kind }},
 ) {
     if s == nil {
-        contextutils.LoggerFrom(nil).DPanic("cannot insert into nil set")
+        panic("cannot insert into nil set")
     }
 
     for _, obj := range {{ $kindLowerCamel }}List {

@@ -19,7 +19,7 @@ const (
 var Sets = func() model.CustomTemplates {
 	templateContents, err := templatesBox.FindString(SetCustomTemplatePath)
 	if err != nil {
-		contextUtils.LoggerFrom(nil).DPanic(err)
+		panic(err)
 		return ""
 	}
 	setsTemplates := model.CustomTemplates{
