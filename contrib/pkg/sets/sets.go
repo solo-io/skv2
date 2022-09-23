@@ -25,7 +25,10 @@ var (
 // k8s resources are uniquely identified by their name and namespace
 func Key(id ezkube.ResourceId) string {
 	builder := keyPool.Get().(*strings.Builder)
-	defer keyPool.Put(builder)
+	defer func(){
+		builder.Reset()
+		keyPool.Put(builder)
+	}()
 	// When kubernetes objects are passed in here, a call to the GetX() functions will panic, so
 	// this will return "<unknown>" always if the input is nil.
 	if id == nil {
