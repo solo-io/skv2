@@ -102,8 +102,9 @@ func InputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
 	if err != nil {
 		contextutils.LoggerFrom(nil).DPanic(err)
 		templateContents = ""
+	} else {
+		templateContents = string(templateContentsBytes)
 	}
-	templateContents = string(templateContentsBytes)
 	return params.ConstructTemplate(params, templateContents, true)
 }
 
@@ -119,12 +120,11 @@ func InputSnapshotManualBuilder(params SnapshotTemplateParameters) model.CustomT
 	templateContentsBytes, err := ioutil.ReadFile(templatesDir + InputSnapshotManualBuilderCustomTemplatePath)
 	var templateContents string
 	if err != nil {
-		if err != nil {
-			contextutils.LoggerFrom(nil).DPanic(err)
-			templateContents = ""
-		}
+		contextutils.LoggerFrom(nil).DPanic(err)
+		templateContents = ""
+	} else {
+		templateContents = string(templateContentsBytes)
 	}
-	templateContents = string(templateContentsBytes)
 	return params.ConstructTemplate(params, templateContents, true)
 }
 
@@ -165,7 +165,8 @@ func OutputSnapshot(params SnapshotTemplateParameters) model.CustomTemplates {
 	if err != nil {
 		contextutils.LoggerFrom(nil).DPanic(err)
 		templateContents = ""
+	} else {
+		templateContents = string(templateContentsBytes)
 	}
-	templateContents = string(templateContentsBytes)
 	return params.ConstructTemplate(params, templateContents, true)
 }
