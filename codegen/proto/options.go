@@ -54,7 +54,7 @@ func (o Options) getUnstructuredFields(protoPkg string, rootMessage []string) ([
 	}
 	var unstructuredFields [][]string
 	for _, field := range root.Fields {
-		rawFieldPath := []string{strcase.ToLowerCamel(field.Field.GetName())}
+		rawFieldPath := []string{lowerCamelName(field)}
 		if field.Field.GetLabel() == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 			// arrays become the path element '*' in the cue openapi builder
 			rawFieldPath = append(rawFieldPath, "*")
@@ -186,6 +186,8 @@ type FieldOptions struct {
 	Field *descriptor.FieldDescriptorProto
 
 	OpenAPIValidationDisabled bool
+
+	JsonFieldNameOverride string
 }
 
 func parseMessageOptions(msg *descriptor.DescriptorProto) (MessageOptions, error) {
@@ -236,23 +238,28 @@ func ParseOptions(fileDescriptors []*collector.DescriptorWithPath) (Options, err
 }
 
 func getFieldOptions(field *descriptor.FieldDescriptorProto) (FieldOptions, error) {
-	validationDisabled, err := getFieldOptionOpenAPIValidationDisabled(field)
-	if err != nil {
-		return FieldOptions{}, err
-	}
-	return FieldOptions{
-		Field:                     field,
-		OpenAPIValidationDisabled: validationDisabled,
-	}, nil
-}
-func getFieldOptionOpenAPIValidationDisabled(field *descriptor.FieldDescriptorProto) (bool, error) {
 	cueOptRaw, err := proto.GetExtension(field.Options, cue.E_Opt)
 	if err == nil {
 		cueOpt, ok := cueOptRaw.(*cue.FieldOptions)
 		if !ok {
-			return false, eris.Errorf("internal error: invalid option type %T expecting *cueproto.FieldOptions", cueOpt)
+			return FieldOptions{}, eris.Errorf("internal error: invalid option type %T expecting *cueproto.FieldOptions", cueOpt)
 		}
-		return cueOpt.DisableOpenapiValidation, nil
+		return FieldOptions{
+			Field:                     field,
+			OpenAPIValidationDisabled: cueOpt.DisableOpenapiValidation,
+			JsonFieldNameOverride:     cueOpt.JsonFieldNameOverride,
+		}, nil
 	}
-	return false, nil
+	return FieldOptions{
+		Field: field,
+	}, nil
+}
+
+func lowerCamelName(field FieldOptions) string {
+	name := field.Field.GetName()
+	if field.JsonFieldNameOverride != "" {
+		return field.JsonFieldNameOverride
+	} else {
+		return strcase.ToLowerCamel(name)
+	}
 }
