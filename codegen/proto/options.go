@@ -186,6 +186,8 @@ type FieldOptions struct {
 	Field *descriptor.FieldDescriptorProto
 
 	OpenAPIValidationDisabled bool
+
+	JsonFieldNameOverride string
 }
 
 func parseMessageOptions(msg *descriptor.DescriptorProto) (MessageOptions, error) {
@@ -236,32 +238,33 @@ func ParseOptions(fileDescriptors []*collector.DescriptorWithPath) (Options, err
 }
 
 func getFieldOptions(field *descriptor.FieldDescriptorProto) (FieldOptions, error) {
-	validationDisabled, err := getFieldOptionOpenAPIValidationDisabled(field)
+	validationDisabled, jsonFieldNameOverride, err := getFieldOptionValues(field)
 	if err != nil {
 		return FieldOptions{}, err
 	}
 	return FieldOptions{
 		Field:                     field,
 		OpenAPIValidationDisabled: validationDisabled,
+		JsonFieldNameOverride:     jsonFieldNameOverride,
 	}, nil
 }
-func getFieldOptionOpenAPIValidationDisabled(field *descriptor.FieldDescriptorProto) (bool, error) {
+
+func getFieldOptionValues(field *descriptor.FieldDescriptorProto) (bool, string, error) {
 	cueOptRaw, err := proto.GetExtension(field.Options, cue.E_Opt)
 	if err == nil {
 		cueOpt, ok := cueOptRaw.(*cue.FieldOptions)
 		if !ok {
-			return false, eris.Errorf("internal error: invalid option type %T expecting *cueproto.FieldOptions", cueOpt)
+			return false, "", eris.Errorf("internal error: invalid option type %T expecting *cueproto.FieldOptions", cueOpt)
 		}
-		return cueOpt.DisableOpenapiValidation, nil
+		return cueOpt.DisableOpenapiValidation, cueOpt.JsonFieldNameOverride, nil
 	}
-	return false, nil
+	return false, "", nil
 }
 
 func lowerCamelName(field FieldOptions) string {
 	name := field.Field.GetName()
-	// Hack because strcase.ToLowerCamel is not converting string the same as the `cue` lib is
-	if name == "k8s" {
-		return name
+	if field.JsonFieldNameOverride != "" {
+		return field.JsonFieldNameOverride
 	} else {
 		return strcase.ToLowerCamel(name)
 	}
