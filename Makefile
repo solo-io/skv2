@@ -20,6 +20,7 @@ install-go-tools: mod-download
 	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 	go install github.com/solo-io/protoc-gen-ext@v0.0.16
 	go install github.com/golang/mock/mockgen@v1.4.4
+	go install github.com/onsi/ginkgo/ginkgo@v1.16.4
 	go install golang.org/x/tools/cmd/goimports
 
 # Generated Code - Required to update Codgen Templates
