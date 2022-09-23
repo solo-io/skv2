@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	admissionregistration_k8s_io_v1 "k8s.io/api/admissionregistration/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -45,22 +44,6 @@ type Clientset interface {
 
 type clientSet struct {
 	client client.Client
-}
-
-func NewClientsetFromConfig(cfg *rest.Config, scheme *runtime.Scheme) (Clientset, error) {
-	if scheme == nil {
-		scheme = runtime.NewScheme()
-	}
-	if err := admissionregistration_k8s_io_v1.SchemeBuilder.AddToScheme(scheme); err != nil {
-		return nil, err
-	}
-	client, err := client.New(cfg, client.Options{
-		Scheme: scheme,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return NewClientset(client), nil
 }
 
 func NewClientset(client client.Client) Clientset {
