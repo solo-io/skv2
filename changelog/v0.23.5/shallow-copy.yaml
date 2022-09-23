@@ -1,0 +1,6 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add `ShallowCopy` function to `Snapshot`.
+    issueLink: https://github.com/solo-io/skv2/issues/380
+
+
