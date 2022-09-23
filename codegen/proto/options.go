@@ -238,27 +238,21 @@ func ParseOptions(fileDescriptors []*collector.DescriptorWithPath) (Options, err
 }
 
 func getFieldOptions(field *descriptor.FieldDescriptorProto) (FieldOptions, error) {
-	validationDisabled, jsonFieldNameOverride, err := getFieldOptionValues(field)
-	if err != nil {
-		return FieldOptions{}, err
-	}
-	return FieldOptions{
-		Field:                     field,
-		OpenAPIValidationDisabled: validationDisabled,
-		JsonFieldNameOverride:     jsonFieldNameOverride,
-	}, nil
-}
-
-func getFieldOptionValues(field *descriptor.FieldDescriptorProto) (bool, string, error) {
 	cueOptRaw, err := proto.GetExtension(field.Options, cue.E_Opt)
 	if err == nil {
 		cueOpt, ok := cueOptRaw.(*cue.FieldOptions)
 		if !ok {
-			return false, "", eris.Errorf("internal error: invalid option type %T expecting *cueproto.FieldOptions", cueOpt)
+			return FieldOptions{}, eris.Errorf("internal error: invalid option type %T expecting *cueproto.FieldOptions", cueOpt)
 		}
-		return cueOpt.DisableOpenapiValidation, cueOpt.JsonFieldNameOverride, nil
+		return FieldOptions{
+			Field:                     field,
+			OpenAPIValidationDisabled: cueOpt.DisableOpenapiValidation,
+			JsonFieldNameOverride:     cueOpt.JsonFieldNameOverride,
+		}, nil
 	}
-	return false, "", nil
+	return FieldOptions{
+		Field: field,
+	}, nil
 }
 
 func lowerCamelName(field FieldOptions) string {
