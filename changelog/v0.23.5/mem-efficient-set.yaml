@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Modify resource Sets to use a single internal set to improve memory efficiency.
+    issueLink: https://github.com/solo-io/skv2/issues/383
