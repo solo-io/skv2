@@ -2,6 +2,7 @@ package sets
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/rotisserie/eris"
@@ -13,17 +14,36 @@ var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) err
 	return eris.Errorf("%T with id %v not found", resourceType, Key(id))
 }
 
+var (
+	keyPool = sync.Pool{
+		New: func() any {
+			return &strings.Builder{}
+		},
+	}
+)
+
 // k8s resources are uniquely identified by their name and namespace
 func Key(id ezkube.ResourceId) string {
+	builder := keyPool.Get().(*strings.Builder)
+	defer keyPool.Put(builder)
 	// When kubernetes objects are passed in here, a call to the GetX() functions will panic, so
 	// this will return "<unknown>" always if the input is nil.
 	if id == nil {
 		return "<unknown>"
 	}
 	if clusterId, ok := id.(ezkube.ClusterResourceId); ok {
-		return clusterId.GetName() + "." + clusterId.GetNamespace() + "." + clusterId.GetClusterName()
+		builder.WriteString(clusterId.GetName())
+		builder.WriteString(".")
+		builder.WriteString(clusterId.GetNamespace())
+		builder.WriteString(".")
+		builder.WriteString(clusterId.GetClusterName())
+		return builder.String()
 	}
-	return id.GetName() + "." + id.GetNamespace() + "."
+	builder.WriteString(id.GetName())
+	builder.WriteString(".")
+	builder.WriteString(id.GetNamespace())
+	builder.WriteString(".")
+	return builder.String()
 }
 
 // typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
