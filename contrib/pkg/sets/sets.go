@@ -4,10 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -38,7 +35,7 @@ type ResourceSet interface {
 	Keys() sets.String
 	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
-	Map() map[string]ezkube.ResourceId
+	Map() Resources
 	Insert(resource ...ezkube.ResourceId)
 	Equal(set ResourceSet) bool
 	Has(resource ezkube.ResourceId) bool
@@ -46,6 +43,7 @@ type ResourceSet interface {
 	Union(set ResourceSet) ResourceSet
 	Difference(set ResourceSet) ResourceSet
 	Intersection(set ResourceSet) ResourceSet
+	IsSuperset(set ResourceSet) bool
 	Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error)
 	Length() int
 	// returns the delta between this and and another ResourceSet
@@ -62,212 +60,121 @@ type ResourceDelta struct {
 	Removed ResourceSet
 }
 
-type resourceSet struct {
-	lock    sync.RWMutex
-	set     sets.String
-	mapping map[string]ezkube.ResourceId
+type threadSafeResourceSet struct {
+	lock sync.RWMutex
+	set  Resources
 }
 
 func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
-	set := sets.NewString()
-	mapping := map[string]ezkube.ResourceId{}
-	for _, resource := range resources {
-		if resource == nil {
-			continue
-		}
-		key := Key(resource)
-		set.Insert(key)
-		mapping[key] = resource
-	}
-	return &resourceSet{set: set, mapping: mapping}
+	return &threadSafeResourceSet{set: newResources(resources...)}
 }
 
-func (s *resourceSet) Keys() sets.String {
-	return sets.NewString(s.set.List()...)
+func (t *threadSafeResourceSet) Keys() sets.String {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.Keys()
 }
 
-func (s *resourceSet) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	var resources []ezkube.ResourceId
-	for _, key := range s.set.List() {
-		var filtered bool
-		for _, filter := range filterResource {
-			if filter(s.mapping[key]) {
-				filtered = true
-				break
-			}
-		}
-		if !filtered {
-			resources = append(resources, s.mapping[key])
-		}
-	}
-	return resources
+func (t *threadSafeResourceSet) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.List(filterResource...)
 }
 
-func (s *resourceSet) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	keys := s.set.UnsortedList()
-	resources := make([]ezkube.ResourceId, 0, len(keys))
-
-	for _, key := range keys {
-		var filtered bool
-		for _, filter := range filterResource {
-			if filter(s.mapping[key]) {
-				filtered = true
-				break
-			}
-		}
-		if !filtered {
-			resources = append(resources, s.mapping[key])
-		}
-	}
-	return resources
+func (t *threadSafeResourceSet) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.UnsortedList(filterResource...)
 }
 
-func (s *resourceSet) Map() map[string]ezkube.ResourceId {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	newMap := map[string]ezkube.ResourceId{}
-	for k, v := range s.mapping {
-		newMap[k] = v
-	}
-	return newMap
+func (t *threadSafeResourceSet) Map() Resources {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.Map()
 }
 
-func (s *resourceSet) Insert(
+func (t *threadSafeResourceSet) Insert(
 	resources ...ezkube.ResourceId,
 ) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	for _, resource := range resources {
-		if resource == nil {
-			continue
-		}
-		key := Key(resource)
-		s.mapping[key] = resource
-		s.set.Insert(key)
-	}
+	t.lock.Lock()
+	defer t.lock.Unlock()
+	t.set.Insert(resources...)
 }
 
-func (s *resourceSet) Has(resource ezkube.ResourceId) bool {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	return s.set.Has(Key(resource))
+func (t *threadSafeResourceSet) Has(resource ezkube.ResourceId) bool {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.Has(resource)
 }
 
-func (s *resourceSet) Equal(
+// Has returns true if and only if item is contained in the set.
+func (s Resources) Has(item ezkube.ResourceId) bool {
+	_, contained := s[Key(item)]
+	return contained
+}
+
+func (t *threadSafeResourceSet) IsSuperset(
 	set ResourceSet,
 ) bool {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	return s.set.Equal(set.Keys())
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.IsSuperset(set.Map())
 }
 
-func (s *resourceSet) Delete(resource ezkube.ResourceId) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	key := Key(resource)
-	delete(s.mapping, key)
-	s.set.Delete(key)
+func (t *threadSafeResourceSet) Equal(
+	set ResourceSet,
+) bool {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.Equal(set.Map())
 }
 
-func (s *resourceSet) Union(set ResourceSet) ResourceSet {
-	return NewResourceSet(append(s.List(), set.List()...)...)
+func (t *threadSafeResourceSet) Delete(resource ezkube.ResourceId) {
+	t.lock.Lock()
+	defer t.lock.Unlock()
+	t.set.Delete(resource)
 }
 
-func (s *resourceSet) Difference(set ResourceSet) ResourceSet {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	newSet := s.set.Difference(set.Keys())
-	var newResources []ezkube.ResourceId
-	for key, _ := range newSet {
-		val, _ := s.mapping[key]
-		newResources = append(newResources, val)
-	}
-	return NewResourceSet(newResources...)
+func (t *threadSafeResourceSet) Union(set ResourceSet) ResourceSet {
+	t.lock.Lock()
+	defer t.lock.Unlock()
+	return &threadSafeResourceSet{set: t.set.Union(set.Map())}
 }
 
-func (s *resourceSet) Intersection(set ResourceSet) ResourceSet {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	newSet := s.set.Intersection(set.Keys())
-	var newResources []ezkube.ResourceId
-	for key, _ := range newSet {
-		val, _ := s.mapping[key]
-		newResources = append(newResources, val)
-	}
-	return NewResourceSet(newResources...)
+func (t *threadSafeResourceSet) Difference(set ResourceSet) ResourceSet {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return &threadSafeResourceSet{set: t.set.Difference(set.Map())}
 }
 
-func (s *resourceSet) Find(
+func (t *threadSafeResourceSet) Intersection(set ResourceSet) ResourceSet {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return &threadSafeResourceSet{set: t.set.Intersection(set.Map())}
+}
+
+func (t *threadSafeResourceSet) Find(
 	resourceType,
 	id ezkube.ResourceId,
 ) (ezkube.ResourceId, error) {
-
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	key := Key(id)
-	resource, ok := s.mapping[key]
-	if !ok {
-		return nil, NotFoundErr(resourceType, id)
-	}
-
-	return resource, nil
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.Find(resourceType, id)
 }
 
-func (s *resourceSet) Length() int {
-
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	return len(s.mapping)
+func (t *threadSafeResourceSet) Length() int {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set.Len()
 }
 
 // note that this function will currently panic if called for a ResourceSet containing non-runtime.Objects
-func (oldSet *resourceSet) Delta(newSet ResourceSet) ResourceDelta {
-	updated, removed := NewResourceSet(), NewResourceSet()
-
-	// find objects updated or removed
-	oldSet.List(func(oldObj ezkube.ResourceId) bool {
-		newObj, err := newSet.Find(oldObj, oldObj)
-		switch {
-		case err != nil:
-			// obj removed
-			removed.Insert(oldObj)
-		case !controllerutils.ObjectsEqual(oldObj.(client.Object), newObj.(client.Object)):
-			// obj updated
-			updated.Insert(newObj)
-		default:
-			// obj the same
-		}
-		return true // return value ignored
-	})
-
-	// find objects added
-	newSet.List(func(newObj ezkube.ResourceId) bool {
-		if _, err := oldSet.Find(newObj, newObj); err != nil {
-			// obj added
-			updated.Insert(newObj)
-		}
-		return true // return value ignored
-	})
-	return ResourceDelta{
-		Inserted: updated,
-		Removed:  removed,
-	}
-
+func (t *threadSafeResourceSet) Delta(newSet ResourceSet) ResourceDelta {
+	return t.set.Delta(newSet)
 }
 
 // Create a clone of the current set
 // note that this function will currently panic if called for a ResourceSet containing non-runtime.Objects
-func (oldSet *resourceSet) Clone() ResourceSet {
-	new := NewResourceSet()
-	oldSet.List(func(oldObj ezkube.ResourceId) bool {
-		copy := oldObj.(client.Object).DeepCopyObject().(client.Object)
-		new.Insert(copy)
-		return true
-	})
-	return new
+func (t *threadSafeResourceSet) Clone() ResourceSet {
+	return t.set.Clone()
 }

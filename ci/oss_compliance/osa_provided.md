@@ -9,7 +9,7 @@ Name|Version|License
 [gogo/protobuf](https://github.com/gogo/protobuf)|v1.3.2|BSD 3-clause "New" or "Revised" License
 [groupcache/lru](https://github.com/golang/groupcache)|v0.0.0-20200121045136-8c9f03a8e57e|Apache License 2.0
 [golang/protobuf](https://github.com/golang/protobuf)|v1.5.2|BSD 3-clause "New" or "Revised" License
-[cmp/internal](https://github.com/google/go-cmp)|v0.5.5|BSD 3-clause "New" or "Revised" License
+[cmp/internal](https://github.com/google/go-cmp)|v0.5.8|BSD 3-clause "New" or "Revised" License
 [google/gofuzz](https://github.com/google/gofuzz)|v1.1.0|Apache License 2.0
 [google/uuid](https://github.com/google/uuid)|v1.2.0|BSD 3-clause "New" or "Revised" License
 [googleapis/gnostic](https://github.com/googleapis/gnostic)|v0.5.5|Apache License 2.0
@@ -27,11 +27,11 @@ Name|Version|License
 [go.uber.org/atomic](https://go.uber.org/atomic)|v1.7.0|MIT License
 [go.uber.org/multierr](https://go.uber.org/multierr)|v1.6.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.19.0|MIT License
-[x/net](https://golang.org/x/net)|v0.0.0-20210614182718-04defd469f4e|BSD 3-clause "New" or "Revised" License
+[x/net](https://golang.org/x/net)|v0.0.0-20220722155237-a158d28d115b|BSD 3-clause "New" or "Revised" License
 [oauth2/internal](https://golang.org/x/oauth2/internal)|v0.0.0-20210201163806-010130855d6c|BSD 3-clause "New" or "Revised" License
-[x/sys](https://golang.org/x/sys)|v0.0.0-20220520151302-bc2c85ada10a|BSD 3-clause "New" or "Revised" License
-[x/term](https://golang.org/x/term)|v0.0.0-20210220032956-6a3ed077a48d|BSD 3-clause "New" or "Revised" License
-[x/text](https://golang.org/x/text)|v0.3.6|BSD 3-clause "New" or "Revised" License
+[x/sys](https://golang.org/x/sys)|v0.0.0-20220722155257-8c9f86f7a55f|BSD 3-clause "New" or "Revised" License
+[x/term](https://golang.org/x/term)|v0.0.0-20210927222741-03fcf44c2211|BSD 3-clause "New" or "Revised" License
+[x/text](https://golang.org/x/text)|v0.3.7|BSD 3-clause "New" or "Revised" License
 [time/rate](https://golang.org/x/time/rate)|v0.0.0-20210723032227-1f47c861a9ac|BSD 3-clause "New" or "Revised" License
 [jsonpatch/v2](https://gomodules.xyz/jsonpatch/v2)|v2.2.0|Apache License 2.0
 [google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.27.1|BSD 3-clause "New" or "Revised" License
