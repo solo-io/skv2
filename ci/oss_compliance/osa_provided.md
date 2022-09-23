@@ -27,6 +27,7 @@ Name|Version|License
 [go.uber.org/atomic](https://go.uber.org/atomic)|v1.7.0|MIT License
 [go.uber.org/multierr](https://go.uber.org/multierr)|v1.6.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.19.0|MIT License
+[exp/maps](https://golang.org/x/exp/maps)|v0.0.0-20220921164117-439092de6870|BSD 3-clause "New" or "Revised" License
 [x/net](https://golang.org/x/net)|v0.0.0-20220722155237-a158d28d115b|BSD 3-clause "New" or "Revised" License
 [oauth2/internal](https://golang.org/x/oauth2/internal)|v0.0.0-20210201163806-010130855d6c|BSD 3-clause "New" or "Revised" License
 [x/sys](https://golang.org/x/sys)|v0.0.0-20220722155257-8c9f86f7a55f|BSD 3-clause "New" or "Revised" License
