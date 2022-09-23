@@ -1,5 +1,7 @@
 changelog:
-  - type: FIX
-    description: Use new scheme rather than shared global scheme to avoid data races.
+  - type: BREAKING_CHANGE
+    description: >-
+      Remove race-prone function to avoid data races. 
+      Clients of this should replace the function call with the code recommendend in the PR description.
     issueLink: https://github.com/solo-io/skv2/issues/375
 
