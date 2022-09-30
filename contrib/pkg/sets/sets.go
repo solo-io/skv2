@@ -21,9 +21,9 @@ func Key(id ezkube.ResourceId) string {
 		return "<unknown>"
 	}
 	if clusterId, ok := id.(ezkube.ClusterResourceId); ok {
-		return clusterId.GetName() + "." + clusterId.GetNamespace() + "." + clusterId.GetClusterName()
+		return fmt.Sprintf("%s.%s.%s", clusterId.GetName(), clusterId.GetNamespace(), clusterId.GetClusterName())
 	}
-	return id.GetName() + "." + id.GetNamespace() + "."
+	return fmt.Sprintf("%s.%s.", id.GetName(), id.GetNamespace())
 }
 
 // typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
