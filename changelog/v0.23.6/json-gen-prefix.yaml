@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Check for go package prefix (instead of exact match) in json marshal/unmarshal template.

@@ -18,6 +18,9 @@ const (
 	// if specified, ignore all descendants
 	omitChildrenTag = "omitChildren"
 
+	// if specified, hide the value of the field
+	hideValueTag = "hideValue"
+
 	// if specified, only render this field if the value of the env variable PRODUCT matches
 	productSpecificTag = "product"
 	productEnvVar      = "PRODUCT"
@@ -128,7 +131,7 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 
 		// add entry for struct field itself, ignoring the top level struct
 		if len(path) > 0 {
-			addValue(HelmValue{Key: strings.Join(path, "."), Type: typ.Kind().String(), DefaultValue: valToString(val), Description: desc})
+			addValue(HelmValue{Key: strings.Join(path, "."), Type: typ.Kind().String(), DefaultValue: " ", Description: desc})
 		}
 
 		for i := 0; i < typ.NumField(); i++ {
@@ -151,6 +154,10 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 			var fieldVal reflect.Value
 			if val != fieldVal {
 				fieldVal = val.Field(i)
+			}
+
+			if _, ok := field.Tag.Lookup(hideValueTag); ok {
+				fieldVal = reflect.Value{}
 			}
 
 			if product, ok := field.Tag.Lookup(productSpecificTag); ok {

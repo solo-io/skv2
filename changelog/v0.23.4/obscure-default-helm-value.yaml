@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Allow helm docs to hide default values if the tag `hideValue` is set.
