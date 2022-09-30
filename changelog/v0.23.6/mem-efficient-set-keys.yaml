@@ -1,6 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Make `sets.Key()` much more memory efficient by using a `sync.Pool` to
-      reuse buffers, and switching from string concatenation to `strings.Builder`.
-
-
