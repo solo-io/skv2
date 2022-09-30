@@ -28,7 +28,7 @@ func Key(id ezkube.ResourceId) string {
 
 // typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
 func TypedKey(id ezkube.ResourceId) string {
-	return fmt.Sprintf("%v.%T", Key(id), id)
+	return fmt.Sprintf("%s.%T", Key(id), id)
 }
 
 type ResourceSet interface {
