@@ -27,7 +27,7 @@ var (
 
 {{- range $resource := $.Resources }}
 
-{{- if or (eq $resource.Spec.Type.GoPackage "") (eq $resource.Spec.Type.GoPackage $.RootGoPackage)}}
+{{- if or (eq $resource.Spec.Type.GoPackage "") (hasPrefix $.RootGoPackage $resource.Spec.Type.GoPackage)}}
 // MarshalJSON is a custom marshaler for {{ $resource.Spec.Type.Name }}
 func (this *{{ $resource.Spec.Type.Name }}) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
@@ -46,7 +46,7 @@ func (this *{{ $resource.Spec.Type.Name }}) UnmarshalJSON(b []byte) error {
 
 
 {{- if $resource.Status }}
-{{- if or (eq $resource.Status.Type.GoPackage "") (eq $resource.Status.Type.GoPackage $.RootGoPackage) }}
+{{- if or (eq $resource.Status.Type.GoPackage "") (hasPrefix $.RootGoPackage $resource.Status.Type.GoPackage)}}
 // MarshalJSON is a custom marshaler for {{ $resource.Status.Type.Name }}
 func (this *{{ $resource.Status.Type.Name }}) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
