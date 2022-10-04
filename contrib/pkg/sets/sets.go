@@ -2,6 +2,7 @@ package sets
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/rotisserie/eris"
@@ -13,22 +14,44 @@ var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) err
 	return eris.Errorf("%T with id %v not found", resourceType, Key(id))
 }
 
+const separator = "."
+
+var builderPool = sync.Pool{
+	New: func() any {
+		return &strings.Builder{}
+	},
+}
+
 // k8s resources are uniquely identified by their name and namespace
 func Key(id ezkube.ResourceId) string {
+	b := builderPool.Get().(*strings.Builder)
+	defer func() {
+		b.Reset()
+		builderPool.Put(b)
+	}()
 	// When kubernetes objects are passed in here, a call to the GetX() functions will panic, so
 	// this will return "<unknown>" always if the input is nil.
 	if id == nil {
 		return "<unknown>"
 	}
 	if clusterId, ok := id.(ezkube.ClusterResourceId); ok {
-		return clusterId.GetName() + "." + clusterId.GetNamespace() + "." + clusterId.GetClusterName()
+		b.WriteString(clusterId.GetName())
+		b.WriteString(separator)
+		b.WriteString(clusterId.GetNamespace())
+		b.WriteString(separator)
+		b.WriteString(clusterId.GetClusterName())
+		return b.String()
 	}
-	return id.GetName() + "." + id.GetNamespace() + "."
+	b.WriteString(id.GetName())
+	b.WriteString(separator)
+	b.WriteString(id.GetNamespace())
+	b.WriteString(separator)
+	return b.String()
 }
 
 // typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
 func TypedKey(id ezkube.ResourceId) string {
-	return fmt.Sprintf("%v.%T", Key(id), id)
+	return fmt.Sprintf("%s.%T", Key(id), id)
 }
 
 type ResourceSet interface {
