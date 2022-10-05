@@ -27,6 +27,8 @@ type ResourceSet[T client.Object] interface {
 	Has(resource T) bool
 	// Delete the key matching the resource
 	Delete(resource T)
+	// Return a set with the matching objects filtered out
+	Filter(filterResource ...func(T) bool) ResourceSet[T]
 	// Return the union with the provided set
 	Union(set ResourceSet[T]) ResourceSet[T]
 	// Return the difference with the provided set
@@ -117,6 +119,28 @@ func (s *resourceSet[T]) UnsortedList(filterResource ...func(T) bool) []T {
 		}
 		if !filtered {
 			resources = append(resources, s.mapping[key])
+		}
+	}
+	return resources
+}
+
+func (s *resourceSet[T]) Filter(filterResource ...func(T) bool) ResourceSet[T] {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	keys := s.set.UnsortedList()
+	resources := NewResourceSet[T]()
+
+	for _, key := range keys {
+		var filtered bool
+		for _, filter := range filterResource {
+			if filter(s.mapping[key]) {
+				filtered = true
+				break
+			}
+		}
+		if !filtered {
+			resources.Insert(s.mapping[key])
 		}
 	}
 	return resources
