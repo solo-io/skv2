@@ -95,16 +95,21 @@ func (c *clusterWatcher) startManager(clusterName string, restCfg *rest.Config) 
 		}
 
 		retry.Do(func() error {
-			ctx, cancel := context.WithCancel(contextutils.WithLoggerValues(context.WithValue(c.ctx, "cluster", clusterName), zap.String("cluster", clusterName)))
-			mgr, _ := manager.New(restCfg, c.optionsWithDefaults())
+			mgr, err := manager.New(restCfg, c.optionsWithDefaults())
+			if err != nil {
+				contextutils.LoggerFrom(c.ctx).Errorf("Manager creation failed for cluster %v: %v", clusterName, err)
+				return err
+			}
+
+			ctx, cancel := context.WithCancel(contextutils.WithLoggerValues(c.ctx, zap.String("cluster", clusterName)))
 
 			// add manager to managers+handlers.  It may fail to start and need to be removed ¯\_(ツ)_/¯
 			c.managers.set(clusterName, mgr, ctx, cancel)
 			c.handlers.AddCluster(ctx, clusterName, mgr)
 
-			err := mgr.Start(ctx) // blocking until error is thrown
+			err = mgr.Start(ctx) // blocking until error is thrown
 			if err != nil {
-				contextutils.LoggerFrom(ctx).Errorf("Manager creation/start failed for cluster %v: %v", clusterName, err)
+				contextutils.LoggerFrom(ctx).Errorf("Manager start failed for cluster %v: %v", clusterName, err)
 
 				// remove failed manager from managers+handlers
 				c.managers.delete(clusterName)
