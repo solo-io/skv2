@@ -1,6 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Add a `Filter` method to `v2sets.ResourceSet` to allow for efficient filtering on sets.
-    issueLink: https://github.com/solo-io/skv2/issues/388
-
-
