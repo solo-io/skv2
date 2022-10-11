@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/390
+    description: Handle manager creation errors in multi cluster watcher.
