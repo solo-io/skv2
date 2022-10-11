@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Don't use new(T) in generic reconciler. It instantiates a `nil` object.
