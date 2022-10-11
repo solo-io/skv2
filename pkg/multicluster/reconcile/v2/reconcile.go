@@ -20,18 +20,25 @@ type clusterLoopRunner[T client.Object] struct {
 	clusterLoops *clusterLoopSet[T]
 	reconcilers  *reconcilerList[T]
 	options      reconcile_v2.Options
+	t            T
 }
 
 var _ multicluster_v2.Loop[client.Object] = &clusterLoopRunner[client.Object]{}
 var _ multicluster.ClusterHandler = &clusterLoopRunner[client.Object]{}
 var _ multicluster.ClusterRemovedHandler = &clusterLoopRunner[client.Object]{}
 
-func NewLoop[T client.Object](name string, cw multicluster.ClusterWatcher, options reconcile_v2.Options) *clusterLoopRunner[T] {
+func NewLoop[T client.Object](
+	name string,
+	cw multicluster.ClusterWatcher,
+	t T,
+	options reconcile_v2.Options,
+) *clusterLoopRunner[T] {
 	runner := &clusterLoopRunner[T]{
 		name:         name,
 		clusterLoops: newClusterLoopSet[T](),
 		reconcilers:  newReconcilerList[T](),
 		options:      options,
+		t:            t,
 	}
 	cw.RegisterClusterHandler(runner)
 
@@ -40,7 +47,7 @@ func NewLoop[T client.Object](name string, cw multicluster.ClusterWatcher, optio
 
 // AddCluster creates a reconcile_v2 loop for the cluster.
 func (r *clusterLoopRunner[T]) AddCluster(ctx context.Context, cluster string, mgr manager.Manager) {
-	loopForCluster := reconcile_v2.NewLoop[T](r.name+"-"+cluster, cluster, mgr, r.options)
+	loopForCluster := reconcile_v2.NewLoop(r.name+"-"+cluster, cluster, mgr, r.t, r.options)
 
 	// Add the cluster loop to the set of active loops and start reconcilers.
 	r.clusterLoops.add(cluster, loopForCluster)
@@ -54,7 +61,11 @@ func (r *clusterLoopRunner[T]) RemoveCluster(cluster string) {
 }
 
 // AddReconciler registers a cluster handler for the reconciler.
-func (r *clusterLoopRunner[T]) AddReconciler(ctx context.Context, reconciler multicluster_v2.Reconciler[T], predicates ...predicate.Predicate) {
+func (r *clusterLoopRunner[T]) AddReconciler(
+	ctx context.Context,
+	reconciler multicluster_v2.Reconciler[T],
+	predicates ...predicate.Predicate,
+) {
 	r.reconcilers.add(ctx, reconciler, predicates...)
 	r.clusterLoops.ensureReconcilers(r.reconcilers)
 }
@@ -128,16 +139,22 @@ func newReconcilerList[T client.Object]() *reconcilerList[T] {
 	}
 }
 
-func (r *reconcilerList[T]) add(ctx context.Context, reconciler multicluster_v2.Reconciler[T], predicates ...predicate.Predicate) {
+func (r *reconcilerList[T]) add(
+	ctx context.Context,
+	reconciler multicluster_v2.Reconciler[T],
+	predicates ...predicate.Predicate,
+) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
-	r.reconcilers = append(r.reconcilers, runnableReconciler[T]{
-		ctx:            ctx,
-		reconciler:     reconciler,
-		predicates:     predicates,
-		activeClusters: sets.String{},
-	})
+	r.reconcilers = append(
+		r.reconcilers, runnableReconciler[T]{
+			ctx:            ctx,
+			reconciler:     reconciler,
+			predicates:     predicates,
+			activeClusters: sets.String{},
+		},
+	)
 }
 
 // runAll runs all reconcilers in the list on the given loop.
@@ -157,9 +174,11 @@ func (r *reconcilerList[T]) runAll(cluster string, loop reconcile_v2.Loop[T]) {
 		}
 		err := loop.RunReconciler(rr.ctx, mcReconciler, rr.predicates...)
 		if err != nil {
-			contextutils.LoggerFrom(rr.ctx).Debug("Error occurred when adding reconciler to cluster loop",
+			contextutils.LoggerFrom(rr.ctx).Debug(
+				"Error occurred when adding reconciler to cluster loop",
 				zap.Error(err),
-				zap.String("cluster", cluster))
+				zap.String("cluster", cluster),
+			)
 		}
 		rr.activeClusters.Insert(cluster)
 	}
