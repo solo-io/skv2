@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -900,6 +902,23 @@ var _ = Describe("Cmd", func() {
 			bytes, err := ioutil.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(bytes)).To(ContainSubstring("description: OpenAPI gen test for recursive fields"))
+		})
+
+		It("generates google.protobuf.Value with no type", func() {
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			bytes, err := ioutil.ReadFile(crdFilePath)
+			Expect(err).NotTo(HaveOccurred())
+			generatedCrd := &v12.CustomResourceDefinition{}
+			Expect(yaml.Unmarshal(bytes, generatedCrd)).NotTo(HaveOccurred())
+			protobufValueField := generatedCrd.Spec.Versions[0].Schema.OpenAPIV3Schema.Properties["spec"].Properties["recursiveType"].Properties["protobufValue"]
+			// access the field to make sure it's not nil
+			Expect(protobufValueField.XPreserveUnknownFields).ToNot(BeNil())
+			Expect(*protobufValueField.XPreserveUnknownFields).To(BeTrue())
+			Expect(protobufValueField.Type).To(BeEmpty())
 		})
 
 		It("can exclude field descriptions", func() {

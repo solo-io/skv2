@@ -1,0 +1,6 @@
+changelog:
+- type: FIX
+  issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/5711
+  description: >
+    Adds a new proto option `disable_openapi_type_validation`, which allows for a type-less openapi schema type,
+    which is useful for protobuf types such as `google.protobuf.Value`.

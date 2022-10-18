@@ -246,7 +246,7 @@ func getFieldOptions(field *descriptor.FieldDescriptorProto) (FieldOptions, erro
 		}
 		return FieldOptions{
 			Field:                     field,
-			OpenAPIValidationDisabled: cueOpt.DisableOpenapiValidation,
+			OpenAPIValidationDisabled: cueOpt.DisableOpenapiValidation || cueOpt.DisableOpenapiTypeValidation,
 			JsonFieldNameOverride:     cueOpt.JsonFieldNameOverride,
 		}, nil
 	}
