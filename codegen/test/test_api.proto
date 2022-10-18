@@ -7,6 +7,7 @@ option go_package = "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/any.proto";
 import "encoding/protobuf/cue/cue.proto";
+import "google/protobuf/struct.proto";
 
 message PaintSpec {
     PaintColor color = 1;
@@ -23,6 +24,7 @@ message PaintSpec {
 
     // tests OpenAPI schema gen for Recursive types
     message RecursiveType {
+        google.protobuf.Value protobuf_value = 4 [(solo.io.cue.opt).disable_openapi_type_validation = true];
         RecursiveType recursive_field = 1 [(solo.io.cue.opt).disable_openapi_validation = true];
         repeated RecursiveType repeated_recursive_field = 2 [(solo.io.cue.opt).disable_openapi_validation = true];
 
