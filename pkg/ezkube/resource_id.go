@@ -13,7 +13,8 @@ type ResourceId interface {
 }
 
 type ClusterResourceId interface {
-	ResourceId
+	GetName() string
+	GetNamespace() string
 	GetClusterName() string
 }
 
