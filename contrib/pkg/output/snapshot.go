@@ -180,7 +180,7 @@ type ResourceList struct {
 func (l ResourceList) SplitByClusterName() map[string][]ezkube.Object {
 	listsByCluster := map[string][]ezkube.Object{}
 	for _, resource := range l.Resources {
-		clusterName := resource.GetClusterName()
+		clusterName := ezkube.GetClusterName(resource)
 		listForCluster := listsByCluster[clusterName]
 
 		// list func (i.e. garbage collection labels) shared across clusters
@@ -354,7 +354,7 @@ func (s Snapshot) syncList(
 func (s Snapshot) upsert(ctx context.Context, cli client.Client, obj ezkube.Object, statusUpdate bool) error {
 	// add cluster label to object
 	obj.SetLabels(
-		AddClusterLabels(obj.GetClusterName(), obj.GetLabels()),
+		AddClusterLabels(ezkube.GetClusterName(obj), obj.GetLabels()),
 	)
 
 	var (

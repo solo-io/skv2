@@ -8,6 +8,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) error {
@@ -34,18 +35,14 @@ func Key(id ezkube.ResourceId) string {
 	if id == nil {
 		return "<unknown>"
 	}
-	if clusterId, ok := id.(ezkube.ClusterResourceId); ok {
-		b.WriteString(clusterId.GetName())
-		b.WriteString(separator)
-		b.WriteString(clusterId.GetNamespace())
-		b.WriteString(separator)
-		b.WriteString(clusterId.GetClusterName())
-		return b.String()
-	}
 	b.WriteString(id.GetName())
 	b.WriteString(separator)
 	b.WriteString(id.GetNamespace())
 	b.WriteString(separator)
+	if cliObj, ok := id.(client.Object); ok {
+		b.WriteString(separator)
+		b.WriteString(ezkube.GetClusterName(cliObj))
+	}
 	return b.String()
 }
 
