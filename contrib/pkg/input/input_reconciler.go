@@ -121,7 +121,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 	// determine whether the resource has been read from a remote cluster
 	// based on whether its ClusterName field is set
 	if clusterResource, ok := key.(ezkube.ClusterResourceId); ok {
-		if clusterResource.GetClusterName() != "" {
+		if ezkube.GetClusterName(clusterResource) != "" {
 			isRemoteCluster = true
 		}
 	}

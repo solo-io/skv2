@@ -22,7 +22,7 @@ func MakeClusterObjectRef(resource ClusterResourceId) *v1.ClusterObjectRef {
 	return &v1.ClusterObjectRef{
 		Name:        resource.GetName(),
 		Namespace:   resource.GetNamespace(),
-		ClusterName: resource.GetClusterName(),
+		ClusterName: GetClusterName(resource),
 	}
 }
 
@@ -42,7 +42,7 @@ func ClusterRefsMatch(ref1, ref2 ClusterResourceId) bool {
 	}
 	return ref1.GetNamespace() == ref2.GetNamespace() &&
 		ref1.GetName() == ref2.GetName() &&
-		ref1.GetClusterName() == ref2.GetClusterName()
+		GetClusterName(ref1) == GetClusterName(ref2)
 }
 
 func MakeClientObjectKey(ref ResourceId) client.ObjectKey {

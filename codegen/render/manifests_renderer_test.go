@@ -64,7 +64,7 @@ var _ = Describe("ManifestsRenderer", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(1))
 			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
-			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": 5770277ee8c9bc92"))
+			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": b6ec737002f7d02e"))
 
 		})
 	})
