@@ -48,10 +48,10 @@ Name|Version|License
 [gopkg.in/inf.v0](https://gopkg.in/inf.v0)|v0.9.1|BSD 3-clause "New" or "Revised" License
 [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)|v2.4.0|Apache License 2.0
 [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)|v3.0.1|MIT License
-[k8s.io/api](https://k8s.io/api)|v0.25.0|Apache License 2.0
-[k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.25.0|Apache License 2.0
-[k8s.io/client-go](https://k8s.io/client-go)|v0.25.0|Apache License 2.0
-[config/v1alpha1](https://k8s.io/component-base/config/v1alpha1)|v0.25.0|Apache License 2.0
+[k8s.io/api](https://k8s.io/api)|v0.25.4|Apache License 2.0
+[k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.25.4|Apache License 2.0
+[k8s.io/client-go](https://k8s.io/client-go)|v0.25.4|Apache License 2.0
+[config/v1alpha1](https://k8s.io/component-base/config/v1alpha1)|v0.25.4|Apache License 2.0
 [v2/internal](https://k8s.io/klog/v2/internal)|v2.70.1|Apache License 2.0
 [kube-openapi/pkg](https://k8s.io/kube-openapi/pkg)|v0.0.0-20220803162953-67bda5d908f1|Apache License 2.0
 [k8s.io/utils](https://k8s.io/utils)|v0.0.0-20220728103510-ee6ede2d64ed|Apache License 2.0
