@@ -269,7 +269,7 @@ func (s *snapshot) ForEachObject(handleObject func(cluster string, gvk schema.Gr
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     for _, set := range s.{{ $kindLowerCamelPlural }} {
         for _, obj := range set.Set().List() {
-            cluster := obj.GetClusterName()
+            cluster := ezkube.GetClusterName(obj)
             gvk := schema.GroupVersionKind{
                 Group: "{{ $resource.Group.Group }}",
                 Version: "{{ $resource.Version }}",
@@ -668,7 +668,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     for _, obj := range b.Get{{ $kindPlural }}().List() {
-        cluster := obj.GetClusterName()
+        cluster := ezkube.GetClusterName(obj)
         gvk := schema.GroupVersionKind{
             Group: "{{ $resource.Group.Group }}",
             Version: "{{ $resource.Version }}",
@@ -697,7 +697,7 @@ func (b *builder) ForEachObject(handleObject func(cluster string, gvk schema.Gro
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     for _, obj := range b.Get{{ $kindPlural }}().List() {
-        cluster := obj.GetClusterName()
+        cluster := ezkube.GetClusterName(obj)
         gvk := schema.GroupVersionKind{
             Group: "{{ $resource.Group.Group }}",
             Version: "{{ $resource.Version }}",

@@ -26,6 +26,7 @@ import (
 
     "k8s.io/apimachinery/pkg/labels"
     "k8s.io/apimachinery/pkg/runtime/schema"
+    "github.com/solo-io/skv2/pkg/ezkube"
     "github.com/solo-io/skv2/pkg/resource"
     "github.com/solo-io/skv2/pkg/verifier"
     "github.com/solo-io/go-utils/contextutils"
@@ -335,7 +336,7 @@ func (s *snapshot{{ $snapshotName }}) ForEachObject(handleObject func(cluster st
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     for _, obj := range s.{{ $kindLowerCamelPlural }}.List() {
-        cluster := obj.GetClusterName()
+        cluster := ezkube.GetClusterName(obj)
         gvk := schema.GroupVersionKind{
             Group: "{{ $resource.Group.Group }}",
             Version: "{{ $resource.Version }}",
