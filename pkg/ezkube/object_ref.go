@@ -23,7 +23,6 @@ func MakeClusterObjectRef(resource ClusterResourceId) *v1.ClusterObjectRef {
 		Name:        resource.GetName(),
 		Namespace:   resource.GetNamespace(),
 		ClusterName: GetClusterName(resource),
-		Annotations: resource.GetAnnotations(),
 	}
 }
 

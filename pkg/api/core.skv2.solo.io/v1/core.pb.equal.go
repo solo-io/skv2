@@ -131,17 +131,6 @@ func (m *ClusterObjectRef) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetAnnotations()) != len(target.GetAnnotations()) {
-		return false
-	}
-	for k, v := range m.GetAnnotations() {
-
-		if strings.Compare(v, target.GetAnnotations()[k]) != 0 {
-			return false
-		}
-
-	}
-
 	return true
 }
 
