@@ -39,6 +39,9 @@ message ClusterObjectRef {
 
     // name of the cluster in which the resource exists
     string cluster_name = 3;
+
+    // annotations of the resource being referenced
+    map<string, string> annotations = 4;
 }
 
 // Resource reference for a typed object

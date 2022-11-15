@@ -1,5 +1,7 @@
 package ezkube
 
+import "sigs.k8s.io/controller-runtime/pkg/client"
+
 const ClusterAnnotation = "cluster.solo.io/cluster"
 
 // ResourceId represents a global identifier for a k8s resource.
@@ -8,6 +10,7 @@ type ResourceId interface {
 	GetNamespace() string
 }
 
+// ClusterResourceId represents a global identifier for a k8s resource.
 type ClusterResourceId interface {
 	GetName() string
 	GetNamespace() string
@@ -19,4 +22,11 @@ func GetClusterName(id ClusterResourceId) string {
 		return ""
 	}
 	return id.GetAnnotations()[ClusterAnnotation]
+}
+
+func SetClusterName(obj client.Object, cluster string) {
+	if obj.GetAnnotations() == nil {
+		obj.SetAnnotations(map[string]string{})
+	}
+	obj.GetAnnotations()[ClusterAnnotation] = cluster
 }

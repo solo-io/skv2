@@ -82,6 +82,15 @@ func (m *ClusterObjectRef) Clone() proto.Message {
 
 	target.ClusterName = m.GetClusterName()
 
+	if m.GetAnnotations() != nil {
+		target.Annotations = make(map[string]string, len(m.GetAnnotations()))
+		for k, v := range m.GetAnnotations() {
+
+			target.Annotations[k] = v
+
+		}
+	}
+
 	return target
 }
 
