@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Snapshot", func() {
@@ -28,7 +29,7 @@ var _ = Describe("Snapshot", func() {
 			clusterName := "cluster"
 			snapshot := resource.ClusterSnapshot{
 				clusterName: resource.Snapshot{
-					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+					testv1.PaintGVK: map[types.NamespacedName]client.Object{
 						name: paint,
 					},
 				},
@@ -51,7 +52,7 @@ var _ = Describe("Snapshot", func() {
 			clusterName := "cluster"
 			snapshot := resource.ClusterSnapshot{
 				clusterName: resource.Snapshot{
-					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+					testv1.PaintGVK: map[types.NamespacedName]client.Object{
 						name: paint,
 					},
 				},
@@ -107,12 +108,12 @@ var _ = Describe("Snapshot", func() {
 			cluster2 := "cluster2"
 			snapshot := resource.ClusterSnapshot{
 				cluster1: resource.Snapshot{
-					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+					testv1.PaintGVK: map[types.NamespacedName]client.Object{
 						name: paint,
 					},
 				},
 				cluster2: resource.Snapshot{
-					schema.GroupVersionKind{}: map[types.NamespacedName]resource.TypedObject{
+					schema.GroupVersionKind{}: map[types.NamespacedName]client.Object{
 						name: secret,
 					},
 				},
@@ -124,7 +125,7 @@ var _ = Describe("Snapshot", func() {
 			snapshot.ForEachObject(func(
 				cluster string,
 				gvk schema.GroupVersionKind,
-				obj resource.TypedObject,
+				obj client.Object,
 			) {
 				if expected, ok := obj.(*v1.Secret); ok {
 					Expect(secret).To(Equal(expected))
@@ -172,12 +173,12 @@ var _ = Describe("Snapshot", func() {
 			}
 			snapshot := resource.ClusterSnapshot{
 				cluster1: resource.Snapshot{
-					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+					testv1.PaintGVK: map[types.NamespacedName]client.Object{
 						name: paint,
 					},
 				},
 				cluster2: resource.Snapshot{
-					secretGVK: map[types.NamespacedName]resource.TypedObject{
+					secretGVK: map[types.NamespacedName]client.Object{
 						name: secret,
 					},
 				},
@@ -247,7 +248,7 @@ var _ = Describe("Snapshot", func() {
 			cluster2Name := "cluster2"
 			leftSnapshot := resource.ClusterSnapshot{
 				cluster1Name: resource.Snapshot{
-					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+					testv1.PaintGVK: map[types.NamespacedName]client.Object{
 						name:  paint,
 						name2: paint2,
 					},
@@ -255,12 +256,12 @@ var _ = Describe("Snapshot", func() {
 			}
 			rightSnapshot := resource.ClusterSnapshot{
 				cluster1Name: resource.Snapshot{
-					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+					testv1.PaintGVK: map[types.NamespacedName]client.Object{
 						name: paintOverride,
 					},
 				},
 				cluster2Name: resource.Snapshot{
-					testv1.PaintGVK: map[types.NamespacedName]resource.TypedObject{
+					testv1.PaintGVK: map[types.NamespacedName]client.Object{
 						name: paint,
 					},
 				},

@@ -1,0 +1,6 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: |
+      Change the definition of resource.TypedObject and deprecated it in favor of client.Object
+      to make it easier to use snapshot with objects coming from controller runtime.
+    issueLink: https://github.com/solo-io/skv2/issues/395

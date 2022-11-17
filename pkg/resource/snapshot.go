@@ -9,19 +9,16 @@ import (
 
 type GVKSelectorFunc = func(GVK schema.GroupVersionKind) bool
 
-// a typed object is a client.Object with a TypeMeta
-type TypedObject interface {
-	client.Object
-	SetGroupVersionKind(gvk schema.GroupVersionKind)
-}
+// Deprecated: TypedObject is not needed. use `GetObjectKind().SetGroupVersionKind` instead.
+type TypedObject = client.Object
 
 // Snapshot represents a generic snapshot of client.Objects scoped to a single cluster
-type Snapshot map[schema.GroupVersionKind]map[types.NamespacedName]TypedObject
+type Snapshot map[schema.GroupVersionKind]map[types.NamespacedName]client.Object
 
-func (s Snapshot) Insert(gvk schema.GroupVersionKind, obj TypedObject) {
+func (s Snapshot) Insert(gvk schema.GroupVersionKind, obj client.Object) {
 	objects, ok := s[gvk]
 	if !ok {
-		objects = map[types.NamespacedName]TypedObject{}
+		objects = map[types.NamespacedName]client.Object{}
 	}
 	objects[types.NamespacedName{
 		Namespace: obj.GetNamespace(),
@@ -39,7 +36,7 @@ func (s Snapshot) Delete(gvk schema.GroupVersionKind, id types.NamespacedName) {
 	s[gvk] = resources
 }
 
-func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj TypedObject)) {
+func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj client.Object)) {
 	if s == nil {
 		return
 	}
@@ -65,7 +62,7 @@ func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Sna
 			if deepCopy {
 				clone[k] = copyNnsMap(v)
 			} else {
-				clone[k] = map[types.NamespacedName]TypedObject{}
+				clone[k] = map[types.NamespacedName]client.Object{}
 				maps.Copy(clone[k], v)
 			}
 			continue
@@ -81,7 +78,7 @@ func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Sna
 			if deepCopy {
 				clone[k] = copyNnsMap(v)
 			} else {
-				clone[k] = map[types.NamespacedName]TypedObject{}
+				clone[k] = map[types.NamespacedName]client.Object{}
 				maps.Copy(clone[k], v)
 			}
 			continue
@@ -116,28 +113,28 @@ func (s ClusterSnapshot) ForEachObject(
 	handleObject func(
 		cluster string,
 		gvk schema.GroupVersionKind,
-		obj TypedObject,
+		obj client.Object,
 	),
 ) {
 	if s == nil {
 		return
 	}
 	for cluster, snap := range s {
-		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj TypedObject) {
+		snap.ForEachObject(func(gvk schema.GroupVersionKind, obj client.Object) {
 			handleObject(cluster, gvk, obj)
 		})
 	}
 }
 
-func copyNnsMap(m map[types.NamespacedName]TypedObject) map[types.NamespacedName]TypedObject {
-	nnsMapCopy := map[types.NamespacedName]TypedObject{}
+func copyNnsMap(m map[types.NamespacedName]client.Object) map[types.NamespacedName]client.Object {
+	nnsMapCopy := map[types.NamespacedName]client.Object{}
 	for k, v := range m {
-		nnsMapCopy[k] = v.DeepCopyObject().(TypedObject)
+		nnsMapCopy[k] = v.DeepCopyObject().(client.Object)
 	}
 	return nnsMapCopy
 }
 
-func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, obj TypedObject) {
+func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
 	snapshot, ok := cs[cluster]
 	if !ok {
 		snapshot = Snapshot{}
