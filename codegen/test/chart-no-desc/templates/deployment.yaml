@@ -163,6 +163,14 @@ kind: ServiceAccount
 metadata:
   labels:
     app: painter
+  {{- if $painter.serviceAccount}}
+  {{- if $painter.serviceAccount.extraAnnotations }}
+  annotations:
+    {{- range $key, $value := $painter.serviceAccount.extraAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+  {{- end}}
   name: painter
   namespace: {{ $.Release.Namespace }}
 {{- end }}

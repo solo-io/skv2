@@ -81,8 +81,8 @@ type descriptorsWithGopath struct {
 }
 
 /*
-	Get the relevant descriptors for a group of descriptors with a go package to match against.
-	A unique object is initialized for each external go package to the group package
+Get the relevant descriptors for a group of descriptors with a go package to match against.
+A unique object is initialized for each external go package to the group package
 */
 func (grp descriptorsWithGopath) getUniqueDescriptorsWithPath() []*collector.DescriptorWithPath {
 	result := make(map[string]*collector.DescriptorWithPath)
@@ -141,11 +141,11 @@ func (r ProtoCodeRenderer) deepCopyGenTemplate(grp Group) ([]OutFile, error) {
 }
 
 /*
-	Create and render the templates for protobuf to json marshalling/unmarshalling.
+Create and render the templates for protobuf to json marshalling/unmarshalling.
 
-	The empty string package name is treated as local, and so it it computed the same way as before
+# The empty string package name is treated as local, and so it it computed the same way as before
 
-	Any other package name is than rendered to the relative path supplied.
+Any other package name is than rendered to the relative path supplied.
 */
 func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
 	var result []OutFile
@@ -180,8 +180,8 @@ func (r ProtoCodeRenderer) jsonGenTemplate(grp Group) ([]OutFile, error) {
 }
 
 /*
-	Get all of the unique paths for a group by checking the packages of the resources
-	This list can include an empty string ("") which corresponds to the local group
+Get all of the unique paths for a group by checking the packages of the resources
+This list can include an empty string ("") which corresponds to the local group
 */
 func uniqueGoImportPathsForGroup(grp Group) []string {
 	resultMap := make(map[string]struct{})

@@ -81,6 +81,7 @@ type PaintSpec struct {
 
 	Color *PaintColor `protobuf:"bytes,1,opt,name=color,proto3" json:"color,omitempty"`
 	// Types that are assignable to PaintType:
+	//
 	//	*PaintSpec_Acrylic
 	//	*PaintSpec_Oil
 	PaintType  isPaintSpec_PaintType `protobuf_oneof:"paintType"`
@@ -288,6 +289,7 @@ type OilType struct {
 
 	WaterMixable bool `protobuf:"varint,1,opt,name=waterMixable,proto3" json:"waterMixable,omitempty"`
 	// Types that are assignable to PigmentType:
+	//
 	//	*OilType_Powder
 	//	*OilType_Fluid
 	PigmentType isOilType_PigmentType `protobuf_oneof:"pigmentType"`

@@ -107,11 +107,11 @@ func (o *Options) validate() error {
 }
 
 /*
-	Standard Cluster Registrant (one who registers) interface.
+Standard Cluster Registrant (one who registers) interface.
 
-	This component is responsible for registering a "remote" kubernetes cluster to a "management" cluster.
-	As the "management" cluster is not present in the interface itself, it is defined by the config used to build
-	the registrant instance.
+This component is responsible for registering a "remote" kubernetes cluster to a "management" cluster.
+As the "management" cluster is not present in the interface itself, it is defined by the config used to build
+the registrant instance.
 */
 type ClusterRegistrant interface {
 	/*

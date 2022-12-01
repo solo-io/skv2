@@ -81,11 +81,11 @@ type RegistrationOptions struct {
 }
 
 /*
-	RegisterCluster is meant to be a helper function to easily "register" a remote cluster.
-	Currently this entails:
-		1. Creating a `ServiceAccount` on the remote cluster.
-		2. Binding RBAC `Roles/ClusterRoles` to said `ServiceAccount`
-		3. And finally creating a kubeconfig `Secret` with the BearerToken of the remote `ServiceAccount`
+RegisterCluster is meant to be a helper function to easily "register" a remote cluster.
+Currently this entails:
+ 1. Creating a `ServiceAccount` on the remote cluster.
+ 2. Binding RBAC `Roles/ClusterRoles` to said `ServiceAccount`
+ 3. And finally creating a kubeconfig `Secret` with the BearerToken of the remote `ServiceAccount`
 */
 func (opts RegistrationOptions) RegisterCluster(
 	ctx context.Context,
@@ -94,9 +94,9 @@ func (opts RegistrationOptions) RegisterCluster(
 }
 
 /*
-	RegisterProviderCluster augments RegisterCluster functionality
-	with additional metadata to persist to the resulting KubernetesCluster object.
-	ProviderInfo contains cloud provider metadata.
+RegisterProviderCluster augments RegisterCluster functionality
+with additional metadata to persist to the resulting KubernetesCluster object.
+ProviderInfo contains cloud provider metadata.
 */
 func (opts RegistrationOptions) RegisterProviderCluster(
 	ctx context.Context,
@@ -117,11 +117,11 @@ func (opts RegistrationOptions) RegisterProviderCluster(
 }
 
 /*
-	DeregisterCluster deregisters a cluster by cleaning up the resources created when RegisterCluster is invoked.
-	This entails:
-		1. Deleting the ServiceAccount on the remote cluster.
-		2. Deleting the remote Roles, RoleBindings, ClusterRoles, and ClusterRoleBindings associated with the ServiceAccount.
-		3. Deletes the secret containing the kubeconfig for the remote cluster.
+DeregisterCluster deregisters a cluster by cleaning up the resources created when RegisterCluster is invoked.
+This entails:
+ 1. Deleting the ServiceAccount on the remote cluster.
+ 2. Deleting the remote Roles, RoleBindings, ClusterRoles, and ClusterRoleBindings associated with the ServiceAccount.
+ 3. Deletes the secret containing the kubeconfig for the remote cluster.
 */
 func (opts RegistrationOptions) DeregisterCluster(
 	ctx context.Context,
@@ -280,17 +280,17 @@ func DeregisterClusterFromConfig(
 }
 
 /*
-	DefaultRegistrant provider function. This function will create a `ClusterRegistrant` using the
-	current kubeconfig, and the specified context. It will build all of the dependencies from the
-	available `ClientConfig`.
+DefaultRegistrant provider function. This function will create a `ClusterRegistrant` using the
+current kubeconfig, and the specified context. It will build all of the dependencies from the
+available `ClientConfig`.
 
-	The apiServerAddress parameter is optional. When passed in, it will overwrite the Api Server
-	endpoint in the kubeconfig before it is written. This is primarily useful when running multi cluster
-	KinD environments on a mac as  the local IP needs to be re-written to `host.docker.internal` so
-	that the local instance knows to hit localhost.
+The apiServerAddress parameter is optional. When passed in, it will overwrite the Api Server
+endpoint in the kubeconfig before it is written. This is primarily useful when running multi cluster
+KinD environments on a mac as  the local IP needs to be re-written to `host.docker.internal` so
+that the local instance knows to hit localhost.
 
-	Meant to be used in tandem with RegisterClusterFromConfig above.
-	They are exposed separately so the `Registrant` may be mocked for the function above.
+Meant to be used in tandem with RegisterClusterFromConfig above.
+They are exposed separately so the `Registrant` may be mocked for the function above.
 */
 func DefaultRegistrant(context, apiServerAddress string) (ClusterRegistrant, error) {
 	cfg, err := config.GetConfigWithContext(context)

@@ -15,21 +15,23 @@ import (
 // a representation of set of parsed options for a given File's descriptor
 type Options []FileOptions
 
-/* GetUnstructuredFields gets the full list of unstructured fields contained within a given message. This function returns each field as an array of path elements, which is the fully expanded index of the field as measured from the root message. For example, given a message with the given structure:
+/*
+	GetUnstructuredFields gets the full list of unstructured fields contained within a given message. This function returns each field as an array of path elements, which is the fully expanded index of the field as measured from the root message. For example, given a message with the given structure:
 
 // root level message
-message MyCRDSpec {
-    Options options = 1;
-}
 
-message Options {
-    UnstructuredType unstructured_option = 1;
-}
+	message MyCRDSpec {
+	    Options options = 1;
+	}
 
-message RecursiveType {
-    RecursiveType recursive_field = 1 [(solo.io.cue.opt).disable_openapi_validation = true];
-    repeated RecursiveType repeated_recursive_field = 2 [(solo.io.cue.opt).disable_openapi_validation = true];
-}
+	message Options {
+	    UnstructuredType unstructured_option = 1;
+	}
+
+	message RecursiveType {
+	    RecursiveType recursive_field = 1 [(solo.io.cue.opt).disable_openapi_validation = true];
+	    repeated RecursiveType repeated_recursive_field = 2 [(solo.io.cue.opt).disable_openapi_validation = true];
+	}
 
 The unstructured fields of `MyCRDSpec` would be returned as:
 - ["MyCRDSpec", "options", "recursiveField"]

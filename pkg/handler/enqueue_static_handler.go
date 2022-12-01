@@ -69,7 +69,6 @@ func (e *BroadcastRequests) Generic(evt event.GenericEvent, q workqueue.RateLimi
 	e.enqueueRequestsAllClusters()
 }
 
-//
 func (e *BroadcastRequests) enqueueRequestsAllClusters() {
 	e.RequestsToEnqueue.Each(func(cluster string, i reconcile.Request) {
 		q := e.WorkQueues.Get(cluster)

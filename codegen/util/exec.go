@@ -130,6 +130,7 @@ func (opts GoCmdOptions) setCmdFields(c *exec.Cmd) {
 }
 
 // From https://github.com/golang/go/wiki/Modules:
+//
 //	You can activate module support in one of two ways:
 //	- Invoke the go command in a directory outside of the $GOPATH/src tree,
 //		with a valid go.mod file in the current directory or any parent of it and
