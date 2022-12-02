@@ -54,16 +54,16 @@ func SecretObjMeta(namespace string, cluster string, resourceLabels map[string]s
 }
 
 /*
-	https://github.com/solo-io/service-mesh-hub/issues/590
-	If the user has a cert authority file set instead of the raw bytes in their kubeconfig, then
-	we'll fail later when the pods in-cluster try to read that file path.
-	We need to read the file right now, in a CLI context, and manually shuffle the bytes over to the CA data field
+https://github.com/solo-io/service-mesh-hub/issues/590
+If the user has a cert authority file set instead of the raw bytes in their kubeconfig, then
+we'll fail later when the pods in-cluster try to read that file path.
+We need to read the file right now, in a CLI context, and manually shuffle the bytes over to the CA data field
 
-	This is necessary if we are reading a kubeconfig on a user's local machine which has it's CertificateAuthority
-	set to a file, rather than the raw bytes. When a KubeConfig file is built it will first attempt to use the bytes,
-	but if they are missing, it will use the file instead. Since we are copying this kubeconfig into the cluster,
-	the file will no longer be available, therefore we have to read the contents of the file, and store them instead
-	as bytes.
+This is necessary if we are reading a kubeconfig on a user's local machine which has it's CertificateAuthority
+set to a file, rather than the raw bytes. When a KubeConfig file is built it will first attempt to use the bytes,
+but if they are missing, it will use the file instead. Since we are copying this kubeconfig into the cluster,
+the file will no longer be available, therefore we have to read the contents of the file, and store them instead
+as bytes.
 */
 func convertCertFilesToInline(cfg api.Config) error {
 	currentCluster := cfg.Clusters[cfg.Contexts[cfg.CurrentContext].Cluster]

@@ -115,10 +115,10 @@ func containerConfigs(op model.Operator) []containerConfig {
 }
 
 /*
-	Find the proto messages for a given set of descriptors which need proto_deepcopoy funcs and whose types are not in
-	the API root package
+Find the proto messages for a given set of descriptors which need proto_deepcopoy funcs and whose types are not in
+the API root package
 
-	return true if the descriptor corresponds to the Spec or the Status field
+return true if the descriptor corresponds to the Spec or the Status field
 */
 func shouldDeepCopyExternalMessage(resources []model.Resource, desc *descriptor.DescriptorProto) bool {
 	for _, resource := range resources {
@@ -131,11 +131,11 @@ func shouldDeepCopyExternalMessage(resources []model.Resource, desc *descriptor.
 }
 
 /*
-	Find the proto messages for a given set of descriptors which need proto_deepcopoy funcs.
-	The two cases are as follows:
+Find the proto messages for a given set of descriptors which need proto_deepcopoy funcs.
+The two cases are as follows:
 
-	1. One of the subfields has an external type
-	2. There is a oneof present
+1. One of the subfields has an external type
+2. There is a oneof present
 */
 func shouldDeepCopyInternalMessage(packageName string, desc *descriptor.DescriptorProto) bool {
 	var shouldGenerate bool

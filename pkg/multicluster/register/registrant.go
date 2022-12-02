@@ -49,12 +49,12 @@ var (
 )
 
 /*
-	NewClusterRegistrant returns an implementation of ClusterRegistrant.
+NewClusterRegistrant returns an implementation of ClusterRegistrant.
 
-	localAPIServerAddress is optional. When passed in, it will overwrite the Api Server endpoint in
-	the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
-	on a mac as  the local IP needs to be re-written to `host.docker.internal` so that the local instance
-	knows to hit localhost.
+localAPIServerAddress is optional. When passed in, it will overwrite the Api Server endpoint in
+the kubeconfig before it is written. This is primarily useful when running multi cluster KinD environments
+on a mac as  the local IP needs to be re-written to `host.docker.internal` so that the local instance
+knows to hit localhost.
 */
 func NewClusterRegistrant(
 	localAPIServerAddress string,
@@ -628,8 +628,8 @@ func (c *clusterRegistrant) getTokenForSa(
 }
 
 // if:
-//   * the server appears to point to localhost, AND
-//   * the --local-cluster-domain-override flag is populated with a value
+//   - the server appears to point to localhost, AND
+//   - the --local-cluster-domain-override flag is populated with a value
 //
 // then we need to skip TLS verification  and zero-out the cert data, because the cert
 // on the remote cluster's API server wasn't issued for the domain contained in the
@@ -649,7 +649,7 @@ func (c *clusterRegistrant) skipTLSVerificationForLocalTesting(
 }
 
 // if:
-//   * the --local-cluster-domain-override flag is populated with a value
+//   - the --local-cluster-domain-override flag is populated with a value
 //
 // then rewrite the server config to communicate over the value of
 // `--local-cluster-domain-override`, which resolves to the host machine of docker.
