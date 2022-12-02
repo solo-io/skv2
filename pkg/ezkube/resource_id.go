@@ -52,6 +52,13 @@ func ConvertRefToId(ref deprecatedClusterResourceId) ClusterResourceId {
 	}
 }
 
+func GetDeprecatedClusterName(id ResourceId) string {
+	if id, ok := id.(deprecatedClusterResourceId); ok {
+		return id.GetClusterName()
+	}
+	return ""
+}
+
 func GetClusterName(id ClusterResourceId) string {
 	if id.GetAnnotations() == nil {
 		return ""
