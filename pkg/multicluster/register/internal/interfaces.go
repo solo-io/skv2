@@ -10,11 +10,11 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
 /*
-	ClusterRBACBinder is a helper interface for the registrant, meant to create, and bind RBAC objects to
-	ServiceAccounts in a remote cluster.
+ClusterRBACBinder is a helper interface for the registrant, meant to create, and bind RBAC objects to
+ServiceAccounts in a remote cluster.
 
-	This interface supports both `Roles` and `ClusterRoles`.
-	All resources being referenced must already exist, or the operations will fail.
+This interface supports both `Roles` and `ClusterRoles`.
+All resources being referenced must already exist, or the operations will fail.
 */
 type ClusterRBACBinder interface {
 	/*
@@ -50,8 +50,8 @@ type ClusterRBACBinder interface {
 }
 
 /*
-	Factory function to build a ClusterRBACBinder from a `ClientConfig`
-	This is useful because an the operations performed by the `RbacBinder` require access to a cluster
-	which will be determined by the caller.
+Factory function to build a ClusterRBACBinder from a `ClientConfig`
+This is useful because an the operations performed by the `RbacBinder` require access to a cluster
+which will be determined by the caller.
 */
 type ClusterRBACBinderFactory func(cfg clientcmd.ClientConfig) (ClusterRBACBinder, error)

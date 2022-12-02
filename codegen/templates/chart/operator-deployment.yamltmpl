@@ -154,6 +154,14 @@ kind: ServiceAccount
 metadata:
   labels:
     app: [[ $operator.Name ]]
+  {{- if $[[ $operatorVar ]].serviceAccount}}
+  {{- if $[[ $operatorVar ]].serviceAccount.extraAnnotations }}
+  annotations:
+    {{- range $key, $value := $[[ $operatorVar ]].serviceAccount.extraAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+  {{- end}}
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
 {{- end }}
