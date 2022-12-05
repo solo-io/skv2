@@ -20,10 +20,11 @@ import (
 )
 
 type clusterWatcher struct {
-	ctx      context.Context
-	handlers *handlerList
-	managers *managerSet
-	options  manager.Options
+	ctx        context.Context
+	handlers   *handlerList
+	managers   *managerSet
+	options    manager.Options
+	namespaced bool
 }
 
 var _ multicluster.Interface = &clusterWatcher{}
@@ -31,12 +32,13 @@ var _ multicluster.Interface = &clusterWatcher{}
 // NewClusterWatcher returns a *clusterWatcher.
 // When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
 // Provided manager.Options are applied to all managers started by the clusterWatcher.
-func NewClusterWatcher(ctx context.Context, options manager.Options) *clusterWatcher {
+func NewClusterWatcher(ctx context.Context, options manager.Options, namespaced bool) *clusterWatcher {
 	return &clusterWatcher{
-		ctx:      ctx,
-		handlers: newHandlerList(),
-		managers: newManagerSet(),
-		options:  options,
+		ctx:        ctx,
+		handlers:   newHandlerList(),
+		managers:   newManagerSet(),
+		options:    options,
+		namespaced: namespaced,
 	}
 }
 
@@ -46,7 +48,7 @@ func (c *clusterWatcher) Run(master manager.Manager) error {
 }
 
 func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
-	clusterName, clientCfg, err := kubeconfig.SecretToConfig(obj)
+	clusterName, clientCfg, err := kubeconfig.SecretToConfig(obj, c.namespaced)
 	if err != nil {
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
 	}
