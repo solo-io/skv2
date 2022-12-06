@@ -36,7 +36,7 @@ require (
 	github.com/solo-io/go-list-licenses v0.0.4
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.1
-	github.com/solo-io/protoc-gen-ext v0.0.16
+	github.com/solo-io/protoc-gen-ext v0.0.18-0.20221206223311-de7f5cf6a9ce
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.19.0
 	golang.org/x/exp v0.0.0-20220921164117-439092de6870
