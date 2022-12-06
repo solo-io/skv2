@@ -38,16 +38,20 @@ func Key(id ezkube.ResourceId) string {
 	b.WriteString(separator)
 	b.WriteString(id.GetNamespace())
 	b.WriteString(separator)
+	// handle the possibility that clusterName could be set either as an annotation (new way)
+	// or as a field (old way pre-k8s 1.25)
 	if clusterId, ok := id.(ezkube.ClusterResourceId); ok {
-		b.WriteString(separator)
-		// handle the possibility that clusterName could be set either as an annotation (new way)
-		// or as a field (old way pre-k8s 1.25)
 		clusterNameByAnnotation := ezkube.GetClusterName(clusterId)
 		if clusterNameByAnnotation != "" {
+			b.WriteString(separator)
 			b.WriteString(clusterNameByAnnotation)
-		} else {
-			b.WriteString(ezkube.GetDeprecatedClusterName(id))
+		} else if deprecatedClusterId, ok := id.(interface{ GetClusterName() string }); ok {
+			b.WriteString(separator)
+			b.WriteString(deprecatedClusterId.GetClusterName())
 		}
+	} else if deprecatedClusterId, ok := id.(interface{ GetClusterName() string }); ok {
+		b.WriteString(separator)
+		b.WriteString(deprecatedClusterId.GetClusterName())
 	}
 	return b.String()
 }

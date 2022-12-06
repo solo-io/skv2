@@ -21,20 +21,20 @@ type ClusterResourceId interface {
 
 // internal struct needed to create helper func that converts ref to struct that satisfies ClusterResourceId interface
 type clusterResourceId struct {
-	Name, Namespace string
-	Annotations     map[string]string
+	name, namespace string
+	annotations     map[string]string
 }
 
 func (c clusterResourceId) GetName() string {
-	return c.Name
+	return c.name
 }
 
 func (c clusterResourceId) GetNamespace() string {
-	return c.Namespace
+	return c.namespace
 }
 
 func (c clusterResourceId) GetAnnotations() map[string]string {
-	return c.Annotations
+	return c.annotations
 }
 
 type deprecatedClusterResourceId interface {
@@ -46,9 +46,9 @@ type deprecatedClusterResourceId interface {
 // ConvertRefToId converts a ClusterObjectRef to a struct that implements the ClusterResourceId interface
 func ConvertRefToId(ref deprecatedClusterResourceId) ClusterResourceId {
 	return clusterResourceId{
-		Name:        ref.GetName(),
-		Namespace:   ref.GetNamespace(),
-		Annotations: map[string]string{ClusterAnnotation: ref.GetClusterName()},
+		name:        ref.GetName(),
+		namespace:   ref.GetNamespace(),
+		annotations: map[string]string{ClusterAnnotation: ref.GetClusterName()},
 	}
 }
 
