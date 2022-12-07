@@ -1,7 +1,6 @@
 package kubeconfig
 
 import (
-	"fmt"
 	"io/ioutil"
 
 	"github.com/rotisserie/eris"
@@ -83,14 +82,8 @@ func convertCertFilesToInline(cfg api.Config) error {
 
 // SecretToConfig extracts the cluster name and *Config from a KubeConfig secret.
 // If the provided secret is not a KubeConfig secret, an error is returned.
-func SecretToConfig(secret *kubev1.Secret, namespaced bool) (cluster string, config clientcmd.ClientConfig, err error) {
-	var clusterName string
-	if namespaced {
-		clusterName = fmt.Sprintf("%s.%s", secret.Namespace, secret.Name)
-	} else {
-		clusterName = secret.Name
-	}
-
+func SecretToConfig(secret *kubev1.Secret) (clusterName string, config clientcmd.ClientConfig, err error) {
+	clusterName = secret.Name
 	kubeConfigBytes, ok := secret.Data[Key]
 	if !ok {
 		return clusterName, nil, SecretHasNoKubeConfig(secret.ObjectMeta)

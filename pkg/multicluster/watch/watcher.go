@@ -20,11 +20,11 @@ import (
 )
 
 type clusterWatcher struct {
-	ctx        context.Context
-	handlers   *handlerList
-	managers   *managerSet
-	options    manager.Options
-	namespaced bool
+	ctx       context.Context
+	handlers  *handlerList
+	managers  *managerSet
+	options   manager.Options
+	namespace string
 }
 
 var _ multicluster.Interface = &clusterWatcher{}
@@ -32,13 +32,13 @@ var _ multicluster.Interface = &clusterWatcher{}
 // NewClusterWatcher returns a *clusterWatcher.
 // When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
 // Provided manager.Options are applied to all managers started by the clusterWatcher.
-func NewClusterWatcher(ctx context.Context, options manager.Options, namespaced bool) *clusterWatcher {
+func NewClusterWatcher(ctx context.Context, options manager.Options, namespace string) *clusterWatcher {
 	return &clusterWatcher{
-		ctx:        ctx,
-		handlers:   newHandlerList(),
-		managers:   newManagerSet(),
-		options:    options,
-		namespaced: namespaced,
+		ctx:       ctx,
+		handlers:  newHandlerList(),
+		managers:  newManagerSet(),
+		options:   options,
+		namespace: namespace,
 	}
 }
 
@@ -48,7 +48,10 @@ func (c *clusterWatcher) Run(master manager.Manager) error {
 }
 
 func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
-	clusterName, clientCfg, err := kubeconfig.SecretToConfig(obj, c.namespaced)
+	if c.namespace != "" && obj.Namespace != c.namespace {
+		return reconcile.Result{}, nil
+	}
+	clusterName, clientCfg, err := kubeconfig.SecretToConfig(obj)
 	if err != nil {
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
 	}
@@ -89,6 +92,7 @@ func (s *clusterWatcher) ListClusters() []string {
 }
 
 func (c *clusterWatcher) startManager(clusterName string, restCfg *rest.Config) {
+	contextutils.LoggerFrom(c.ctx).Infow("startManager", zap.Any("clusterName", clusterName))
 	go func() { // this must be async because mgr.Start(ctx) is blocking
 		retryOptions := []retry.Option{
 			retry.Delay(time.Second),
