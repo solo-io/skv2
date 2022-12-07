@@ -51,8 +51,6 @@ func (c *clusterWatcher) Run(master manager.Manager) error {
 }
 
 func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
-	contextutils.LoggerFrom(c.ctx).Infow("ReconcileSecret", zap.Any("name", obj.Name), zap.Any("namespace", obj.Namespace))
-
 	clusterName, clientCfg, err := kubeconfig.SecretToConfig(obj)
 	if err != nil {
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
@@ -68,7 +66,6 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		c.removeCluster(clusterName)
 	}
 
-	contextutils.LoggerFrom(c.ctx).Infow("ReconcileSecret - starting manager")
 	c.startManager(clusterName, restCfg)
 
 	return reconcile.Result{}, nil
@@ -95,7 +92,6 @@ func (s *clusterWatcher) ListClusters() []string {
 }
 
 func (c *clusterWatcher) startManager(clusterName string, restCfg *rest.Config) {
-	contextutils.LoggerFrom(c.ctx).Infow("startManager", zap.Any("clusterName", clusterName))
 	go func() { // this must be async because mgr.Start(ctx) is blocking
 		retryOptions := []retry.Option{
 			retry.Delay(time.Second),
