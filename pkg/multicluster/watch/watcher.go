@@ -20,37 +20,39 @@ import (
 )
 
 type clusterWatcher struct {
-	ctx       context.Context
-	handlers  *handlerList
-	managers  *managerSet
-	options   manager.Options
-	namespace string
+	ctx             context.Context
+	handlers        *handlerList
+	managers        *managerSet
+	options         manager.Options
+	watchNamespaces []string
 }
 
 var _ multicluster.Interface = &clusterWatcher{}
 
-// NewClusterWatcher returns a *clusterWatcher.
+// NewClusterWatcher returns a *clusterWatcher, which watches for changes to kubeconfig secrets
+// (which contain kubeconfigs for remote clusters).
 // When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
 // Provided manager.Options are applied to all managers started by the clusterWatcher.
-func NewClusterWatcher(ctx context.Context, options manager.Options, namespace string) *clusterWatcher {
+// If watchNamespaces is not empty, only secrets in the given namespaces will be watched. If empty, secrets in
+// all namespaces will be watched.
+func NewClusterWatcher(ctx context.Context, options manager.Options, watchNamespaces []string) *clusterWatcher {
 	return &clusterWatcher{
-		ctx:       ctx,
-		handlers:  newHandlerList(),
-		managers:  newManagerSet(),
-		options:   options,
-		namespace: namespace,
+		ctx:             ctx,
+		handlers:        newHandlerList(),
+		managers:        newManagerSet(),
+		options:         options,
+		watchNamespaces: watchNamespaces,
 	}
 }
 
 func (c *clusterWatcher) Run(master manager.Manager) error {
 	loop := controller.NewSecretReconcileLoop("cluster watcher", master, reconcile.Options{})
-	return loop.RunSecretReconciler(c.ctx, c, kubeconfig.Predicate)
+	return loop.RunSecretReconciler(c.ctx, c, kubeconfig.BuildPredicate(c.watchNamespaces))
 }
 
 func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
-	if c.namespace != "" && obj.Namespace != c.namespace {
-		return reconcile.Result{}, nil
-	}
+	contextutils.LoggerFrom(c.ctx).Infow("ReconcileSecret", zap.Any("name", obj.Name), zap.Any("namespace", obj.Namespace))
+
 	clusterName, clientCfg, err := kubeconfig.SecretToConfig(obj)
 	if err != nil {
 		return reconcile.Result{}, eris.Wrap(err, "failed to extract kubeconfig from secret")
@@ -66,6 +68,7 @@ func (c *clusterWatcher) ReconcileSecret(obj *v1.Secret) (reconcile.Result, erro
 		c.removeCluster(clusterName)
 	}
 
+	contextutils.LoggerFrom(c.ctx).Infow("ReconcileSecret - starting manager")
 	c.startManager(clusterName, restCfg)
 
 	return reconcile.Result{}, nil
