@@ -45,11 +45,10 @@ func Key(id ezkube.ResourceId) string {
 		if clusterNameByAnnotation != "" {
 			b.WriteString(separator)
 			b.WriteString(clusterNameByAnnotation)
-		} else if deprecatedClusterId, ok := id.(interface{ GetClusterName() string }); ok {
-			b.WriteString(separator)
-			b.WriteString(deprecatedClusterId.GetClusterName())
+			return b.String()
 		}
-	} else if deprecatedClusterId, ok := id.(interface{ GetClusterName() string }); ok {
+	}
+	if deprecatedClusterId, ok := id.(interface{ GetClusterName() string }); ok {
 		b.WriteString(separator)
 		b.WriteString(deprecatedClusterId.GetClusterName())
 	}
