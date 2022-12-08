@@ -26,6 +26,7 @@ import (
     multicluster_v2 "github.com/solo-io/skv2/pkg/multicluster/v2"
     reconcile "github.com/solo-io/skv2/pkg/reconcile"
     reconcile_v2 "github.com/solo-io/skv2/pkg/reconcile/v2"
+    "github.com/solo-io/skv2/pkg/ezkube"
 
     "sigs.k8s.io/controller-runtime/pkg/manager"
     "sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -97,7 +98,7 @@ func RegisterMultiCluster{{ $snapshotName }}Reconciler(
                     Namespace:            obj.Namespace,
                     ClusterName:          clusterName,
                 }
-                _, err := r.base.ReconcileRemoteGeneric(ref)
+                _, err := r.base.ReconcileRemoteGeneric(ezkube.ConvertRefToId(ref))
             return err
         },
     }, predicates...)
@@ -152,7 +153,7 @@ func RegisterSingleCluster{{ $snapshotName }}Reconciler(
             Name:                 obj.Name,
             Namespace:            obj.Namespace,
             }
-            _, err := r.base.ReconcileLocalGeneric(ref)
+            _, err := r.base.ReconcileLocalGeneric(ezkube.ConvertRefToId(ref))
             return err
         },
     }, predicates...); err != nil {
