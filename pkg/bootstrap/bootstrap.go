@@ -155,10 +155,12 @@ func StartMulti(
 	if !localMode {
 		// construct multicluster watcher and client
 		clusterWatcher = watch.NewClusterWatcher(
-			ctx, manager.Options{
+			ctx,
+			manager.Options{
 				Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
 				Scheme:    mgr.GetScheme(),
 			},
+			nil,
 		)
 
 		mcClient = multicluster.NewClient(clusterWatcher)
