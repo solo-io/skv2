@@ -24,26 +24,32 @@ install-go-tools: mod-download
 	go install golang.org/x/tools/cmd/goimports
 
 # proto compiler installation
-PROTOC_URL:=https://github.com/protocolbuffers/protobuf/releases/download/v3.15.8/protoc-3.15.8
+PROTOC_VERSION:=3.15.8
+PROTOC_URL:=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}
 .PHONY: install-protoc
+ifeq ($(shell $(DEPSGOBIN)/protoc --version | grep -c ${PROTOC_VERSION}),1)
+install-protoc:
+	@echo expected protoc version ${PROTOC_VERSION} already installed
+else
 install-protoc:
 ifeq ($(shell uname),Darwin)
 	@echo downloading protoc for osx
-	wget $(PROTOC_URL)-osx-x86_64.zip -O $(DEPSGOBIN)/protoc-3.15.8.zip
+	wget $(PROTOC_URL)-osx-x86_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip
 else
 ifeq ($(shell uname -m),aarch64)
 	@echo downloading protoc for linux aarch64
-	wget $(PROTOC_URL)-linux-aarch_64.zip -O $(DEPSGOBIN)/protoc-3.15.8.zip
+	wget $(PROTOC_URL)-linux-aarch_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip
 else
 	@echo downloading protoc for linux x86-64
-	wget $(PROTOC_URL)-linux-x86_64.zip -O $(DEPSGOBIN)/protoc-3.15.8.zip
+	wget $(PROTOC_URL)-linux-x86_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip
 endif
 endif
 
-	unzip $(DEPSGOBIN)/protoc-3.15.8.zip -d $(DEPSGOBIN)/protoc-3.15.8
-	mv $(DEPSGOBIN)/protoc-3.15.8/bin/protoc $(DEPSGOBIN)/protoc
+	unzip $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip -d $(DEPSGOBIN)/protoc-${PROTOC_VERSION}
+	mv $(DEPSGOBIN)/protoc-${PROTOC_VERSION}/bin/protoc $(DEPSGOBIN)/protoc
 	chmod +x $(DEPSGOBIN)/protoc
-	rm -rf $(DEPSGOBIN)/protoc-3.15.8 $(DEPSGOBIN)/protoc-3.15.8.zip
+	rm -rf $(DEPSGOBIN)/protoc-${PROTOC_VERSION} $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip
+endif
 
 .PHONY: install-tools
 install-tools: install-go-tools install-protoc
