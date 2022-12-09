@@ -23,9 +23,34 @@ install-go-tools: mod-download
 	go install github.com/onsi/ginkgo/ginkgo@v1.16.4
 	go install golang.org/x/tools/cmd/goimports
 
+# proto compiler installation
+PROTOC_URL:=https://github.com/protocolbuffers/protobuf/releases/download/v3.15.8/protoc-3.15.8
+.PHONY: install-protoc
+install-protoc:
+ifeq ($(shell uname),Darwin)
+	@echo downloading protoc for osx
+	wget $(PROTOC_URL)-osx-x86_64.zip -O $(DEPSGOBIN)/protoc-3.15.8.zip
+else
+ifeq ($(shell uname -m),aarch64)
+	@echo downloading protoc for linux aarch64
+	wget $(PROTOC_URL)-linux-aarch_64.zip -O $(DEPSGOBIN)/protoc-3.15.8.zip
+else
+	@echo downloading protoc for linux x86-64
+	wget $(PROTOC_URL)-linux-x86_64.zip -O $(DEPSGOBIN)/protoc-3.15.8.zip
+endif
+endif
+
+	unzip $(DEPSGOBIN)/protoc-3.15.8.zip -d $(DEPSGOBIN)/protoc-3.15.8
+	mv $(DEPSGOBIN)/protoc-3.15.8/bin/protoc $(DEPSGOBIN)/protoc
+	chmod +x $(DEPSGOBIN)/protoc
+	rm -rf $(DEPSGOBIN)/protoc-3.15.8 $(DEPSGOBIN)/protoc-3.15.8.zip
+
+.PHONY: install-tools
+install-tools: install-go-tools install-protoc
+
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
-generated-code: install-go-tools update-licenses
+generated-code: install-tools update-licenses
 	go run api/generate.go
 	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
 # this re-gens test protos
