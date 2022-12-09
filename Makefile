@@ -51,6 +51,7 @@ install-tools: install-go-tools install-protoc
 # Generated Code - Required to update Codgen Templates
 .PHONY: generated-code
 generated-code: install-tools update-licenses
+	$(DEPSGOBIN)/protoc --version
 	go run api/generate.go
 	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
 # this re-gens test protos

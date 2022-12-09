@@ -10,8 +10,6 @@ if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
   exit 1;
 fi
 
-protoc --version
-
 if [ ! -f .gitignore ]; then
   echo "_output" > .gitignore
 fi
