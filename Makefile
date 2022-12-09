@@ -18,7 +18,7 @@ install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
 	go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
 	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
-	go install github.com/solo-io/protoc-gen-ext@v0.0.18-0.20221206223311-de7f5cf6a9ce
+	go install github.com/solo-io/protoc-gen-ext@v0.0.18-0.20221208202439-6735dfdb3c91
 	go install github.com/golang/mock/mockgen@v1.4.4
 	go install github.com/onsi/ginkgo/ginkgo@v1.16.4
 	go install golang.org/x/tools/cmd/goimports
