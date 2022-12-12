@@ -3,5 +3,5 @@ changelog:
       issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/5158
       description: >
         In the ClusterResourceId interface, ClusterName field is replaced with GetAnnotations method,
-        since k8s v1.25+ removes the ClusterName field from resources.
+        since k8s v1.24+ removes the ClusterName field from resources.
         Now, a resource annotation of "cluster.solo.io/cluster" is expected to hold a string of the cluster name.
