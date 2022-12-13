@@ -89,7 +89,7 @@ func RegisterMultiCluster{{ $snapshotName }}Reconciler(
     multicluster_reconcile_v2.NewLoop("das", clusters, &{{ $types_import_prefix }}.{{ $resource.Kind }}{}, reconcile_v2.Options{}).
         AddReconciler(ctx, &multicluster_v2.ReconcilerFuncs[*{{ $types_import_prefix }}.{{ $resource.Kind }}]{
             ReconcileFunc: func(ctx context.Context, clusterName string, obj *{{ $types_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
-                obj.ClusterName = clusterName
+                ezkube.SetClusterName(obj, clusterName)
                 return r.base.ReconcileRemoteGeneric(obj)
             } ,
             ReconcileDeletionFunc: func(ctx context.Context, clusterName string, obj reconcile_v2.Request) error {
@@ -153,7 +153,7 @@ func RegisterSingleCluster{{ $snapshotName }}Reconciler(
             Name:                 obj.Name,
             Namespace:            obj.Namespace,
             }
-            _, err := r.base.ReconcileLocalGeneric(ezkube.ConvertRefToId(ref))
+            _, err := r.base.ReconcileLocalGeneric(ref)
             return err
         },
     }, predicates...); err != nil {
