@@ -617,7 +617,7 @@ func (c *clusterRegistrant) getTokenForSa(
 				Namespace:   saRef.Namespace,
 				Annotations: map[string]string{"kubernetes.io/service-account.name": saRef.Name},
 			},
-			TypeMeta: metav1.TypeMeta{Kind: "kubernetes.io/service-account-token", APIVersion: "v1"},
+			Type: "kubernetes.io/service-account-token",
 		}
 
 		// make secret
