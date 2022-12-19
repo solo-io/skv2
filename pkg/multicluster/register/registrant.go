@@ -638,6 +638,13 @@ func (c *clusterRegistrant) getTokenForSa(
 			)
 		}
 		foundSecret = secret
+		if _, ok := foundSecret.Data[SecretTokenKey]; !ok {
+			return eris.Errorf(
+				"service account %s.%s has not populated its token secret",
+				saRef.Name,
+				saRef.Namespace,
+			)
+		}
 		return nil
 	}, SecretLookupOpts...); err != nil {
 		return "", SecretNotReady(err)
