@@ -111,6 +111,9 @@ type Group struct {
 
 	// Custom properties used for custom templates
 	Properties
+
+	// Some resources use pointer slices for the Items field.
+	PointerSlices bool `default:"false"`
 }
 
 func (g Group) HasProtos() bool {

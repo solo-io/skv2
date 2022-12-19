@@ -52,7 +52,11 @@ func ({{ $resource.Kind}})  GVK() schema.GroupVersionKind {
 type {{ $resource.Kind}}List struct {
     metav1.TypeMeta `json:",inline"`
     metav1.ListMeta `json:"metadata,omitempty"`
+    {{- if $resource.Group.PointerSlices }}
+    Items           []*{{ $resource.Kind }} `json:"items"`
+    {{- else }}
     Items           []{{ $resource.Kind }} `json:"items"`
+    {{- end }}
 }
 {{- end }}
 

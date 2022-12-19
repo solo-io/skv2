@@ -784,6 +784,7 @@ var _ = Describe("Cmd", func() {
 						RenderManifests:         true,
 						RenderValidationSchemas: true,
 						ApiRoot:                 "codegen/test/api",
+						PointerSlices:           true,
 					},
 				},
 				AnyVendorConfig: skv2Imports,
