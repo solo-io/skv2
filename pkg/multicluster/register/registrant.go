@@ -42,8 +42,8 @@ var (
 	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
 	// visible for testing
 	SecretLookupOpts = []retry.Option{
-		retry.Delay(time.Millisecond * 100),
-		retry.Attempts(7),
+		retry.Delay(time.Millisecond * 200),
+		retry.Attempts(10),
 		retry.DelayType(retry.BackOffDelay),
 	}
 )
