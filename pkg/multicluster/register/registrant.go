@@ -621,7 +621,7 @@ func (c *clusterRegistrant) getTokenForSa(
 		}
 
 		// make secret
-		if err = c.upsertSecretData(ctx, saSecret); err != nil {
+		if err = remoteSecretClient.UpsertSecret(ctx, saSecret); err != nil {
 			return "", err
 		}
 
