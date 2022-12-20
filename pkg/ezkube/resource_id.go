@@ -44,11 +44,23 @@ type deprecatedClusterResourceId interface {
 }
 
 // ConvertRefToId converts a ClusterObjectRef to a struct that implements the ClusterResourceId interface
+// Will not set an empty cluster name over an existing cluster name
 func ConvertRefToId(ref deprecatedClusterResourceId) ClusterResourceId {
+	// if ref is already stores annotations then we need to store the updates
+	anno := map[string]string{}
+
+	if cri, ok := ref.(ClusterResourceId); ok {
+		anno = cri.GetAnnotations()
+	}
+	cn := ref.GetClusterName()
+	if cn != "" {
+		anno[ClusterAnnotation] = cn
+	}
+
 	return clusterResourceId{
 		name:        ref.GetName(),
 		namespace:   ref.GetNamespace(),
-		annotations: map[string]string{ClusterAnnotation: ref.GetClusterName()},
+		annotations: anno,
 	}
 }
 
