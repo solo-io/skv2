@@ -26,6 +26,7 @@ import (
     multicluster_v2 "github.com/solo-io/skv2/pkg/multicluster/v2"
     reconcile "github.com/solo-io/skv2/pkg/reconcile"
     reconcile_v2 "github.com/solo-io/skv2/pkg/reconcile/v2"
+    "github.com/solo-io/skv2/pkg/ezkube"
 
     "sigs.k8s.io/controller-runtime/pkg/manager"
     "sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -88,7 +89,7 @@ func RegisterMultiCluster{{ $snapshotName }}Reconciler(
     multicluster_reconcile_v2.NewLoop("das", clusters, &{{ $types_import_prefix }}.{{ $resource.Kind }}{}, reconcile_v2.Options{}).
         AddReconciler(ctx, &multicluster_v2.ReconcilerFuncs[*{{ $types_import_prefix }}.{{ $resource.Kind }}]{
             ReconcileFunc: func(ctx context.Context, clusterName string, obj *{{ $types_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
-                obj.ClusterName = clusterName
+                ezkube.SetClusterName(obj, clusterName)
                 return r.base.ReconcileRemoteGeneric(obj)
             } ,
             ReconcileDeletionFunc: func(ctx context.Context, clusterName string, obj reconcile_v2.Request) error {
@@ -97,7 +98,7 @@ func RegisterMultiCluster{{ $snapshotName }}Reconciler(
                     Namespace:            obj.Namespace,
                     ClusterName:          clusterName,
                 }
-                _, err := r.base.ReconcileRemoteGeneric(ref)
+                _, err := r.base.ReconcileRemoteGeneric(ezkube.ConvertRefToId(ref))
             return err
         },
     }, predicates...)

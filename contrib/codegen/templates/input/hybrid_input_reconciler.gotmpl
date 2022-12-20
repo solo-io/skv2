@@ -159,7 +159,7 @@ type remote{{ $snapshotName }}InputReconciler struct {
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
 func (r *remote{{ $snapshotName }}InputReconciler) Reconcile{{ $resource.Kind }}(clusterName string, obj *{{ $type_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
-    obj.ClusterName = clusterName
+    ezkube.SetClusterName(obj, clusterName)
     return r.base.ReconcileRemoteGeneric(obj)
 }
 
