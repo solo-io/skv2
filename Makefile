@@ -27,29 +27,25 @@ install-go-tools: mod-download
 PROTOC_VERSION:=3.15.8
 PROTOC_URL:=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}
 .PHONY: install-protoc
-ifeq ($(shell $(DEPSGOBIN)/protoc --version | grep -c ${PROTOC_VERSION}),1)
 install-protoc:
-	@echo expected protoc version ${PROTOC_VERSION} already installed
-else
-install-protoc:
-ifeq ($(shell uname),Darwin)
-	@echo downloading protoc for osx
-	wget $(PROTOC_URL)-osx-x86_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip
-else
-ifeq ($(shell uname -m),aarch64)
-	@echo downloading protoc for linux aarch64
-	wget $(PROTOC_URL)-linux-aarch_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip
-else
-	@echo downloading protoc for linux x86-64
-	wget $(PROTOC_URL)-linux-x86_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip
-endif
-endif
-
-	unzip $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip -d $(DEPSGOBIN)/protoc-${PROTOC_VERSION}
-	mv $(DEPSGOBIN)/protoc-${PROTOC_VERSION}/bin/protoc $(DEPSGOBIN)/protoc
-	chmod +x $(DEPSGOBIN)/protoc
-	rm -rf $(DEPSGOBIN)/protoc-${PROTOC_VERSION} $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip
-endif
+	if [ $(shell ${DEPSGOBIN}/protoc --version | grep -c ${PROTOC_VERSION}) -ne 0 ]; then \
+		echo expected protoc version ${PROTOC_VERSION} already installed ;\
+	else \
+		if [ $(shell uname)==Darwin ]; then \
+			echo "downloading protoc for osx" ;\
+			wget $(PROTOC_URL)-osx-x86_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip ;\
+		elif [ $(shell uname -m)==aarch64 ]; then \
+			echo "downloading protoc for linux aarch64" ;\
+			wget $(PROTOC_URL)-linux-aarch_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip ;\
+		else \
+			echo "downloading protoc for linux x86-64" ;\
+			wget $(PROTOC_URL)-linux-x86_64.zip -O $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip ;\
+		fi ;\
+		unzip $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip -d $(DEPSGOBIN)/protoc-${PROTOC_VERSION} ;\
+		mv $(DEPSGOBIN)/protoc-${PROTOC_VERSION}/bin/protoc $(DEPSGOBIN)/protoc ;\
+		chmod +x $(DEPSGOBIN)/protoc ;\
+		rm -rf $(DEPSGOBIN)/protoc-${PROTOC_VERSION} $(DEPSGOBIN)/protoc-${PROTOC_VERSION}.zip ;\
+	fi
 
 .PHONY: install-tools
 install-tools: install-go-tools install-protoc
