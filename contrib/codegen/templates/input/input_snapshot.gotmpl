@@ -603,7 +603,7 @@ func (b *singleCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}(ctx co
 
     for _, item := range {{ $kindLowerCamel }}List.Items {
         item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
+        ezkube.SetClusterName(item, b.clusterName) // set cluster for what was in-memory processing
         {{ $kindLowerCamelPlural }}.Insert(item)
     }
 
