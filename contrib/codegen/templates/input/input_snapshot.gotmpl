@@ -488,7 +488,8 @@ func (b *multiCluster{{ $snapshotName }}Builder) insert{{ $kindPlural }}FromClus
 
     for _, item := range {{ $kindLowerCamel }}List.Items {
         item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
+        
+        ezkube.SetClusterName(item, cluster) // set cluster for what was in-memory processing
         {{ $kindLowerCamelPlural }}.Insert(item)
     }
 
