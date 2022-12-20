@@ -283,7 +283,7 @@ var _ = Describe("Registrant", func() {
 			token := "hello"
 			saSecret := &k8s_core_types.Secret{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "sa-secret",
+					Name:      "sa-name-secret",
 					Namespace: namespace,
 				},
 				Data: map[string][]byte{
@@ -294,12 +294,6 @@ var _ = Describe("Registrant", func() {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      sa.Name,
 					Namespace: sa.Namespace,
-				},
-				Secrets: []k8s_core_types.ObjectReference{
-					{
-						Namespace: namespace,
-						Name:      saSecret.GetName(),
-					},
 				},
 			}
 
