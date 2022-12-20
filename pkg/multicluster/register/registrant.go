@@ -595,8 +595,15 @@ func (c *clusterRegistrant) getTokenForSa(
 		return "", err
 	}
 
-	sa, err := saClient.GetServiceAccount(ctx, saRef)
-	if err != nil {
+	var sa *corev1.ServiceAccount
+
+	if err = retry.Do(func() error {
+		sa, err = saClient.GetServiceAccount(ctx, saRef)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, SecretLookupOpts...); err != nil {
 		return "", err
 	}
 
@@ -609,7 +616,7 @@ func (c *clusterRegistrant) getTokenForSa(
 
 	// see if there is a secret
 	_, err = remoteSecretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: saRef.Namespace})
-	if err != nil {
+	if err != nil && k8s_errs.IsNotFound(err) {
 
 		saSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
