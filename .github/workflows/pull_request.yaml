@@ -16,10 +16,6 @@ jobs:
         with:
           go-version: 1.18.5
         id: go
-      - name: Install Protoc
-        uses: solo-io/setup-protoc@master
-        with:
-          version: '3.6.1'
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
@@ -43,10 +39,6 @@ jobs:
         with:
           go-version: 1.18.5
       # Required for codegen tests
-      - name: Install Protoc
-        uses: solo-io/setup-protoc@master
-        with:
-          version: '3.6.1'
       - uses: engineerd/setup-kind@v0.5.0
         with:
           skipClusterCreation: "true"
@@ -64,7 +56,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: Install deps for codegen
         run: |
-          make install-go-tools
+          make install-tools
       - name: Run tests
         run: |
           REMOTE_CLUSTER_CONTEXT=kind-skv2-test-remote PATH="$(pwd)/_output/.bin:$PATH" go test ./...
