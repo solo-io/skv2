@@ -120,7 +120,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 	// get the string representation of the queue item
 	key, ok := queueItem.(string)
 	if !ok {
-		contextutils.LoggerFrom(r.ctx).Errorw("encountered error reconciling state: got a non-string queue item", "queueItem", queueItem)
+		contextutils.LoggerFrom(r.ctx).Errorw("got a work queue item of non-string type", "item", queueItem)
 		r.queue.Forget(queueItem)
 	}
 
@@ -128,7 +128,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 	var err error
 	resource, err := sets.ResourceIdFromKeyWithSeparator(key, keySeparator)
 	if err != nil {
-		contextutils.LoggerFrom(r.ctx).Errorw("encountered error reconciling state: could not convert key to resource", "error", err)
+		contextutils.LoggerFrom(r.ctx).Errorw("could not convert work queue item to resource", "error", err)
 		r.queue.Forget(key)
 	}
 
@@ -146,7 +146,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 	if isRemoteCluster && r.multiClusterReconcileFunc != nil {
 		requeue, err = r.multiClusterReconcileFunc(resource.(ezkube.ClusterResourceId))
 	} else {
-		requeue, err = r.singleClusterReconcileFunc(resource.(ezkube.ResourceId))
+		requeue, err = r.singleClusterReconcileFunc(resource)
 	}
 
 	switch {
