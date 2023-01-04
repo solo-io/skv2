@@ -88,7 +88,7 @@ func (r *inputReconciler) reconcileGeneric(id ezkube.ResourceId) (reconcile.Resu
 	// no need to queue more than one event in reconcile-the-world approach
 	if r.queue.Len() == 0 {
 		contextutils.LoggerFrom(r.ctx).Debugw("adding event to reconciler queue", "id", key)
-		r.queue.AddRateLimited(id)
+		r.queue.AddRateLimited(key)
 	} else {
 		contextutils.LoggerFrom(r.ctx).Debugw("dropping event as there are are objects in the reconciler's queue", "id", key)
 	}
