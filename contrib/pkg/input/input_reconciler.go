@@ -122,6 +122,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 	if !ok {
 		contextutils.LoggerFrom(r.ctx).Errorw("got a work queue item of non-string type", "item", queueItem)
 		r.queue.Forget(queueItem)
+		return true
 	}
 
 	// convert the key to a ResourceId/ClusterResourceId
@@ -130,6 +131,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 	if err != nil {
 		contextutils.LoggerFrom(r.ctx).Errorw("could not convert work queue item to resource", "error", err)
 		r.queue.Forget(key)
+		return true
 	}
 
 	// determine whether the resource has been read from a remote cluster
