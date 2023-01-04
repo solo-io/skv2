@@ -43,6 +43,8 @@ type inputReconciler struct {
 	singleClusterReconcileFunc SingleClusterReconcileFunc
 }
 
+const keySeparator = "/"
+
 // Note(ilackarms): in the current implementation, the constructor
 // also starts the reconciler's event processor in a goroutine.
 // Make sure to cancel the parent context in order to ensure the goroutine started here is gc'ed.
@@ -83,14 +85,13 @@ func (r *inputReconciler) reconcileGeneric(id ezkube.ResourceId) (reconcile.Resu
 	if r.ctx == nil {
 		return reconcile.Result{}, eris.Errorf("internal error: reconciler not started")
 	}
-	key := sets.TypedKey(id)
 
 	// no need to queue more than one event in reconcile-the-world approach
 	if r.queue.Len() == 0 {
-		contextutils.LoggerFrom(r.ctx).Debugw("adding event to reconciler queue", "id", key)
-		r.queue.AddRateLimited(key)
+		contextutils.LoggerFrom(r.ctx).Debugw("adding event to reconciler queue", "id", sets.TypedKey(id))
+		r.queue.AddRateLimited(sets.KeyWithSeparator(id, keySeparator))
 	} else {
-		contextutils.LoggerFrom(r.ctx).Debugw("dropping event as there are are objects in the reconciler's queue", "id", key)
+		contextutils.LoggerFrom(r.ctx).Debugw("dropping event as there are objects in the reconciler's queue", "id", sets.TypedKey(id))
 	}
 	return reconcile.Result{}, nil
 }
@@ -110,31 +111,42 @@ func (r *inputReconciler) reconcileEventsForever(reconcileInterval time.Duration
 
 // processNextWorkItem deals with one key off the queue.  It returns false when it's time to quit.
 func (r *inputReconciler) processNextWorkItem() bool {
-	key, quit := r.queue.Get()
+	queueItem, quit := r.queue.Get()
 	if quit {
 		return false
 	}
-	defer r.queue.Done(key)
+	defer r.queue.Done(queueItem)
 
-	var isRemoteCluster bool
+	// get the string representation of the queue item
+	key, ok := queueItem.(string)
+	if !ok {
+		contextutils.LoggerFrom(r.ctx).Errorw("encountered error reconciling state: got a non-string queue item", "queueItem", queueItem)
+		r.queue.Forget(queueItem)
+	}
+
+	// convert the key to a ResourceId/ClusterResourceId
+	var err error
+	resource, err := sets.ResourceIdFromKeyWithSeparator(key, keySeparator)
+	if err != nil {
+		contextutils.LoggerFrom(r.ctx).Errorw("encountered error reconciling state: could not convert key to resource", "error", err)
+		r.queue.Forget(key)
+	}
 
 	// determine whether the resource has been read from a remote cluster
 	// based on whether its ClusterName field is set
-	if clusterResource, ok := key.(ezkube.ClusterResourceId); ok {
+	var isRemoteCluster bool
+	if clusterResource, ok := resource.(ezkube.ClusterResourceId); ok {
 		if ezkube.GetClusterName(clusterResource) != "" {
 			isRemoteCluster = true
 		}
 	}
 
-	var (
-		requeue bool
-		err     error
-	)
+	var requeue bool
 	// TODO (ilackarms): this is a workaround for an issue where Relay sets the clusterName field of an object, but the underlying reconciler is a single-cluster reconciler.
 	if isRemoteCluster && r.multiClusterReconcileFunc != nil {
-		requeue, err = r.multiClusterReconcileFunc(key.(ezkube.ClusterResourceId))
+		requeue, err = r.multiClusterReconcileFunc(resource.(ezkube.ClusterResourceId))
 	} else {
-		requeue, err = r.singleClusterReconcileFunc(key.(ezkube.ResourceId))
+		requeue, err = r.singleClusterReconcileFunc(resource.(ezkube.ResourceId))
 	}
 
 	switch {

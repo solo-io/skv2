@@ -14,7 +14,7 @@ var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) err
 	return eris.Errorf("%T with id %v not found", resourceType, Key(id))
 }
 
-const separator = "."
+const defaultSeparator = "."
 
 var builderPool = sync.Pool{
 	New: func() any {
@@ -22,8 +22,48 @@ var builderPool = sync.Pool{
 	},
 }
 
+// internal struct that satisfies ezkube.ResourceId interface
+type resourceId struct {
+	name      string
+	namespace string
+}
+
+func (id resourceId) GetName() string {
+	return id.name
+}
+
+func (id resourceId) GetNamespace() string {
+	return id.namespace
+}
+
+// internal struct that satisfies ezkube.ClusterResourceId interface
+type clusterResourceId struct {
+	name        string
+	namespace   string
+	annotations map[string]string
+}
+
+func (id clusterResourceId) GetName() string {
+	return id.name
+}
+
+func (id clusterResourceId) GetNamespace() string {
+	return id.namespace
+}
+
+func (id clusterResourceId) GetAnnotations() map[string]string {
+	return id.annotations
+}
+
 // k8s resources are uniquely identified by their name and namespace
+// Key constructs a string consisting of the field values of the given resource id, separated by '.'
 func Key(id ezkube.ResourceId) string {
+	return KeyWithSeparator(id, defaultSeparator)
+}
+
+// KeyWithSeparator constructs a string consisting of the field values of the given resource id, separated by
+// the given separator
+func KeyWithSeparator(id ezkube.ResourceId, separator string) string {
 	b := builderPool.Get().(*strings.Builder)
 	defer func() {
 		b.Reset()
@@ -51,6 +91,35 @@ func Key(id ezkube.ResourceId) string {
 		b.WriteString(deprecatedClusterId.GetClusterName())
 	}
 	return b.String()
+}
+
+// ResourceIdFromKeyWithSeparator converts a key back into a ResourceId, using the separator '.'
+// Returns an error if it cannot be converted.
+func ResourceIdFromKey(key string) (ezkube.ResourceId, error) {
+	return ResourceIdFromKeyWithSeparator(key, defaultSeparator)
+}
+
+// ResourceIdFromKeyWithSeparator converts a key back into a ResourceId, using the given separator.
+// Returns an error if it cannot be converted.
+func ResourceIdFromKeyWithSeparator(key string, separator string) (ezkube.ResourceId, error) {
+	parts := strings.Split(key, separator)
+	if len(parts) == 2 {
+		return resourceId{
+			name:      parts[0],
+			namespace: parts[1],
+		}, nil
+
+	} else if len(parts) == 3 {
+		return clusterResourceId{
+			name:      parts[0],
+			namespace: parts[1],
+			annotations: map[string]string{
+				ezkube.ClusterAnnotation: parts[2],
+			},
+		}, nil
+	} else {
+		return nil, eris.Errorf("could not convert key %s with separator %s into resource id; unexpected number of parts: %d", key, separator, len(parts))
+	}
 }
 
 // typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
