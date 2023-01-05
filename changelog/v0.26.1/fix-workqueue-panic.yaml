@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: >
+      Convert ResourceIds to a string before adding them to the reconcile queue, to avoid panic caused by ClusterResourceIds being unhashable.
+    issueLink: https://github.com/solo-io/skv2/issues/404

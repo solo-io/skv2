@@ -9,10 +9,10 @@ on:
 jobs:
   gen:
     name: Code Gen
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Set up Go 1.18
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: 1.18.5
         id: go
@@ -30,23 +30,24 @@ jobs:
           ./ci/check-code-and-docs-gen.sh
   test:
     name: Tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Go 1.18
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: 1.18.5
       # Required for codegen tests
       - uses: engineerd/setup-kind@v0.5.0
         with:
           skipClusterCreation: "true"
+          version: v0.17.0
       - name: Setup Kind
         run: |
           ./ci/setup-kind.sh skv2-test-remote
       - uses: azure/setup-kubectl@v1
         with:
-          version: 'v1.18.0'
+          version: 'v1.24.7'
       - uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
