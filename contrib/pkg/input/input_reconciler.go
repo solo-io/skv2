@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"k8s.io/client-go/util/workqueue"
-
-	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/reconcile"
+	"k8s.io/client-go/util/workqueue"
 )
 
 // reconcile a resource in a single cluster.
@@ -89,7 +88,7 @@ func (r *inputReconciler) reconcileGeneric(id ezkube.ResourceId) (reconcile.Resu
 	// no need to queue more than one event in reconcile-the-world approach
 	if r.queue.Len() == 0 {
 		contextutils.LoggerFrom(r.ctx).Debugw("adding event to reconciler queue", "id", sets.TypedKey(id))
-		r.queue.AddRateLimited(sets.KeyWithSeparator(id, keySeparator))
+		r.queue.AddRateLimited(ezkube.KeyWithSeparator(id, keySeparator))
 	} else {
 		contextutils.LoggerFrom(r.ctx).Debugw("dropping event as there are objects in the reconciler's queue", "id", sets.TypedKey(id))
 	}
@@ -127,7 +126,7 @@ func (r *inputReconciler) processNextWorkItem() bool {
 
 	// convert the key to a ResourceId/ClusterResourceId
 	var err error
-	resource, err := sets.ResourceIdFromKeyWithSeparator(key, keySeparator)
+	resource, err := ezkube.ResourceIdFromKeyWithSeparator(key, keySeparator)
 	if err != nil {
 		contextutils.LoggerFrom(r.ctx).Errorw("could not convert work queue item to resource", "error", err)
 		r.queue.Forget(key)
