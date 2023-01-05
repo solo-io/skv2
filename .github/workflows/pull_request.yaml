@@ -9,7 +9,7 @@ on:
 jobs:
   gen:
     name: Code Gen
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Set up Go 1.18
         uses: actions/setup-go@v1
@@ -30,7 +30,7 @@ jobs:
           ./ci/check-code-and-docs-gen.sh
   test:
     name: Tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Go 1.18
