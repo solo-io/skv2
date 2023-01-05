@@ -43,7 +43,7 @@ func (id resourceId) GetNamespace() string {
 	return id.namespace
 }
 
-// internal struct needed to create helper func that converts ref to struct that satisfies ClusterResourceId interface
+// internal struct that satisfies ClusterResourceId interface
 type clusterResourceId struct {
 	name, namespace string
 	annotations     map[string]string
@@ -150,7 +150,6 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 			name:      parts[0],
 			namespace: parts[1],
 		}, nil
-
 	} else if len(parts) == 3 {
 		return clusterResourceId{
 			name:      parts[0],

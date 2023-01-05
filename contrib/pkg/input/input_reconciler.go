@@ -125,7 +125,6 @@ func (r *inputReconciler) processNextWorkItem() bool {
 	}
 
 	// convert the key to a ResourceId/ClusterResourceId
-	var err error
 	resource, err := ezkube.ResourceIdFromKeyWithSeparator(key, keySeparator)
 	if err != nil {
 		contextutils.LoggerFrom(r.ctx).Errorw("could not convert work queue item to resource", "error", err)
