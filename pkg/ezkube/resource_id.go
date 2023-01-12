@@ -67,6 +67,13 @@ type deprecatedClusterResourceId interface {
 	GetClusterName() string
 }
 
+// this is specifically to support k8s 1.24
+type deprecatedZZZClusterResourceId interface {
+	GetName() string
+	GetNamespace() string
+	GetZZZ_DeprecatedClusterName() string
+}
+
 // ConvertRefToId converts a ClusterObjectRef to a struct that implements the ClusterResourceId interface
 // Will not set an empty cluster name over an existing cluster name
 func ConvertRefToId(ref deprecatedClusterResourceId) ClusterResourceId {
@@ -89,8 +96,10 @@ func ConvertRefToId(ref deprecatedClusterResourceId) ClusterResourceId {
 }
 
 func GetDeprecatedClusterName(id ResourceId) string {
-	if id, ok := id.(deprecatedClusterResourceId); ok {
-		return id.GetClusterName()
+	if depResourceId, ok := id.(deprecatedClusterResourceId); ok {
+		return depResourceId.GetClusterName()
+	} else if depZZZResourceId, ok := id.(deprecatedZZZClusterResourceId); ok {
+		return depZZZResourceId.GetZZZ_DeprecatedClusterName()
 	}
 	return ""
 }

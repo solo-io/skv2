@@ -70,8 +70,8 @@ var _ = Describe("ResourceId", func() {
 	})
 
 	Context("GetClusterName()", func() {
-		It("supports metadata.clusterName approach", func() {
-			resource := &testDeprecatedk8sObject{
+		It("supports k8s < v1.24 metadata.GetClusterName() approach", func() {
+			resource := &pre_v1_24_K8sObject{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "test",
 					Namespace:   "test-ns",
@@ -82,21 +82,31 @@ var _ = Describe("ResourceId", func() {
 			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-field"))
 		})
 
-		It("supports metadata.annotations approach", func() {
-			resource := &testDeprecatedk8sObject{
+		It("supports k8s == v1.24 GetZZZ_DeprecatedClusterName() approach", func() {
+			resource := &v1_24_K8sObject{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test",
-					Namespace: "test-ns",
-					Annotations: map[string]string{
-						ezkube.ClusterAnnotation: "cluster-annotation",
-					},
+					Name:        "test",
+					Namespace:   "test-ns",
+					Annotations: map[string]string{},
+				},
+				clusterName: "cluster-field",
+			}
+			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-field"))
+		})
+
+		It("supports k8s >= 1.25 metadata.GetAnnotations() approach", func() {
+			resource := &metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "test-ns",
+				Annotations: map[string]string{
+					ezkube.ClusterAnnotation: "cluster-annotation",
 				},
 			}
 			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-annotation"))
 		})
 
-		It("defaults to the annotation approach", func() {
-			resource := &testDeprecatedk8sObject{
+		It("defaults to the k8s >= v1.25 metadata.GetAnnotations() approach", func() {
+			resource := &v1_24_K8sObject{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "test-ns",
@@ -156,11 +166,20 @@ func (id testDeprecatedClusterResourceId) GetClusterName() string {
 	return id.cluster
 }
 
-type testDeprecatedk8sObject struct {
+type pre_v1_24_K8sObject struct {
 	metav1.ObjectMeta
 	clusterName string
 }
 
-func (o *testDeprecatedk8sObject) GetClusterName() string {
+func (o *pre_v1_24_K8sObject) GetClusterName() string {
+	return o.clusterName
+}
+
+type v1_24_K8sObject struct {
+	metav1.ObjectMeta
+	clusterName string
+}
+
+func (o *v1_24_K8sObject) GetZZZ_DeprecatedClusterName() string {
 	return o.clusterName
 }
