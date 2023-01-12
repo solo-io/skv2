@@ -106,12 +106,8 @@ func getDeprecatedClusterName(id ResourceId) string {
 
 func GetClusterName(id ClusterResourceId) string {
 	annotations := id.GetAnnotations()
-	deprecatedClusterName := getDeprecatedClusterName(id)
-
-	if annotations == nil {
-		return deprecatedClusterName
-	} else if annotations[ClusterAnnotation] == "" {
-		return deprecatedClusterName
+	if annotations == nil || annotations[ClusterAnnotation] == "" {
+		return getDeprecatedClusterName(id)
 	}
 
 	return annotations[ClusterAnnotation]
