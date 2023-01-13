@@ -69,7 +69,11 @@ func New{{ $resource.Kind }}Set({{ $kindLowerCamel }}List ...*{{ $import_prefix 
 func New{{ $resource.Kind }}SetFromList({{ $kindLowerCamel }}List *{{ $import_prefix }}.{{ $resource.Kind }}List) {{ $resource.Kind }}Set {
     list := make([]*{{ $import_prefix }}.{{ $resource.Kind }}, 0, len({{ $kindLowerCamel }}List.Items))
     for idx := range {{ $kindLowerCamel }}List.Items {
+        {{- if $resource.PointerSlices }}
+        list = append(list, {{ $kindLowerCamel }}List.Items[idx])
+        {{- else }}
         list = append(list, &{{ $kindLowerCamel }}List.Items[idx])
+        {{- end }}
     }
     return &{{ $kindLowerCamel }}Set{set: makeGeneric{{ $resource.Kind }}Set(list)}
 }

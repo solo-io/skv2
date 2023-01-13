@@ -1,0 +1,6 @@
+changelog:
+    - type: BREAKING_CHANGE
+      issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/5158
+      description: |
+        Go dependencies updated to k8s v1.25; support k8s versions pre-v1.24, v1.24, and post-v1.24
+        that gradually change how metadata.clusterName is accessed (i.e. deprecation -> removal)

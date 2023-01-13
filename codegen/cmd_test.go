@@ -356,7 +356,7 @@ var _ = Describe("Cmd", func() {
 									},
 								},
 								ReadinessProbe: &v1.Probe{
-									Handler: v1.Handler{
+									ProbeHandler: v1.ProbeHandler{
 										HTTPGet: &v1.HTTPGetAction{
 											Path: "/",
 											Port: intstr.FromInt(8080),
@@ -385,7 +385,7 @@ var _ = Describe("Cmd", func() {
 											},
 										},
 										LivenessProbe: &v1.Probe{
-											Handler: v1.Handler{
+											ProbeHandler: v1.ProbeHandler{
 												HTTPGet: &v1.HTTPGetAction{
 													Path: "/",
 													Port: intstr.FromInt(8080),
@@ -520,7 +520,7 @@ var _ = Describe("Cmd", func() {
 									},
 								},
 								ReadinessProbe: &v1.Probe{
-									Handler: v1.Handler{
+									ProbeHandler: v1.ProbeHandler{
 										HTTPGet: &v1.HTTPGetAction{
 											Path: "/",
 											Port: intstr.FromInt(8080),
@@ -549,7 +549,7 @@ var _ = Describe("Cmd", func() {
 											},
 										},
 										LivenessProbe: &v1.Probe{
-											Handler: v1.Handler{
+											ProbeHandler: v1.ProbeHandler{
 												HTTPGet: &v1.HTTPGetAction{
 													Path: "/",
 													Port: intstr.FromInt(8080),
@@ -784,6 +784,7 @@ var _ = Describe("Cmd", func() {
 						RenderManifests:         true,
 						RenderValidationSchemas: true,
 						ApiRoot:                 "codegen/test/api",
+						PointerSlices:           true,
 					},
 				},
 				AnyVendorConfig: skv2Imports,
@@ -809,7 +810,7 @@ var _ = Describe("Cmd", func() {
 										},
 									},
 									ReadinessProbe: &v1.Probe{
-										Handler: v1.Handler{
+										ProbeHandler: v1.ProbeHandler{
 											HTTPGet: &v1.HTTPGetAction{
 												Path: "/",
 												Port: intstr.FromInt(8080),
@@ -839,7 +840,7 @@ var _ = Describe("Cmd", func() {
 												},
 											},
 											LivenessProbe: &v1.Probe{
-												Handler: v1.Handler{
+												ProbeHandler: v1.ProbeHandler{
 													HTTPGet: &v1.HTTPGetAction{
 														Path: "/",
 														Port: intstr.FromInt(8080),
