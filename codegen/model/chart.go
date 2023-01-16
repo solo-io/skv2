@@ -54,6 +54,9 @@ type Operator struct {
 
 	// Custom values to include at operator level
 	Values interface{}
+
+	// Prevent generation of docs for this operator
+	HideFromDocs bool
 }
 
 // values for Deployment template
@@ -147,6 +150,10 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		sidecars := map[string]values.UserContainerValues{}
 		for _, sidecar := range operator.Deployment.Sidecars {
 			sidecars[sidecar.Name] = makeContainerDocs(sidecar.Container)
+		}
+
+		if operator.HideFromDocs {
+			continue
 		}
 
 		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{
