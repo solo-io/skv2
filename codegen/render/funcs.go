@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"text/template"
 
+	"github.com/solo-io/skv2/codegen/model/values"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 
 	"github.com/BurntSushi/toml"
@@ -75,6 +77,34 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 			}
 			return t.Name
 		},
+
+		"get_operator_values": func(o values.UserOperatorValues) map[string]interface{} {
+			valuesMap := map[string]interface{}{}
+			v := reflect.ValueOf(o.Values)
+			for i := 0; i < v.NumField(); i++ {
+				valuesMap[strcase.ToLowerCamel(v.Type().Field(i).Name)] = v.Field(i).Interface()
+			}
+
+			if o.CustomValues != nil {
+				v := reflect.ValueOf(o.CustomValues)
+				for i := 0; i < v.NumField(); i++ {
+					valuesMap[strcase.ToLowerCamel(v.Type().Field(i).Name)] = v.Field(i).Interface()
+				}
+			}
+			opValues := map[string]interface{}{
+				strcase.ToLowerCamel(o.Name): valuesMap,
+			}
+
+			if o.ValuePath == "" {
+				return opValues
+			} else {
+				opValues := map[string]interface{}{
+					strcase.ToLowerCamel(o.ValuePath): opValues,
+				}
+				return opValues
+			}
+		},
+
 		"containerConfigs": containerConfigs,
 	}
 
@@ -96,7 +126,11 @@ type containerConfig struct {
 }
 
 func containerConfigs(op model.Operator) []containerConfig {
-	opVar := "$.Values." + strcase.ToLowerCamel(op.Name)
+	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
+	if op.ValuePath != "" {
+		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
+
+	}
 	configs := []containerConfig{{
 		Container: op.Deployment.Container,
 		Name:      op.Name,

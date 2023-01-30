@@ -1,13 +1,6 @@
 [[- $values := .BuildChartValues ]]
-
-[[- if $values.CustomValues ]]
-[[- toYaml $values.CustomValues ]]
+[[- $customValues := fromYaml (toYaml $values.CustomValues) ]]
+[[- range $_, $operator := $values.Operators ]]
+[[- $customValues = mergeOverwrite $customValues (get_operator_values $operator) ]]
 [[- end ]]
-
-[[ range $_, $operator := $values.Operators ]]
-[[ lower_camel $operator.Name ]]:
-[[ toYaml $operator.Values | indent 2]]
-[[- if $operator.CustomValues ]]
-[[ toYaml $operator.CustomValues | indent 2 ]]
-[[- end ]]
-[[- end ]]
+[[- toYaml $customValues ]]
