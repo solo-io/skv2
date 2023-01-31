@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 	"text/template"
 
@@ -79,30 +78,36 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"get_operator_values": func(o values.UserOperatorValues) map[string]interface{} {
-			valuesMap := map[string]interface{}{}
-			v := reflect.ValueOf(o.Values)
-			for i := 0; i < v.NumField(); i++ {
-				valuesMap[strcase.ToLowerCamel(v.Type().Field(i).Name)] = v.Field(i).Interface()
-			}
-
-			if o.CustomValues != nil {
-				v := reflect.ValueOf(o.CustomValues)
-				for i := 0; i < v.NumField(); i++ {
-					valuesMap[strcase.ToLowerCamel(v.Type().Field(i).Name)] = v.Field(i).Interface()
-				}
-			}
 			opValues := map[string]interface{}{
-				strcase.ToLowerCamel(o.Name): valuesMap,
+				strcase.ToLowerCamel(o.Name): o.Values,
 			}
-
-			if o.ValuePath == "" {
-				return opValues
-			} else {
-				opValues := map[string]interface{}{
-					strcase.ToLowerCamel(o.ValuePath): opValues,
+			if o.ValuePath != "" {
+				splitPath := strings.Split(o.ValuePath, ".")
+				for _, p := range splitPath {
+					opValues = map[string]interface{}{
+						strcase.ToLowerCamel(p): opValues,
+					}
 				}
-				return opValues
 			}
+			return fromYAML(toYAML(opValues))
+		},
+
+		"get_operator_custom_values": func(o values.UserOperatorValues) map[string]interface{} {
+			opValues := map[string]interface{}{}
+			if o.CustomValues != nil {
+				opValues = map[string]interface{}{
+					strcase.ToLowerCamel(o.Name): o.CustomValues,
+				}
+				if o.ValuePath != "" {
+					splitPath := strings.Split(o.ValuePath, ".")
+					for _, p := range splitPath {
+						opValues = map[string]interface{}{
+							strcase.ToLowerCamel(p): opValues,
+						}
+					}
+				}
+			}
+			return fromYAML(toYAML(opValues))
 		},
 
 		"containerConfigs": containerConfigs,

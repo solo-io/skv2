@@ -1,6 +1,6 @@
 [[- $values := .BuildChartValues ]]
 [[- $customValues := fromYaml (toYaml $values.CustomValues) ]]
 [[- range $_, $operator := $values.Operators ]]
-[[- $customValues = mergeOverwrite $customValues (get_operator_values $operator) ]]
+[[- $customValues = mergeOverwrite $customValues (get_operator_values $operator) (get_operator_custom_values $operator) ]]
 [[- end ]]
 [[- toYaml $customValues ]]
