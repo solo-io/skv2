@@ -2,11 +2,13 @@
 
 package v1
 
-import (
-	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,56 +21,56 @@ import (
 
 // Provider for PaintClient from Clientset
 func PaintClientFromClientsetProvider(clients things_test_io_v1.Clientset) things_test_io_v1.PaintClient {
-	return clients.Paints()
+    return clients.Paints()
 }
 
 // Provider for Paint Client from Client
 func PaintClientProvider(client client.Client) things_test_io_v1.PaintClient {
-	return things_test_io_v1.NewPaintClient(client)
+    return things_test_io_v1.NewPaintClient(client)
 }
 
 type PaintClientFactory func(client client.Client) things_test_io_v1.PaintClient
 
 func PaintClientFactoryProvider() PaintClientFactory {
-	return PaintClientProvider
+    return PaintClientProvider
 }
 
 type PaintClientFromConfigFactory func(cfg *rest.Config) (things_test_io_v1.PaintClient, error)
 
 func PaintClientFromConfigFactoryProvider() PaintClientFromConfigFactory {
-	return func(cfg *rest.Config) (things_test_io_v1.PaintClient, error) {
-		clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.Paints(), nil
-	}
+    return func(cfg *rest.Config) (things_test_io_v1.PaintClient, error) {
+        clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.Paints(), nil
+    }
 }
 
 // Provider for ClusterResourceClient from Clientset
 func ClusterResourceClientFromClientsetProvider(clients things_test_io_v1.Clientset) things_test_io_v1.ClusterResourceClient {
-	return clients.ClusterResources()
+    return clients.ClusterResources()
 }
 
 // Provider for ClusterResource Client from Client
 func ClusterResourceClientProvider(client client.Client) things_test_io_v1.ClusterResourceClient {
-	return things_test_io_v1.NewClusterResourceClient(client)
+    return things_test_io_v1.NewClusterResourceClient(client)
 }
 
 type ClusterResourceClientFactory func(client client.Client) things_test_io_v1.ClusterResourceClient
 
 func ClusterResourceClientFactoryProvider() ClusterResourceClientFactory {
-	return ClusterResourceClientProvider
+    return ClusterResourceClientProvider
 }
 
 type ClusterResourceClientFromConfigFactory func(cfg *rest.Config) (things_test_io_v1.ClusterResourceClient, error)
 
 func ClusterResourceClientFromConfigFactoryProvider() ClusterResourceClientFromConfigFactory {
-	return func(cfg *rest.Config) (things_test_io_v1.ClusterResourceClient, error) {
-		clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.ClusterResources(), nil
-	}
+    return func(cfg *rest.Config) (things_test_io_v1.ClusterResourceClient, error) {
+        clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.ClusterResources(), nil
+    }
 }

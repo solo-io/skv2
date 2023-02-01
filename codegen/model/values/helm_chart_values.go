@@ -7,8 +7,9 @@ import (
 
 // used to document the values structure of the generated Helm Chart
 type UserHelmValues struct {
-	Operators    []UserOperatorValues
-	CustomValues interface{}
+	Operators        []UserOperatorValues
+	CustomValues     interface{}
+	ValuesInlineDocs *UserValuesInlineDocs
 }
 
 type UserOperatorValues struct {
@@ -16,6 +17,21 @@ type UserOperatorValues struct {
 	ValuePath    string
 	Values       UserValues
 	CustomValues interface{}
+}
+
+type UserValuesInlineDocs struct {
+	LineLengthLimit int
+}
+
+func (u *UserValuesInlineDocs) Enabled() bool {
+	return u != nil
+}
+
+func (u *UserValuesInlineDocs) LineLength() int {
+	if u == nil {
+		return 0
+	}
+	return u.LineLengthLimit
 }
 
 // document values structure for an operator

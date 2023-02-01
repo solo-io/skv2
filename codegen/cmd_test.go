@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	goyaml "gopkg.in/yaml.v3"
 	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	. "github.com/onsi/ginkgo"
@@ -155,6 +156,91 @@ var _ = Describe("Cmd", func() {
 		// Make sure all generated code compiles
 		err = exec.Command("go", "build", "codegen/test/api/other.things.test.io/v1/...").Run()
 		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("generates controller code and manifests for a proto file", func() {
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "Paint",
+							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Status: &Field{Type: Type{Name: "PaintStatus"}},
+						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name: "painter",
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
+							},
+						},
+					},
+				},
+				Values: nil,
+				ValuesInlineDocs: &ValuesInlineDocs{
+					LineLengthLimit: 80,
+				},
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		fileContents, err := os.ReadFile("codegen/test/chart/values.yaml")
+		Expect(err).NotTo(HaveOccurred())
+
+		node := goyaml.Node{}
+		Expect(goyaml.Unmarshal(fileContents, &node)).NotTo(HaveOccurred())
+
+		painterNode := node.Content[0].Content[1]
+		enabledMapField := painterNode.Content[0]
+		Expect(enabledMapField.HeadComment).To(Equal("# Enables or disables creation of the operator deployment/service"))
+		envMapField := painterNode.Content[2]
+		Expect(envMapField.HeadComment).To(Equal("# Specify environment variables for the container. See the [Kubernetes\n# documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core)\n# for specification details."))
 	})
 
 	DescribeTable("configuring the runAsUser value",
