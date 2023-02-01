@@ -49,7 +49,9 @@ func (w *DefaultFileWriter) WriteFiles(files []render.OutFile) error {
 			commentPrefix = "#"
 		}
 
-		if w.Header != "" {
+		if file.HeaderOverride != nil {
+			content = file.HeaderOverride.Generate() + content
+		} else if w.Header != "" {
 			content = fmt.Sprintf("%s %s\n\n", commentPrefix, w.Header) + content
 		}
 

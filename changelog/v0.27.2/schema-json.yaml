@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Adds ability to generate json schema for chart
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/7186

@@ -17,7 +17,9 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/gnostic v0.5.7-v3refs
 	github.com/hashicorp/go-multierror v1.1.0
+	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
 	github.com/iancoleman/strcase v0.1.3
+	github.com/invopop/jsonschema v0.7.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/hashstructure v1.0.0

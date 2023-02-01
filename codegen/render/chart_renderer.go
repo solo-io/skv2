@@ -8,6 +8,14 @@ type ChartRenderer struct {
 	templateRenderer
 }
 
+type ChartHeaderGenerator struct {
+	header string
+}
+
+func (g *ChartHeaderGenerator) Generate() string {
+	return g.header
+}
+
 var defaultChartInputs = inputTemplates{
 	"chart/operator-deployment.yamltmpl": {
 		Path: "templates/deployment.yaml",
@@ -53,6 +61,13 @@ func (r ChartRenderer) Render(chart model.Chart) ([]OutFile, error) {
 	templatesToRender := defaultChartInputs
 	if len(chart.Operators) == 0 {
 		templatesToRender = chartInputsNoOperators
+	}
+
+	if chart.JsonSchema != nil {
+		templatesToRender["chart/values.schema.jsontmpl"] = OutFile{
+			Path:           "values.schema.json",
+			HeaderOverride: &ChartHeaderGenerator{header: ""},
+		}
 	}
 
 	files, err := r.renderCoreTemplates(templatesToRender, chart)
