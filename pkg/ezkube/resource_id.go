@@ -104,7 +104,11 @@ func getDeprecatedClusterName(id ResourceId) string {
 	return ""
 }
 
+var mu sync.Mutex
+
 func GetClusterName(id ClusterResourceId) string {
+	mu.Lock()
+	defer mu.Unlock()
 	annotations := id.GetAnnotations()
 	if annotations == nil || annotations[ClusterAnnotation] == "" {
 		return getDeprecatedClusterName(id)
@@ -114,6 +118,8 @@ func GetClusterName(id ClusterResourceId) string {
 }
 
 func SetClusterName(obj client.Object, cluster string) {
+	mu.Lock()
+	defer mu.Unlock()
 	if obj.GetAnnotations() == nil {
 		obj.SetAnnotations(map[string]string{})
 	}
