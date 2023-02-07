@@ -239,9 +239,11 @@ func fromYAML(str string) map[string]interface{} {
 
 func toNode(v interface{}) goyaml.Node {
 	var node goyaml.Node
-	err := goyaml.Unmarshal([]byte(toYAML(v)), &node)
-	if err != nil {
-		panic(err)
+	if v != nil {
+		err := goyaml.Unmarshal([]byte(toYAML(v)), &node)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return node
 }
@@ -258,15 +260,24 @@ func mergeNodes(nodes ...goyaml.Node) goyaml.Node {
 	if len(nodes) <= 1 {
 		panic("at least two nodes required for merge")
 	}
-	mergedNode := nodes[0]
-	for i, n := range nodes {
-		if i == 0 {
+	var mergedNode goyaml.Node
+	for _, n := range nodes {
+
+		if mergedNode.IsZero() {
+			if n.IsZero() {
+				continue
+			}
+			mergedNode = n
 			continue
 		}
 
 		if err := recursiveNodeMerge(&n, &mergedNode); err != nil {
 			panic(err)
 		}
+	}
+	if mergedNode.IsZero() {
+		panic("all nodes were found to be IsZero, cannot continue")
+
 	}
 	return mergedNode
 }
