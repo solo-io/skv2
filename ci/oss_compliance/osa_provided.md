@@ -23,7 +23,6 @@ Name|Version|License
 [json-iterator/go](https://github.com/json-iterator/go)|v1.1.12|MIT License
 [mailru/easyjson](https://github.com/mailru/easyjson)|v0.7.6|MIT License
 [golang_protobuf_extensions/pbutil](https://github.com/matttproud/golang_protobuf_extensions)|v1.0.2-0.20181231171920-c182affec369|Apache License 2.0
-[mitchellh/hashstructure](https://github.com/mitchellh/hashstructure)|v1.0.0|MIT License
 [modern-go/concurrent](https://github.com/modern-go/concurrent)|v0.0.0-20180306012644-bacd9c7ef1dd|Apache License 2.0
 [modern-go/reflect2](https://github.com/modern-go/reflect2)|v1.0.2|Apache License 2.0
 [munnerz/goautoneg](https://github.com/munnerz/goautoneg)|v0.0.0-20191010083416-a7dc8b61c822|BSD 3-clause "New" or "Revised" License
