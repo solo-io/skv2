@@ -3,9 +3,6 @@
 // Definitions for the Kubernetes types
 package v1
 
-import (
-)
-
 // PaintSlice represents a slice of *Paint
 type PaintSlice []*Paint
 
