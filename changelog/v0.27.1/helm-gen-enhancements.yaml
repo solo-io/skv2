@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Helm gen enhancements to support new gloo-platform-chart.
+    issueLink: https://github.com/solo-io/skv2/issues/407
+

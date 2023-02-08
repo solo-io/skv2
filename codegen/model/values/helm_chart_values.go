@@ -13,6 +13,7 @@ type UserHelmValues struct {
 
 type UserOperatorValues struct {
 	Name         string
+	ValuePath    string
 	Values       UserValues
 	CustomValues interface{}
 }

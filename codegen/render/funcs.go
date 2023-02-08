@@ -3,10 +3,12 @@ package render
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"text/template"
 
+	"github.com/solo-io/skv2/codegen/model/values"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 
 	"github.com/BurntSushi/toml"
@@ -15,6 +17,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/util"
+	goyaml "gopkg.in/yaml.v3"
 	"sigs.k8s.io/yaml"
 )
 
@@ -25,11 +28,14 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	skv2Funcs := template.FuncMap{
 		// string utils
 
-		"toToml":   toTOML,
-		"toYaml":   toYAML,
-		"fromYaml": fromYAML,
-		"toJson":   toJSON,
-		"fromJson": fromJSON,
+		"toToml":     toTOML,
+		"toYaml":     toYAML,
+		"fromYaml":   fromYAML,
+		"toJson":     toJSON,
+		"fromJson":   fromJSON,
+		"toNode":     toNode,
+		"fromNode":   fromNode,
+		"mergeNodes": mergeNodes,
 
 		"join":            strings.Join,
 		"lower":           strings.ToLower,
@@ -75,6 +81,40 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 			}
 			return t.Name
 		},
+
+		"get_operator_values": func(o values.UserOperatorValues) goyaml.Node {
+			opValues := map[string]interface{}{
+				strcase.ToLowerCamel(o.Name): o.Values,
+			}
+			if o.ValuePath != "" {
+				splitPath := strings.Split(o.ValuePath, ".")
+				for _, p := range splitPath {
+					opValues = map[string]interface{}{
+						strcase.ToLowerCamel(p): opValues,
+					}
+				}
+			}
+			return toNode(opValues)
+		},
+
+		"get_operator_custom_values": func(o values.UserOperatorValues) goyaml.Node {
+			opValues := map[string]interface{}{}
+			if o.CustomValues != nil {
+				opValues = map[string]interface{}{
+					strcase.ToLowerCamel(o.Name): o.CustomValues,
+				}
+				if o.ValuePath != "" {
+					splitPath := strings.Split(o.ValuePath, ".")
+					for _, p := range splitPath {
+						opValues = map[string]interface{}{
+							strcase.ToLowerCamel(p): opValues,
+						}
+					}
+				}
+			}
+			return toNode(opValues)
+		},
+
 		"containerConfigs": containerConfigs,
 	}
 
@@ -96,7 +136,11 @@ type containerConfig struct {
 }
 
 func containerConfigs(op model.Operator) []containerConfig {
-	opVar := "$.Values." + strcase.ToLowerCamel(op.Name)
+	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
+	if op.ValuePath != "" {
+		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
+
+	}
 	configs := []containerConfig{{
 		Container: op.Deployment.Container,
 		Name:      op.Name,
@@ -191,6 +235,89 @@ func fromYAML(str string) map[string]interface{} {
 		m["Error"] = err.Error()
 	}
 	return m
+}
+
+func toNode(v interface{}) goyaml.Node {
+	var node goyaml.Node
+	if v != nil {
+		err := goyaml.Unmarshal([]byte(toYAML(v)), &node)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return node
+}
+
+func fromNode(n goyaml.Node) string {
+	b, err := goyaml.Marshal(&n)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
+func mergeNodes(nodes ...goyaml.Node) goyaml.Node {
+	if len(nodes) <= 1 {
+		panic("at least two nodes required for merge")
+	}
+	var mergedNode goyaml.Node
+	for _, n := range nodes {
+
+		if mergedNode.IsZero() {
+			if n.IsZero() {
+				continue
+			}
+			mergedNode = n
+			continue
+		}
+
+		if err := recursiveNodeMerge(&n, &mergedNode); err != nil {
+			panic(err)
+		}
+	}
+	if mergedNode.IsZero() {
+		panic("all nodes were found to be IsZero, cannot continue")
+
+	}
+	return mergedNode
+}
+
+func nodesEqual(l, r *goyaml.Node) bool {
+	if l.Kind == goyaml.ScalarNode && r.Kind == goyaml.ScalarNode {
+		return l.Value == r.Value
+	}
+	panic("equals on non-scalars not implemented!")
+}
+
+func recursiveNodeMerge(from, into *goyaml.Node) error {
+	if from.Kind != into.Kind {
+		return errors.New("cannot merge nodes of different kinds")
+	}
+	switch from.Kind {
+	case goyaml.MappingNode:
+		for i := 0; i < len(from.Content); i += 2 {
+			found := false
+			for j := 0; j < len(into.Content); j += 2 {
+				if nodesEqual(from.Content[i], into.Content[j]) {
+					found = true
+					if err := recursiveNodeMerge(from.Content[i+1], into.Content[j+1]); err != nil {
+						return errors.New("at key " + from.Content[i].Value + ": " + err.Error())
+					}
+					break
+				}
+			}
+			if !found {
+				into.Content = append(into.Content, from.Content[i:i+2]...)
+			}
+		}
+	case goyaml.SequenceNode:
+		into.Content = append(into.Content, from.Content...)
+	case goyaml.DocumentNode:
+		recursiveNodeMerge(from.Content[0], into.Content[0])
+	default:
+		return errors.New("can only merge mapping and sequence nodes")
+	}
+	return nil
 }
 
 // toTOML takes an interface, marshals it to toml, and returns a string. It will

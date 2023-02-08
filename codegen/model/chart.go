@@ -43,6 +43,9 @@ type ValuesReferenceDocs struct {
 type Operator struct {
 	Name string
 
+	// (Optional) For nesting operators in values API (e.g. a value of "agent" would place an operator at "agent.<operatorName>" )
+	ValuePath string
+
 	// deployment config
 	Deployment Deployment
 
@@ -150,7 +153,8 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		}
 
 		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{
-			Name: operator.Name,
+			Name:      operator.Name,
+			ValuePath: operator.ValuePath,
 			Values: values.UserValues{
 				UserContainerValues: makeContainerDocs(operator.Deployment.Container),
 				Sidecars:            sidecars,

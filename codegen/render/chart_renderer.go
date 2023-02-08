@@ -26,6 +26,15 @@ var defaultChartInputs = inputTemplates{
 	},
 }
 
+var chartInputsNoOperators = inputTemplates{
+	"chart/values.yamltmpl": {
+		Path: "values.yaml",
+	},
+	"chart/Chart.yamltmpl": {
+		Path: "Chart.yaml",
+	},
+}
+
 func RenderChart(chart model.Chart) ([]OutFile, error) {
 	renderer := DefaultTemplateRenderer
 
@@ -42,6 +51,9 @@ func RenderChart(chart model.Chart) ([]OutFile, error) {
 
 func (r ChartRenderer) Render(chart model.Chart) ([]OutFile, error) {
 	templatesToRender := defaultChartInputs
+	if len(chart.Operators) == 0 {
+		templatesToRender = chartInputsNoOperators
+	}
 
 	files, err := r.renderCoreTemplates(templatesToRender, chart)
 	if err != nil {
