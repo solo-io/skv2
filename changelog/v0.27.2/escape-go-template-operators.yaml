@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Sanitize CRD descriptions for go templates.
+    issueLink: https://github.com/solo-io/skv2/issues/410
