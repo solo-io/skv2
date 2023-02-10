@@ -1,0 +1,6 @@
+changelog:
+    - type: FIX
+      issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/7412
+      resolvesIssue: false
+      description: |
+        Prevent a data race from occurring when a resource's annotations map is accessed concurrently.
