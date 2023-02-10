@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -297,6 +298,9 @@ func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1.JSONSchema
 	// remove 'properties' and 'required' fields to prevent validating proto.Any fields
 	removeProtoAnyValidation(obj)
 
+	// escape {{ or }} in descriptions as they will cause helm to error
+	escapeGoTemplateOperators(obj)
+
 	bytes, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err
@@ -329,6 +333,38 @@ func removeProtoAnyValidation(d map[string]interface{}) {
 		// x-kubernetes-preserve-unknown-fields allows for unknown fields from a particular node
 		// see https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#specifying-a-structural-schema
 		values["x-kubernetes-preserve-unknown-fields"] = true
+	}
+}
+
+// escape go template operators in descriptions, {{ or }} in description will cause helm to error
+// We do not always control descriptions since we import some protos
+func escapeGoTemplateOperators(d map[string]interface{}) {
+	for k, v := range d {
+
+		if k == "description" {
+			d[k] = sanitizeDescription(v)
+		}
+
+		values, ok := v.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		if desc, ok := values["description"]; ok {
+			values["description"] = sanitizeDescription(desc)
+		}
+
+		escapeGoTemplateOperators(values)
+	}
+}
+
+func sanitizeDescription(desc interface{}) interface{} {
+	if description, isString := desc.(string); isString {
+		exp := regexp.MustCompile("{{([^}]+)}}")
+		description = exp.ReplaceAllString(description, `{{"{{"}}$1{{"}}"}}`)
+		return description
+	} else {
+		return desc
 	}
 }
 
