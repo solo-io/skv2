@@ -299,7 +299,7 @@ func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1.JSONSchema
 	removeProtoAnyValidation(obj)
 
 	// escape {{ or }} in descriptions as they will cause helm to error
-	escapeGoTemplateOperators(obj)
+	EscapeGoTemplateOperators(obj)
 
 	bytes, err := json.Marshal(obj)
 	if err != nil {
@@ -338,7 +338,7 @@ func removeProtoAnyValidation(d map[string]interface{}) {
 
 // escape go template operators in descriptions, {{ or }} in description will cause helm to error
 // We do not always control descriptions since we import some protos
-func escapeGoTemplateOperators(d map[string]interface{}) {
+func EscapeGoTemplateOperators(d map[string]interface{}) {
 	for k, v := range d {
 
 		if k == "description" {
@@ -350,11 +350,7 @@ func escapeGoTemplateOperators(d map[string]interface{}) {
 			continue
 		}
 
-		if desc, ok := values["description"]; ok {
-			values["description"] = sanitizeDescription(desc)
-		}
-
-		escapeGoTemplateOperators(values)
+		EscapeGoTemplateOperators(values)
 	}
 }
 
