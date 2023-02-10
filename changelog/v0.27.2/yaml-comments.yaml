@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Adds ability to have inline comments in chart yaml
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/7185
