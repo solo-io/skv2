@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add `hideFromDocs` flag to the helm chart operator
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/6844
+    resolvesIssue: false
