@@ -354,14 +354,14 @@ func EscapeGoTemplateOperators(d map[string]interface{}) {
 	}
 }
 
+// Regex to escape double brackets in go templates
 func sanitizeDescription(desc interface{}) interface{} {
 	if description, isString := desc.(string); isString {
 		exp := regexp.MustCompile("{{([^}]+)}}")
 		description = exp.ReplaceAllString(description, `{{"{{"}}$1{{"}}"}}`)
 		return description
-	} else {
-		return desc
 	}
+	return desc
 }
 
 func ifDefined(val, defaultValue string) string {
