@@ -277,7 +277,7 @@ var _ = Describe("toYAMLWithComments", func() {
 		`)))
 	})
 
-	FIt("can merge operator values", func() {
+	It("can merge operator values", func() {
 
 		baseValues := map[string]interface{}{
 			"operatorName": values.UserValues{
