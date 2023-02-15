@@ -11,3 +11,7 @@ func ToNode(v interface{}, commentsConfig yamlCommentsConfig) goyaml.Node {
 func FromNode(n goyaml.Node) string {
 	return fromNode(n)
 }
+
+func MergeNodes(nodes ...goyaml.Node) goyaml.Node {
+	return mergeNodes(nodes...)
+}
