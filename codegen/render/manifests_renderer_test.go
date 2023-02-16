@@ -30,6 +30,27 @@ var _ = Describe("ManifestsRenderer", func() {
 		Expect(m.Annotations[crdutils.CRDVersionKey]).To(Equal("1.2.3"))
 	})
 
+	It("should sanitize crd descriptions", func() {
+		obj := map[string]interface{}{
+			"description": "{{ some string }} foo",
+			"bool":        true,
+			"properties": map[string]interface{}{
+				"description": "{{ some other string }} foo",
+				"bool":        true,
+			},
+		}
+		expectedObj := map[string]interface{}{
+			"description": `{{"{{"}} some string {{"}}"}} foo`,
+			"bool":        true,
+			"properties": map[string]interface{}{
+				"description": `{{"{{"}} some other string {{"}}"}} foo`,
+				"bool":        true,
+			},
+		}
+		render.EscapeGoTemplateOperators(obj)
+		Expect(obj).To(Equal(expectedObj))
+	})
+
 	Describe("CRD gen", func() {
 		var (
 			grp model.Group
@@ -59,6 +80,7 @@ var _ = Describe("ManifestsRenderer", func() {
 			outFiles, err := render.RenderManifests(
 				"appName", "manifestDir", "protoDir",
 				nil,
+				model.GroupOptions{},
 				grp,
 			)
 			Expect(err).NotTo(HaveOccurred())

@@ -53,6 +53,9 @@ type Command struct {
 	// the k8s api groups for which to compile
 	Groups []render.Group
 
+	// protoc cmd line options
+	GroupOptions model.GroupOptions
+
 	// top-level custom templates to render.
 	// these will recieve all groups as inputs
 	TopLevelTemplates []model.CustomTemplates
@@ -147,7 +150,7 @@ func (c Command) Execute() error {
 		group := group // pike
 		c.initGroup(group, descriptors)
 
-		if err := c.generateGroup(*group, protoOpts); err != nil {
+		if err := c.generateGroup(*group, protoOpts, c.GroupOptions); err != nil {
 			return err
 		}
 
@@ -239,6 +242,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 func (c Command) generateGroup(
 	grp model.Group,
 	protoOpts proto.Options,
+	groupOptions model.GroupOptions,
 ) error {
 
 	fileWriter := &writer.DefaultFileWriter{
@@ -264,7 +268,7 @@ func (c Command) generateGroup(
 		return err
 	}
 
-	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, protoOpts, grp)
+	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, protoOpts, groupOptions, grp)
 	if err != nil {
 		return err
 	}
