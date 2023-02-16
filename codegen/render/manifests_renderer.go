@@ -39,6 +39,7 @@ type ManifestsRenderer struct {
 func RenderManifests(
 	appName, manifestDir, protoDir string,
 	protoOpts protoutil.Options,
+	groupOptions model.GroupOptions,
 	grp Group,
 ) ([]OutFile, error) {
 	defaultManifestsRenderer := ManifestsRenderer{
@@ -53,17 +54,17 @@ func RenderManifests(
 			},
 		},
 	}
-	return defaultManifestsRenderer.RenderManifests(grp, protoOpts)
+	return defaultManifestsRenderer.RenderManifests(grp, protoOpts, groupOptions)
 }
 
-func (r ManifestsRenderer) RenderManifests(grp Group, protoOpts protoutil.Options) ([]OutFile, error) {
+func (r ManifestsRenderer) RenderManifests(grp Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
 	if !grp.RenderManifests {
 		return nil, nil
 	}
 
 	if grp.RenderValidationSchemas {
 		var err error
-		oapiSchemas, err := generateOpenApi(grp, r.ProtoDir, protoOpts)
+		oapiSchemas, err := generateOpenApi(grp, r.ProtoDir, protoOpts, groupOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +84,7 @@ func (r ManifestsRenderer) RenderManifests(grp Group, protoOpts protoutil.Option
 }
 
 // Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
-func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Options) (model.OpenApiSchemas, error) {
+func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
 	if protoDir == "" {
 		protoDir = anyvendor.DefaultDepDir
 	}
@@ -151,7 +152,7 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 		oapiSchemas := model.OpenApiSchemas{}
 		for _, kv := range schemas.Pairs() {
 			orderedMap := kv.Value.(*openapi.OrderedMap)
-			jsonSchema, err := postProcessValidationSchema(orderedMap)
+			jsonSchema, err := postProcessValidationSchema(orderedMap, groupOptions)
 			if err != nil {
 				return nil, err
 			}
@@ -285,7 +286,7 @@ func marshalObjToYaml(appName string, obj metav1.Object) (string, error) {
 	return string(yam), err
 }
 
-func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1.JSONSchemaProps, error) {
+func postProcessValidationSchema(oapi *openapi.OrderedMap, groupOptions model.GroupOptions) (*apiextv1.JSONSchemaProps, error) {
 	oapiJson, err := oapi.MarshalJSON()
 	if err != nil {
 		return nil, err
@@ -298,8 +299,10 @@ func postProcessValidationSchema(oapi *openapi.OrderedMap) (*apiextv1.JSONSchema
 	// remove 'properties' and 'required' fields to prevent validating proto.Any fields
 	removeProtoAnyValidation(obj)
 
-	// escape {{ or }} in descriptions as they will cause helm to error
-	EscapeGoTemplateOperators(obj)
+	if groupOptions.EscapeGoTemplateOperators {
+		// escape {{ or }} in descriptions as they will cause helm to error
+		escapeGoTemplateOperators(obj)
+	}
 
 	bytes, err := json.Marshal(obj)
 	if err != nil {
@@ -338,7 +341,7 @@ func removeProtoAnyValidation(d map[string]interface{}) {
 
 // escape go template operators in descriptions, {{ or }} in description will cause helm to error
 // We do not always control descriptions since we import some protos
-func EscapeGoTemplateOperators(d map[string]interface{}) {
+func escapeGoTemplateOperators(d map[string]interface{}) {
 	for k, v := range d {
 
 		if k == "description" {
@@ -350,7 +353,7 @@ func EscapeGoTemplateOperators(d map[string]interface{}) {
 			continue
 		}
 
-		EscapeGoTemplateOperators(values)
+		escapeGoTemplateOperators(values)
 	}
 }
 

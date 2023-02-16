@@ -116,6 +116,11 @@ type Group struct {
 	PointerSlices bool `default:"false"`
 }
 
+type GroupOptions struct {
+	// Required when using crds in the templates directory
+	EscapeGoTemplateOperators bool
+}
+
 func (g Group) HasProtos() bool {
 	return len(g.Descriptors) > 0
 }

@@ -80,6 +80,7 @@ var _ = Describe("ManifestsRenderer", func() {
 			outFiles, err := render.RenderManifests(
 				"appName", "manifestDir", "protoDir",
 				nil,
+				model.GroupOptions{},
 				grp,
 			)
 			Expect(err).NotTo(HaveOccurred())
