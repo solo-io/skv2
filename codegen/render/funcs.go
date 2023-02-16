@@ -697,7 +697,7 @@ func createCustomTypeMapper(values values.UserHelmValues) customTypeMapper {
 // initialize a new instance of the jsonschema Reflector with configured to
 // create json schema for chart.
 func createJsonSchemaReflector(values values.UserHelmValues) *jsonschema.Reflector {
-	// we might want to pass configuration ot this from values.UserHelmValues
+	// we might want to pass configuration of this from values.UserHelmValues
 	// in the future, to control how the schema is generated, but for now just
 	// hard-coding some sensible defaults that won't break existing charts..
 	reflector := jsonschema.Reflector{
