@@ -43,15 +43,14 @@ func (w *DefaultFileWriter) WriteFiles(files []render.OutFile) error {
 
 		log.Printf("Writing %v", name)
 
-		commentPrefix := commentPrefixes[filepath.Ext(name)]
+		ext := filepath.Ext(name)
+		commentPrefix := commentPrefixes[ext]
 		if commentPrefix == "" {
 			// set default comment char to "#" as this is the most common
 			commentPrefix = "#"
 		}
 
-		if file.HeaderOverride != nil {
-			content = file.HeaderOverride.Generate() + content
-		} else if w.Header != "" {
+		if w.Header != "" && ext != ".json" {
 			content = fmt.Sprintf("%s %s\n\n", commentPrefix, w.Header) + content
 		}
 

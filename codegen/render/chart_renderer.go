@@ -65,8 +65,7 @@ func (r ChartRenderer) Render(chart model.Chart) ([]OutFile, error) {
 
 	if chart.JsonSchema != nil {
 		templatesToRender["chart/values.schema.jsontmpl"] = OutFile{
-			Path:           "values.schema.json",
-			HeaderOverride: &ChartHeaderGenerator{header: ""},
+			Path: "values.schema.json",
 		}
 	}
 

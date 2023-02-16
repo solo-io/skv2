@@ -17,8 +17,7 @@ type HeaderOverride interface {
 }
 
 type OutFile struct {
-	Path           string
-	Permission     os.FileMode
-	Content        string         // set by Renderer
-	HeaderOverride HeaderOverride // overrides the defauld the default header of the outfile writer
+	Path       string
+	Permission os.FileMode
+	Content    string // set by Renderer
 }
