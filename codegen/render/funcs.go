@@ -575,6 +575,7 @@ func fromJSON(str string) map[string]interface{} {
 func toJSONSchema(values values.UserHelmValues) string {
 	reflector := createJsonSchemaReflector(values)
 	schema := new(jsonschema.Schema)
+	schema.Version = "https://json-schema.org/draft/2020-12/schema"
 
 	// add json schema properties from the chart's custom values
 	if values.CustomValues != nil {
@@ -857,6 +858,7 @@ func jsonSchemaForOperator(
 	o *values.UserOperatorValues,
 ) *jsonschema.Schema {
 	schema := reflector.Reflect(o.Values)
+	schema.Version = "" // will be set on parent object
 
 	// if the opeartor defines custom values, add the properties to the schema
 	if o.CustomValues != nil {
