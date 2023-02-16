@@ -8,14 +8,6 @@ type ChartRenderer struct {
 	templateRenderer
 }
 
-type ChartHeaderGenerator struct {
-	header string
-}
-
-func (g *ChartHeaderGenerator) Generate() string {
-	return g.header
-}
-
 var defaultChartInputs = inputTemplates{
 	"chart/operator-deployment.yamltmpl": {
 		Path: "templates/deployment.yaml",
