@@ -365,6 +365,7 @@ var _ = Describe("toJSONSchema", func() {
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
 		expected := prepareExpected(`
 			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
 					"field1a": {
 						"type": "string",
@@ -392,6 +393,7 @@ var _ = Describe("toJSONSchema", func() {
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
 		expected := prepareExpected(`
 			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
 					"Field1": {
 						"anyOf": [
@@ -437,6 +439,7 @@ var _ = Describe("toJSONSchema", func() {
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type2{}})
 		expected := prepareExpected(`
 			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
 					"Field2A": {
 						"anyOf": [
@@ -472,6 +475,7 @@ var _ = Describe("toJSONSchema", func() {
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
 		expected := prepareExpected(`
 			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
 					"Field1": {
 						"anyOf": [
@@ -507,6 +511,7 @@ var _ = Describe("toJSONSchema", func() {
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
 		expected := prepareExpected(`
 			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
 					"metatime": {
 						"anyOf": [
@@ -531,6 +536,7 @@ var _ = Describe("toJSONSchema", func() {
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
 		expected := prepareExpected(`
 			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
 					"Field1": {
 						"anyOf": [
@@ -605,6 +611,7 @@ var _ = Describe("toJSONSchema", func() {
 			})
 			expected := prepareExpected(`
 				{
+					"$schema": "https://json-schema.org/draft/2020-12/schema",
 					"properties": {
 						"FieldA": {
 							"type": "number"
@@ -644,6 +651,7 @@ var _ = Describe("toJSONSchema", func() {
 			})
 			expected := prepareExpected(`
 				{
+					"$schema": "https://json-schema.org/draft/2020-12/schema",
 					"properties": {
 						"FieldA": {
 							"anyOf": [
