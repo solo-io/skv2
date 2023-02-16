@@ -1,6 +1,6 @@
 [[- $values := .BuildChartValues ]]
-[[- $customValues := toNode $values.CustomValues ]]
+[[- $customValues := toNode $values.CustomValues $values.ValuesInlineDocs ]]
 [[- range $_, $operator := $values.Operators ]]
-[[- $customValues = mergeNodes $customValues (get_operator_values $operator) (get_operator_custom_values $operator) ]]
+[[- $customValues = mergeNodes $customValues (toNode (get_operator_values $operator) $values.ValuesInlineDocs) (toNode (get_operator_custom_values $operator) $values.ValuesInlineDocs) ]]
 [[- end ]]
 [[- fromNode $customValues ]]

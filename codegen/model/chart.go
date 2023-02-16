@@ -33,11 +33,19 @@ type Chart struct {
 
 	// if specified, generate reference docs for the chart values to the provided filename
 	ValuesReferenceDocs ValuesReferenceDocs
+
+	// if specificed, generate inline documentation for the values in chart's values.yaml files
+	ValuesInlineDocs *ValuesInlineDocs
 }
 
 type ValuesReferenceDocs struct {
 	Title    string
 	Filename string
+}
+
+type ValuesInlineDocs struct {
+	// if specified, inline field documentation comments will be wrapped at many characters
+	LineLengthLimit int
 }
 
 type Operator struct {
@@ -166,6 +174,12 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 			},
 			CustomValues: operator.Values,
 		})
+	}
+
+	if c.ValuesInlineDocs != nil {
+		helmValues.ValuesInlineDocs = &values.UserValuesInlineDocs{
+			LineLengthLimit: c.ValuesInlineDocs.LineLengthLimit,
+		}
 	}
 
 	return helmValues
