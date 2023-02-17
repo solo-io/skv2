@@ -23,13 +23,13 @@ import (
 // and the given retry options.
 type RetryOptions struct {
 	// Initial retry delay; default is 1 second.
-	delay time.Duration
+	Delay time.Duration
 
 	// Max delay between retries; default is 0 (no max).
-	maxDelay time.Duration
+	MaxDelay time.Duration
 
 	// Max number of retries; default is 0 (retry forever).
-	attempts uint
+	MaxRetries uint
 }
 
 type clusterWatcher struct {
@@ -156,14 +156,14 @@ func (c *clusterWatcher) managerOptionsWithDefaults() manager.Options {
 
 func (c *clusterWatcher) retryOptionsWithDefaults() []retry.Option {
 	// set delay to 1 second if not set
-	delay := c.retryOptions.delay
+	delay := c.retryOptions.Delay
 	if delay == 0 {
 		delay = time.Second
 	}
 
 	// the rest will default to their zero values if not set
-	maxDelay := c.retryOptions.maxDelay
-	attempts := c.retryOptions.attempts
+	maxDelay := c.retryOptions.MaxDelay
+	attempts := c.retryOptions.MaxRetries
 
 	return []retry.Option{
 		retry.DelayType(retry.CombineDelay(retry.BackOffDelay, retry.RandomDelay)),
