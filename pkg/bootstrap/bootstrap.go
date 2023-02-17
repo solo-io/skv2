@@ -160,6 +160,7 @@ func StartMulti(
 				Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
 				Scheme:    mgr.GetScheme(),
 			},
+			watch.RetryOptions{},
 			nil,
 		)
 
