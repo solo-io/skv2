@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/avast/retry-go"
+	"github.com/avast/retry-go/v4"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -19,28 +19,48 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
+// If manager creation fails, we will retry with exponential backoff (with random jitter),
+// and the given retry options.
+type RetryOptions struct {
+	// Initial retry delay; default is 1 second.
+	delay time.Duration
+
+	// Max delay between retries; default is 0 (no max).
+	maxDelay time.Duration
+
+	// Max number of retries; default is 0 (retry forever).
+	attempts uint
+}
+
 type clusterWatcher struct {
 	ctx             context.Context
 	handlers        *handlerList
 	managers        *managerSet
-	options         manager.Options
+	managerOptions  manager.Options
 	watchNamespaces []string
+	retryOptions    RetryOptions
 }
 
 var _ multicluster.Interface = &clusterWatcher{}
 
 // NewClusterWatcher returns a *clusterWatcher, which watches for changes to kubeconfig secrets
 // (which contain kubeconfigs for remote clusters).
-// When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
-// Provided manager.Options are applied to all managers started by the clusterWatcher.
-// If watchNamespaces is not empty, only secrets in the given namespaces will be watched. If empty, secrets in
+// - When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
+// - Provided manager.Options are applied to all managers started by the clusterWatcher.
+// - RetryOptions specify how to retry manager creation if it fails. Any fields not explicitly provided
+//   in the retry options will take on the default values.
+// - If watchNamespaces is not empty, only secrets in the given namespaces will be watched. If empty, secrets in
 // all namespaces will be watched.
-func NewClusterWatcher(ctx context.Context, options manager.Options, watchNamespaces []string) *clusterWatcher {
+func NewClusterWatcher(ctx context.Context,
+	managerOptions manager.Options,
+	retryOptions RetryOptions,
+	watchNamespaces []string) *clusterWatcher {
 	return &clusterWatcher{
 		ctx:             ctx,
 		handlers:        newHandlerList(),
 		managers:        newManagerSet(),
-		options:         options,
+		managerOptions:  managerOptions,
+		retryOptions:    retryOptions,
 		watchNamespaces: watchNamespaces,
 	}
 }
@@ -92,15 +112,10 @@ func (s *clusterWatcher) ListClusters() []string {
 }
 
 func (c *clusterWatcher) startManager(clusterName string, restCfg *rest.Config) {
+	retryOptions := c.retryOptionsWithDefaults()
 	go func() { // this must be async because mgr.Start(ctx) is blocking
-		retryOptions := []retry.Option{
-			retry.Delay(time.Second),
-			retry.Attempts(12),
-			retry.DelayType(retry.BackOffDelay),
-		}
-
 		retry.Do(func() error {
-			mgr, err := manager.New(restCfg, c.optionsWithDefaults())
+			mgr, err := manager.New(restCfg, c.managerOptionsWithDefaults())
 			if err != nil {
 				contextutils.LoggerFrom(c.ctx).Errorf("Manager creation failed for cluster %v: %v", clusterName, err)
 				return err
@@ -132,11 +147,31 @@ func (c *clusterWatcher) removeCluster(clusterName string) {
 	c.handlers.RemoveCluster(clusterName)
 }
 
-func (c *clusterWatcher) optionsWithDefaults() manager.Options {
-	options := c.options
-	options.HealthProbeBindAddress = "0"
-	options.MetricsBindAddress = "0"
-	return options
+func (c *clusterWatcher) managerOptionsWithDefaults() manager.Options {
+	managerOptions := c.managerOptions
+	managerOptions.HealthProbeBindAddress = "0"
+	managerOptions.MetricsBindAddress = "0"
+	return managerOptions
+}
+
+func (c *clusterWatcher) retryOptionsWithDefaults() []retry.Option {
+	// set delay to 1 second if not set
+	delay := c.retryOptions.delay
+	if delay == 0 {
+		delay = time.Second
+	}
+
+	// the rest will default to their zero values if not set
+	maxDelay := c.retryOptions.maxDelay
+	attempts := c.retryOptions.attempts
+
+	return []retry.Option{
+		retry.DelayType(retry.CombineDelay(retry.BackOffDelay, retry.RandomDelay)),
+		retry.MaxJitter(delay),
+		retry.Delay(delay),
+		retry.MaxDelay(maxDelay),
+		retry.Attempts(attempts),
+	}
 }
 
 type asyncManager struct {
