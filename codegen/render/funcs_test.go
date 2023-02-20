@@ -1,25 +1,31 @@
 package render_test
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 
+	structpb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/lithammer/dedent"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/skv2/codegen/model/values"
 	"github.com/solo-io/skv2/codegen/render"
 )
 
+func prepareExpected(expected string) string {
+	expected = strings.Trim(expected, "\n")
+	expected = dedent.Dedent(expected)
+	expected = strings.ReplaceAll(expected, "\t", "  ")
+	return expected
+}
+
 var _ = Describe("toYAMLWithComments", func() {
-	prepareExpected := func(expected string) string {
-		expected = strings.Trim(expected, "\n")
-		expected = dedent.Dedent(expected)
-		expected = strings.ReplaceAll(expected, "\t", "  ")
-		return expected
-	}
 
 	It("decodes yaml with the comments", func() {
 		type NestedType struct {
@@ -331,5 +337,393 @@ var _ = Describe("toYAMLWithComments", func() {
 		Expect(render.FromNode(mergedNode)).To(ContainSubstring("OTHER_VAR"))
 		Expect(render.FromNode(mergedNode)).ToNot(ContainSubstring("POD_NAMESPACE"))
 
+	})
+})
+
+var _ = Describe("toJSONSchema", func() {
+	It("creates a schema for an object with properties from custom values and operators", func() {
+		type Type1 struct {
+			Field1a string `json:"field1a"`
+		}
+
+		type Type2 struct {
+			Field2a string `json:"field2a"`
+		}
+
+		result := render.ToJSONSchema(values.UserHelmValues{
+			CustomValues: &Type1{
+				Field1a: "Hello",
+			},
+			Operators: []values.UserOperatorValues{
+				{
+					Name:         "operator1",
+					Values:       values.UserValues{},
+					CustomValues: &Type2{Field2a: "hello2"},
+				},
+				{
+					Name:         "My_Operator_Two",
+					ValuePath:    "my.values",
+					Values:       values.UserValues{},
+					CustomValues: &Type2{Field2a: "hello2"},
+				},
+			},
+		})
+
+		resultContainer := struct {
+			Properties *struct {
+				Field1a   map[string]interface{} `json:"field1a"`
+				Operator1 *struct {
+					Properties map[string]map[string]interface{}
+				} `json:"operator1"`
+				Operator2 *struct {
+					Properties *struct {
+						My *struct {
+							Properties *struct {
+								Values *struct {
+									Properties map[string]map[string]interface{} `json:"properties"`
+								} `json:"values"`
+							} `json:"properties"`
+						} `json:"my"`
+					} `json:"properties"`
+				} `json:"myOperatorTwo"`
+			} `json:"properties"`
+		}{}
+
+		checkHasStandardValuesFields := func(valueProperties map[string]map[string]interface{}) {
+			Expect(valueProperties["image"]["type"]).To(Equal("object"))
+			Expect(valueProperties["enabled"]["type"]).To(Equal("boolean"))
+			Expect(valueProperties["runAsUser"]["type"]).To(Equal("integer"))
+		}
+
+		Expect(json.Unmarshal([]byte(result), &resultContainer)).NotTo(HaveOccurred())
+
+		Expect(resultContainer.Properties).NotTo(BeNil())
+		Expect(resultContainer.Properties.Field1a).NotTo(BeNil())
+		Expect(resultContainer.Properties.Field1a["type"]).To(Equal("string"))
+
+		Expect(resultContainer.Properties.Operator1).NotTo(BeNil())
+		Expect(resultContainer.Properties.Operator1.Properties).NotTo(BeNil())
+		Expect(resultContainer.Properties.Operator1.Properties["field2a"]["type"]).To(Equal("string"))
+		checkHasStandardValuesFields(resultContainer.Properties.Operator1.Properties)
+
+		Expect(resultContainer.Properties.Operator2).NotTo(BeNil())
+		Expect(resultContainer.Properties.Operator2.Properties).NotTo(BeNil())
+		Expect(resultContainer.Properties.Operator2.Properties.My).NotTo(BeNil())
+		Expect(resultContainer.Properties.Operator2.Properties.My.Properties).NotTo(BeNil())
+		Expect(resultContainer.Properties.Operator2.Properties.My.Properties.Values).NotTo(BeNil())
+		Expect(resultContainer.Properties.Operator2.Properties.My.Properties.Values.Properties["field2a"]["type"]).To(Equal("string"))
+		checkHasStandardValuesFields(resultContainer.Properties.Operator2.Properties.My.Properties.Values.Properties)
+	})
+
+	It("adds some json schema behaviour based on the jsonschema tags", func() {
+		type Type1 struct {
+			Field1a string `json:"field1a" jsonschema:"title=field a,description=the field called a,example=aaa,example=bbb,default=a"`
+		}
+		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
+		expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"field1a": {
+						"type": "string",
+						"title": "field a",
+						"description": "the field called a",
+						"default": "a",
+						"examples": [
+							"aaa",
+							"bbb"
+						]
+					}
+				}
+			}`)
+		Expect(result).To(Equal(expected))
+	})
+
+	It("will correctly generate schema for types that should be nullable", func() {
+		type Type1 struct {
+			Field1 map[string]interface{}
+			Field2 []*struct {
+				Field3 string
+			}
+		}
+
+		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
+		expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"Field1": {
+						"anyOf": [
+							{
+								"type": "object"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"Field2": {
+						"anyOf": [
+							{
+								"items": {
+									"properties": {
+										"Field3": {
+											"type": "string"
+										}
+									},
+									"type": "object"
+								},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						]
+					}
+				}
+			}`)
+		Expect(result).To(Equal(expected))
+	})
+
+	It("handles nullable struct fields correctly", func() {
+		type Type1 struct {
+		}
+		type Type2 struct {
+			Field2A *Type1 // should be nullable
+			Field2B *Type1 `json:"field2_b"` // check it handles renamed fields as well
+		}
+
+		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type2{}})
+		expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"Field2A": {
+						"anyOf": [
+							{
+								"properties": {},
+								"type": "object"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"field2_b": {
+						"anyOf": [
+							{
+								"properties": {},
+								"type": "object"
+							},
+							{
+								"type": "null"
+							}
+						]
+					}
+				}
+			}`)
+		Expect(expected).To(Equal(result))
+	})
+
+	It("will allow pbstructs to be deserialized as anything", func() {
+		type Type1 struct {
+			Field1 *structpb.Value
+		}
+		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
+		expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"Field1": {
+						"anyOf": [
+							{
+								"type": "null"
+							},
+							{
+								"type": "number"
+							},
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "object"
+							},
+							{
+								"type": "array"
+							}
+						]
+					}
+				}
+			}`)
+		Expect(result).To(Equal(expected))
+	})
+
+	It("maps time as a nullable string", func() {
+		type Type1 struct {
+			Field1 metav1.Time `json:"metatime"`
+		}
+		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
+		expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"metatime": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "date-time"
+							},
+							{
+								"type": "null"
+							}
+						]
+					}
+				}
+			}`)
+		Expect(result).To(Equal(expected))
+	})
+
+	It("maps resource quantity as either a string or number", func() {
+		type Type1 struct {
+			Field1 resource.Quantity
+		}
+		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
+		expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"Field1": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number"
+							}
+						]
+					}
+				}
+			}`)
+		Expect(result).To(Equal(expected))
+	})
+
+	It("maps security context as something that can be mapped to a boolean", func() {
+		type Type1 struct {
+			Field1 *v1.SecurityContext
+		}
+		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
+		resultContainer := struct {
+			Properties struct {
+				Field1 *struct {
+					AnyOf []*struct {
+						Const interface{} `json:"const"`
+						Type  string      `json:"type"`
+					} `json:"anyOf"`
+				}
+			} `json:"properties"`
+		}{}
+		Expect(json.Unmarshal([]byte(result), &resultContainer)).NotTo(HaveOccurred())
+		Expect(resultContainer.Properties.Field1).NotTo(BeNil())
+		Expect(resultContainer.Properties.Field1).NotTo(BeNil())
+		Expect(resultContainer.Properties.Field1.AnyOf).NotTo(BeNil())
+		Expect(resultContainer.Properties.Field1.AnyOf).To(HaveLen(2))
+		Expect(resultContainer.Properties.Field1.AnyOf[0].Type).To(Equal("object"))
+		Expect(resultContainer.Properties.Field1.AnyOf[1].Type).To(Equal("boolean"))
+		Expect(resultContainer.Properties.Field1.AnyOf[1].Const).To(BeFalse())
+	})
+
+	Context("custom type mappings", func() {
+		type MyJsonSchemaType struct {
+			Type  string `json:"type"`
+			AnyOf []interface{}
+		}
+
+		It("will invoke custom json schema type mappings", func() {
+			type Type1 struct{}
+			type Type2 struct {
+				FieldA Type1
+			}
+
+			mapAsNumber := func(map[string]interface{}) interface{} {
+				return &MyJsonSchemaType{
+					Type: "number",
+				}
+			}
+
+			typeMapper := func(t reflect.Type, s map[string]interface{}) interface{} {
+				if t == reflect.TypeOf(Type1{}) {
+					return mapAsNumber(s)
+				}
+				return nil
+			}
+
+			result := render.ToJSONSchema(values.UserHelmValues{
+				CustomValues: &Type2{},
+				JsonSchema: values.UserJsonSchema{
+					CustomTypeMapper: typeMapper,
+				},
+			})
+			expected := prepareExpected(`
+				{
+					"$schema": "https://json-schema.org/draft/2020-12/schema",
+					"properties": {
+						"FieldA": {
+							"type": "number"
+						}
+					}
+				}`)
+			Expect(result).To(Equal(expected))
+		})
+
+		It("allows performing modification of the original type", func() {
+			type Type1 struct{}
+			type Type2 struct {
+				FieldA Type1
+			}
+
+			mapAsPossiblyBoolean := func(original map[string]interface{}) interface{} {
+				return MyJsonSchemaType{
+					AnyOf: []interface{}{
+						original,
+						&MyJsonSchemaType{Type: "boolean"},
+					},
+				}
+			}
+
+			typeMapper := func(t reflect.Type, s map[string]interface{}) interface{} {
+				if t == reflect.TypeOf(Type1{}) {
+					return mapAsPossiblyBoolean(s)
+				}
+				return nil
+			}
+
+			result := render.ToJSONSchema(values.UserHelmValues{
+				CustomValues: &Type2{},
+				JsonSchema: values.UserJsonSchema{
+					CustomTypeMapper: typeMapper,
+				},
+			})
+			expected := prepareExpected(`
+				{
+					"$schema": "https://json-schema.org/draft/2020-12/schema",
+					"properties": {
+						"FieldA": {
+							"anyOf": [
+								{
+									"properties": {},
+									"type": "object"
+								},
+								{
+									"type": "boolean"
+								}
+							]
+						}
+					}
+				}`)
+			Expect(result).To(Equal(expected))
+		})
 	})
 })

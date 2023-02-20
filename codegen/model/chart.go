@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/solo-io/skv2/codegen/model/values"
 
@@ -36,6 +37,10 @@ type Chart struct {
 
 	// if specificed, generate inline documentation for the values in chart's values.yaml files
 	ValuesInlineDocs *ValuesInlineDocs
+
+	// if specificed, values.schema.json will be generated with a JSON Schema that
+	// imposes structure on the values.yaml file
+	JsonSchema *JsonSchema
 }
 
 type ValuesReferenceDocs struct {
@@ -46,6 +51,15 @@ type ValuesReferenceDocs struct {
 type ValuesInlineDocs struct {
 	// if specified, inline field documentation comments will be wrapped at many characters
 	LineLengthLimit int
+}
+
+type JsonSchema struct {
+	// (Optional) will be called to override the default json schema mapping
+	// for the type. This is useful for types that also override default json/yaml
+	// serialization behaviour. It accepts the json schema as a map and is
+	// expected to return a value that can serialize to the json schema or null if
+	// there is no custom mapping for this type
+	CustomTypeMapper func(reflect.Type, map[string]interface{}) interface{}
 }
 
 type Operator struct {
@@ -180,6 +194,10 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		helmValues.ValuesInlineDocs = &values.UserValuesInlineDocs{
 			LineLengthLimit: c.ValuesInlineDocs.LineLengthLimit,
 		}
+	}
+
+	if c.JsonSchema != nil {
+		helmValues.JsonSchema.CustomTypeMapper = c.JsonSchema.CustomTypeMapper
 	}
 
 	return helmValues

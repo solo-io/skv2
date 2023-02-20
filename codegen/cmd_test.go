@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 
 	goyaml "gopkg.in/yaml.v3"
 	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -241,6 +242,138 @@ var _ = Describe("Cmd", func() {
 		Expect(enabledMapField.HeadComment).To(Equal("# Enables or disables creation of the operator deployment/service"))
 		envMapField := painterNode.Content[2]
 		Expect(envMapField.HeadComment).To(Equal("# Specify environment variables for the container. See the [Kubernetes\n# documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core)\n# for specification details."))
+	})
+
+	It("generates json schema for the values file", func() {
+		type CustomType1 struct {
+			Field1 string `json:"customField1"`
+		}
+		type CustomType2 struct {
+			Field2 string `json:"customField2"`
+		}
+		typeMapper := func(t reflect.Type, s map[string]interface{}) interface{} {
+			if t == reflect.TypeOf(CustomType2{}) {
+				return map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"customField2_renamed": map[string]interface{}{
+							"type": "number",
+						},
+					},
+				}
+			}
+
+			return nil
+		}
+
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "Paint",
+							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Status: &Field{Type: Type{Name: "PaintStatus"}},
+						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name: "painter",
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
+							},
+						},
+						Values: &CustomType2{},
+					},
+				},
+				Values: &CustomType1{},
+				ValuesInlineDocs: &ValuesInlineDocs{
+					LineLengthLimit: 80,
+				},
+				// TODO here we should also test the custom type mappings ...
+				JsonSchema: &JsonSchema{
+					CustomTypeMapper: typeMapper,
+				},
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		fileContents, err := os.ReadFile("codegen/test/chart/values.schema.json")
+		Expect(err).NotTo(HaveOccurred())
+
+		type jsonSchema struct {
+			Properties *struct {
+				CustomField1 map[string]interface{} `json:"customField1"`
+				Painter      *struct {
+					Properties map[string]interface{} `json:"properties"`
+				} `json:"painter"`
+			} `json:"properties"`
+		}
+
+		schema := jsonSchema{}
+		Expect(json.Unmarshal(fileContents, &schema)).NotTo(HaveOccurred())
+
+		// expect that the custom values are in the schema
+		Expect(schema.Properties.CustomField1).NotTo(BeNil())
+		Expect(schema.Properties.CustomField1["type"]).To(Equal("string"))
+
+		// expect that the values from the painter opeartor are in the schema
+		painter := schema.Properties.Painter
+		Expect(painter).NotTo(BeNil())
+
+		// expect painterSchema has some of the base properities
+		painterProperties := painter.Properties
+		Expect(painterProperties).To(HaveKey("image"))
+		Expect(painterProperties).To(HaveKey("env"))
+		Expect(painterProperties).To(HaveKey("sidecars"))
+		Expect(painterProperties).To(HaveKey("securityContext"))
+
+		// expect painter schema also contains properties from the custom values
+		Expect(painterProperties).To(HaveKey("customField2_renamed"))
 	})
 
 	DescribeTable("configuring the runAsUser value",
