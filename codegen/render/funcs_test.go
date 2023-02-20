@@ -2,8 +2,8 @@ package render_test
 
 import (
 	"encoding/json"
-	"reflect"
 	"fmt"
+	"reflect"
 	"strings"
 
 	structpb "github.com/golang/protobuf/ptypes/struct"
