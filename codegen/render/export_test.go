@@ -18,3 +18,7 @@ func FromNode(n goyaml.Node) string {
 func ToJSONSchema(values values.UserHelmValues) string {
 	return toJSONSchema(values)
 }
+
+func MergeNodes(nodes ...goyaml.Node) goyaml.Node {
+	return mergeNodes(nodes...)
+}

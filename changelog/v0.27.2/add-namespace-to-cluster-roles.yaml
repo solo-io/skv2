@@ -1,0 +1,5 @@
+
+changelog:
+  - type: NON_USER_FACING
+    description: Adds namespace suffix to cluster roles so they do not conflict with multiple installations
+    issueLink: https://github.com/solo-io/skv2/issues/414

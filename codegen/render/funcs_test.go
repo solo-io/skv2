@@ -3,6 +3,7 @@ package render_test
 import (
 	"encoding/json"
 	"reflect"
+	"fmt"
 	"strings"
 
 	structpb "github.com/golang/protobuf/ptypes/struct"
@@ -280,6 +281,62 @@ var _ = Describe("toYAMLWithComments", func() {
 		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
 			Field1: one
 		`)))
+	})
+
+	It("can merge operator values", func() {
+
+		baseValues := map[string]interface{}{
+			"operatorName": values.UserValues{
+				Enabled: true,
+				UserContainerValues: values.UserContainerValues{
+					Env: []v1.EnvVar{{
+						Name: "POD_NAMESPACE",
+						ValueFrom: &v1.EnvVarSource{
+							FieldRef: &v1.ObjectFieldSelector{
+								FieldPath: "metadata.namespace",
+							},
+						},
+					}},
+					Image: values.Image{
+						PullPolicy: "IfNotPresent",
+						Registry:   "gcr.io/gloo-mesh",
+						Repository: "foo",
+						Tag:        "bar",
+					},
+				},
+			},
+		}
+
+		customValues := map[string]interface{}{
+			"operatorName": values.UserValues{
+				Enabled: false,
+				UserContainerValues: values.UserContainerValues{
+					Env: []v1.EnvVar{{
+						Name: "OTHER_VAR",
+						ValueFrom: &v1.EnvVarSource{
+							FieldRef: &v1.ObjectFieldSelector{
+								FieldPath: "metadata.namespace",
+							},
+						},
+					}},
+				},
+				ServicePorts: map[string]uint32{
+					"https": 80,
+				},
+				FloatingUserID: true,
+			},
+		}
+
+		var config *values.UserValuesInlineDocs = nil // nil means disabled
+		mergedNode := render.MergeNodes(render.ToNode(baseValues, config), render.ToNode(customValues, config))
+
+		fmt.Println(render.FromNode(mergedNode))
+		Expect(render.FromNode(mergedNode)).To(ContainSubstring("enabled: false"))
+		Expect(render.FromNode(mergedNode)).To(ContainSubstring("floatingUserId: true"))
+		Expect(render.FromNode(mergedNode)).To(ContainSubstring("https: 80"))
+		Expect(render.FromNode(mergedNode)).To(ContainSubstring("OTHER_VAR"))
+		Expect(render.FromNode(mergedNode)).ToNot(ContainSubstring("POD_NAMESPACE"))
+
 	})
 })
 

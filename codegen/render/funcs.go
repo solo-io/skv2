@@ -509,8 +509,20 @@ func recursiveNodeMerge(from, into *goyaml.Node) error {
 			for j := 0; j < len(into.Content); j += 2 {
 				if nodesEqual(from.Content[i], into.Content[j]) {
 					found = true
-					if err := recursiveNodeMerge(from.Content[i+1], into.Content[j+1]); err != nil {
-						return errors.New("at key " + from.Content[i].Value + ": " + err.Error())
+					if into.Content[j+1].Value == "null" {
+						// No matter the type if the value in the existing map is null use the new node
+						into.Content[j+1] = from.Content[i+1]
+					} else if from.Content[i+1].Value == "null" {
+						// value on new map is null, skip and leave existing
+						break
+					} else if into.Content[j+1].Kind == goyaml.ScalarNode && from.Content[i+1].Kind == goyaml.ScalarNode {
+						// if both Scalars simply overwrite
+						into.Content[j+1] = from.Content[i+1]
+					} else {
+						// Sequences and maps will be merged here
+						if err := recursiveNodeMerge(from.Content[i+1], into.Content[j+1]); err != nil {
+							return errors.New("at key " + from.Content[i].Value + ": " + err.Error())
+						}
 					}
 					break
 				}
@@ -520,9 +532,9 @@ func recursiveNodeMerge(from, into *goyaml.Node) error {
 			}
 		}
 	case goyaml.SequenceNode:
-		into.Content = append(into.Content, from.Content...)
+		into.Content = from.Content
 	case goyaml.DocumentNode:
-		recursiveNodeMerge(from.Content[0], into.Content[0])
+		return recursiveNodeMerge(from.Content[0], into.Content[0])
 	default:
 		return errors.New("can only merge mapping and sequence nodes")
 	}
