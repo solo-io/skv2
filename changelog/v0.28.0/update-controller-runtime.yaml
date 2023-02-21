@@ -2,7 +2,4 @@ changelog:
   - type: BREAKING_CHANGE
     description: Update Status API signature to comply with controller-runtime v0.14.x API breakage
     issueLink: https://github.com/solo-io/skv2/issues/419
-  - type: DEPENDENCY_BUMP
-    description:  Bump controller-runtime to v0.14.x, and associated dependencies.  
-    issueLink: https://github.com/solo-io/skv2/issues/419
 
