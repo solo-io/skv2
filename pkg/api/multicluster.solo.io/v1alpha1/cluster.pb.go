@@ -23,7 +23,8 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Representation of a Kubernetes cluster that has been registered.
+//
+//Representation of a Kubernetes cluster that has been registered.
 type KubernetesClusterSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -159,10 +160,10 @@ func (x *KubernetesClusterStatus) GetPolicyRules() []*PolicyRule {
 	return nil
 }
 
-// Copy pasted from the official kubernetes definition:
-// https://github.com/kubernetes/api/blob/697df40f2d58d7d48b180b83d7b9b2b5ff812923/rbac/v1alpha1/generated.proto#L98
-// PolicyRule holds information that describes a policy rule, but does not contain information
-// about who the rule applies to or which namespace the rule applies to.
+//Copy pasted from the official kubernetes definition:
+//https://github.com/kubernetes/api/blob/697df40f2d58d7d48b180b83d7b9b2b5ff812923/rbac/v1alpha1/generated.proto#L98
+//PolicyRule holds information that describes a policy rule, but does not contain information
+//about who the rule applies to or which namespace the rule applies to.
 type PolicyRule struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -263,7 +264,6 @@ type KubernetesClusterSpec_ProviderInfo struct {
 	// Metadata specific to a cloud provider.
 	//
 	// Types that are assignable to ProviderInfoType:
-	//
 	//	*KubernetesClusterSpec_ProviderInfo_Eks
 	ProviderInfoType isKubernetesClusterSpec_ProviderInfo_ProviderInfoType `protobuf_oneof:"provider_info_type"`
 }
