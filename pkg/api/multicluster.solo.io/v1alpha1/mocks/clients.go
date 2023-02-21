@@ -307,7 +307,7 @@ func (m *MockKubernetesClusterStatusWriter) EXPECT() *MockKubernetesClusterStatu
 }
 
 // UpdateKubernetesClusterStatus mocks base method
-func (m *MockKubernetesClusterStatusWriter) UpdateKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.UpdateOption) error {
+func (m *MockKubernetesClusterStatusWriter) UpdateKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -326,7 +326,7 @@ func (mr *MockKubernetesClusterStatusWriterMockRecorder) UpdateKubernetesCluster
 }
 
 // PatchKubernetesClusterStatus mocks base method
-func (m *MockKubernetesClusterStatusWriter) PatchKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockKubernetesClusterStatusWriter) PatchKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -517,7 +517,7 @@ func (mr *MockKubernetesClusterClientMockRecorder) UpsertKubernetesCluster(ctx, 
 }
 
 // UpdateKubernetesClusterStatus mocks base method
-func (m *MockKubernetesClusterClient) UpdateKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.UpdateOption) error {
+func (m *MockKubernetesClusterClient) UpdateKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -536,7 +536,7 @@ func (mr *MockKubernetesClusterClientMockRecorder) UpdateKubernetesClusterStatus
 }
 
 // PatchKubernetesClusterStatus mocks base method
-func (m *MockKubernetesClusterClient) PatchKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockKubernetesClusterClient) PatchKubernetesClusterStatus(ctx context.Context, obj *v1alpha1.KubernetesCluster, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {

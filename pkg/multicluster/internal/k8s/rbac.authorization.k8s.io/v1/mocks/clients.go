@@ -350,7 +350,7 @@ func (m *MockRoleStatusWriter) EXPECT() *MockRoleStatusWriterMockRecorder {
 }
 
 // UpdateRoleStatus mocks base method
-func (m *MockRoleStatusWriter) UpdateRoleStatus(ctx context.Context, obj *v10.Role, opts ...client.UpdateOption) error {
+func (m *MockRoleStatusWriter) UpdateRoleStatus(ctx context.Context, obj *v10.Role, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -369,7 +369,7 @@ func (mr *MockRoleStatusWriterMockRecorder) UpdateRoleStatus(ctx, obj interface{
 }
 
 // PatchRoleStatus mocks base method
-func (m *MockRoleStatusWriter) PatchRoleStatus(ctx context.Context, obj *v10.Role, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockRoleStatusWriter) PatchRoleStatus(ctx context.Context, obj *v10.Role, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -560,7 +560,7 @@ func (mr *MockRoleClientMockRecorder) UpsertRole(ctx, obj interface{}, transitio
 }
 
 // UpdateRoleStatus mocks base method
-func (m *MockRoleClient) UpdateRoleStatus(ctx context.Context, obj *v10.Role, opts ...client.UpdateOption) error {
+func (m *MockRoleClient) UpdateRoleStatus(ctx context.Context, obj *v10.Role, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -579,7 +579,7 @@ func (mr *MockRoleClientMockRecorder) UpdateRoleStatus(ctx, obj interface{}, opt
 }
 
 // PatchRoleStatus mocks base method
-func (m *MockRoleClient) PatchRoleStatus(ctx context.Context, obj *v10.Role, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockRoleClient) PatchRoleStatus(ctx context.Context, obj *v10.Role, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -854,7 +854,7 @@ func (m *MockRoleBindingStatusWriter) EXPECT() *MockRoleBindingStatusWriterMockR
 }
 
 // UpdateRoleBindingStatus mocks base method
-func (m *MockRoleBindingStatusWriter) UpdateRoleBindingStatus(ctx context.Context, obj *v10.RoleBinding, opts ...client.UpdateOption) error {
+func (m *MockRoleBindingStatusWriter) UpdateRoleBindingStatus(ctx context.Context, obj *v10.RoleBinding, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -873,7 +873,7 @@ func (mr *MockRoleBindingStatusWriterMockRecorder) UpdateRoleBindingStatus(ctx, 
 }
 
 // PatchRoleBindingStatus mocks base method
-func (m *MockRoleBindingStatusWriter) PatchRoleBindingStatus(ctx context.Context, obj *v10.RoleBinding, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockRoleBindingStatusWriter) PatchRoleBindingStatus(ctx context.Context, obj *v10.RoleBinding, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -1064,7 +1064,7 @@ func (mr *MockRoleBindingClientMockRecorder) UpsertRoleBinding(ctx, obj interfac
 }
 
 // UpdateRoleBindingStatus mocks base method
-func (m *MockRoleBindingClient) UpdateRoleBindingStatus(ctx context.Context, obj *v10.RoleBinding, opts ...client.UpdateOption) error {
+func (m *MockRoleBindingClient) UpdateRoleBindingStatus(ctx context.Context, obj *v10.RoleBinding, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -1083,7 +1083,7 @@ func (mr *MockRoleBindingClientMockRecorder) UpdateRoleBindingStatus(ctx, obj in
 }
 
 // PatchRoleBindingStatus mocks base method
-func (m *MockRoleBindingClient) PatchRoleBindingStatus(ctx context.Context, obj *v10.RoleBinding, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockRoleBindingClient) PatchRoleBindingStatus(ctx context.Context, obj *v10.RoleBinding, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -1358,7 +1358,7 @@ func (m *MockClusterRoleStatusWriter) EXPECT() *MockClusterRoleStatusWriterMockR
 }
 
 // UpdateClusterRoleStatus mocks base method
-func (m *MockClusterRoleStatusWriter) UpdateClusterRoleStatus(ctx context.Context, obj *v10.ClusterRole, opts ...client.UpdateOption) error {
+func (m *MockClusterRoleStatusWriter) UpdateClusterRoleStatus(ctx context.Context, obj *v10.ClusterRole, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -1377,7 +1377,7 @@ func (mr *MockClusterRoleStatusWriterMockRecorder) UpdateClusterRoleStatus(ctx, 
 }
 
 // PatchClusterRoleStatus mocks base method
-func (m *MockClusterRoleStatusWriter) PatchClusterRoleStatus(ctx context.Context, obj *v10.ClusterRole, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockClusterRoleStatusWriter) PatchClusterRoleStatus(ctx context.Context, obj *v10.ClusterRole, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -1568,7 +1568,7 @@ func (mr *MockClusterRoleClientMockRecorder) UpsertClusterRole(ctx, obj interfac
 }
 
 // UpdateClusterRoleStatus mocks base method
-func (m *MockClusterRoleClient) UpdateClusterRoleStatus(ctx context.Context, obj *v10.ClusterRole, opts ...client.UpdateOption) error {
+func (m *MockClusterRoleClient) UpdateClusterRoleStatus(ctx context.Context, obj *v10.ClusterRole, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -1587,7 +1587,7 @@ func (mr *MockClusterRoleClientMockRecorder) UpdateClusterRoleStatus(ctx, obj in
 }
 
 // PatchClusterRoleStatus mocks base method
-func (m *MockClusterRoleClient) PatchClusterRoleStatus(ctx context.Context, obj *v10.ClusterRole, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockClusterRoleClient) PatchClusterRoleStatus(ctx context.Context, obj *v10.ClusterRole, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -1862,7 +1862,7 @@ func (m *MockClusterRoleBindingStatusWriter) EXPECT() *MockClusterRoleBindingSta
 }
 
 // UpdateClusterRoleBindingStatus mocks base method
-func (m *MockClusterRoleBindingStatusWriter) UpdateClusterRoleBindingStatus(ctx context.Context, obj *v10.ClusterRoleBinding, opts ...client.UpdateOption) error {
+func (m *MockClusterRoleBindingStatusWriter) UpdateClusterRoleBindingStatus(ctx context.Context, obj *v10.ClusterRoleBinding, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -1881,7 +1881,7 @@ func (mr *MockClusterRoleBindingStatusWriterMockRecorder) UpdateClusterRoleBindi
 }
 
 // PatchClusterRoleBindingStatus mocks base method
-func (m *MockClusterRoleBindingStatusWriter) PatchClusterRoleBindingStatus(ctx context.Context, obj *v10.ClusterRoleBinding, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockClusterRoleBindingStatusWriter) PatchClusterRoleBindingStatus(ctx context.Context, obj *v10.ClusterRoleBinding, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -2072,7 +2072,7 @@ func (mr *MockClusterRoleBindingClientMockRecorder) UpsertClusterRoleBinding(ctx
 }
 
 // UpdateClusterRoleBindingStatus mocks base method
-func (m *MockClusterRoleBindingClient) UpdateClusterRoleBindingStatus(ctx context.Context, obj *v10.ClusterRoleBinding, opts ...client.UpdateOption) error {
+func (m *MockClusterRoleBindingClient) UpdateClusterRoleBindingStatus(ctx context.Context, obj *v10.ClusterRoleBinding, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -2091,7 +2091,7 @@ func (mr *MockClusterRoleBindingClientMockRecorder) UpdateClusterRoleBindingStat
 }
 
 // PatchClusterRoleBindingStatus mocks base method
-func (m *MockClusterRoleBindingClient) PatchClusterRoleBindingStatus(ctx context.Context, obj *v10.ClusterRoleBinding, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockClusterRoleBindingClient) PatchClusterRoleBindingStatus(ctx context.Context, obj *v10.ClusterRoleBinding, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {

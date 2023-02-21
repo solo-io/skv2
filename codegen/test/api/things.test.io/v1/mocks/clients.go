@@ -321,7 +321,7 @@ func (m *MockPaintStatusWriter) EXPECT() *MockPaintStatusWriterMockRecorder {
 }
 
 // UpdatePaintStatus mocks base method
-func (m *MockPaintStatusWriter) UpdatePaintStatus(ctx context.Context, obj *v1.Paint, opts ...client.UpdateOption) error {
+func (m *MockPaintStatusWriter) UpdatePaintStatus(ctx context.Context, obj *v1.Paint, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -340,7 +340,7 @@ func (mr *MockPaintStatusWriterMockRecorder) UpdatePaintStatus(ctx, obj interfac
 }
 
 // PatchPaintStatus mocks base method
-func (m *MockPaintStatusWriter) PatchPaintStatus(ctx context.Context, obj *v1.Paint, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockPaintStatusWriter) PatchPaintStatus(ctx context.Context, obj *v1.Paint, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -531,7 +531,7 @@ func (mr *MockPaintClientMockRecorder) UpsertPaint(ctx, obj interface{}, transit
 }
 
 // UpdatePaintStatus mocks base method
-func (m *MockPaintClient) UpdatePaintStatus(ctx context.Context, obj *v1.Paint, opts ...client.UpdateOption) error {
+func (m *MockPaintClient) UpdatePaintStatus(ctx context.Context, obj *v1.Paint, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -550,7 +550,7 @@ func (mr *MockPaintClientMockRecorder) UpdatePaintStatus(ctx, obj interface{}, o
 }
 
 // PatchPaintStatus mocks base method
-func (m *MockPaintClient) PatchPaintStatus(ctx context.Context, obj *v1.Paint, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockPaintClient) PatchPaintStatus(ctx context.Context, obj *v1.Paint, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -825,7 +825,7 @@ func (m *MockClusterResourceStatusWriter) EXPECT() *MockClusterResourceStatusWri
 }
 
 // UpdateClusterResourceStatus mocks base method
-func (m *MockClusterResourceStatusWriter) UpdateClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, opts ...client.UpdateOption) error {
+func (m *MockClusterResourceStatusWriter) UpdateClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -844,7 +844,7 @@ func (mr *MockClusterResourceStatusWriterMockRecorder) UpdateClusterResourceStat
 }
 
 // PatchClusterResourceStatus mocks base method
-func (m *MockClusterResourceStatusWriter) PatchClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockClusterResourceStatusWriter) PatchClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -1035,7 +1035,7 @@ func (mr *MockClusterResourceClientMockRecorder) UpsertClusterResource(ctx, obj 
 }
 
 // UpdateClusterResourceStatus mocks base method
-func (m *MockClusterResourceClient) UpdateClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, opts ...client.UpdateOption) error {
+func (m *MockClusterResourceClient) UpdateClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -1054,7 +1054,7 @@ func (mr *MockClusterResourceClientMockRecorder) UpdateClusterResourceStatus(ctx
 }
 
 // PatchClusterResourceStatus mocks base method
-func (m *MockClusterResourceClient) PatchClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockClusterResourceClient) PatchClusterResourceStatus(ctx context.Context, obj *v1.ClusterResource, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {

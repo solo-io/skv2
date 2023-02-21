@@ -203,6 +203,24 @@
                   "type": "null"
                 }
               ]
+            },
+            "claims": {
+              "anyOf": [
+                {
+                  "items": {
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           },
           "type": "object"
@@ -555,6 +573,24 @@
                                     }
                                   },
                                   "type": "object"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "claims": {
+                              "anyOf": [
+                                {
+                                  "items": {
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": "array"
                                 },
                                 {
                                   "type": "null"
@@ -2718,6 +2754,24 @@
                                                                 "type": "null"
                                                               }
                                                             ]
+                                                          },
+                                                          "claims": {
+                                                            "anyOf": [
+                                                              {
+                                                                "items": {
+                                                                  "properties": {
+                                                                    "name": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "type": "object"
+                                                                },
+                                                                "type": "array"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
                                                           }
                                                         },
                                                         "type": "object"
@@ -2792,6 +2846,16 @@
                                                               },
                                                               "name": {
                                                                 "type": "string"
+                                                              },
+                                                              "namespace": {
+                                                                "anyOf": [
+                                                                  {
+                                                                    "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "null"
+                                                                  }
+                                                                ]
                                                               }
                                                             },
                                                             "type": "object"
@@ -3138,6 +3202,24 @@
                                                   }
                                                 },
                                                 "type": "object"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "claims": {
+                                            "anyOf": [
+                                              {
+                                                "items": {
+                                                  "properties": {
+                                                    "name": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "type": "object"
+                                                },
+                                                "type": "array"
                                               },
                                               {
                                                 "type": "null"
@@ -4387,6 +4469,24 @@
                                                 "type": "null"
                                               }
                                             ]
+                                          },
+                                          "claims": {
+                                            "anyOf": [
+                                              {
+                                                "items": {
+                                                  "properties": {
+                                                    "name": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "type": "object"
+                                                },
+                                                "type": "array"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
                                           }
                                         },
                                         "type": "object"
@@ -5626,6 +5726,24 @@
                                                   }
                                                 },
                                                 "type": "object"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "claims": {
+                                            "anyOf": [
+                                              {
+                                                "items": {
+                                                  "properties": {
+                                                    "name": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "type": "object"
+                                                },
+                                                "type": "array"
                                               },
                                               {
                                                 "type": "null"
@@ -8071,6 +8189,67 @@
                               "anyOf": [
                                 {
                                   "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "schedulingGates": {
+                              "anyOf": [
+                                {
+                                  "items": {
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "resourceClaims": {
+                              "anyOf": [
+                                {
+                                  "items": {
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "source": {
+                                        "properties": {
+                                          "resourceClaimName": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "resourceClaimTemplateName": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "type": "object"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": "array"
                                 },
                                 {
                                   "type": "null"
