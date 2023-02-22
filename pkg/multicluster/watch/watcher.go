@@ -19,11 +19,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// If manager creation fails, we will retry with exponential backoff (with random jitter),
-// and the given retry options.
+// If manager creation fails, we will retry with the given options.
 type RetryOptions struct {
 	// Initial retry delay; default is 1 second.
 	Delay time.Duration
+
+	// The type of retry delay; default is exponential backoff.
+	DelayType RetryDelayType
 
 	// Max delay between retries; default is 0 (no max).
 	MaxDelay time.Duration
@@ -31,6 +33,16 @@ type RetryOptions struct {
 	// Max number of retries; default is 0 (retry forever).
 	MaxRetries uint
 }
+
+type RetryDelayType int
+
+const (
+	// Retry with exponential backoff (with random jitter).
+	RetryDelayType_Backoff RetryDelayType = iota
+
+	// Retry at a fixed interval (with random jitter).
+	RetryDelayType_Fixed
+)
 
 type clusterWatcher struct {
 	ctx             context.Context
@@ -161,12 +173,20 @@ func (c *clusterWatcher) retryOptionsWithDefaults() []retry.Option {
 		delay = time.Second
 	}
 
+	// convert the delay type
+	var delayType retry.DelayTypeFunc
+	if c.retryOptions.DelayType == RetryDelayType_Fixed {
+		delayType = retry.FixedDelay
+	} else {
+		delayType = retry.BackOffDelay
+	}
+
 	// the rest will default to their zero values if not set
 	maxDelay := c.retryOptions.MaxDelay
 	attempts := c.retryOptions.MaxRetries
 
 	return []retry.Option{
-		retry.DelayType(retry.CombineDelay(retry.BackOffDelay, retry.RandomDelay)),
+		retry.DelayType(retry.CombineDelay(delayType, retry.RandomDelay)),
 		retry.MaxJitter(delay),
 		retry.Delay(delay),
 		retry.MaxDelay(maxDelay),
