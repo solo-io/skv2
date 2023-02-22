@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Removes the `product` tag to a helm values struct
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/7123

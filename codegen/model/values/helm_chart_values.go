@@ -1,6 +1,8 @@
 package values
 
 import (
+	"reflect"
+
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 )
@@ -10,6 +12,7 @@ type UserHelmValues struct {
 	Operators        []UserOperatorValues
 	CustomValues     interface{}
 	ValuesInlineDocs *UserValuesInlineDocs
+	JsonSchema       UserJsonSchema
 }
 
 type UserOperatorValues struct {
@@ -32,6 +35,10 @@ func (u *UserValuesInlineDocs) LineLength() int {
 		return 0
 	}
 	return u.LineLengthLimit
+}
+
+type UserJsonSchema struct {
+	CustomTypeMapper func(reflect.Type, map[string]interface{}) interface{}
 }
 
 // document values structure for an operator

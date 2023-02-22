@@ -9,13 +9,19 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/invopop/jsonschema"
 	"github.com/solo-io/skv2/codegen/model/values"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
+	"google.golang.org/protobuf/types/known/structpb"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/strings/slices"
 
 	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/iancoleman/orderedmap"
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/util"
@@ -30,14 +36,15 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	skv2Funcs := template.FuncMap{
 		// string utils
 
-		"toToml":     toTOML,
-		"toYaml":     toYAML,
-		"fromYaml":   fromYAML,
-		"toJson":     toJSON,
-		"fromJson":   fromJSON,
-		"toNode":     toNode,
-		"fromNode":   fromNode,
-		"mergeNodes": mergeNodes,
+		"toToml":       toTOML,
+		"toYaml":       toYAML,
+		"fromYaml":     fromYAML,
+		"toJson":       toJSON,
+		"fromJson":     fromJSON,
+		"toNode":       toNode,
+		"fromNode":     fromNode,
+		"mergeNodes":   mergeNodes,
+		"toJsonSchema": toJSONSchema,
 
 		"join":            strings.Join,
 		"lower":           strings.ToLower,
@@ -90,6 +97,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 			}
 			if o.ValuePath != "" {
 				splitPath := strings.Split(o.ValuePath, ".")
+				reverse(splitPath)
 				for _, p := range splitPath {
 					opValues = map[string]interface{}{
 						strcase.ToLowerCamel(p): opValues,
@@ -107,6 +115,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 				}
 				if o.ValuePath != "" {
 					splitPath := strings.Split(o.ValuePath, ".")
+					reverse(splitPath)
 					for _, p := range splitPath {
 						opValues = map[string]interface{}{
 							strcase.ToLowerCamel(p): opValues,
@@ -500,8 +509,20 @@ func recursiveNodeMerge(from, into *goyaml.Node) error {
 			for j := 0; j < len(into.Content); j += 2 {
 				if nodesEqual(from.Content[i], into.Content[j]) {
 					found = true
-					if err := recursiveNodeMerge(from.Content[i+1], into.Content[j+1]); err != nil {
-						return errors.New("at key " + from.Content[i].Value + ": " + err.Error())
+					if into.Content[j+1].Value == "null" {
+						// No matter the type if the value in the existing map is null use the new node
+						into.Content[j+1] = from.Content[i+1]
+					} else if from.Content[i+1].Value == "null" {
+						// value on new map is null, skip and leave existing
+						break
+					} else if into.Content[j+1].Kind == goyaml.ScalarNode && from.Content[i+1].Kind == goyaml.ScalarNode {
+						// if both Scalars simply overwrite
+						into.Content[j+1] = from.Content[i+1]
+					} else {
+						// Sequences and maps will be merged here
+						if err := recursiveNodeMerge(from.Content[i+1], into.Content[j+1]); err != nil {
+							return errors.New("at key " + from.Content[i].Value + ": " + err.Error())
+						}
 					}
 					break
 				}
@@ -511,9 +532,9 @@ func recursiveNodeMerge(from, into *goyaml.Node) error {
 			}
 		}
 	case goyaml.SequenceNode:
-		into.Content = append(into.Content, from.Content...)
+		into.Content = from.Content
 	case goyaml.DocumentNode:
-		recursiveNodeMerge(from.Content[0], into.Content[0])
+		return recursiveNodeMerge(from.Content[0], into.Content[0])
 	default:
 		return errors.New("can only merge mapping and sequence nodes")
 	}
@@ -560,6 +581,341 @@ func fromJSON(str string) map[string]interface{} {
 		m["Error"] = err.Error()
 	}
 	return m
+}
+
+// toJSONSchema generates the json schema for the values of the helm chart
+func toJSONSchema(values values.UserHelmValues) string {
+	reflector := createJsonSchemaReflector(values)
+	schema := new(jsonschema.Schema)
+	schema.Version = jsonschema.Version
+
+	// add json schema properties from the chart's custom values
+	if values.CustomValues != nil {
+		mergeJsonSchemaProperties(schema, reflector.Reflect(values.CustomValues))
+	}
+
+	// add json schema for the operators
+	if values.Operators != nil {
+		for _, o := range values.Operators {
+			opSchema := jsonSchemaForOperator(reflector, &o)
+			mergeJsonSchemaProperties(schema, opSchema)
+		}
+	}
+
+	jsonSchema, err := schema.MarshalJSON()
+	if err != nil {
+		panic(err)
+	}
+
+	return indentJson(string(jsonSchema))
+}
+
+type customTypeMapper func(reflect.Type, *jsonschema.Schema) *jsonschema.Schema
+
+// createTypeMappings initializes the type mappings based on what the user has
+// passed and also some reasonable defaults
+func createCustomTypeMapper(values values.UserHelmValues) customTypeMapper {
+	// add the default type mappings ... these types have customized json deser
+	// behaviour so we need to have custom mappings describing allowed values
+	typeMappings := map[reflect.Type]customTypeMapper{
+		reflect.TypeOf(structpb.Value{}): func(t reflect.Type, defaultSchema *jsonschema.Schema) *jsonschema.Schema {
+			schema := new(jsonschema.Schema)
+			schema.AnyOf = []*jsonschema.Schema{
+				{Type: "null"},
+				{Type: "number"},
+				{Type: "string"},
+				{Type: "boolean"},
+				{Type: "object"},
+				{Type: "array"},
+			}
+			return schema
+		},
+
+		reflect.TypeOf(metav1.Time{}): func(t reflect.Type, defaultSchema *jsonschema.Schema) *jsonschema.Schema {
+			schema := new(jsonschema.Schema)
+			schema.AnyOf = []*jsonschema.Schema{
+				{
+					Type:   "string",
+					Format: "date-time",
+				},
+				{
+					Type: "null",
+				},
+			}
+			return schema
+		},
+
+		reflect.TypeOf(resource.Quantity{}): func(t reflect.Type, defaultSchema *jsonschema.Schema) *jsonschema.Schema {
+			return &jsonschema.Schema{
+				AnyOf: []*jsonschema.Schema{
+					{Type: "string"},
+					{Type: "number"},
+				},
+			}
+		},
+
+		reflect.TypeOf(v1.SecurityContext{}): func(t reflect.Type, defaultSchema *jsonschema.Schema) *jsonschema.Schema {
+			return &jsonschema.Schema{
+				AnyOf: []*jsonschema.Schema{
+					defaultSchema,
+					{Type: "boolean", Const: false},
+				},
+			}
+		},
+	}
+
+	return func(t reflect.Type, schema *jsonschema.Schema) *jsonschema.Schema {
+		if values.JsonSchema.CustomTypeMapper != nil {
+			// the custom mappings are accept the json schema as a map and are
+			// expected to return an interface that can be serialized as a json schema
+			// or null if it doesn't handle the type
+
+			// serialize default schema into a map
+			var defaultAsMap map[string]interface{}
+			buf, err := schema.MarshalJSON()
+			if err != nil {
+				panic(err)
+			}
+			err = json.Unmarshal(buf, &defaultAsMap)
+			if err != nil {
+				panic(err)
+			}
+
+			// if the type is handled, deserialize it into json schema and return that
+			modifiedSchema := values.JsonSchema.CustomTypeMapper(t, defaultAsMap)
+			if modifiedSchema != nil {
+				buf, err = json.Marshal(modifiedSchema)
+				if err != nil {
+					panic(err)
+				}
+				result := new(jsonschema.Schema)
+				err = result.UnmarshalJSON(buf)
+				if err != nil {
+					panic(err)
+				}
+				return result
+			}
+		}
+
+		defaultTypeMapper, ok := typeMappings[t]
+		if ok {
+			return defaultTypeMapper(t, schema)
+		}
+
+		return nil
+	}
+}
+
+// initialize a new instance of the jsonschema Reflector with configured to
+// create json schema for chart.
+func createJsonSchemaReflector(values values.UserHelmValues) *jsonschema.Reflector {
+	// we might want to pass configuration of this from values.UserHelmValues
+	// in the future, to control how the schema is generated, but for now just
+	// hard-coding some sensible defaults that won't break existing charts..
+	reflector := jsonschema.Reflector{
+		Anonymous:                  true,
+		AllowAdditionalProperties:  true,
+		DoNotReference:             true,
+		RequiredFromJSONSchemaTags: true,
+	}
+
+	customTypeMapper := createCustomTypeMapper(values)
+	extractBaseMapping := makeBaseMappingExtractor(&reflector)
+
+	// specify custom overrides for some specific types
+	reflector.Mapper = func(t reflect.Type) *jsonschema.Schema {
+		baseMapping := extractBaseMapping(t)
+		if baseMapping == nil {
+			return baseMapping
+		}
+
+		customMapping := customTypeMapper(t, baseMapping)
+		if customMapping != nil {
+			return customMapping
+		}
+
+		// allow maps & arrays to be nil by default, which makes this backwards
+		// compatible with older charts without schemas. In the future, might like
+		// to control this behaviour w/ tags such as `jsonschema:"nullable"`
+		// to fields of the values structs.
+		if t.Kind() == reflect.Map || t.Kind() == reflect.Slice {
+			return wrapAsNullable(baseMapping)
+		}
+
+		// make the pointer fields on structs nullable
+		if t.Kind() == reflect.Struct {
+			return pointerFieldsNullableTransformer(t, customTypeMapper)(baseMapping)
+		}
+
+		// by returning nil, it defaults to the default mapping behaviour reflector
+		return nil
+	}
+
+	return &reflector
+}
+
+type jsonSchemaTransform func(*jsonschema.Schema) *jsonschema.Schema
+
+// makeBaseMappingExtractor allows the base mapping function of the reflector
+// to be called to generate the default json schema for the type (as if the
+// relfector had no custom Mapper)
+func makeBaseMappingExtractor(
+	reflector *jsonschema.Reflector,
+) func(t reflect.Type) *jsonschema.Schema {
+	// we try to map the type recursively by re-calling ReflectFromType & letting
+	// the calling funciton follow the same code path into this function which
+	// will check this flag for the recursion exit condition
+	insideBaseMappingExtractor := false
+
+	return func(t reflect.Type) *jsonschema.Schema {
+		if insideBaseMappingExtractor {
+			insideBaseMappingExtractor = false
+			return nil // deletage to the default mapper & return
+		}
+
+		insideBaseMappingExtractor = true
+
+		// map the type to it's default non-nullable type
+		schema := reflector.ReflectFromType(t)
+
+		// remove default fields
+		schema.Version = ""
+
+		return schema
+	}
+}
+
+// wrapAsNullable wraps the json schema in a way that allows the json value
+// to be null
+func wrapAsNullable(schema *jsonschema.Schema) *jsonschema.Schema {
+	return &jsonschema.Schema{
+		AnyOf: []*jsonschema.Schema{
+			schema,
+			{Type: "null"},
+		},
+	}
+}
+
+// pointerFieldsNullableTransformer creates function that when called will
+// return a json schema with the fields which are pointers on the struct type
+// as nullable
+func pointerFieldsNullableTransformer(
+	t reflect.Type,
+	customTypeMapper customTypeMapper,
+) jsonSchemaTransform {
+	return func(schema *jsonschema.Schema) *jsonschema.Schema {
+		makePointerFieldsNullable(t, schema, customTypeMapper)
+		return schema
+	}
+}
+
+// makePointerFieldsNullableInternal makes any fields that are of type pointer
+// on the passed type (which must be a struct) nullable in the json schema
+func makePointerFieldsNullable(
+	t reflect.Type,
+	schema *jsonschema.Schema,
+	customTypeMapper customTypeMapper,
+) {
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonPropertyName := field.Name
+
+		// check if the type has been renmamed via the json tag
+		if jsonTag, ok := field.Tag.Lookup("json"); ok {
+			jsonTagSegments := strings.Split(jsonTag, ",")
+			jsonPropertyName = jsonTagSegments[0]
+		}
+
+		if field.Type.Kind() == reflect.Pointer {
+			f, ok := schema.Properties.Get(jsonPropertyName)
+			if !ok {
+				continue
+			}
+			fieldSchema := f.(*jsonschema.Schema)
+
+			// if there's a custom type mapping for the field, delegate to that
+			// whether it wants the field to be nullable
+			if customTypeMapper(field.Type.Elem(), fieldSchema) != nil {
+				continue
+			}
+
+			schema.Properties.Set(jsonPropertyName, wrapAsNullable(fieldSchema))
+		}
+	}
+}
+
+// mergeJsonSchemaProperties Adds the properties from the source json schema
+// to the target
+func mergeJsonSchemaProperties(
+	target *jsonschema.Schema,
+	src *jsonschema.Schema,
+) {
+	if target.Properties == nil {
+		target.Properties = orderedmap.New()
+	}
+
+	for _, prop := range src.Properties.Keys() {
+		val, _ := src.Properties.Get(prop)
+		target.Properties.Set(prop, val)
+	}
+}
+
+// jsonSchemaForOperator creates the json schema for the operator's values.
+//
+// The resulting schema will have the values nested at the appropriate path,
+// taking into account the operator's name and value path. This means it can be
+// added directly to the base object's schema
+func jsonSchemaForOperator(
+	reflector *jsonschema.Reflector,
+	o *values.UserOperatorValues,
+) *jsonschema.Schema {
+	schema := reflector.Reflect(o.Values)
+	schema.Version = "" // will be set on parent object
+
+	// if the opeartor defines custom values, add the properties to the schema
+	if o.CustomValues != nil {
+		mergeJsonSchemaProperties(schema, reflector.Reflect(o.CustomValues))
+	}
+
+	// nest the operator values schema in the correct place
+	path := []string{strcase.ToLowerCamel(o.Name)}
+	if o.ValuePath != "" {
+		splitPath := strings.Split(o.ValuePath, ".")
+		reverse(splitPath)
+		path = append(splitPath, path...)
+	}
+	schema = nestSchemaAtPath(schema, path...)
+
+	return schema
+}
+
+// returns a new schema, nested within an object at the given path
+func nestSchemaAtPath(schema *jsonschema.Schema, path ...string) *jsonschema.Schema {
+	for _, p := range path {
+		parentSchema := new(jsonschema.Schema)
+		parentSchema.Type = "object"
+		parentSchema.Properties = orderedmap.New()
+		parentSchema.Properties.Set(p, schema)
+		schema = parentSchema
+	}
+
+	return schema
+}
+
+func indentJson(src string) string {
+	var buf bytes.Buffer
+	err := json.Indent(&buf, []byte(src), "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return buf.String()
+}
+
+// reverse mutates a slice of strings to reverse the order.
+func reverse(s []string) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
 }
 
 func splitTrimEmpty(s, sep string) []string {

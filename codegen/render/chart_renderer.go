@@ -55,6 +55,12 @@ func (r ChartRenderer) Render(chart model.Chart) ([]OutFile, error) {
 		templatesToRender = chartInputsNoOperators
 	}
 
+	if chart.JsonSchema != nil {
+		templatesToRender["chart/values.schema.jsontmpl"] = OutFile{
+			Path: "values.schema.json",
+		}
+	}
+
 	files, err := r.renderCoreTemplates(templatesToRender, chart)
 	if err != nil {
 		return nil, err
