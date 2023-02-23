@@ -16,7 +16,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customServiceLabels := $operator.Service.CustomLabels -]]
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
-{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
 ---
 
 {{- define "[[ $operator.Name ]].deploymentSpec"}}
@@ -171,7 +171,7 @@ metadata:
 [[ if gt (len $operator.Service.Ports) 0 ]]
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
-{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
 apiVersion: v1
 kind: Service
 metadata:

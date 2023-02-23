@@ -127,6 +127,8 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"containerConfigs": containerConfigs,
+
+		"opVar": opVar,
 	}
 
 	for k, v := range skv2Funcs {
@@ -147,26 +149,31 @@ type containerConfig struct {
 }
 
 func containerConfigs(op model.Operator) []containerConfig {
-	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
-	if op.ValuePath != "" {
-		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
-
-	}
+	valuesVar := opVar(op)
 	configs := []containerConfig{{
 		Container: op.Deployment.Container,
 		Name:      op.Name,
-		ValuesVar: opVar,
+		ValuesVar: valuesVar,
 	}}
 
 	for _, sidecar := range op.Deployment.Sidecars {
 		configs = append(configs, containerConfig{
 			Container: sidecar.Container,
 			Name:      sidecar.Name,
-			ValuesVar: opVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
+			ValuesVar: valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
 		})
 	}
 
 	return configs
+}
+
+func opVar(op model.Operator) string {
+	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
+	if op.ValuePath != "" {
+		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
+
+	}
+	return opVar
 }
 
 /*
