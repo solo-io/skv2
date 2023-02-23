@@ -62,14 +62,14 @@ type UserValues struct {
 // document values structure for a container
 type UserContainerValues struct {
 	Image           Image                    `json:"image" desc:"Container image."`
-	Env             []v1.EnvVar              `json:"env" desc:"Environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#envvarsource-v1-core) for specification details." omitChildren:"true"`
-	Resources       *v1.ResourceRequirements `json:"resources,omitempty" desc:"Container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#resourcerequirements-v1-core) for specification details."`
-	SecurityContext *v1.SecurityContext      `json:"securityContext,omitempty" desc:"Container security context. Set to 'false' to omit the security context entirely. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core) for specification details."`
+	Env             []v1.EnvVar              `json:"env" desc:"Environment variables for the container. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core)." omitChildren:"true"`
+	Resources       *v1.ResourceRequirements `json:"resources,omitempty" desc:"Container resource requirements. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#resourcerequirements-v1-core)."`
+	SecurityContext *v1.SecurityContext      `json:"securityContext,omitempty" desc:"Container security context. Set to 'false' to omit the security context entirely. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#securitycontext-v1-core)."`
 }
 
 // this image type is shared with the skv2 Chart model
 type Image struct {
-	Tag        string        `json:"tag,omitempty" desc:"Tag for the container."`
+	Tag        string        `json:"tag,omitempty" desc:"Version tag for the container."`
 	Repository string        `json:"repository,omitempty" desc:"Image name (repository)."`
 	Registry   string        `json:"registry,omitempty" desc:"Image registry."`
 	PullPolicy v1.PullPolicy `json:"pullPolicy,omitempty" desc:"Image pull policy."`
