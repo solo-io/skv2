@@ -37,7 +37,7 @@ Name|Version|License
 [google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.27.1|BSD 3-clause "New" or "Revised" License
 [gopkg.in/inf.v0](https://gopkg.in/inf.v0)|v0.9.1|BSD 3-clause "New" or "Revised" License
 [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)|v2.4.0|Apache License 2.0
-[gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)|v3.0.0-20210107192922-496545a6307b|MIT License
+[gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)|v3.0.1|MIT License
 [k8s.io/api](https://k8s.io/api)|v0.21.4|Apache License 2.0
 [k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.21.4|Apache License 2.0
 [k8s.io/client-go](https://k8s.io/client-go)|v0.21.4|Apache License 2.0
