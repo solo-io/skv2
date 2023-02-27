@@ -19,28 +19,33 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// If manager creation fails, we will retry with the given options.
+// RetryOptions specify how to retry when a manager fails to be created or started.
 type RetryOptions struct {
-	// Initial retry delay; default is 1 second.
+	// Delay is the initial retry delay.
+	// Default is 1 second.
 	Delay time.Duration
 
-	// The type of retry delay; default is exponential backoff.
+	// DelayType is the type of retry delay (fixed or exponential backoff).
+	// Default is exponential backoff.
 	DelayType RetryDelayType
 
-	// Max delay between retries; default is 0 (no max).
+	// MaxDelay is the maximum delay between retries.
+	// Default is 0 (no max).
 	MaxDelay time.Duration
 
-	// Max number of retries; default is 0 (retry forever).
+	// MaxRetries is the maximum number of retries.
+	// Default is 0 (retry forever).
 	MaxRetries uint
 }
 
+// RetryDelayType is the type of delay to be used for manager creation retries.
 type RetryDelayType int
 
 const (
-	// Retry with exponential backoff (with random jitter).
+	// RetryDelayType_Backoff means retry with exponential backoff (with random jitter).
 	RetryDelayType_Backoff RetryDelayType = iota
 
-	// Retry at a fixed interval (with random jitter).
+	// RetryDelayType_Fixed means retry at a fixed interval (with random jitter).
 	RetryDelayType_Fixed
 )
 
