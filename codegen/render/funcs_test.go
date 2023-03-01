@@ -57,8 +57,9 @@ var _ = Describe("toYAMLWithComments", func() {
 			Field5: "hello field 5",
 			Field6: []string{"hello", "field", "six"},
 			Field7: map[string]string{
-				"hello":   "field seven",
-				"field 7": "hello",
+				// This will sort
+				"hello2": "hello 2",
+				"hello1": "hello 1",
 			},
 			Field8: map[string]NestedType{
 				"hello": {FieldN1: "field 8"},
@@ -66,6 +67,7 @@ var _ = Describe("toYAMLWithComments", func() {
 			Field9: map[string]*NestedType{
 				"hello": {FieldN1: "field 9"},
 			},
+			// We will expect sorting to actually bring this to the top
 			Field10: map[string][]NestedType{
 				"hello": {
 					{FieldN1: "field"},
@@ -73,9 +75,17 @@ var _ = Describe("toYAMLWithComments", func() {
 				},
 			},
 		}, &values.UserValuesInlineDocs{})
+		fmt.Println(render.FromNode(node))
 		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
 			# field descripting comment
 			Field1: Hello, comments
+			# a map to a list of structs
+			Field10:
+					hello:
+							- # nested field 1
+								FieldN1: field
+							- # nested field 1
+								FieldN1: ten
 			# list of field 2
 			Field2:
 					- # nested field 1
@@ -98,8 +108,8 @@ var _ = Describe("toYAMLWithComments", func() {
 					- six
 			# a map of scalars to scalars
 			Field7:
-					field 7: hello
-					hello: field seven
+					hello1: hello 1
+					hello2: hello 2
 			# a map to a struct
 			Field8:
 					hello:
@@ -110,13 +120,6 @@ var _ = Describe("toYAMLWithComments", func() {
 					hello:
 							# nested field 1
 							FieldN1: field 9
-			# a map to a list of structs
-			Field10:
-					hello:
-							- # nested field 1
-								FieldN1: field
-							- # nested field 1
-								FieldN1: ten
 			# non standard field name
 			fieldfive: hello field 5
 		`)))
