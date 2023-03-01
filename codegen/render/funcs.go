@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -465,11 +466,49 @@ func wrapWords(s string, limit int) string {
 }
 
 func fromNode(n goyaml.Node) string {
-	b, err := goyaml.Marshal(&n)
+	b, err := goyaml.Marshal(sortYAML(&n))
 	if err != nil {
 		panic(err)
 	}
 	return string(b)
+}
+
+// Implement sorting for prettier yaml
+type nodes []*goyaml.Node
+
+func (i nodes) Len() int { return len(i) / 2 }
+
+func (i nodes) Swap(x, y int) {
+	x *= 2
+	y *= 2
+	i[x], i[y] = i[y], i[x]         // keys
+	i[x+1], i[y+1] = i[y+1], i[x+1] // values
+}
+
+func (i nodes) Less(x, y int) bool {
+	x *= 2
+	y *= 2
+	return i[x].Value < i[y].Value
+}
+
+func sortYAML(node *goyaml.Node) *goyaml.Node {
+	if node.Kind == goyaml.DocumentNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+	}
+	if node.Kind == goyaml.SequenceNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+	}
+	if node.Kind == goyaml.MappingNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+		sort.Sort(nodes(node.Content))
+	}
+	return node
 }
 
 func mergeNodes(nodes ...goyaml.Node) goyaml.Node {
