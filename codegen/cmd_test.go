@@ -241,7 +241,7 @@ var _ = Describe("Cmd", func() {
 		enabledMapField := painterNode.Content[0]
 		Expect(enabledMapField.HeadComment).To(Equal("# Enable creation of the deployment/service."))
 		envMapField := painterNode.Content[2]
-		Expect(envMapField.HeadComment).To(Equal("# Environment variables for the container. For more info, see the\n# [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core)."))
+		Expect(envMapField.HeadComment).To(Equal("# Environment variables for the container. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core)."))
 	})
 
 	It("generates json schema for the values file", func() {
