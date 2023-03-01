@@ -3,6 +3,7 @@ package render_test
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 
@@ -155,6 +156,23 @@ var _ = Describe("toYAMLWithComments", func() {
 		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
 			# nested field 1
 			NestedType: Hello
+		`)))
+	})
+
+	It("handles structs thate are completely initalized to zero values", func() {
+		type ChildType struct {
+			FieldC1 string `desc:"field c1"`
+		}
+		type TestType struct {
+			ChildType ChildType `json:"childType"`
+		}
+		node := render.ToNode(&TestType{}, &values.UserValuesInlineDocs{})
+		actual := render.FromNode(node)
+		log.Printf("%s", actual)
+		Expect(actual).To(Equal(prepareExpected(`
+			childType:
+				  # field c1
+				  FieldC1: ""
 		`)))
 	})
 

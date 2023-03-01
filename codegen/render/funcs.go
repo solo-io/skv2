@@ -290,7 +290,10 @@ func (yc *yamlCommenter) addYamlComments(
 	node *goyaml.Node,
 ) {
 	if value.IsZero() {
-		return
+		// still try to add comments structs that are initialized to all zero values
+		if value.Kind() != reflect.Struct {
+			return
+		}
 	}
 
 	valueType := value.Type()
