@@ -69,7 +69,7 @@ type UserContainerValues struct {
 
 // this image type is shared with the skv2 Chart model
 type Image struct {
-	Tag        string        `json:"tag,omitempty" desc:"Version tag for the container."`
+	Tag        string        `json:"tag,omitempty" desc:"Version tag for the container image."`
 	Repository string        `json:"repository,omitempty" desc:"Image name (repository)."`
 	Registry   string        `json:"registry,omitempty" desc:"Image registry."`
 	PullPolicy v1.PullPolicy `json:"pullPolicy,omitempty" desc:"Image pull policy."`
