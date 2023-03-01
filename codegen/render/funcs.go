@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"text/template"
@@ -337,6 +338,10 @@ func (yc *yamlCommenter) addYamlComments(
 					// get the field from the strcut
 					fieldName := yc.getStructFieldName(valueType, keyNode.Value)
 					field, _ := valueType.FieldByName(fieldName)
+					log.Printf("%v", field)
+					if field.Anonymous {
+						field, _ = field.Type.FieldByName(fieldName)
+					}
 
 					// if the field is tagged w/ description, add the comment
 					keyNode.HeadComment = field.Tag.Get("desc")

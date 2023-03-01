@@ -140,6 +140,24 @@ var _ = Describe("toYAMLWithComments", func() {
 		`)))
 	})
 
+	It("handles nested type where field name is same as type name", func() {
+		type NestedType struct {
+			NestedType string `desc:"nested field 1"`
+		}
+		type TestType struct {
+			NestedType
+		}
+		node := render.ToNode(&TestType{
+			NestedType: NestedType{
+				NestedType: "Hello",
+			},
+		}, &values.UserValuesInlineDocs{})
+		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
+			# nested field 1
+			NestedType: Hello
+		`)))
+	})
+
 	It("handles nested types with fields explicitly inlined", func() {
 		type NestedType struct {
 			FieldN1 string `desc:"nested field 1"`
