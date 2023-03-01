@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -127,6 +128,8 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"containerConfigs": containerConfigs,
+
+		"opVar": opVar,
 	}
 
 	for k, v := range skv2Funcs {
@@ -147,26 +150,31 @@ type containerConfig struct {
 }
 
 func containerConfigs(op model.Operator) []containerConfig {
-	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
-	if op.ValuePath != "" {
-		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
-
-	}
+	valuesVar := opVar(op)
 	configs := []containerConfig{{
 		Container: op.Deployment.Container,
 		Name:      op.Name,
-		ValuesVar: opVar,
+		ValuesVar: valuesVar,
 	}}
 
 	for _, sidecar := range op.Deployment.Sidecars {
 		configs = append(configs, containerConfig{
 			Container: sidecar.Container,
 			Name:      sidecar.Name,
-			ValuesVar: opVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
+			ValuesVar: valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
 		})
 	}
 
 	return configs
+}
+
+func opVar(op model.Operator) string {
+	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
+	if op.ValuePath != "" {
+		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
+
+	}
+	return opVar
 }
 
 /*
@@ -464,11 +472,49 @@ func wrapWords(s string, limit int) string {
 }
 
 func fromNode(n goyaml.Node) string {
-	b, err := goyaml.Marshal(&n)
+	b, err := goyaml.Marshal(sortYAML(&n))
 	if err != nil {
 		panic(err)
 	}
 	return string(b)
+}
+
+// Implement sorting for prettier yaml
+type nodes []*goyaml.Node
+
+func (i nodes) Len() int { return len(i) / 2 }
+
+func (i nodes) Swap(x, y int) {
+	x *= 2
+	y *= 2
+	i[x], i[y] = i[y], i[x]         // keys
+	i[x+1], i[y+1] = i[y+1], i[x+1] // values
+}
+
+func (i nodes) Less(x, y int) bool {
+	x *= 2
+	y *= 2
+	return i[x].Value < i[y].Value
+}
+
+func sortYAML(node *goyaml.Node) *goyaml.Node {
+	if node.Kind == goyaml.DocumentNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+	}
+	if node.Kind == goyaml.SequenceNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+	}
+	if node.Kind == goyaml.MappingNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+		sort.Sort(nodes(node.Content))
+	}
+	return node
 }
 
 func mergeNodes(nodes ...goyaml.Node) goyaml.Node {
