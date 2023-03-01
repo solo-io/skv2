@@ -297,7 +297,10 @@ func (yc *yamlCommenter) addYamlComments(
 	node *goyaml.Node,
 ) {
 	if value.IsZero() {
-		return
+		// still try to add comments structs that are initialized to all zero values
+		if value.Kind() != reflect.Struct {
+			return
+		}
 	}
 
 	valueType := value.Type()
@@ -345,6 +348,9 @@ func (yc *yamlCommenter) addYamlComments(
 					// get the field from the strcut
 					fieldName := yc.getStructFieldName(valueType, keyNode.Value)
 					field, _ := valueType.FieldByName(fieldName)
+					if field.Anonymous {
+						field, _ = field.Type.FieldByName(fieldName)
+					}
 
 					// if the field is tagged w/ description, add the comment
 					keyNode.HeadComment = field.Tag.Get("desc")
