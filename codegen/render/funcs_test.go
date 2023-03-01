@@ -3,7 +3,6 @@ package render_test
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 
@@ -168,7 +167,6 @@ var _ = Describe("toYAMLWithComments", func() {
 		}
 		node := render.ToNode(&TestType{}, &values.UserValuesInlineDocs{})
 		actual := render.FromNode(node)
-		log.Printf("%s", actual)
 		Expect(actual).To(Equal(prepareExpected(`
 			childType:
 				  # field c1
