@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 	"strings"
@@ -718,6 +719,7 @@ func createCustomTypeMapper(values values.UserHelmValues) customTypeMapper {
 
 	return func(t reflect.Type, schema *jsonschema.Schema) *jsonschema.Schema {
 		if values.JsonSchema.CustomTypeMapper != nil {
+			log.Printf("%s %v", t, t)
 			// the custom mappings are accept the json schema as a map and are
 			// expected to return an interface that can be serialized as a json schema
 			// or null if it doesn't handle the type
