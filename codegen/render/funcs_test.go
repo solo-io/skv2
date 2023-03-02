@@ -763,7 +763,7 @@ var _ = Describe("toJSONSchema", func() {
 			Expect(result).To(Equal(expected))
 		})
 
-		FIt("can custom map an interface type", func() {
+		It("can custom map an interface type", func() {
 			type ChildType interface {
 				SomeFunc() bool
 			}
