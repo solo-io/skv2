@@ -643,14 +643,14 @@ func toJSONSchema(values values.UserHelmValues) string {
 
 	// add json schema properties from the chart's custom values
 	if values.CustomValues != nil {
-		mergeJsonSchemaProperties(schema, reflector.Reflect(values.CustomValues))
+		mergeJsonSchema(schema, reflector.Reflect(values.CustomValues))
 	}
 
 	// add json schema for the operators
 	if values.Operators != nil {
 		for _, o := range values.Operators {
 			opSchema := jsonSchemaForOperator(reflector, &o)
-			mergeJsonSchemaProperties(schema, opSchema)
+			mergeJsonSchema(schema, opSchema)
 		}
 	}
 
@@ -915,9 +915,9 @@ func makePointerFieldsNullable(
 	}
 }
 
-// mergeJsonSchemaProperties Adds the properties from the source json schema
+// mergeJsonSchema Adds the properties from the source json schema
 // to the target
-func mergeJsonSchemaProperties(
+func mergeJsonSchema(
 	target *jsonschema.Schema,
 	src *jsonschema.Schema,
 ) {
@@ -925,10 +925,16 @@ func mergeJsonSchemaProperties(
 		target.Properties = orderedmap.New()
 	}
 
+	if target.Required == nil {
+		target.Required = []string{}
+	}
+
 	for _, prop := range src.Properties.Keys() {
 		val, _ := src.Properties.Get(prop)
 		target.Properties.Set(prop, val)
 	}
+
+	target.Required = append(target.Required, src.Required...)
 }
 
 // jsonSchemaForOperator creates the json schema for the operator's values.
@@ -945,7 +951,7 @@ func jsonSchemaForOperator(
 
 	// if the opeartor defines custom values, add the properties to the schema
 	if o.CustomValues != nil {
-		mergeJsonSchemaProperties(schema, reflector.Reflect(o.CustomValues))
+		mergeJsonSchema(schema, reflector.Reflect(o.CustomValues))
 	}
 
 	// nest the operator values schema in the correct place
