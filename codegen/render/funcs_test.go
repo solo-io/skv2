@@ -672,6 +672,29 @@ var _ = Describe("toJSONSchema", func() {
 		Expect(resultContainer.Properties.Field1.AnyOf[1].Const).To(BeFalse())
 	})
 
+	It("merges the required fields", func() {
+		type Type1 struct {
+			Field1 string `jsonschema:"required"`
+		}
+		result := render.ToJSONSchema(values.UserHelmValues{
+			CustomValues: &Type1{},
+		})
+		expected := prepareExpected(`
+		{
+			"$schema": "https://json-schema.org/draft/2020-12/schema",
+			"properties": {
+				"Field1": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"Field1"
+			]
+		}`)
+		Expect(result).To(Equal(expected))
+
+	})
+
 	Context("custom type mappings", func() {
 		type MyJsonSchemaType struct {
 			Type  string `json:"type"`
@@ -760,6 +783,44 @@ var _ = Describe("toJSONSchema", func() {
 						}
 					}
 				}`)
+			Expect(result).To(Equal(expected))
+		})
+
+		It("can custom map an interface type", func() {
+			type ChildType interface {
+				SomeFunc() bool
+			}
+
+			type TestType struct {
+				Child ChildType `json:"myChild" desc:"big fish"`
+			}
+			result := render.ToJSONSchema(values.UserHelmValues{
+				CustomValues: &TestType{},
+				JsonSchema: values.UserJsonSchema{
+					CustomTypeMapper: func(
+						t reflect.Type,
+						schema map[string]interface{},
+					) interface{} {
+						interfaceType := reflect.TypeOf((*ChildType)(nil)).Elem()
+
+						if t == interfaceType {
+							return &MyJsonSchemaType{
+								Type: "number",
+							}
+						}
+						return nil
+					},
+				},
+			})
+			expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"myChild": {
+						"type": "number"
+					}
+				}
+			}`)
 			Expect(result).To(Equal(expected))
 		})
 	})

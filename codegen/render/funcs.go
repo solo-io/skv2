@@ -643,14 +643,14 @@ func toJSONSchema(values values.UserHelmValues) string {
 
 	// add json schema properties from the chart's custom values
 	if values.CustomValues != nil {
-		mergeJsonSchemaProperties(schema, reflector.Reflect(values.CustomValues))
+		mergeJsonSchema(schema, reflector.Reflect(values.CustomValues))
 	}
 
 	// add json schema for the operators
 	if values.Operators != nil {
 		for _, o := range values.Operators {
 			opSchema := jsonSchemaForOperator(reflector, &o)
-			mergeJsonSchemaProperties(schema, opSchema)
+			mergeJsonSchema(schema, opSchema)
 		}
 	}
 
@@ -723,14 +723,33 @@ func createCustomTypeMapper(values values.UserHelmValues) customTypeMapper {
 			// or null if it doesn't handle the type
 
 			// serialize default schema into a map
-			var defaultAsMap map[string]interface{}
 			buf, err := schema.MarshalJSON()
 			if err != nil {
 				panic(err)
 			}
-			err = json.Unmarshal(buf, &defaultAsMap)
-			if err != nil {
-				panic(err)
+
+			var defaultAsMap map[string]interface{}
+
+			// if it's a boolean schema (per section 4.3.2 of the spec) convert it
+			// to a map representation
+			var section432Schema bool
+			err = json.Unmarshal(buf, &section432Schema)
+			if err == nil {
+				if section432Schema {
+					// "true" == Always passes validation, as if the empty schema {}
+					defaultAsMap = map[string]interface{}{}
+				} else {
+					// "false" == Always fails validation, as if the schema { "not": {} }
+					defaultAsMap = map[string]interface{}{
+						"not": map[string]interface{}{},
+					}
+				}
+			} else {
+				// if here - schema is not a bool so unmarshal the schema as map
+				err = json.Unmarshal(buf, &defaultAsMap)
+				if err != nil {
+					panic(err)
+				}
 			}
 
 			// if the type is handled, deserialize it into json schema and return that
@@ -896,9 +915,9 @@ func makePointerFieldsNullable(
 	}
 }
 
-// mergeJsonSchemaProperties Adds the properties from the source json schema
+// mergeJsonSchema Adds the properties from the source json schema
 // to the target
-func mergeJsonSchemaProperties(
+func mergeJsonSchema(
 	target *jsonschema.Schema,
 	src *jsonschema.Schema,
 ) {
@@ -906,10 +925,16 @@ func mergeJsonSchemaProperties(
 		target.Properties = orderedmap.New()
 	}
 
+	if target.Required == nil {
+		target.Required = []string{}
+	}
+
 	for _, prop := range src.Properties.Keys() {
 		val, _ := src.Properties.Get(prop)
 		target.Properties.Set(prop, val)
 	}
+
+	target.Required = append(target.Required, src.Required...)
 }
 
 // jsonSchemaForOperator creates the json schema for the operator's values.
@@ -926,7 +951,7 @@ func jsonSchemaForOperator(
 
 	// if the opeartor defines custom values, add the properties to the schema
 	if o.CustomValues != nil {
-		mergeJsonSchemaProperties(schema, reflector.Reflect(o.CustomValues))
+		mergeJsonSchema(schema, reflector.Reflect(o.CustomValues))
 	}
 
 	// nest the operator values schema in the correct place
