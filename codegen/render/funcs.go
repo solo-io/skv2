@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 	"sort"
 	"strings"
@@ -719,20 +718,38 @@ func createCustomTypeMapper(values values.UserHelmValues) customTypeMapper {
 
 	return func(t reflect.Type, schema *jsonschema.Schema) *jsonschema.Schema {
 		if values.JsonSchema.CustomTypeMapper != nil {
-			log.Printf("%s %v", t, t)
 			// the custom mappings are accept the json schema as a map and are
 			// expected to return an interface that can be serialized as a json schema
 			// or null if it doesn't handle the type
 
 			// serialize default schema into a map
-			var defaultAsMap map[string]interface{}
 			buf, err := schema.MarshalJSON()
 			if err != nil {
 				panic(err)
 			}
-			err = json.Unmarshal(buf, &defaultAsMap)
-			if err != nil {
-				panic(err)
+
+			var defaultAsMap map[string]interface{}
+
+			// if it's a boolean schema (per section 4.3.2 of the spec) convert it
+			// to a map representation
+			var section432Schema bool
+			err = json.Unmarshal(buf, &section432Schema)
+			if err == nil {
+				if section432Schema {
+					// "true" == Always passes validation, as if the empty schema {}
+					defaultAsMap = map[string]interface{}{}
+				} else {
+					// "false" == Always fails validation, as if the schema { "not": {} }
+					defaultAsMap = map[string]interface{}{
+						"not": map[string]interface{}{},
+					}
+				}
+			} else {
+				// if here - schema is not a bool so unmarshal the schema as map
+				err = json.Unmarshal(buf, &defaultAsMap)
+				if err != nil {
+					panic(err)
+				}
 			}
 
 			// if the type is handled, deserialize it into json schema and return that

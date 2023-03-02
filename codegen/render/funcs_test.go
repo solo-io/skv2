@@ -762,5 +762,43 @@ var _ = Describe("toJSONSchema", func() {
 				}`)
 			Expect(result).To(Equal(expected))
 		})
+
+		FIt("can custom map an interface type", func() {
+			type ChildType interface {
+				SomeFunc() bool
+			}
+
+			type TestType struct {
+				Child ChildType `json:"myChild" desc:"big fish"`
+			}
+			result := render.ToJSONSchema(values.UserHelmValues{
+				CustomValues: &TestType{},
+				JsonSchema: values.UserJsonSchema{
+					CustomTypeMapper: func(
+						t reflect.Type,
+						schema map[string]interface{},
+					) interface{} {
+						interfaceType := reflect.TypeOf((*ChildType)(nil)).Elem()
+
+						if t == interfaceType {
+							return &MyJsonSchemaType{
+								Type: "number",
+							}
+						}
+						return nil
+					},
+				},
+			})
+			expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"myChild": {
+						"type": "number"
+					}
+				}
+			}`)
+			Expect(result).To(Equal(expected))
+		})
 	})
 })
