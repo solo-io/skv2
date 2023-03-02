@@ -672,7 +672,7 @@ var _ = Describe("toJSONSchema", func() {
 		Expect(resultContainer.Properties.Field1.AnyOf[1].Const).To(BeFalse())
 	})
 
-	FIt("merges the required fields", func() {
+	It("merges the required fields", func() {
 		type Type1 struct {
 			Field1 string `jsonschema:"required"`
 		}
