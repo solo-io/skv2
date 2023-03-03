@@ -21,21 +21,26 @@ import (
 
 // RetryOptions specify how to retry when a manager fails to be created or started.
 type RetryOptions struct {
-	// Delay is the initial retry delay.
-	// Default is 1 second.
-	Delay time.Duration
-
 	// DelayType is the type of retry delay (fixed or exponential backoff).
 	// Default is exponential backoff.
 	DelayType RetryDelayType
 
+	// Delay is the initial retry delay.
+	// Default is 1 second.
+	Delay *time.Duration
+
 	// MaxDelay is the maximum delay between retries.
 	// Default is 0 (no max).
-	MaxDelay time.Duration
+	MaxDelay *time.Duration
+
+	// MaxJitter is the maximum random jitter between retries.
+	// If set to 0, the delay intervals will contain no randomness.
+	// Default is the same value as delay (1 second).
+	MaxJitter *time.Duration
 
 	// MaxRetries is the maximum number of retries.
 	// Default is 0 (retry forever).
-	MaxRetries uint
+	MaxRetries *uint
 }
 
 // RetryDelayType is the type of delay to be used for manager creation retries.
@@ -172,31 +177,61 @@ func (c *clusterWatcher) managerOptionsWithDefaults() manager.Options {
 }
 
 func (c *clusterWatcher) retryOptionsWithDefaults() []retry.Option {
-	// set delay to 1 second if not set
-	delay := c.retryOptions.Delay
-	if delay == 0 {
-		delay = time.Second
-	}
+	opt := c.retryOptions
 
-	// convert the delay type
+	// convert the delay type (defaulting to backoff)
 	var delayType retry.DelayTypeFunc
-	if c.retryOptions.DelayType == RetryDelayType_Fixed {
+	if opt.DelayType == RetryDelayType_Fixed {
 		delayType = retry.FixedDelay
 	} else {
 		delayType = retry.BackOffDelay
 	}
 
-	// the rest will default to their zero values if not set
-	maxDelay := c.retryOptions.MaxDelay
-	attempts := c.retryOptions.MaxRetries
+	// set the duration values to their specified defaults if not set
+	var delay time.Duration
+	if opt.Delay != nil {
+		delay = *opt.Delay
+	} else {
+		delay = time.Second
+	}
 
-	return []retry.Option{
-		retry.DelayType(retry.CombineDelay(delayType, retry.RandomDelay)),
-		retry.MaxJitter(delay),
+	var maxDelay time.Duration
+	if opt.MaxDelay != nil {
+		maxDelay = *opt.MaxDelay
+	} else {
+		maxDelay = 0
+	}
+
+	var maxJitter time.Duration
+	if opt.MaxJitter != nil {
+		maxJitter = *opt.MaxJitter
+	} else {
+		maxJitter = delay
+	}
+
+	var maxRetries uint
+	if opt.MaxRetries != nil {
+		maxRetries = *opt.MaxRetries
+	} else {
+		maxRetries = 0
+	}
+
+	// construct the retry options with the above values
+	retryOptions := []retry.Option{
 		retry.Delay(delay),
 		retry.MaxDelay(maxDelay),
-		retry.Attempts(attempts),
+		retry.Attempts(maxRetries),
 	}
+	if maxJitter > 0 {
+		// add a random delay with max jitter to the specified delay type
+		retryOptions = append(retryOptions,
+			retry.DelayType(retry.CombineDelay(delayType, retry.RandomDelay)),
+			retry.MaxJitter(maxJitter))
+	} else {
+		// if maxJitter was explicitly set to 0, don't add randomness or jitter
+		retryOptions = append(retryOptions, retry.DelayType(delayType))
+	}
+	return retryOptions
 }
 
 type asyncManager struct {
