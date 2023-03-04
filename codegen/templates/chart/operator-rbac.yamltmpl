@@ -9,7 +9,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 [[- if $operator.Rbac ]]
 # Rbac manifests for [[ $operator.Name ]]
 
-{{- $[[ $operatorVar ]] := $.Values.[[ $operatorVar ]]}}
+{{- $[[ $operatorVar ]] := [[ (opVar $operator)]]}}
 {{- if $[[ $operatorVar ]].enabled }}
 ---
 

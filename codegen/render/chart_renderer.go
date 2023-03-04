@@ -8,31 +8,35 @@ type ChartRenderer struct {
 	templateRenderer
 }
 
-var defaultChartInputs = inputTemplates{
-	"chart/operator-deployment.yamltmpl": {
-		Path: "templates/deployment.yaml",
-	},
-	"chart/operator-rbac.yamltmpl": {
-		Path: "templates/rbac.yaml",
-	},
-	"chart/_helpers.tpl": {
-		Path: "templates/_helpers.tpl",
-	},
-	"chart/values.yamltmpl": {
-		Path: "values.yaml",
-	},
-	"chart/Chart.yamltmpl": {
-		Path: "Chart.yaml",
-	},
+func defaultChartInputs() inputTemplates {
+	return inputTemplates{
+		"chart/operator-deployment.yamltmpl": {
+			Path: "templates/deployment.yaml",
+		},
+		"chart/operator-rbac.yamltmpl": {
+			Path: "templates/rbac.yaml",
+		},
+		"chart/_helpers.tpl": {
+			Path: "templates/_helpers.tpl",
+		},
+		"chart/values.yamltmpl": {
+			Path: "values.yaml",
+		},
+		"chart/Chart.yamltmpl": {
+			Path: "Chart.yaml",
+		},
+	}
 }
 
-var chartInputsNoOperators = inputTemplates{
-	"chart/values.yamltmpl": {
-		Path: "values.yaml",
-	},
-	"chart/Chart.yamltmpl": {
-		Path: "Chart.yaml",
-	},
+func chartInputsNoOperators() inputTemplates {
+	return inputTemplates{
+		"chart/values.yamltmpl": {
+			Path: "values.yaml",
+		},
+		"chart/Chart.yamltmpl": {
+			Path: "Chart.yaml",
+		},
+	}
 }
 
 func RenderChart(chart model.Chart) ([]OutFile, error) {
@@ -50,9 +54,9 @@ func RenderChart(chart model.Chart) ([]OutFile, error) {
 }
 
 func (r ChartRenderer) Render(chart model.Chart) ([]OutFile, error) {
-	templatesToRender := defaultChartInputs
+	templatesToRender := defaultChartInputs()
 	if len(chart.Operators) == 0 {
-		templatesToRender = chartInputsNoOperators
+		templatesToRender = chartInputsNoOperators()
 	}
 
 	if chart.JsonSchema != nil {

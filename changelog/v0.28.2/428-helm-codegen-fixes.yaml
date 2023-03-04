@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fixes some bugs generating schema.json and helm docs
+    issueLink: https://github.com/solo-io/skv2/issues/428
