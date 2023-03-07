@@ -157,7 +157,13 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 
 			// ignore the children of fields that are marked as such (i.e. don't recurse down)
 			if _, ok := field.Tag.Lookup(omitChildrenTag); ok {
-				path := strings.Join(append(path, field.Name), ".")
+				fieldPath := path
+				if jsonName != "" {
+					fieldPath = append(fieldPath, jsonName)
+				} else {
+					fieldPath = append(fieldPath, field.Name)
+				}
+				path := strings.Join(fieldPath, ".")
 				kind := field.Type.Kind()
 				if kind == reflect.Slice {
 					path += "[]"
