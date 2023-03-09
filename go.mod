@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/semver v1.4.2
 	github.com/Masterminds/sprig/v3 v3.1.0
-	github.com/avast/retry-go v2.2.0+incompatible
+	github.com/avast/retry-go/v4 v4.3.3
 	github.com/envoyproxy/protoc-gen-validate v0.6.1
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/logr v1.2.3
@@ -70,6 +70,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
+	github.com/avast/retry-go v2.2.0+incompatible // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cockroachdb/apd/v2 v2.0.1 // indirect
