@@ -38,9 +38,9 @@ type RetryOptions struct {
 	// Default is the same value as delay (1 second).
 	MaxJitter *time.Duration
 
-	// MaxRetries is the maximum number of retries.
+	// Attempts is the maximum number of attempts.
 	// Default is 0 (retry forever).
-	MaxRetries *uint
+	Attempts *uint
 }
 
 // RetryDelayType is the type of delay to be used for manager creation retries.
@@ -209,18 +209,18 @@ func (c *clusterWatcher) retryOptionsWithDefaults() []retry.Option {
 		maxJitter = delay
 	}
 
-	var maxRetries uint
-	if opt.MaxRetries != nil {
-		maxRetries = *opt.MaxRetries
+	var attempts uint
+	if opt.Attempts != nil {
+		attempts = *opt.Attempts
 	} else {
-		maxRetries = 0
+		attempts = 0
 	}
 
 	// construct the retry options with the above values
 	retryOptions := []retry.Option{
 		retry.Delay(delay),
 		retry.MaxDelay(maxDelay),
-		retry.Attempts(maxRetries),
+		retry.Attempts(attempts),
 	}
 	if maxJitter > 0 {
 		// add a random delay with max jitter to the specified delay type
