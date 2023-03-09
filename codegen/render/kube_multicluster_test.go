@@ -120,7 +120,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 
 		Describe("clientset", func() {
 			It("works", func() {
-				cw := watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns}, nil)
+				cw := watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns}, watch.RetryOptions{}, nil)
 				err := cw.Run(masterManager)
 				Expect(err).NotTo(HaveOccurred())
 				mcClientset := multicluster.NewClient(cw)
@@ -187,7 +187,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			}
 
 			BeforeEach(func() {
-				cw = watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns}, nil)
+				cw = watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns}, watch.RetryOptions{}, nil)
 			})
 
 			It("works when a loop is registered before the watcher is started", func() {
