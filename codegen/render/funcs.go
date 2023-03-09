@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -127,6 +128,8 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"containerConfigs": containerConfigs,
+
+		"opVar": opVar,
 	}
 
 	for k, v := range skv2Funcs {
@@ -147,26 +150,31 @@ type containerConfig struct {
 }
 
 func containerConfigs(op model.Operator) []containerConfig {
-	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
-	if op.ValuePath != "" {
-		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
-
-	}
+	valuesVar := opVar(op)
 	configs := []containerConfig{{
 		Container: op.Deployment.Container,
 		Name:      op.Name,
-		ValuesVar: opVar,
+		ValuesVar: valuesVar,
 	}}
 
 	for _, sidecar := range op.Deployment.Sidecars {
 		configs = append(configs, containerConfig{
 			Container: sidecar.Container,
 			Name:      sidecar.Name,
-			ValuesVar: opVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
+			ValuesVar: valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
 		})
 	}
 
 	return configs
+}
+
+func opVar(op model.Operator) string {
+	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
+	if op.ValuePath != "" {
+		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
+
+	}
+	return opVar
 }
 
 /*
@@ -289,7 +297,10 @@ func (yc *yamlCommenter) addYamlComments(
 	node *goyaml.Node,
 ) {
 	if value.IsZero() {
-		return
+		// still try to add comments structs that are initialized to all zero values
+		if value.Kind() != reflect.Struct {
+			return
+		}
 	}
 
 	valueType := value.Type()
@@ -337,6 +348,9 @@ func (yc *yamlCommenter) addYamlComments(
 					// get the field from the strcut
 					fieldName := yc.getStructFieldName(valueType, keyNode.Value)
 					field, _ := valueType.FieldByName(fieldName)
+					if field.Anonymous {
+						field, _ = field.Type.FieldByName(fieldName)
+					}
 
 					// if the field is tagged w/ description, add the comment
 					keyNode.HeadComment = field.Tag.Get("desc")
@@ -458,11 +472,49 @@ func wrapWords(s string, limit int) string {
 }
 
 func fromNode(n goyaml.Node) string {
-	b, err := goyaml.Marshal(&n)
+	b, err := goyaml.Marshal(sortYAML(&n))
 	if err != nil {
 		panic(err)
 	}
 	return string(b)
+}
+
+// Implement sorting for prettier yaml
+type nodes []*goyaml.Node
+
+func (i nodes) Len() int { return len(i) / 2 }
+
+func (i nodes) Swap(x, y int) {
+	x *= 2
+	y *= 2
+	i[x], i[y] = i[y], i[x]         // keys
+	i[x+1], i[y+1] = i[y+1], i[x+1] // values
+}
+
+func (i nodes) Less(x, y int) bool {
+	x *= 2
+	y *= 2
+	return i[x].Value < i[y].Value
+}
+
+func sortYAML(node *goyaml.Node) *goyaml.Node {
+	if node.Kind == goyaml.DocumentNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+	}
+	if node.Kind == goyaml.SequenceNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+	}
+	if node.Kind == goyaml.MappingNode {
+		for i, n := range node.Content {
+			node.Content[i] = sortYAML(n)
+		}
+		sort.Sort(nodes(node.Content))
+	}
+	return node
 }
 
 func mergeNodes(nodes ...goyaml.Node) goyaml.Node {
@@ -591,14 +643,14 @@ func toJSONSchema(values values.UserHelmValues) string {
 
 	// add json schema properties from the chart's custom values
 	if values.CustomValues != nil {
-		mergeJsonSchemaProperties(schema, reflector.Reflect(values.CustomValues))
+		mergeJsonSchema(schema, reflector.Reflect(values.CustomValues))
 	}
 
 	// add json schema for the operators
 	if values.Operators != nil {
 		for _, o := range values.Operators {
 			opSchema := jsonSchemaForOperator(reflector, &o)
-			mergeJsonSchemaProperties(schema, opSchema)
+			mergeJsonSchema(schema, opSchema)
 		}
 	}
 
@@ -671,14 +723,33 @@ func createCustomTypeMapper(values values.UserHelmValues) customTypeMapper {
 			// or null if it doesn't handle the type
 
 			// serialize default schema into a map
-			var defaultAsMap map[string]interface{}
 			buf, err := schema.MarshalJSON()
 			if err != nil {
 				panic(err)
 			}
-			err = json.Unmarshal(buf, &defaultAsMap)
-			if err != nil {
-				panic(err)
+
+			var defaultAsMap map[string]interface{}
+
+			// if it's a boolean schema (per section 4.3.2 of the spec) convert it
+			// to a map representation
+			var section432Schema bool
+			err = json.Unmarshal(buf, &section432Schema)
+			if err == nil {
+				if section432Schema {
+					// "true" == Always passes validation, as if the empty schema {}
+					defaultAsMap = map[string]interface{}{}
+				} else {
+					// "false" == Always fails validation, as if the schema { "not": {} }
+					defaultAsMap = map[string]interface{}{
+						"not": map[string]interface{}{},
+					}
+				}
+			} else {
+				// if here - schema is not a bool so unmarshal the schema as map
+				err = json.Unmarshal(buf, &defaultAsMap)
+				if err != nil {
+					panic(err)
+				}
 			}
 
 			// if the type is handled, deserialize it into json schema and return that
@@ -844,9 +915,9 @@ func makePointerFieldsNullable(
 	}
 }
 
-// mergeJsonSchemaProperties Adds the properties from the source json schema
+// mergeJsonSchema Adds the properties from the source json schema
 // to the target
-func mergeJsonSchemaProperties(
+func mergeJsonSchema(
 	target *jsonschema.Schema,
 	src *jsonschema.Schema,
 ) {
@@ -854,10 +925,16 @@ func mergeJsonSchemaProperties(
 		target.Properties = orderedmap.New()
 	}
 
+	if target.Required == nil {
+		target.Required = []string{}
+	}
+
 	for _, prop := range src.Properties.Keys() {
 		val, _ := src.Properties.Get(prop)
 		target.Properties.Set(prop, val)
 	}
+
+	target.Required = append(target.Required, src.Required...)
 }
 
 // jsonSchemaForOperator creates the json schema for the operator's values.
@@ -874,7 +951,7 @@ func jsonSchemaForOperator(
 
 	// if the opeartor defines custom values, add the properties to the schema
 	if o.CustomValues != nil {
-		mergeJsonSchemaProperties(schema, reflector.Reflect(o.CustomValues))
+		mergeJsonSchema(schema, reflector.Reflect(o.CustomValues))
 	}
 
 	// nest the operator values schema in the correct place

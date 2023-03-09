@@ -57,8 +57,9 @@ var _ = Describe("toYAMLWithComments", func() {
 			Field5: "hello field 5",
 			Field6: []string{"hello", "field", "six"},
 			Field7: map[string]string{
-				"hello":   "field seven",
-				"field 7": "hello",
+				// This will sort
+				"hello2": "hello 2",
+				"hello1": "hello 1",
 			},
 			Field8: map[string]NestedType{
 				"hello": {FieldN1: "field 8"},
@@ -66,6 +67,7 @@ var _ = Describe("toYAMLWithComments", func() {
 			Field9: map[string]*NestedType{
 				"hello": {FieldN1: "field 9"},
 			},
+			// We will expect sorting to actually bring this to the top
 			Field10: map[string][]NestedType{
 				"hello": {
 					{FieldN1: "field"},
@@ -73,9 +75,17 @@ var _ = Describe("toYAMLWithComments", func() {
 				},
 			},
 		}, &values.UserValuesInlineDocs{})
+		fmt.Println(render.FromNode(node))
 		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
 			# field descripting comment
 			Field1: Hello, comments
+			# a map to a list of structs
+			Field10:
+					hello:
+							- # nested field 1
+								FieldN1: field
+							- # nested field 1
+								FieldN1: ten
 			# list of field 2
 			Field2:
 					- # nested field 1
@@ -98,8 +108,8 @@ var _ = Describe("toYAMLWithComments", func() {
 					- six
 			# a map of scalars to scalars
 			Field7:
-					field 7: hello
-					hello: field seven
+					hello1: hello 1
+					hello2: hello 2
 			# a map to a struct
 			Field8:
 					hello:
@@ -110,13 +120,6 @@ var _ = Describe("toYAMLWithComments", func() {
 					hello:
 							# nested field 1
 							FieldN1: field 9
-			# a map to a list of structs
-			Field10:
-					hello:
-							- # nested field 1
-								FieldN1: field
-							- # nested field 1
-								FieldN1: ten
 			# non standard field name
 			fieldfive: hello field 5
 		`)))
@@ -137,6 +140,40 @@ var _ = Describe("toYAMLWithComments", func() {
 		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
 			# nested field 1
 			FieldN1: Hello
+		`)))
+	})
+
+	It("handles nested type where field name is same as type name", func() {
+		type NestedType struct {
+			NestedType string `desc:"nested field 1"`
+		}
+		type TestType struct {
+			NestedType
+		}
+		node := render.ToNode(&TestType{
+			NestedType: NestedType{
+				NestedType: "Hello",
+			},
+		}, &values.UserValuesInlineDocs{})
+		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
+			# nested field 1
+			NestedType: Hello
+		`)))
+	})
+
+	It("handles structs thate are completely initalized to zero values", func() {
+		type ChildType struct {
+			FieldC1 string `desc:"field c1"`
+		}
+		type TestType struct {
+			ChildType ChildType `json:"childType"`
+		}
+		node := render.ToNode(&TestType{}, &values.UserValuesInlineDocs{})
+		actual := render.FromNode(node)
+		Expect(actual).To(Equal(prepareExpected(`
+			childType:
+				  # field c1
+				  FieldC1: ""
 		`)))
 	})
 
@@ -635,6 +672,29 @@ var _ = Describe("toJSONSchema", func() {
 		Expect(resultContainer.Properties.Field1.AnyOf[1].Const).To(BeFalse())
 	})
 
+	It("merges the required fields", func() {
+		type Type1 struct {
+			Field1 string `jsonschema:"required"`
+		}
+		result := render.ToJSONSchema(values.UserHelmValues{
+			CustomValues: &Type1{},
+		})
+		expected := prepareExpected(`
+		{
+			"$schema": "https://json-schema.org/draft/2020-12/schema",
+			"properties": {
+				"Field1": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"Field1"
+			]
+		}`)
+		Expect(result).To(Equal(expected))
+
+	})
+
 	Context("custom type mappings", func() {
 		type MyJsonSchemaType struct {
 			Type  string `json:"type"`
@@ -723,6 +783,44 @@ var _ = Describe("toJSONSchema", func() {
 						}
 					}
 				}`)
+			Expect(result).To(Equal(expected))
+		})
+
+		It("can custom map an interface type", func() {
+			type ChildType interface {
+				SomeFunc() bool
+			}
+
+			type TestType struct {
+				Child ChildType `json:"myChild" desc:"big fish"`
+			}
+			result := render.ToJSONSchema(values.UserHelmValues{
+				CustomValues: &TestType{},
+				JsonSchema: values.UserJsonSchema{
+					CustomTypeMapper: func(
+						t reflect.Type,
+						schema map[string]interface{},
+					) interface{} {
+						interfaceType := reflect.TypeOf((*ChildType)(nil)).Elem()
+
+						if t == interfaceType {
+							return &MyJsonSchemaType{
+								Type: "number",
+							}
+						}
+						return nil
+					},
+				},
+			})
+			expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"myChild": {
+						"type": "number"
+					}
+				}
+			}`)
 			Expect(result).To(Equal(expected))
 		})
 	})

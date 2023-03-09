@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fixes bug where the helm documentation's field name would be wrong if the tag omitChildren and json are both used
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/7833

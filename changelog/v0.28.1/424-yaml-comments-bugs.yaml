@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fixes some bugs generating values.yaml inline docs comments
+    issueLink: https://github.com/solo-io/skv2/issues/424
