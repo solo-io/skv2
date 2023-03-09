@@ -6,7 +6,7 @@ import (
 	. "github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"k8s.io/client-go/tools/clientcmd/api"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

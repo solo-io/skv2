@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	v1 "k8s.io/api/core/v1"

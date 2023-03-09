@@ -1,7 +1,7 @@
 package kubeconfig_test
 
 import (
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	corev1 "k8s.io/api/core/v1"
