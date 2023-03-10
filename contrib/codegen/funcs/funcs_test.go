@@ -1,7 +1,7 @@
 package funcs_test
 
 import (
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib/codegen/funcs"

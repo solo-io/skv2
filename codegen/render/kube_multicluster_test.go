@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/skv2/codegen/util"
 	"github.com/solo-io/skv2/test/matchers"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/randutils"
 	"github.com/solo-io/k8s-utils/kubeutils"

@@ -20,7 +20,7 @@ import (
 
 	"github.com/avast/retry-go/v4"
 	"github.com/golang/mock/gomock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
