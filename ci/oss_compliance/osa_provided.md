@@ -36,10 +36,10 @@ Name|Version|License
 [go.uber.org/multierr](https://go.uber.org/multierr)|v1.6.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.21.0|MIT License
 [exp/maps](https://golang.org/x/exp/maps)|v0.0.0-20220921164117-439092de6870|BSD 3-clause "New" or "Revised" License
-[x/net](https://golang.org/x/net)|v0.1.0|BSD 3-clause "New" or "Revised" License
+[x/net](https://golang.org/x/net)|v0.6.0|BSD 3-clause "New" or "Revised" License
 [oauth2/internal](https://golang.org/x/oauth2/internal)|v0.0.0-20211104180415-d3ed0bb246c8|BSD 3-clause "New" or "Revised" License
-[x/term](https://golang.org/x/term)|v0.1.0|BSD 3-clause "New" or "Revised" License
-[x/text](https://golang.org/x/text)|v0.4.0|BSD 3-clause "New" or "Revised" License
+[x/term](https://golang.org/x/term)|v0.5.0|BSD 3-clause "New" or "Revised" License
+[x/text](https://golang.org/x/text)|v0.7.0|BSD 3-clause "New" or "Revised" License
 [time/rate](https://golang.org/x/time/rate)|v0.0.0-20220609170525-579cf78fd858|BSD 3-clause "New" or "Revised" License
 [jsonpatch/v2](https://gomodules.xyz/jsonpatch/v2)|v2.2.0|Apache License 2.0
 [google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.28.0|BSD 3-clause "New" or "Revised" License

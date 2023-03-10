@@ -2,4 +2,4 @@ changelog:
   - type: DEPENDENCY_BUMP
     dependencyOwner: onsi
     dependencyRepo: ginkgo
-    dependencyTag: v2.5.0
+    dependencyTag: v2.8.1
