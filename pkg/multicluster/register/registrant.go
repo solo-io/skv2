@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/avast/retry-go"
+	"github.com/avast/retry-go/v4"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"

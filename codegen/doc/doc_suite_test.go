@@ -1,4 +1,4 @@
-package ezkube_test
+package doc_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestEzkube(t *testing.T) {
+func TestDoc(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Ezkube Suite")
+	RunSpecs(t, "Doc Suite")
 }

@@ -1,7 +1,7 @@
 package tests_test
 
 import (
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	. "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/sets"

@@ -1,0 +1,5 @@
+
+changelog:
+  - type: NON_USER_FACING
+    description: Sort yaml alphabetically for helm values
+    issueLink: https://github.com/solo-io/skv2/issues/426

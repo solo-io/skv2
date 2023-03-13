@@ -1,6 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "properties": {
+    "customField1": {
+      "type": "string"
+    },
     "painter": {
       "properties": {
         "image": {
@@ -8987,6 +8990,9 @@
         },
         "enabled": {
           "type": "boolean"
+        },
+        "customField2_renamed": {
+          "type": "number"
         }
       },
       "type": "object"

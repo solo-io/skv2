@@ -7,7 +7,7 @@ import (
 	mock_k8s_rbac_clients "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/mocks"
 
 	"github.com/golang/mock/gomock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/pkg/multicluster/register/internal"

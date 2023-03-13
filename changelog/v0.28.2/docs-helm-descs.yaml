@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Add missing and update existing Helm field descriptions.
+    skipCI: true
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/7572
