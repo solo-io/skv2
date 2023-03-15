@@ -169,9 +169,13 @@ func containerConfigs(op model.Operator) []containerConfig {
 }
 
 func opVar(op model.Operator) string {
-	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
+	name := strcase.ToLowerCamel(op.Name)
+	if op.ValuesFileNameOverride != "" {
+		name = strcase.ToLowerCamel(op.ValuesFileNameOverride)
+	}
+	opVar := fmt.Sprintf("$.Values.%s", name)
 	if op.ValuePath != "" {
-		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
+		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, name)
 
 	}
 	return opVar
