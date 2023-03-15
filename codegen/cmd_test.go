@@ -243,7 +243,7 @@ var _ = Describe("Cmd", func() {
 		Expect(envMapField.HeadComment).To(Equal("# Environment variables for the container. For more info, see the [Kubernetes\n# documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core)."))
 	})
 
-	FIt("generates from templates using a name override", func() {
+	It("generates from templates using a name override", func() {
 		cmd := &Command{
 			Groups: []Group{
 				{
