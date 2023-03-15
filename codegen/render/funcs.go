@@ -178,10 +178,11 @@ func opVar(op model.Operator) string {
 }
 
 func opName(name, valuesFileNameOverride string) string {
+	formattedName := strcase.ToLowerCamel(name)
 	if valuesFileNameOverride != "" {
-		name = strcase.ToLowerCamel(valuesFileNameOverride)
+		formattedName = strcase.ToLowerCamel(valuesFileNameOverride)
 	}
-	return name
+	return formattedName
 }
 
 /*
