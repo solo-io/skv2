@@ -178,8 +178,9 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		}
 
 		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{
-			Name:      operator.Name,
-			ValuePath: operator.ValuePath,
+			Name:                   operator.Name,
+			ValuesFileNameOverride: operator.ValuesFileNameOverride,
+			ValuePath:              operator.ValuePath,
 			Values: values.UserValues{
 				UserContainerValues: makeContainerDocs(operator.Deployment.Container),
 				Sidecars:            sidecars,

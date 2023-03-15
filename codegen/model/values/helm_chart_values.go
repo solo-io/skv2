@@ -16,10 +16,11 @@ type UserHelmValues struct {
 }
 
 type UserOperatorValues struct {
-	Name         string
-	ValuePath    string
-	Values       UserValues
-	CustomValues interface{}
+	Name                   string
+	ValuesFileNameOverride string
+	ValuePath              string
+	Values                 UserValues
+	CustomValues           interface{}
 }
 
 type UserValuesInlineDocs struct {
