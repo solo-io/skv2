@@ -243,6 +243,94 @@ var _ = Describe("Cmd", func() {
 		Expect(envMapField.HeadComment).To(Equal("# Environment variables for the container. For more info, see the [Kubernetes\n# documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core)."))
 	})
 
+	It("generates from templates using a name override", func() {
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "Paint",
+							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Status: &Field{Type: Type{Name: "PaintStatus"}},
+						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name:                   "painter-original-name",
+						ValuesFileNameOverride: "override-name",
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
+							},
+						},
+					},
+				},
+				Values: nil,
+				ValuesInlineDocs: &ValuesInlineDocs{
+					LineLengthLimit: 80,
+				},
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/name_override_chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		fileContents, err := os.ReadFile("codegen/test/name_override_chart/values.yaml")
+		Expect(err).NotTo(HaveOccurred())
+		valuesString := string(fileContents)
+
+		Expect(valuesString).NotTo(ContainSubstring("painterOriginalName"))
+		Expect(valuesString).To(ContainSubstring("overrideName"))
+
+		fileContents, err = os.ReadFile("codegen/test/name_override_chart/templates/deployment.yaml")
+		Expect(err).NotTo(HaveOccurred())
+		deploymentString := string(fileContents)
+
+		Expect(deploymentString).NotTo(ContainSubstring("$.Values.painterOriginalName"))
+		Expect(deploymentString).To(ContainSubstring("$.Values.overrideName"))
+	})
+
 	It("generates json schema for the values file", func() {
 		type CustomType1 struct {
 			Field1 string `json:"customField1"`

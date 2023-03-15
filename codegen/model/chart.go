@@ -65,6 +65,9 @@ type JsonSchema struct {
 type Operator struct {
 	Name string
 
+	// (Optional) To change the name referenced in the values file. If not specified a camelcase version of name is used
+	ValuesFileNameOverride string
+
 	// (Optional) For nesting operators in values API (e.g. a value of "agent" would place an operator at "agent.<operatorName>" )
 	ValuePath string
 
@@ -175,8 +178,9 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		}
 
 		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{
-			Name:      operator.Name,
-			ValuePath: operator.ValuePath,
+			Name:                   operator.Name,
+			ValuesFileNameOverride: operator.ValuesFileNameOverride,
+			ValuePath:              operator.ValuePath,
 			Values: values.UserValues{
 				UserContainerValues: makeContainerDocs(operator.Deployment.Container),
 				Sidecars:            sidecars,

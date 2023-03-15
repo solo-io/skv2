@@ -94,7 +94,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 
 		"get_operator_values": func(o values.UserOperatorValues) map[string]interface{} {
 			opValues := map[string]interface{}{
-				strcase.ToLowerCamel(o.Name): o.Values,
+				opName(o.Name, o.ValuesFileNameOverride): o.Values,
 			}
 			if o.ValuePath != "" {
 				splitPath := strings.Split(o.ValuePath, ".")
@@ -112,7 +112,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 			opValues := map[string]interface{}{}
 			if o.CustomValues != nil {
 				opValues = map[string]interface{}{
-					strcase.ToLowerCamel(o.Name): o.CustomValues,
+					opName(o.Name, o.ValuesFileNameOverride): o.CustomValues,
 				}
 				if o.ValuePath != "" {
 					splitPath := strings.Split(o.ValuePath, ".")
@@ -169,12 +169,20 @@ func containerConfigs(op model.Operator) []containerConfig {
 }
 
 func opVar(op model.Operator) string {
-	opVar := fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(op.Name))
+	name := opName(op.Name, op.ValuesFileNameOverride)
+	opVar := fmt.Sprintf("$.Values.%s", name)
 	if op.ValuePath != "" {
-		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, strcase.ToLowerCamel(op.Name))
-
+		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, name)
 	}
 	return opVar
+}
+
+func opName(name, valuesFileNameOverride string) string {
+	formattedName := strcase.ToLowerCamel(name)
+	if valuesFileNameOverride != "" {
+		formattedName = strcase.ToLowerCamel(valuesFileNameOverride)
+	}
+	return formattedName
 }
 
 /*
