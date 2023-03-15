@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Allow name override on operator without changing name of resources.
+    issueLink: https://github.com/solo-io/skv2/issues/432
