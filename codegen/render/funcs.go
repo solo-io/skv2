@@ -934,9 +934,9 @@ func mergeJsonSchema(
 
 	for _, prop := range src.Properties.Keys() {
 		sourceVal, _ := src.Properties.Get(prop)
-		sourceValSchema, sourcIsSchema := sourceVal.(*jsonschema.Schema)
+		sourceValSchema, sourceIsSchema := sourceVal.(*jsonschema.Schema)
 		merged := false
-		if sourcIsSchema {
+		if sourceIsSchema {
 			targetValue, targetHasProp := target.Properties.Get(prop)
 			if sourceValSchema.Properties != nil && len(sourceValSchema.Properties.Keys()) > 0 && targetHasProp {
 				targetValSchema, targetIsSchema := targetValue.(*jsonschema.Schema)
