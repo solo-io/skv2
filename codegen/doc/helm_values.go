@@ -69,7 +69,7 @@ func GenerateHelmValuesDoc(s interface{}, topLevelKey string, topLevelDesc strin
 
 	var path []string
 	if topLevelKey != "" {
-		path = []string{topLevelKey}
+		path = strings.Split(topLevelKey, ".")
 	}
 
 	docReflect(addValue, path, topLevelDesc, cfgT.Type(), cfgT)

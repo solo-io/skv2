@@ -223,6 +223,7 @@ func (c Chart) GenerateHelmDoc() string {
 
 	// generate documentation for operator values
 	for _, operatorWithValues := range helmValues.Operators {
+
 		name := operatorWithValues.FormattedName()
 		values := operatorWithValues.Values
 
@@ -233,8 +234,13 @@ func (c Chart) GenerateHelmDoc() string {
 			values.Sidecars[name] = container
 		}
 
-		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(operatorWithValues.CustomValues, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
-		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
+		keyPath := name
+		if operatorWithValues.ValuePath != "" {
+			keyPath = fmt.Sprintf("%s.%s", operatorWithValues.ValuePath, name)
+		}
+
+		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(operatorWithValues.CustomValues, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
+		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
 
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
