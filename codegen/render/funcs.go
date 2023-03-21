@@ -94,7 +94,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 
 		"get_operator_values": func(o values.UserOperatorValues) map[string]interface{} {
 			opValues := map[string]interface{}{
-				opName(o.Name, o.ValuesFileNameOverride): o.Values,
+				o.FormattedName(): o.Values,
 			}
 			if o.ValuePath != "" {
 				splitPath := strings.Split(o.ValuePath, ".")
@@ -112,7 +112,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 			opValues := map[string]interface{}{}
 			if o.CustomValues != nil {
 				opValues = map[string]interface{}{
-					opName(o.Name, o.ValuesFileNameOverride): o.CustomValues,
+					o.FormattedName(): o.CustomValues,
 				}
 				if o.ValuePath != "" {
 					splitPath := strings.Split(o.ValuePath, ".")
@@ -169,20 +169,12 @@ func containerConfigs(op model.Operator) []containerConfig {
 }
 
 func opVar(op model.Operator) string {
-	name := opName(op.Name, op.ValuesFileNameOverride)
+	name := op.FormattedName()
 	opVar := fmt.Sprintf("$.Values.%s", name)
 	if op.ValuePath != "" {
 		opVar = fmt.Sprintf("$.Values.%s.%s", op.ValuePath, name)
 	}
 	return opVar
-}
-
-func opName(name, valuesFileNameOverride string) string {
-	formattedName := strcase.ToLowerCamel(name)
-	if valuesFileNameOverride != "" {
-		formattedName = strcase.ToLowerCamel(valuesFileNameOverride)
-	}
-	return formattedName
 }
 
 /*
@@ -929,20 +921,37 @@ func mergeJsonSchema(
 	target *jsonschema.Schema,
 	src *jsonschema.Schema,
 ) {
-	if target.Properties == nil {
-		target.Properties = orderedmap.New()
-	}
 
 	if target.Required == nil {
 		target.Required = []string{}
 	}
 
-	for _, prop := range src.Properties.Keys() {
-		val, _ := src.Properties.Get(prop)
-		target.Properties.Set(prop, val)
+	target.Required = append(target.Required, src.Required...)
+
+	if target.Properties == nil {
+		target.Properties = orderedmap.New()
 	}
 
-	target.Required = append(target.Required, src.Required...)
+	for _, prop := range src.Properties.Keys() {
+		sourceVal, _ := src.Properties.Get(prop)
+		sourceValSchema, sourceIsSchema := sourceVal.(*jsonschema.Schema)
+		merged := false
+		if sourceIsSchema {
+			targetValue, targetHasProp := target.Properties.Get(prop)
+			if sourceValSchema.Properties != nil && len(sourceValSchema.Properties.Keys()) > 0 && targetHasProp {
+				targetValSchema, targetIsSchema := targetValue.(*jsonschema.Schema)
+				if targetIsSchema {
+					mergeJsonSchema(targetValSchema, sourceValSchema)
+					target.Properties.Set(prop, targetValSchema)
+					merged = true
+				}
+			}
+		}
+
+		if !merged {
+			target.Properties.Set(prop, sourceVal)
+		}
+	}
 }
 
 // jsonSchemaForOperator creates the json schema for the operator's values.
@@ -963,11 +972,11 @@ func jsonSchemaForOperator(
 	}
 
 	// nest the operator values schema in the correct place
-	path := []string{strcase.ToLowerCamel(o.Name)}
+	path := []string{o.FormattedName()}
 	if o.ValuePath != "" {
 		splitPath := strings.Split(o.ValuePath, ".")
 		reverse(splitPath)
-		path = append(splitPath, path...)
+		path = append(path, splitPath...)
 	}
 	schema = nestSchemaAtPath(schema, path...)
 

@@ -275,7 +275,6 @@ var _ = Describe("Cmd", func() {
 			},
 			AnyVendorConfig: skv2Imports,
 			RenderProtos:    true,
-
 			Chart: &Chart{
 				Operators: []Operator{
 					{
@@ -308,6 +307,10 @@ var _ = Describe("Cmd", func() {
 						"https://github.com/solo-io/skv2",
 					},
 				},
+				ValuesReferenceDocs: ValuesReferenceDocs{
+					Title:    "Name Override Chart",
+					Filename: "name_override_chart_reference.md",
+				},
 			},
 
 			ManifestRoot: "codegen/test/name_override_chart",
@@ -329,6 +332,13 @@ var _ = Describe("Cmd", func() {
 
 		Expect(deploymentString).NotTo(ContainSubstring("$.Values.painterOriginalName"))
 		Expect(deploymentString).To(ContainSubstring("$.Values.overrideName"))
+
+		fileContents, err = os.ReadFile("codegen/test/name_override_chart/name_override_chart_reference.md")
+		Expect(err).NotTo(HaveOccurred())
+		docString := string(fileContents)
+
+		Expect(docString).NotTo(ContainSubstring("painterOriginalName"))
+		Expect(docString).To(ContainSubstring("overrideName"))
 	})
 
 	It("generates json schema for the values file", func() {

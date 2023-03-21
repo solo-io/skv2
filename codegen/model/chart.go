@@ -84,6 +84,14 @@ type Operator struct {
 	Values interface{}
 }
 
+func (o Operator) FormattedName() string {
+	formattedName := strcase.ToLowerCamel(o.Name)
+	if o.ValuesFileNameOverride != "" {
+		formattedName = strcase.ToLowerCamel(o.ValuesFileNameOverride)
+	}
+	return formattedName
+}
+
 // values for Deployment template
 type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
@@ -215,7 +223,8 @@ func (c Chart) GenerateHelmDoc() string {
 
 	// generate documentation for operator values
 	for _, operatorWithValues := range helmValues.Operators {
-		name := strcase.ToLowerCamel(operatorWithValues.Name)
+
+		name := operatorWithValues.FormattedName()
 		values := operatorWithValues.Values
 
 		// clear image tag so it doesn't show build time commit hashes
@@ -225,8 +234,13 @@ func (c Chart) GenerateHelmDoc() string {
 			values.Sidecars[name] = container
 		}
 
-		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(operatorWithValues.CustomValues, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
-		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
+		keyPath := name
+		if operatorWithValues.ValuePath != "" {
+			keyPath = fmt.Sprintf("%s.%s", operatorWithValues.ValuePath, name)
+		}
+
+		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(operatorWithValues.CustomValues, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
+		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
 
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
