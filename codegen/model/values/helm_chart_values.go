@@ -3,6 +3,7 @@ package values
 import (
 	"reflect"
 
+	"github.com/iancoleman/strcase"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 )
@@ -16,10 +17,19 @@ type UserHelmValues struct {
 }
 
 type UserOperatorValues struct {
-	Name         string
-	ValuePath    string
-	Values       UserValues
-	CustomValues interface{}
+	Name                   string
+	ValuesFileNameOverride string
+	ValuePath              string
+	Values                 UserValues
+	CustomValues           interface{}
+}
+
+func (o UserOperatorValues) FormattedName() string {
+	formattedName := strcase.ToLowerCamel(o.Name)
+	if o.ValuesFileNameOverride != "" {
+		formattedName = strcase.ToLowerCamel(o.ValuesFileNameOverride)
+	}
+	return formattedName
 }
 
 type UserValuesInlineDocs struct {

@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Fix some helm generation bugs.
+    issueLink: https://github.com/solo-io/skv2/issues/434

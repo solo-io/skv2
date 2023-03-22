@@ -65,6 +65,9 @@ type JsonSchema struct {
 type Operator struct {
 	Name string
 
+	// (Optional) To change the name referenced in the values file. If not specified a camelcase version of name is used
+	ValuesFileNameOverride string
+
 	// (Optional) For nesting operators in values API (e.g. a value of "agent" would place an operator at "agent.<operatorName>" )
 	ValuePath string
 
@@ -79,6 +82,14 @@ type Operator struct {
 
 	// Custom values to include at operator level
 	Values interface{}
+}
+
+func (o Operator) FormattedName() string {
+	formattedName := strcase.ToLowerCamel(o.Name)
+	if o.ValuesFileNameOverride != "" {
+		formattedName = strcase.ToLowerCamel(o.ValuesFileNameOverride)
+	}
+	return formattedName
 }
 
 // values for Deployment template
@@ -175,8 +186,9 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		}
 
 		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{
-			Name:      operator.Name,
-			ValuePath: operator.ValuePath,
+			Name:                   operator.Name,
+			ValuesFileNameOverride: operator.ValuesFileNameOverride,
+			ValuePath:              operator.ValuePath,
 			Values: values.UserValues{
 				UserContainerValues: makeContainerDocs(operator.Deployment.Container),
 				Sidecars:            sidecars,
@@ -211,7 +223,8 @@ func (c Chart) GenerateHelmDoc() string {
 
 	// generate documentation for operator values
 	for _, operatorWithValues := range helmValues.Operators {
-		name := strcase.ToLowerCamel(operatorWithValues.Name)
+
+		name := operatorWithValues.FormattedName()
 		values := operatorWithValues.Values
 
 		// clear image tag so it doesn't show build time commit hashes
@@ -221,8 +234,13 @@ func (c Chart) GenerateHelmDoc() string {
 			values.Sidecars[name] = container
 		}
 
-		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(operatorWithValues.CustomValues, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
-		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, name, fmt.Sprintf("Configuration for the %s deployment.", name))...)
+		keyPath := name
+		if operatorWithValues.ValuePath != "" {
+			keyPath = fmt.Sprintf("%s.%s", operatorWithValues.ValuePath, name)
+		}
+
+		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(operatorWithValues.CustomValues, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
+		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
 
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)

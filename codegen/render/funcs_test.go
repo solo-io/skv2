@@ -398,10 +398,11 @@ var _ = Describe("toJSONSchema", func() {
 					CustomValues: &Type2{Field2a: "hello2"},
 				},
 				{
-					Name:         "My_Operator_Two",
-					ValuePath:    "my.values",
-					Values:       values.UserValues{},
-					CustomValues: &Type2{Field2a: "hello2"},
+					Name:                   "My_Operator_Two",
+					ValuesFileNameOverride: "myOperatorNameOverride",
+					ValuePath:              "my.values",
+					Values:                 values.UserValues{},
+					CustomValues:           &Type2{Field2a: "hello2"},
 				},
 			},
 		})
@@ -418,11 +419,11 @@ var _ = Describe("toJSONSchema", func() {
 							Properties *struct {
 								Values *struct {
 									Properties map[string]map[string]interface{} `json:"properties"`
-								} `json:"values"`
+								} `json:"myOperatorNameOverride"`
 							} `json:"properties"`
-						} `json:"my"`
+						} `json:"values"`
 					} `json:"properties"`
-				} `json:"myOperatorTwo"`
+				} `json:"my"`
 			} `json:"properties"`
 		}{}
 
