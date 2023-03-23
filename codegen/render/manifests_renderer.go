@@ -144,6 +144,7 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 			return nil, eris.Errorf("Cue instance validation failed for %s: %+v", grp.Group, err)
 		}
 		schemas, err := generator.Schemas(builtInstance)
+		builtInstance.Value().Format()
 		if err != nil {
 			return nil, eris.Errorf("Cue openapi generation failed for %s: %+v", grp.Group, err)
 		}
