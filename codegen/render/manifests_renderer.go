@@ -148,6 +148,7 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 		log.Println(builtInstance)
 		log.Printf("\n\n%v\n", builtInstance)
 		fmt.Println(builtInstance.Value().Syntax(cue.Final()))
+		fmt.Println(builtInstance.Value().Syntax())
 		st, err := builtInstance.Value().String()
 		fmt.Println(st)
 		schemas, err := generator.Schemas(builtInstance)
