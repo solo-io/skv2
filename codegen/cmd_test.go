@@ -29,6 +29,46 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+var _ = FDescribe("7807 Cue Bug", func() {
+	skv2Imports := skv2_anyvendor.CreateDefaultMatchOptions([]string{
+		"codegen/test/cue_bug.proto",
+	})
+
+	It("test make bug happen", func() {
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "CueBug",
+							Spec:   Field{Type: Type{Name: "CueBugSpec"}},
+							Status: &Field{Type: Type{Name: "CueBugStatus"}},
+						},
+					},
+					RenderManifests:         true,
+					RenderTypes:             true,
+					RenderClients:           true,
+					RenderController:        true,
+					MockgenDirective:        true,
+					RenderValidationSchemas: true,
+					ApiRoot:                 "codegen/test/api",
+					CustomTemplates:         contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+	})
+})
+
 var _ = Describe("Cmd", func() {
 	skv2Imports := skv2_anyvendor.CreateDefaultMatchOptions(
 		[]string{"codegen/test/*.proto"},
