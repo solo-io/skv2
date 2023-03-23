@@ -2,6 +2,8 @@ package render
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -143,8 +145,11 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 		if err = builtInstance.Value().Validate(); err != nil {
 			return nil, eris.Errorf("Cue instance validation failed for %s: %+v", grp.Group, err)
 		}
+		log.Println(builtInstance)
+		log.Printf("\n\n%v\n", builtInstance)
+		fmt.Println(builtInstance.Value().Syntax(cue.Final()))
 		schemas, err := generator.Schemas(builtInstance)
-		builtInstance.Value().Format()
+
 		if err != nil {
 			return nil, eris.Errorf("Cue openapi generation failed for %s: %+v", grp.Group, err)
 		}
