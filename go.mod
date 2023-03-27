@@ -3,6 +3,7 @@ module github.com/solo-io/skv2
 go 1.18
 
 require (
+	cuelang.org/go v0.4.3
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/semver v1.4.2
 	github.com/Masterminds/sprig/v3 v3.1.0
@@ -58,7 +59,6 @@ require (
 
 require (
 	cloud.google.com/go v0.97.0 // indirect
-	cuelang.org/go v0.4.3 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect
