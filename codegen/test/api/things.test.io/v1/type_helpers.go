@@ -3,8 +3,8 @@
 // Definitions for the Kubernetes types
 package v1
 
-// PaintSlice represents a slice of *Paint
-type PaintSlice []*Paint
+import (
+)
 
-// ClusterResourceSlice represents a slice of *ClusterResource
-type ClusterResourceSlice []*ClusterResource
+// CueBugSlice represents a slice of *CueBug
+type CueBugSlice []*CueBug

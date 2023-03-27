@@ -4,11 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 
+	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/format"
+	"cuelang.org/go/encoding/openapi"
+	"cuelang.org/go/encoding/protobuf"
 	goyaml "gopkg.in/yaml.v3"
 	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
@@ -66,6 +71,58 @@ var _ = FDescribe("7807 Cue Bug", func() {
 
 		err := cmd.Execute()
 		Expect(err).NotTo(HaveOccurred())
+	})
+
+	FIt("invoke cue make bug happen", func() {
+		ext := protobuf.NewExtractor(&protobuf.Config{})
+		ext.AddFile("test/cue_bug.proto", nil)
+
+		instances, err := ext.Instances()
+		if err != nil {
+			log.Fatal(err, "")
+		}
+
+		generator := &openapi.Generator{ExpandReferences: true}
+
+		built := cue.Build(instances)
+		for _, bi := range built {
+			// _, err := openapi.Gen(bi, &openapi.Config{})
+			// if err != nil {
+			// 	log.Fatal(err, "")
+			// }
+			f, err := openapi.Generate(bi, &openapi.Config{
+				ExpandReferences: true,
+			})
+			if err != nil {
+				log.Fatal(err, "")
+			}
+			log.Println(f)
+
+			// f.
+			v := bi.Value()
+			syn := v.Syntax(
+			// cue.Final(),         // close structs and lists
+			// cue.Concrete(false), // allow incomplete values
+			// cue.Definitions(false),
+			// cue.Hidden(true),
+			// cue.Optional(true),
+			// cue.Attributes(true),
+			// cue.Docs(true),
+			)
+			bs, err := format.Node(syn)
+			if err != nil {
+				log.Fatal(err, "")
+			}
+			log.Println(string(bs))
+
+			s, err := generator.Schemas(bi)
+			// generator.
+
+			if err != nil {
+				log.Fatal(err, "")
+			}
+			log.Println(s)
+		}
 	})
 })
 

@@ -4,453 +4,235 @@
 
 package v1sets
 
-import (
-	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
-	"github.com/rotisserie/eris"
-	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/skv2/pkg/ezkube"
-	"k8s.io/apimachinery/pkg/util/sets"
+
+import (
+    things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+
+    "github.com/rotisserie/eris"
+    sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    "k8s.io/apimachinery/pkg/util/sets"
 )
 
-type PaintSet interface {
+type CueBugSet interface {
 	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	UnsortedList(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
-	// Return the Set as a map of key to resource.
-	Map() map[string]*things_test_io_v1.Paint
-	// Insert a resource into the set.
-	Insert(paint ...*things_test_io_v1.Paint)
-	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(paintSet PaintSet) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(paint ezkube.ResourceId) bool
-	// Delete the key matching the resource
-	Delete(paint ezkube.ResourceId)
-	// Return the union with the provided set
-	Union(set PaintSet) PaintSet
-	// Return the difference with the provided set
-	Difference(set PaintSet) PaintSet
-	// Return the intersection with the provided set
-	Intersection(set PaintSet) PaintSet
-	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error)
-	// Get the length of the set
-	Length() int
-	// returns the generic implementation of the set
-	Generic() sksets.ResourceSet
-	// returns the delta between this and and another PaintSet
-	Delta(newSet PaintSet) sksets.ResourceDelta
-	// Create a deep copy of the current PaintSet
-	Clone() PaintSet
+    Keys() sets.String
+    // List of resources stored in the set. Pass an optional filter function to filter on the list.
+    List(filterResource ... func(*things_test_io_v1.CueBug) bool) []*things_test_io_v1.CueBug
+    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+    UnsortedList(filterResource ... func(*things_test_io_v1.CueBug) bool) []*things_test_io_v1.CueBug
+    // Return the Set as a map of key to resource.
+    Map() map[string]*things_test_io_v1.CueBug
+    // Insert a resource into the set.
+    Insert(cueBug ...*things_test_io_v1.CueBug)
+    // Compare the equality of the keys in two sets (not the resources themselves)
+    Equal(cueBugSet CueBugSet) bool
+    // Check if the set contains a key matching the resource (not the resource itself)
+    Has(cueBug ezkube.ResourceId) bool
+    // Delete the key matching the resource
+    Delete(cueBug  ezkube.ResourceId)
+    // Return the union with the provided set
+    Union(set CueBugSet) CueBugSet
+    // Return the difference with the provided set
+    Difference(set CueBugSet) CueBugSet
+    // Return the intersection with the provided set
+    Intersection(set CueBugSet) CueBugSet
+    // Find the resource with the given ID
+    Find(id ezkube.ResourceId) (*things_test_io_v1.CueBug, error)
+    // Get the length of the set
+    Length() int
+    // returns the generic implementation of the set
+    Generic() sksets.ResourceSet
+    // returns the delta between this and and another CueBugSet
+    Delta(newSet CueBugSet) sksets.ResourceDelta
+    // Create a deep copy of the current CueBugSet
+    Clone() CueBugSet
 }
 
-func makeGenericPaintSet(paintList []*things_test_io_v1.Paint) sksets.ResourceSet {
-	var genericResources []ezkube.ResourceId
-	for _, obj := range paintList {
-		genericResources = append(genericResources, obj)
-	}
-	return sksets.NewResourceSet(genericResources...)
+func makeGenericCueBugSet(cueBugList []*things_test_io_v1.CueBug) sksets.ResourceSet {
+    var genericResources []ezkube.ResourceId
+    for _, obj := range cueBugList {
+        genericResources = append(genericResources, obj)
+    }
+    return sksets.NewResourceSet(genericResources...)
 }
 
-type paintSet struct {
-	set sksets.ResourceSet
+type cueBugSet struct {
+    set sksets.ResourceSet
 }
 
-func NewPaintSet(paintList ...*things_test_io_v1.Paint) PaintSet {
-	return &paintSet{set: makeGenericPaintSet(paintList)}
+func NewCueBugSet(cueBugList ...*things_test_io_v1.CueBug) CueBugSet {
+    return &cueBugSet{set: makeGenericCueBugSet(cueBugList)}
 }
 
-func NewPaintSetFromList(paintList *things_test_io_v1.PaintList) PaintSet {
-	list := make([]*things_test_io_v1.Paint, 0, len(paintList.Items))
-	for idx := range paintList.Items {
-		list = append(list, &paintList.Items[idx])
-	}
-	return &paintSet{set: makeGenericPaintSet(list)}
+func NewCueBugSetFromList(cueBugList *things_test_io_v1.CueBugList) CueBugSet {
+    list := make([]*things_test_io_v1.CueBug, 0, len(cueBugList.Items))
+    for idx := range cueBugList.Items {
+        list = append(list, &cueBugList.Items[idx])
+    }
+    return &cueBugSet{set: makeGenericCueBugSet(list)}
 }
 
-func (s *paintSet) Keys() sets.String {
+func (s *cueBugSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-	}
-	return s.Generic().Keys()
+    }
+    return s.Generic().Keys()
 }
 
-func (s *paintSet) List(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*things_test_io_v1.Paint))
-		})
-	}
+func (s *cueBugSet) List(filterResource ... func(*things_test_io_v1.CueBug) bool) []*things_test_io_v1.CueBug {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*things_test_io_v1.CueBug))
+        })
+    }
 
-	objs := s.Generic().List(genericFilters...)
-	paintList := make([]*things_test_io_v1.Paint, 0, len(objs))
-	for _, obj := range objs {
-		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
-	}
-	return paintList
+    objs := s.Generic().List(genericFilters...)
+    cueBugList := make([]*things_test_io_v1.CueBug, 0, len(objs))
+    for _, obj := range objs {
+        cueBugList = append(cueBugList, obj.(*things_test_io_v1.CueBug))
+    }
+    return cueBugList
 }
 
-func (s *paintSet) UnsortedList(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*things_test_io_v1.Paint))
-		})
-	}
+func (s *cueBugSet) UnsortedList(filterResource ... func(*things_test_io_v1.CueBug) bool) []*things_test_io_v1.CueBug {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*things_test_io_v1.CueBug))
+        })
+    }
 
-	var paintList []*things_test_io_v1.Paint
-	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
-	}
-	return paintList
+    var cueBugList []*things_test_io_v1.CueBug
+    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+        cueBugList = append(cueBugList, obj.(*things_test_io_v1.CueBug))
+    }
+    return cueBugList
 }
 
-func (s *paintSet) Map() map[string]*things_test_io_v1.Paint {
-	if s == nil {
-		return nil
-	}
+func (s *cueBugSet) Map() map[string]*things_test_io_v1.CueBug {
+    if s == nil {
+        return nil
+    }
 
-	newMap := map[string]*things_test_io_v1.Paint{}
-	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*things_test_io_v1.Paint)
-	}
-	return newMap
+    newMap := map[string]*things_test_io_v1.CueBug{}
+    for k, v := range s.Generic().Map() {
+        newMap[k] = v.(*things_test_io_v1.CueBug)
+    }
+    return newMap
 }
 
-func (s *paintSet) Insert(
-	paintList ...*things_test_io_v1.Paint,
+func (s *cueBugSet) Insert(
+        cueBugList ...*things_test_io_v1.CueBug,
 ) {
-	if s == nil {
-		panic("cannot insert into nil set")
-	}
+    if s == nil {
+        panic("cannot insert into nil set")
+    }
 
-	for _, obj := range paintList {
-		s.Generic().Insert(obj)
-	}
+    for _, obj := range cueBugList {
+        s.Generic().Insert(obj)
+    }
 }
 
-func (s *paintSet) Has(paint ezkube.ResourceId) bool {
-	if s == nil {
-		return false
-	}
-	return s.Generic().Has(paint)
+func (s *cueBugSet) Has(cueBug ezkube.ResourceId) bool {
+    if s == nil {
+        return false
+    }
+    return s.Generic().Has(cueBug)
 }
 
-func (s *paintSet) Equal(
-	paintSet PaintSet,
+func (s *cueBugSet) Equal(
+        cueBugSet CueBugSet,
 ) bool {
-	if s == nil {
-		return paintSet == nil
-	}
-	return s.Generic().Equal(paintSet.Generic())
+    if s == nil {
+        return cueBugSet == nil
+    }
+    return s.Generic().Equal(cueBugSet.Generic())
 }
 
-func (s *paintSet) Delete(Paint ezkube.ResourceId) {
-	if s == nil {
-		return
-	}
-	s.Generic().Delete(Paint)
+func (s *cueBugSet) Delete(CueBug ezkube.ResourceId) {
+    if s == nil {
+        return
+    }
+    s.Generic().Delete(CueBug)
 }
 
-func (s *paintSet) Union(set PaintSet) PaintSet {
-	if s == nil {
-		return set
-	}
-	return NewPaintSet(append(s.List(), set.List()...)...)
+func (s *cueBugSet) Union(set CueBugSet) CueBugSet {
+    if s == nil {
+        return set
+    }
+    return NewCueBugSet(append(s.List(), set.List()...)...)
 }
 
-func (s *paintSet) Difference(set PaintSet) PaintSet {
-	if s == nil {
-		return set
-	}
-	newSet := s.Generic().Difference(set.Generic())
-	return &paintSet{set: newSet}
+func (s *cueBugSet) Difference(set CueBugSet) CueBugSet {
+    if s == nil {
+        return set
+    }
+    newSet := s.Generic().Difference(set.Generic())
+    return &cueBugSet{set: newSet}
 }
 
-func (s *paintSet) Intersection(set PaintSet) PaintSet {
-	if s == nil {
-		return nil
-	}
-	newSet := s.Generic().Intersection(set.Generic())
-	var paintList []*things_test_io_v1.Paint
-	for _, obj := range newSet.List() {
-		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
-	}
-	return NewPaintSet(paintList...)
+func (s *cueBugSet) Intersection(set CueBugSet) CueBugSet {
+    if s == nil {
+        return nil
+    }
+    newSet := s.Generic().Intersection(set.Generic())
+    var cueBugList []*things_test_io_v1.CueBug
+    for _, obj := range newSet.List() {
+        cueBugList = append(cueBugList, obj.(*things_test_io_v1.CueBug))
+    }
+    return NewCueBugSet(cueBugList...)
 }
 
-func (s *paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) {
-	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find Paint %v", sksets.Key(id))
-	}
-	obj, err := s.Generic().Find(&things_test_io_v1.Paint{}, id)
+
+func (s *cueBugSet) Find(id ezkube.ResourceId) (*things_test_io_v1.CueBug, error) {
+    if s == nil {
+        return nil, eris.Errorf("empty set, cannot find CueBug %v", sksets.Key(id))
+    }
+	obj, err := s.Generic().Find(&things_test_io_v1.CueBug{}, id)
 	if err != nil {
 		return nil, err
-	}
+    }
 
-	return obj.(*things_test_io_v1.Paint), nil
+    return obj.(*things_test_io_v1.CueBug), nil
 }
 
-func (s *paintSet) Length() int {
-	if s == nil {
-		return 0
-	}
-	return s.Generic().Length()
+func (s *cueBugSet) Length() int {
+    if s == nil {
+        return 0
+    }
+    return s.Generic().Length()
 }
 
-func (s *paintSet) Generic() sksets.ResourceSet {
-	if s == nil {
-		return nil
-	}
-	return s.set
+func (s *cueBugSet) Generic() sksets.ResourceSet {
+    if s == nil {
+        return nil
+    }
+    return s.set
 }
 
-func (s *paintSet) Delta(newSet PaintSet) sksets.ResourceDelta {
-	if s == nil {
-		return sksets.ResourceDelta{
-			Inserted: newSet.Generic(),
-		}
-	}
-	return s.Generic().Delta(newSet.Generic())
+func (s *cueBugSet) Delta(newSet CueBugSet) sksets.ResourceDelta {
+    if s == nil {
+        return sksets.ResourceDelta{
+            Inserted: newSet.Generic(),
+        }
+    }
+    return s.Generic().Delta(newSet.Generic())
 }
 
-func (s *paintSet) Clone() PaintSet {
-	if s == nil {
-		return nil
-	}
-	return &paintSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
-}
-
-type ClusterResourceSet interface {
-	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	UnsortedList(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
-	// Return the Set as a map of key to resource.
-	Map() map[string]*things_test_io_v1.ClusterResource
-	// Insert a resource into the set.
-	Insert(clusterResource ...*things_test_io_v1.ClusterResource)
-	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(clusterResourceSet ClusterResourceSet) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(clusterResource ezkube.ResourceId) bool
-	// Delete the key matching the resource
-	Delete(clusterResource ezkube.ResourceId)
-	// Return the union with the provided set
-	Union(set ClusterResourceSet) ClusterResourceSet
-	// Return the difference with the provided set
-	Difference(set ClusterResourceSet) ClusterResourceSet
-	// Return the intersection with the provided set
-	Intersection(set ClusterResourceSet) ClusterResourceSet
-	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error)
-	// Get the length of the set
-	Length() int
-	// returns the generic implementation of the set
-	Generic() sksets.ResourceSet
-	// returns the delta between this and and another ClusterResourceSet
-	Delta(newSet ClusterResourceSet) sksets.ResourceDelta
-	// Create a deep copy of the current ClusterResourceSet
-	Clone() ClusterResourceSet
-}
-
-func makeGenericClusterResourceSet(clusterResourceList []*things_test_io_v1.ClusterResource) sksets.ResourceSet {
-	var genericResources []ezkube.ResourceId
-	for _, obj := range clusterResourceList {
-		genericResources = append(genericResources, obj)
-	}
-	return sksets.NewResourceSet(genericResources...)
-}
-
-type clusterResourceSet struct {
-	set sksets.ResourceSet
-}
-
-func NewClusterResourceSet(clusterResourceList ...*things_test_io_v1.ClusterResource) ClusterResourceSet {
-	return &clusterResourceSet{set: makeGenericClusterResourceSet(clusterResourceList)}
-}
-
-func NewClusterResourceSetFromList(clusterResourceList *things_test_io_v1.ClusterResourceList) ClusterResourceSet {
-	list := make([]*things_test_io_v1.ClusterResource, 0, len(clusterResourceList.Items))
-	for idx := range clusterResourceList.Items {
-		list = append(list, &clusterResourceList.Items[idx])
-	}
-	return &clusterResourceSet{set: makeGenericClusterResourceSet(list)}
-}
-
-func (s *clusterResourceSet) Keys() sets.String {
-	if s == nil {
-		return sets.String{}
-	}
-	return s.Generic().Keys()
-}
-
-func (s *clusterResourceSet) List(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource {
+func (s *cueBugSet) Clone() CueBugSet {
 	if s == nil {
 		return nil
 	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*things_test_io_v1.ClusterResource))
-		})
-	}
-
-	objs := s.Generic().List(genericFilters...)
-	clusterResourceList := make([]*things_test_io_v1.ClusterResource, 0, len(objs))
-	for _, obj := range objs {
-		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
-	}
-	return clusterResourceList
-}
-
-func (s *clusterResourceSet) UnsortedList(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*things_test_io_v1.ClusterResource))
-		})
-	}
-
-	var clusterResourceList []*things_test_io_v1.ClusterResource
-	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
-	}
-	return clusterResourceList
-}
-
-func (s *clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource {
-	if s == nil {
-		return nil
-	}
-
-	newMap := map[string]*things_test_io_v1.ClusterResource{}
-	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*things_test_io_v1.ClusterResource)
-	}
-	return newMap
-}
-
-func (s *clusterResourceSet) Insert(
-	clusterResourceList ...*things_test_io_v1.ClusterResource,
-) {
-	if s == nil {
-		panic("cannot insert into nil set")
-	}
-
-	for _, obj := range clusterResourceList {
-		s.Generic().Insert(obj)
-	}
-}
-
-func (s *clusterResourceSet) Has(clusterResource ezkube.ResourceId) bool {
-	if s == nil {
-		return false
-	}
-	return s.Generic().Has(clusterResource)
-}
-
-func (s *clusterResourceSet) Equal(
-	clusterResourceSet ClusterResourceSet,
-) bool {
-	if s == nil {
-		return clusterResourceSet == nil
-	}
-	return s.Generic().Equal(clusterResourceSet.Generic())
-}
-
-func (s *clusterResourceSet) Delete(ClusterResource ezkube.ResourceId) {
-	if s == nil {
-		return
-	}
-	s.Generic().Delete(ClusterResource)
-}
-
-func (s *clusterResourceSet) Union(set ClusterResourceSet) ClusterResourceSet {
-	if s == nil {
-		return set
-	}
-	return NewClusterResourceSet(append(s.List(), set.List()...)...)
-}
-
-func (s *clusterResourceSet) Difference(set ClusterResourceSet) ClusterResourceSet {
-	if s == nil {
-		return set
-	}
-	newSet := s.Generic().Difference(set.Generic())
-	return &clusterResourceSet{set: newSet}
-}
-
-func (s *clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResourceSet {
-	if s == nil {
-		return nil
-	}
-	newSet := s.Generic().Intersection(set.Generic())
-	var clusterResourceList []*things_test_io_v1.ClusterResource
-	for _, obj := range newSet.List() {
-		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
-	}
-	return NewClusterResourceSet(clusterResourceList...)
-}
-
-func (s *clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error) {
-	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find ClusterResource %v", sksets.Key(id))
-	}
-	obj, err := s.Generic().Find(&things_test_io_v1.ClusterResource{}, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return obj.(*things_test_io_v1.ClusterResource), nil
-}
-
-func (s *clusterResourceSet) Length() int {
-	if s == nil {
-		return 0
-	}
-	return s.Generic().Length()
-}
-
-func (s *clusterResourceSet) Generic() sksets.ResourceSet {
-	if s == nil {
-		return nil
-	}
-	return s.set
-}
-
-func (s *clusterResourceSet) Delta(newSet ClusterResourceSet) sksets.ResourceDelta {
-	if s == nil {
-		return sksets.ResourceDelta{
-			Inserted: newSet.Generic(),
-		}
-	}
-	return s.Generic().Delta(newSet.Generic())
-}
-
-func (s *clusterResourceSet) Clone() ClusterResourceSet {
-	if s == nil {
-		return nil
-	}
-	return &clusterResourceSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &cueBugSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

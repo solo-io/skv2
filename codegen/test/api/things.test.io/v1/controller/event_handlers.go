@@ -8,225 +8,118 @@ package controller
 import (
 	"context"
 
-	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+    things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
-	"github.com/pkg/errors"
-	"github.com/solo-io/skv2/pkg/events"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+    "github.com/pkg/errors"
+    "github.com/solo-io/skv2/pkg/events"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Handle events for the Paint Resource
+// Handle events for the CueBug Resource
 // DEPRECATED: Prefer reconciler pattern.
-type PaintEventHandler interface {
-	CreatePaint(obj *things_test_io_v1.Paint) error
-	UpdatePaint(old, new *things_test_io_v1.Paint) error
-	DeletePaint(obj *things_test_io_v1.Paint) error
-	GenericPaint(obj *things_test_io_v1.Paint) error
+type CueBugEventHandler interface {
+    CreateCueBug(obj *things_test_io_v1.CueBug) error
+    UpdateCueBug(old, new *things_test_io_v1.CueBug) error
+    DeleteCueBug(obj *things_test_io_v1.CueBug) error
+    GenericCueBug(obj *things_test_io_v1.CueBug) error
 }
 
-type PaintEventHandlerFuncs struct {
-	OnCreate  func(obj *things_test_io_v1.Paint) error
-	OnUpdate  func(old, new *things_test_io_v1.Paint) error
-	OnDelete  func(obj *things_test_io_v1.Paint) error
-	OnGeneric func(obj *things_test_io_v1.Paint) error
+type CueBugEventHandlerFuncs struct {
+    OnCreate  func(obj *things_test_io_v1.CueBug) error
+    OnUpdate  func(old, new *things_test_io_v1.CueBug) error
+    OnDelete  func(obj *things_test_io_v1.CueBug) error
+    OnGeneric func(obj *things_test_io_v1.CueBug) error
 }
 
-func (f *PaintEventHandlerFuncs) CreatePaint(obj *things_test_io_v1.Paint) error {
-	if f.OnCreate == nil {
-		return nil
-	}
-	return f.OnCreate(obj)
+func (f *CueBugEventHandlerFuncs) CreateCueBug(obj *things_test_io_v1.CueBug) error {
+    if f.OnCreate == nil {
+        return nil
+    }
+    return f.OnCreate(obj)
 }
 
-func (f *PaintEventHandlerFuncs) DeletePaint(obj *things_test_io_v1.Paint) error {
-	if f.OnDelete == nil {
-		return nil
-	}
-	return f.OnDelete(obj)
+func (f *CueBugEventHandlerFuncs) DeleteCueBug(obj *things_test_io_v1.CueBug) error {
+    if f.OnDelete == nil {
+        return nil
+    }
+    return f.OnDelete(obj)
 }
 
-func (f *PaintEventHandlerFuncs) UpdatePaint(objOld, objNew *things_test_io_v1.Paint) error {
-	if f.OnUpdate == nil {
-		return nil
-	}
-	return f.OnUpdate(objOld, objNew)
+func (f *CueBugEventHandlerFuncs) UpdateCueBug(objOld, objNew *things_test_io_v1.CueBug) error {
+    if f.OnUpdate == nil {
+        return nil
+    }
+    return f.OnUpdate(objOld, objNew)
 }
 
-func (f *PaintEventHandlerFuncs) GenericPaint(obj *things_test_io_v1.Paint) error {
-	if f.OnGeneric == nil {
-		return nil
-	}
-	return f.OnGeneric(obj)
+func (f *CueBugEventHandlerFuncs) GenericCueBug(obj *things_test_io_v1.CueBug) error {
+    if f.OnGeneric == nil {
+        return nil
+    }
+    return f.OnGeneric(obj)
 }
 
-type PaintEventWatcher interface {
-	AddEventHandler(ctx context.Context, h PaintEventHandler, predicates ...predicate.Predicate) error
+type CueBugEventWatcher interface {
+    AddEventHandler(ctx context.Context, h CueBugEventHandler, predicates ...predicate.Predicate) error
 }
 
-type paintEventWatcher struct {
-	watcher events.EventWatcher
+type cueBugEventWatcher struct {
+    watcher events.EventWatcher
 }
 
-func NewPaintEventWatcher(name string, mgr manager.Manager) PaintEventWatcher {
-	return &paintEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &things_test_io_v1.Paint{}),
-	}
+func NewCueBugEventWatcher(name string, mgr manager.Manager) CueBugEventWatcher {
+    return &cueBugEventWatcher{
+        watcher: events.NewWatcher(name, mgr, &things_test_io_v1.CueBug{}),
+    }
 }
 
-func (c *paintEventWatcher) AddEventHandler(ctx context.Context, h PaintEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericPaintHandler{handler: h}
-	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
-		return err
-	}
-	return nil
+func (c *cueBugEventWatcher) AddEventHandler(ctx context.Context, h CueBugEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericCueBugHandler{handler: h}
+    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
+        return err
+    }
+    return nil
 }
 
-// genericPaintHandler implements a generic events.EventHandler
-type genericPaintHandler struct {
-	handler PaintEventHandler
+// genericCueBugHandler implements a generic events.EventHandler
+type genericCueBugHandler struct {
+    handler CueBugEventHandler
 }
 
-func (h genericPaintHandler) Create(object client.Object) error {
-	obj, ok := object.(*things_test_io_v1.Paint)
-	if !ok {
-		return errors.Errorf("internal error: Paint handler received event for %T", object)
-	}
-	return h.handler.CreatePaint(obj)
+func (h genericCueBugHandler) Create(object client.Object) error {
+    obj, ok := object.(*things_test_io_v1.CueBug)
+    if !ok {
+        return errors.Errorf("internal error: CueBug handler received event for %T", object)
+    }
+    return h.handler.CreateCueBug(obj)
 }
 
-func (h genericPaintHandler) Delete(object client.Object) error {
-	obj, ok := object.(*things_test_io_v1.Paint)
-	if !ok {
-		return errors.Errorf("internal error: Paint handler received event for %T", object)
-	}
-	return h.handler.DeletePaint(obj)
+func (h genericCueBugHandler) Delete(object client.Object) error {
+    obj, ok := object.(*things_test_io_v1.CueBug)
+    if !ok {
+        return errors.Errorf("internal error: CueBug handler received event for %T", object)
+    }
+    return h.handler.DeleteCueBug(obj)
 }
 
-func (h genericPaintHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*things_test_io_v1.Paint)
-	if !ok {
-		return errors.Errorf("internal error: Paint handler received event for %T", old)
-	}
-	objNew, ok := new.(*things_test_io_v1.Paint)
-	if !ok {
-		return errors.Errorf("internal error: Paint handler received event for %T", new)
-	}
-	return h.handler.UpdatePaint(objOld, objNew)
+func (h genericCueBugHandler) Update(old, new client.Object) error {
+    objOld, ok := old.(*things_test_io_v1.CueBug)
+    if !ok {
+        return errors.Errorf("internal error: CueBug handler received event for %T", old)
+    }
+    objNew, ok := new.(*things_test_io_v1.CueBug)
+    if !ok {
+        return errors.Errorf("internal error: CueBug handler received event for %T", new)
+    }
+    return h.handler.UpdateCueBug(objOld, objNew)
 }
 
-func (h genericPaintHandler) Generic(object client.Object) error {
-	obj, ok := object.(*things_test_io_v1.Paint)
-	if !ok {
-		return errors.Errorf("internal error: Paint handler received event for %T", object)
-	}
-	return h.handler.GenericPaint(obj)
-}
-
-// Handle events for the ClusterResource Resource
-// DEPRECATED: Prefer reconciler pattern.
-type ClusterResourceEventHandler interface {
-	CreateClusterResource(obj *things_test_io_v1.ClusterResource) error
-	UpdateClusterResource(old, new *things_test_io_v1.ClusterResource) error
-	DeleteClusterResource(obj *things_test_io_v1.ClusterResource) error
-	GenericClusterResource(obj *things_test_io_v1.ClusterResource) error
-}
-
-type ClusterResourceEventHandlerFuncs struct {
-	OnCreate  func(obj *things_test_io_v1.ClusterResource) error
-	OnUpdate  func(old, new *things_test_io_v1.ClusterResource) error
-	OnDelete  func(obj *things_test_io_v1.ClusterResource) error
-	OnGeneric func(obj *things_test_io_v1.ClusterResource) error
-}
-
-func (f *ClusterResourceEventHandlerFuncs) CreateClusterResource(obj *things_test_io_v1.ClusterResource) error {
-	if f.OnCreate == nil {
-		return nil
-	}
-	return f.OnCreate(obj)
-}
-
-func (f *ClusterResourceEventHandlerFuncs) DeleteClusterResource(obj *things_test_io_v1.ClusterResource) error {
-	if f.OnDelete == nil {
-		return nil
-	}
-	return f.OnDelete(obj)
-}
-
-func (f *ClusterResourceEventHandlerFuncs) UpdateClusterResource(objOld, objNew *things_test_io_v1.ClusterResource) error {
-	if f.OnUpdate == nil {
-		return nil
-	}
-	return f.OnUpdate(objOld, objNew)
-}
-
-func (f *ClusterResourceEventHandlerFuncs) GenericClusterResource(obj *things_test_io_v1.ClusterResource) error {
-	if f.OnGeneric == nil {
-		return nil
-	}
-	return f.OnGeneric(obj)
-}
-
-type ClusterResourceEventWatcher interface {
-	AddEventHandler(ctx context.Context, h ClusterResourceEventHandler, predicates ...predicate.Predicate) error
-}
-
-type clusterResourceEventWatcher struct {
-	watcher events.EventWatcher
-}
-
-func NewClusterResourceEventWatcher(name string, mgr manager.Manager) ClusterResourceEventWatcher {
-	return &clusterResourceEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &things_test_io_v1.ClusterResource{}),
-	}
-}
-
-func (c *clusterResourceEventWatcher) AddEventHandler(ctx context.Context, h ClusterResourceEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericClusterResourceHandler{handler: h}
-	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
-		return err
-	}
-	return nil
-}
-
-// genericClusterResourceHandler implements a generic events.EventHandler
-type genericClusterResourceHandler struct {
-	handler ClusterResourceEventHandler
-}
-
-func (h genericClusterResourceHandler) Create(object client.Object) error {
-	obj, ok := object.(*things_test_io_v1.ClusterResource)
-	if !ok {
-		return errors.Errorf("internal error: ClusterResource handler received event for %T", object)
-	}
-	return h.handler.CreateClusterResource(obj)
-}
-
-func (h genericClusterResourceHandler) Delete(object client.Object) error {
-	obj, ok := object.(*things_test_io_v1.ClusterResource)
-	if !ok {
-		return errors.Errorf("internal error: ClusterResource handler received event for %T", object)
-	}
-	return h.handler.DeleteClusterResource(obj)
-}
-
-func (h genericClusterResourceHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*things_test_io_v1.ClusterResource)
-	if !ok {
-		return errors.Errorf("internal error: ClusterResource handler received event for %T", old)
-	}
-	objNew, ok := new.(*things_test_io_v1.ClusterResource)
-	if !ok {
-		return errors.Errorf("internal error: ClusterResource handler received event for %T", new)
-	}
-	return h.handler.UpdateClusterResource(objOld, objNew)
-}
-
-func (h genericClusterResourceHandler) Generic(object client.Object) error {
-	obj, ok := object.(*things_test_io_v1.ClusterResource)
-	if !ok {
-		return errors.Errorf("internal error: ClusterResource handler received event for %T", object)
-	}
-	return h.handler.GenericClusterResource(obj)
+func (h genericCueBugHandler) Generic(object client.Object) error {
+    obj, ok := object.(*things_test_io_v1.CueBug)
+    if !ok {
+        return errors.Errorf("internal error: CueBug handler received event for %T", object)
+    }
+    return h.handler.GenericCueBug(obj)
 }

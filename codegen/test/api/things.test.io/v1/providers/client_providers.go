@@ -2,11 +2,13 @@
 
 package v1
 
-import (
-	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -17,58 +19,30 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
-// Provider for PaintClient from Clientset
-func PaintClientFromClientsetProvider(clients things_test_io_v1.Clientset) things_test_io_v1.PaintClient {
-	return clients.Paints()
+// Provider for CueBugClient from Clientset
+func CueBugClientFromClientsetProvider(clients things_test_io_v1.Clientset) things_test_io_v1.CueBugClient {
+    return clients.CueBugs()
 }
 
-// Provider for Paint Client from Client
-func PaintClientProvider(client client.Client) things_test_io_v1.PaintClient {
-	return things_test_io_v1.NewPaintClient(client)
+// Provider for CueBug Client from Client
+func CueBugClientProvider(client client.Client) things_test_io_v1.CueBugClient {
+    return things_test_io_v1.NewCueBugClient(client)
 }
 
-type PaintClientFactory func(client client.Client) things_test_io_v1.PaintClient
+type CueBugClientFactory func(client client.Client) things_test_io_v1.CueBugClient
 
-func PaintClientFactoryProvider() PaintClientFactory {
-	return PaintClientProvider
+func CueBugClientFactoryProvider() CueBugClientFactory {
+    return CueBugClientProvider
 }
 
-type PaintClientFromConfigFactory func(cfg *rest.Config) (things_test_io_v1.PaintClient, error)
+type CueBugClientFromConfigFactory func(cfg *rest.Config) (things_test_io_v1.CueBugClient, error)
 
-func PaintClientFromConfigFactoryProvider() PaintClientFromConfigFactory {
-	return func(cfg *rest.Config) (things_test_io_v1.PaintClient, error) {
-		clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.Paints(), nil
-	}
-}
-
-// Provider for ClusterResourceClient from Clientset
-func ClusterResourceClientFromClientsetProvider(clients things_test_io_v1.Clientset) things_test_io_v1.ClusterResourceClient {
-	return clients.ClusterResources()
-}
-
-// Provider for ClusterResource Client from Client
-func ClusterResourceClientProvider(client client.Client) things_test_io_v1.ClusterResourceClient {
-	return things_test_io_v1.NewClusterResourceClient(client)
-}
-
-type ClusterResourceClientFactory func(client client.Client) things_test_io_v1.ClusterResourceClient
-
-func ClusterResourceClientFactoryProvider() ClusterResourceClientFactory {
-	return ClusterResourceClientProvider
-}
-
-type ClusterResourceClientFromConfigFactory func(cfg *rest.Config) (things_test_io_v1.ClusterResourceClient, error)
-
-func ClusterResourceClientFromConfigFactoryProvider() ClusterResourceClientFromConfigFactory {
-	return func(cfg *rest.Config) (things_test_io_v1.ClusterResourceClient, error) {
-		clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.ClusterResources(), nil
-	}
+func CueBugClientFromConfigFactoryProvider() CueBugClientFromConfigFactory {
+    return func(cfg *rest.Config) (things_test_io_v1.CueBugClient, error) {
+        clients, err := things_test_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.CueBugs(), nil
+    }
 }

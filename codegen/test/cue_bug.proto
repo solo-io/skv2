@@ -5,20 +5,15 @@ package things.test.io;
 option go_package = "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1";
 
 
-message CueBugSpec {
-  message ChildMessage {
-    string name = 1;
+message A {
+  message B {
   }
 
-  message ParentMessage {
-    ChildMessage my_child = 2;
+  message C {
+    B b = 1;
   }
 
   oneof my_one_of {
-    ParentMessage my_parent = 1;
+    C c = 1;
   }
-}
-
-message CueBugStatus {
-  string name = 1;
 }

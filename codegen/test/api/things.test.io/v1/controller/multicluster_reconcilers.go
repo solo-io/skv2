@@ -5,6 +5,8 @@
 // Definitions for the multicluster Kubernetes Controllers
 package controller
 
+
+
 import (
 	"context"
 
@@ -18,144 +20,73 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Reconcile Upsert events for the Paint Resource across clusters.
+// Reconcile Upsert events for the CueBug Resource across clusters.
 // implemented by the user
-type MulticlusterPaintReconciler interface {
-	ReconcilePaint(clusterName string, obj *things_test_io_v1.Paint) (reconcile.Result, error)
+type MulticlusterCueBugReconciler interface {
+	ReconcileCueBug(clusterName string, obj *things_test_io_v1.CueBug) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the Paint Resource across clusters.
+// Reconcile deletion events for the CueBug Resource across clusters.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type MulticlusterPaintDeletionReconciler interface {
-	ReconcilePaintDeletion(clusterName string, req reconcile.Request) error
+type MulticlusterCueBugDeletionReconciler interface {
+	ReconcileCueBugDeletion(clusterName string, req reconcile.Request) error
 }
 
-type MulticlusterPaintReconcilerFuncs struct {
-	OnReconcilePaint         func(clusterName string, obj *things_test_io_v1.Paint) (reconcile.Result, error)
-	OnReconcilePaintDeletion func(clusterName string, req reconcile.Request) error
+type MulticlusterCueBugReconcilerFuncs struct {
+	OnReconcileCueBug         func(clusterName string, obj *things_test_io_v1.CueBug) (reconcile.Result, error)
+	OnReconcileCueBugDeletion func(clusterName string, req reconcile.Request) error
 }
 
-func (f *MulticlusterPaintReconcilerFuncs) ReconcilePaint(clusterName string, obj *things_test_io_v1.Paint) (reconcile.Result, error) {
-	if f.OnReconcilePaint == nil {
+func (f *MulticlusterCueBugReconcilerFuncs) ReconcileCueBug(clusterName string, obj *things_test_io_v1.CueBug) (reconcile.Result, error) {
+	if f.OnReconcileCueBug == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcilePaint(clusterName, obj)
+	return f.OnReconcileCueBug(clusterName, obj)
 }
 
-func (f *MulticlusterPaintReconcilerFuncs) ReconcilePaintDeletion(clusterName string, req reconcile.Request) error {
-	if f.OnReconcilePaintDeletion == nil {
+func (f *MulticlusterCueBugReconcilerFuncs) ReconcileCueBugDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileCueBugDeletion == nil {
 		return nil
 	}
-	return f.OnReconcilePaintDeletion(clusterName, req)
+	return f.OnReconcileCueBugDeletion(clusterName, req)
 }
 
-type MulticlusterPaintReconcileLoop interface {
-	// AddMulticlusterPaintReconciler adds a MulticlusterPaintReconciler to the MulticlusterPaintReconcileLoop.
-	AddMulticlusterPaintReconciler(ctx context.Context, rec MulticlusterPaintReconciler, predicates ...predicate.Predicate)
+type MulticlusterCueBugReconcileLoop interface {
+	// AddMulticlusterCueBugReconciler adds a MulticlusterCueBugReconciler to the MulticlusterCueBugReconcileLoop.
+	AddMulticlusterCueBugReconciler(ctx context.Context, rec MulticlusterCueBugReconciler, predicates ...predicate.Predicate)
 }
 
-type multiclusterPaintReconcileLoop struct {
+type multiclusterCueBugReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterPaintReconcileLoop) AddMulticlusterPaintReconciler(ctx context.Context, rec MulticlusterPaintReconciler, predicates ...predicate.Predicate) {
-	genericReconciler := genericPaintMulticlusterReconciler{reconciler: rec}
+func (m *multiclusterCueBugReconcileLoop) AddMulticlusterCueBugReconciler(ctx context.Context, rec MulticlusterCueBugReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericCueBugMulticlusterReconciler{reconciler: rec}
 
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterPaintReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterPaintReconcileLoop {
-	return &multiclusterPaintReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &things_test_io_v1.Paint{}, options)}
+func NewMulticlusterCueBugReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterCueBugReconcileLoop {
+	return &multiclusterCueBugReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &things_test_io_v1.CueBug{}, options)}
 }
 
-type genericPaintMulticlusterReconciler struct {
-	reconciler MulticlusterPaintReconciler
+type genericCueBugMulticlusterReconciler struct {
+	reconciler MulticlusterCueBugReconciler
 }
 
-func (g genericPaintMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
-	if deletionReconciler, ok := g.reconciler.(MulticlusterPaintDeletionReconciler); ok {
-		return deletionReconciler.ReconcilePaintDeletion(cluster, req)
+func (g genericCueBugMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterCueBugDeletionReconciler); ok {
+		return deletionReconciler.ReconcileCueBugDeletion(cluster, req)
 	}
 	return nil
 }
 
-func (g genericPaintMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*things_test_io_v1.Paint)
+func (g genericCueBugMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*things_test_io_v1.CueBug)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: Paint handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: CueBug handler received event for %T", object)
 	}
-	return g.reconciler.ReconcilePaint(cluster, obj)
-}
-
-// Reconcile Upsert events for the ClusterResource Resource across clusters.
-// implemented by the user
-type MulticlusterClusterResourceReconciler interface {
-	ReconcileClusterResource(clusterName string, obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
-}
-
-// Reconcile deletion events for the ClusterResource Resource across clusters.
-// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
-// before being deleted.
-// implemented by the user
-type MulticlusterClusterResourceDeletionReconciler interface {
-	ReconcileClusterResourceDeletion(clusterName string, req reconcile.Request) error
-}
-
-type MulticlusterClusterResourceReconcilerFuncs struct {
-	OnReconcileClusterResource         func(clusterName string, obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
-	OnReconcileClusterResourceDeletion func(clusterName string, req reconcile.Request) error
-}
-
-func (f *MulticlusterClusterResourceReconcilerFuncs) ReconcileClusterResource(clusterName string, obj *things_test_io_v1.ClusterResource) (reconcile.Result, error) {
-	if f.OnReconcileClusterResource == nil {
-		return reconcile.Result{}, nil
-	}
-	return f.OnReconcileClusterResource(clusterName, obj)
-}
-
-func (f *MulticlusterClusterResourceReconcilerFuncs) ReconcileClusterResourceDeletion(clusterName string, req reconcile.Request) error {
-	if f.OnReconcileClusterResourceDeletion == nil {
-		return nil
-	}
-	return f.OnReconcileClusterResourceDeletion(clusterName, req)
-}
-
-type MulticlusterClusterResourceReconcileLoop interface {
-	// AddMulticlusterClusterResourceReconciler adds a MulticlusterClusterResourceReconciler to the MulticlusterClusterResourceReconcileLoop.
-	AddMulticlusterClusterResourceReconciler(ctx context.Context, rec MulticlusterClusterResourceReconciler, predicates ...predicate.Predicate)
-}
-
-type multiclusterClusterResourceReconcileLoop struct {
-	loop multicluster.Loop
-}
-
-func (m *multiclusterClusterResourceReconcileLoop) AddMulticlusterClusterResourceReconciler(ctx context.Context, rec MulticlusterClusterResourceReconciler, predicates ...predicate.Predicate) {
-	genericReconciler := genericClusterResourceMulticlusterReconciler{reconciler: rec}
-
-	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
-}
-
-func NewMulticlusterClusterResourceReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterClusterResourceReconcileLoop {
-	return &multiclusterClusterResourceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &things_test_io_v1.ClusterResource{}, options)}
-}
-
-type genericClusterResourceMulticlusterReconciler struct {
-	reconciler MulticlusterClusterResourceReconciler
-}
-
-func (g genericClusterResourceMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
-	if deletionReconciler, ok := g.reconciler.(MulticlusterClusterResourceDeletionReconciler); ok {
-		return deletionReconciler.ReconcileClusterResourceDeletion(cluster, req)
-	}
-	return nil
-}
-
-func (g genericClusterResourceMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*things_test_io_v1.ClusterResource)
-	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: ClusterResource handler received event for %T", object)
-	}
-	return g.reconciler.ReconcileClusterResource(cluster, obj)
+	return g.reconciler.ReconcileCueBug(cluster, obj)
 }

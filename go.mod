@@ -29,7 +29,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.2
 	github.com/pseudomuto/protoc-gen-doc v1.4.1
-	github.com/rogpeppe/go-internal v1.8.0
+	github.com/rogpeppe/go-internal v1.8.1
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/solo-io/anyvendor v0.0.4
@@ -58,6 +58,7 @@ require (
 
 require (
 	cloud.google.com/go v0.97.0 // indirect
+	cuelang.org/go v0.4.3 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect

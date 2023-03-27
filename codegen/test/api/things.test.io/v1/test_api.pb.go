@@ -7,15 +7,14 @@
 package v1
 
 import (
-	reflect "reflect"
-	sync "sync"
-
 	any1 "github.com/golang/protobuf/ptypes/any"
 	_struct "github.com/golang/protobuf/ptypes/struct"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	_ "github.com/solo-io/cue/encoding/protobuf/cue"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -81,6 +80,7 @@ type PaintSpec struct {
 
 	Color *PaintColor `protobuf:"bytes,1,opt,name=color,proto3" json:"color,omitempty"`
 	// Types that are assignable to PaintType:
+	//
 	//	*PaintSpec_Acrylic
 	//	*PaintSpec_Oil
 	PaintType  isPaintSpec_PaintType `protobuf_oneof:"paintType"`
@@ -288,6 +288,7 @@ type OilType struct {
 
 	WaterMixable bool `protobuf:"varint,1,opt,name=waterMixable,proto3" json:"waterMixable,omitempty"`
 	// Types that are assignable to PigmentType:
+	//
 	//	*OilType_Powder
 	//	*OilType_Fluid
 	PigmentType isOilType_PigmentType `protobuf_oneof:"pigmentType"`

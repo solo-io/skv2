@@ -5,13 +5,13 @@
 package v1
 
 import (
-	bytes "bytes"
-	fmt "fmt"
-	math "math"
+    bytes "bytes"
+    fmt "fmt"
+    math "math"
 
-	jsonpb "github.com/golang/protobuf/jsonpb"
-	proto "github.com/golang/protobuf/proto"
-	skv2jsonpb "github.com/solo-io/skv2/pkg/kube_jsonpb"
+    skv2jsonpb "github.com/solo-io/skv2/pkg/kube_jsonpb"
+    jsonpb "github.com/golang/protobuf/jsonpb"
+    proto "github.com/golang/protobuf/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -20,42 +20,29 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 var (
-	marshaller   = &skv2jsonpb.Marshaler{}
+	marshaller = &skv2jsonpb.Marshaler{}
 	unmarshaller = &jsonpb.Unmarshaler{
 		AllowUnknownFields: true,
 	}
 	strictUnmarshaller = &jsonpb.Unmarshaler{}
 )
-
-// MarshalJSON is a custom marshaler for PaintSpec
-func (this *PaintSpec) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for CueBugSpec
+func (this *CueBugSpec) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for PaintSpec
-func (this *PaintSpec) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for CueBugSpec
+func (this *CueBugSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
-
-// MarshalJSON is a custom marshaler for PaintStatus
-func (this *PaintStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for CueBugStatus
+func (this *CueBugStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for PaintStatus
-func (this *PaintStatus) UnmarshalJSON(b []byte) error {
-	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for ClusterResourceSpec
-func (this *ClusterResourceSpec) MarshalJSON() ([]byte, error) {
-	str, err := marshaller.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for ClusterResourceSpec
-func (this *ClusterResourceSpec) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for CueBugStatus
+func (this *CueBugStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
