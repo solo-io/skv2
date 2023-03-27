@@ -39,7 +39,7 @@ var _ = FDescribe("7807 Cue Bug", func() {
 		"codegen/test/cue_bug.proto",
 	})
 
-	It("test make bug happen", func() {
+	FIt("test make bug happen", func() {
 		cmd := &Command{
 			Groups: []Group{
 				{
@@ -73,7 +73,7 @@ var _ = FDescribe("7807 Cue Bug", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	FIt("invoke cue make bug happen", func() {
+	It("invoke cue make bug happen", func() {
 		ext := protobuf.NewExtractor(&protobuf.Config{})
 		ext.AddFile("test/cue_bug.proto", nil)
 
@@ -90,6 +90,24 @@ var _ = FDescribe("7807 Cue Bug", func() {
 			// if err != nil {
 			// 	log.Fatal(err, "")
 			// }
+
+			// f.
+			v := bi.Value()
+			syn := v.Syntax(
+				// cue.Final(),         // close structs and lists
+				// cue.Concrete(false), // allow incomplete values
+				cue.Definitions(false),
+				cue.Hidden(true),
+				cue.Optional(true),
+				cue.Attributes(true),
+				cue.Docs(true),
+			)
+			bs, err := format.Node(syn)
+			if err != nil {
+				log.Fatal(err, "")
+			}
+			log.Println(string(bs))
+
 			f, err := openapi.Generate(bi, &openapi.Config{
 				ExpandReferences: true,
 			})
@@ -97,23 +115,6 @@ var _ = FDescribe("7807 Cue Bug", func() {
 				log.Fatal(err, "")
 			}
 			log.Println(f)
-
-			// f.
-			v := bi.Value()
-			syn := v.Syntax(
-			// cue.Final(),         // close structs and lists
-			// cue.Concrete(false), // allow incomplete values
-			// cue.Definitions(false),
-			// cue.Hidden(true),
-			// cue.Optional(true),
-			// cue.Attributes(true),
-			// cue.Docs(true),
-			)
-			bs, err := format.Node(syn)
-			if err != nil {
-				log.Fatal(err, "")
-			}
-			log.Println(string(bs))
 
 			s, err := generator.Schemas(bi)
 			// generator.

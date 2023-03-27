@@ -5,7 +5,7 @@ package things.test.io;
 option go_package = "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1";
 
 
-message A {
+message CueBugSpec {
   message B {
   }
 
@@ -16,4 +16,8 @@ message A {
   oneof my_one_of {
     C c = 1;
   }
+}
+
+message CueBugStatus {
+  
 }
