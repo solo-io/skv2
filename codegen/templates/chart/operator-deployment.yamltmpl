@@ -185,6 +185,9 @@ metadata:
     [[- range $key, $value := $customServiceAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
+    {{- range $key, $value := $[[ $operatorVar ]].additionalServiceAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
   name: [[ $operator.Name ]]
   namespace: {{ $.Release.Namespace }}
 spec:
