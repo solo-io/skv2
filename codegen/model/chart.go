@@ -82,6 +82,8 @@ type Operator struct {
 
 	// Custom values to include at operator level
 	Values interface{}
+
+	EnabledDependsOn []string
 }
 
 func (o Operator) FormattedName() string {
