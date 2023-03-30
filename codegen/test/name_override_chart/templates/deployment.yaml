@@ -2,8 +2,7 @@
 
 
 
-{{- $painterOriginalName := $.Values.overrideName}}
----
+{{- $painterOriginalName := $.Values.overrideName}}---
 
 {{- define "painter-original-name.deploymentSpec"}}
 

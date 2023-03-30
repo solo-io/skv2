@@ -813,7 +813,6 @@ var _ = Describe("Cmd", func() {
 	})
 
 	It("supports overriding the deployment and service specs via helm values", func() {
-
 		cmd := &Command{
 			Chart: &Chart{
 				Operators: []Operator{
@@ -1073,6 +1072,105 @@ var _ = Describe("Cmd", func() {
 		Expect(renderedService.Spec.LoadBalancerIP).To(Equal(loadBalancerIp))
 		Expect(*renderedDeployment.Spec.Replicas).To(Equal(replicas))
 	})
+
+	It("supports enabling one service depending on whether another is enabled", func() {
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "Paint",
+							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Status: &Field{Type: Type{Name: "PaintStatus"}},
+						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name:             "painter",
+						EnabledDependsOn: []string{"test1", "test2"},
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
+							},
+						},
+					},
+				},
+				Values: nil,
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		fileContents, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(string(fileContents)).To(ContainSubstring("{{- if and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled }}"))
+
+		expectedSA := "kind: ServiceAccount\nmetadata:\n  labels:\n    app: painter\n  name: painter\n"
+
+		type enabledThing struct {
+			Enabled bool `json:"enabled"`
+		}
+		helmValues := map[string]*enabledThing{
+			"painter": &enabledThing{Enabled: true},
+			"test1":   &enabledThing{Enabled: false},
+			"test2":   &enabledThing{Enabled: false},
+		}
+
+		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+		Expect(renderedManifests).NotTo(ContainSubstring(expectedSA))
+
+		helmValues["test1"].Enabled = true
+		renderedManifests = helmTemplate("codegen/test/chart", helmValues)
+		Expect(renderedManifests).NotTo(ContainSubstring(expectedSA))
+
+		helmValues["test2"].Enabled = true
+		renderedManifests = helmTemplate("codegen/test/chart", helmValues)
+		Expect(string(renderedManifests)).To(ContainSubstring(expectedSA))
+	})
+
 	Context("generates CRD with validation schema for a proto file", func() {
 		var cmd *Command
 

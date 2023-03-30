@@ -2,8 +2,7 @@
 
 
 
-{{- $painter := $.Values.painter}}
----
+{{- $painter := $.Values.painter}}---
 
 {{- define "painter.deploymentSpec"}}
 
