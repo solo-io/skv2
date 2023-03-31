@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	goyaml "gopkg.in/yaml.v3"
+	rbacv1 "k8s.io/api/rbac/v1"
 	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -1111,6 +1112,11 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:             "painter",
 						EnabledDependsOn: []string{"test1", "test2"},
+						Rbac: []rbacv1.PolicyRule{
+							{
+								Verbs: []string{"GET"},
+							},
+						},
 						Deployment: Deployment{
 							Container: Container{
 								Image: Image{
@@ -1149,6 +1155,7 @@ var _ = Describe("Cmd", func() {
 		Expect(string(fileContents)).To(ContainSubstring("{{- if and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled }}"))
 
 		expectedSA := "kind: ServiceAccount\nmetadata:\n  labels:\n    app: painter\n  name: painter\n"
+		expectedCR := "kind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: painter"
 
 		type enabledThing struct {
 			Enabled bool `json:"enabled"`
@@ -1161,14 +1168,17 @@ var _ = Describe("Cmd", func() {
 
 		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
 		Expect(renderedManifests).NotTo(ContainSubstring(expectedSA))
+		Expect(renderedManifests).NotTo(ContainSubstring(expectedCR))
 
 		helmValues["test1"].Enabled = true
 		renderedManifests = helmTemplate("codegen/test/chart", helmValues)
 		Expect(renderedManifests).NotTo(ContainSubstring(expectedSA))
+		Expect(renderedManifests).NotTo(ContainSubstring(expectedCR))
 
 		helmValues["test2"].Enabled = true
 		renderedManifests = helmTemplate("codegen/test/chart", helmValues)
 		Expect(string(renderedManifests)).To(ContainSubstring(expectedSA))
+		Expect(renderedManifests).To(ContainSubstring(expectedCR))
 	})
 
 	Context("generates CRD with validation schema for a proto file", func() {
