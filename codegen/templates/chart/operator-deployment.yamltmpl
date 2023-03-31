@@ -17,6 +17,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
+---
 [[- $enabledCheck := print "{{- if $" $operatorVar ".enabled }}" -]]
 [[- if $operator.EnabledDependsOn -]]
   [[- $enabledCheck = print "{{- if and $" $operatorVar ".enabled" -]]
@@ -24,8 +25,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
     [[- $enabledCheck = print $enabledCheck " $.Values." $element ".enabled" -]]
   [[- end -]]
   [[- $enabledCheck = print $enabledCheck " }}" -]]
-[[- end -]]
----
+[[- end ]]
 
 {{- define "[[ $operator.Name ]].deploymentSpec"}}
 [[- $workloadKind := "Deployment" ]]
