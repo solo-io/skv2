@@ -187,7 +187,7 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		}
 		sidecars := map[string]values.UserContainerValues{}
 		for _, sidecar := range operator.Deployment.Sidecars {
-			sidecars[sidecar.Name] = makeContainerDocs(sidecar.Container)
+			sidecars[strcase.ToLowerCamel(sidecar.Name)] = makeContainerDocs(sidecar.Container)
 		}
 
 		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{
