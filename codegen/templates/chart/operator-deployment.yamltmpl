@@ -18,6 +18,14 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
 ---
+[[- $enabledCheck := print "{{- if $" $operatorVar ".enabled }}" -]]
+[[- if $operator.EnabledDependsOn -]]
+  [[- $enabledCheck = print "{{- if and $" $operatorVar ".enabled" -]]
+  [[- range $index, $element := $operator.EnabledDependsOn -]]
+    [[- $enabledCheck = print $enabledCheck " $.Values." $element ".enabled" -]]
+  [[- end -]]
+  [[- $enabledCheck = print $enabledCheck " }}" -]]
+[[- end ]]
 
 {{- define "[[ $operator.Name ]].deploymentSpec"}}
 [[- $workloadKind := "Deployment" ]]
@@ -138,7 +146,7 @@ spec:
 {{- end }} {{/* define "[[ $operator.Name ]].deploymentSpec" */}}
 
 {{/* Render [[ $operator.Name ]] deployment template with overrides from values*/}}
-{{- if $[[ $operatorVar ]].enabled }}
+[[ $enabledCheck ]]
 {{- $[[ $operatorVar ]]DeploymentOverrides := dict }}
 {{- if $[[ $operatorVar ]].deploymentOverrides }}
 {{- $[[ $operatorVar ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
@@ -148,7 +156,7 @@ spec:
 {{- end }}
 ---
 
-{{- if $[[ $operatorVar ]].enabled }}
+[[ $enabledCheck ]]
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -199,7 +207,7 @@ spec:
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
 
-{{- if $[[ $operatorVar ]].enabled }}
+[[ $enabledCheck ]]
 {{/* Render [[ $operator.Name ]] service template with overrides from values*/}}
 {{- $[[ $operatorVar ]]ServiceOverrides := dict }}
 {{- if $[[ $operatorVar ]].serviceOverrides }}

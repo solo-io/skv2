@@ -10,7 +10,16 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 # Rbac manifests for [[ $operator.Name ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator)]]}}
-{{- if $[[ $operatorVar ]].enabled }}
+
+[[- $enabledCheck := print "{{- if $" $operatorVar ".enabled }}" -]]
+[[- if $operator.EnabledDependsOn -]]
+  [[- $enabledCheck = print "{{- if and $" $operatorVar ".enabled" -]]
+  [[- range $index, $element := $operator.EnabledDependsOn -]]
+    [[- $enabledCheck = print $enabledCheck " $.Values." $element ".enabled" -]]
+  [[- end -]]
+  [[- $enabledCheck = print $enabledCheck " }}" -]]
+[[- end ]]
+[[ $enabledCheck ]]
 ---
 
 kind: ClusterRole
