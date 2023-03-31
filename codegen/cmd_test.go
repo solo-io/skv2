@@ -41,7 +41,6 @@ var _ = Describe("Cmd", func() {
 	}
 
 	It("generates controller code and manifests for a proto file", func() {
-
 		cmd := &Command{
 			Groups: []Group{
 				{
@@ -117,7 +116,6 @@ var _ = Describe("Cmd", func() {
 	// note that there is no .proto file this is generated from; it simply pulls in field definitions
 	// from other packages
 	It("allows fields from other packages", func() {
-
 		// note that there is no .proto file this is generated from; it simply pulls in field definitions
 		// from other packages
 		cmd := &Command{
@@ -954,7 +952,6 @@ var _ = Describe("Cmd", func() {
 
 		helmValues := map[string]interface{}{
 			"painter": map[string]interface{}{
-
 				"serviceOverrides": marshalMap(&v1.Service{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
@@ -1246,7 +1243,6 @@ var _ = Describe("Cmd", func() {
 								},
 
 								Sidecars: []Sidecar{
-
 									{
 										Name: "palette",
 										Container: Container{
@@ -1362,6 +1358,66 @@ var _ = Describe("Cmd", func() {
 			Expect(string(bytes)).NotTo(ContainSubstring("description:"))
 		})
 	})
+
+	DescribeTable("rendering the sidecar values",
+		func(sidecarName string, expectedSidecarParentKey string) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+								Sidecars: []Sidecar{
+									{
+										Name: sidecarName,
+										Container: Container{
+											Image: Image{
+												Tag:        "v0.0.0",
+												Repository: "painter",
+												Registry:   "quay.io/solo-io",
+												PullPolicy: "IfNotPresent",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-sidecar",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			values := helmValuesFromFile("codegen/test/chart-sidecar/values.yaml")
+			Expect(values["painter"].(map[string]interface{})["sidecars"].(map[string]interface{})[expectedSidecarParentKey]).ToNot(BeNil())
+		},
+
+		Entry("camelCase sidecar name", "fooBar", "fooBar"),
+		Entry("hyphened sidecar name", "foo-bar", "fooBar"),
+	)
 })
 
 func helmTemplate(path string, values interface{}) []byte {
@@ -1384,5 +1440,16 @@ func helmTemplate(path string, values interface{}) []byte {
 		"--values", helmValuesFile.Name(),
 	).CombinedOutput()
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), string(out))
+	return out
+}
+
+func helmValuesFromFile(path string) map[string]interface{} {
+	data, err := ioutil.ReadFile(path)
+	Expect(err).NotTo(HaveOccurred())
+
+	out := make(map[string]interface{})
+	err = yaml.Unmarshal(data, &out)
+	Expect(err).NotTo(HaveOccurred())
+
 	return out
 }
