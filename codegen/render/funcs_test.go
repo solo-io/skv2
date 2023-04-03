@@ -81,45 +81,45 @@ var _ = Describe("toYAMLWithComments", func() {
 			Field1: Hello, comments
 			# a map to a list of structs
 			Field10:
-					hello:
-							- # nested field 1
-								FieldN1: field
-							- # nested field 1
-								FieldN1: ten
+				hello:
+					- # nested field 1
+						FieldN1: field
+					- # nested field 1
+						FieldN1: ten
 			# list of field 2
 			Field2:
-					- # nested field 1
-						FieldN1: Hello!
-					- # nested field 1
-						FieldN1: Hello!
+				- # nested field 1
+					FieldN1: Hello!
+				- # nested field 1
+					FieldN1: Hello!
 			# a field that is a pointer to another type
 			Field3:
-					# nested field 1
-					FieldN1: Hello field 3
+				# nested field 1
+				FieldN1: Hello field 3
 			# a field that is a pointer to a list of types
 			Field4:
-					- # nested field 1
-						FieldN1: Field4
-					- null
+				- # nested field 1
+					FieldN1: Field4
+				- null
 			# a list of scalars
 			Field6:
-					- hello
-					- field
-					- six
+				- hello
+				- field
+				- six
 			# a map of scalars to scalars
 			Field7:
-					hello1: hello 1
-					hello2: hello 2
+				hello1: hello 1
+				hello2: hello 2
 			# a map to a struct
 			Field8:
-					hello:
-							# nested field 1
-							FieldN1: field 8
+				hello:
+					# nested field 1
+					FieldN1: field 8
 			# a map to a pointer to a struct
 			Field9:
-					hello:
-							# nested field 1
-							FieldN1: field 9
+				hello:
+					# nested field 1
+					FieldN1: field 9
 			# non standard field name
 			fieldfive: hello field 5
 		`)))
@@ -172,8 +172,8 @@ var _ = Describe("toYAMLWithComments", func() {
 		actual := render.FromNode(node)
 		Expect(actual).To(Equal(prepareExpected(`
 			childType:
-				  # field c1
-				  FieldC1: ""
+				# field c1
+				FieldC1: ""
 		`)))
 	})
 
@@ -227,20 +227,20 @@ var _ = Describe("toYAMLWithComments", func() {
 		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
 			# my interface field
 			Field1:
-					# nested field 1
-					FieldN1: field1 n1
+				# nested field 1
+				FieldN1: field1 n1
 			# my map of interface field
 			Field2:
-					field2:
-							# nested field 1
-							FieldN1: Hello!
-					field3:
-							# nested field 1
-							FieldN1: map value is pointer to nested type!
+				field2:
+					# nested field 1
+					FieldN1: Hello!
+				field3:
+					# nested field 1
+					FieldN1: map value is pointer to nested type!
 			# yet another interface field
 			Field3:
-					# nested field 1
-					FieldN1: interface is pointer to nested type!
+				# nested field 1
+				FieldN1: interface is pointer to nested type!
 			# yet another interface field 2
 			Field4: hello, world!
 	`)))
@@ -267,12 +267,12 @@ var _ = Describe("toYAMLWithComments", func() {
 		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
 			# nested pointer type
 			Field1:
-					# nested field 1
-					FieldN1: Hello, world!
+				# nested field 1
+				FieldN1: Hello, world!
 			# doubly nested pointer type
 			Field2:
-					# nested field 1
-					FieldN1: Hello, world!
+				# nested field 1
+				FieldN1: Hello, world!
 		`)))
 	})
 

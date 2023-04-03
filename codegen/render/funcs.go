@@ -472,11 +472,14 @@ func wrapWords(s string, limit int) string {
 }
 
 func fromNode(n goyaml.Node) string {
-	b, err := goyaml.Marshal(sortYAML(&n))
+	buf := new(bytes.Buffer)
+	encoder := goyaml.NewEncoder(buf)
+	encoder.SetIndent(2)
+	err := encoder.Encode(sortYAML(&n))
 	if err != nil {
 		panic(err)
 	}
-	return string(b)
+	return buf.String()
 }
 
 // Implement sorting for prettier yaml
