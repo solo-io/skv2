@@ -1,0 +1,7 @@
+changelog:
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: cue
+    dependencyTag: v0.4.7
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/7807
+    resolvesIssue: false
