@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix compilation errors in input reconciler and input snapshot templates when running with k8s 1.25 libraries.
+    issueLink: https://github.com/solo-io/gloo/issues/6833
