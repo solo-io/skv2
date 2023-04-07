@@ -11,20 +11,13 @@ jobs:
     name: Code Gen
     runs-on: ubuntu-22.04
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
       - name: Set up Go 1.18
         uses: actions/setup-go@v4
         with:
-          go-version: 1.18.5
+          go-version-file: "go.mod"
         id: go
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
       - name: Generate Code
         run: |
           ./ci/check-code-and-docs-gen.sh
@@ -36,7 +29,7 @@ jobs:
       - name: Set up Go 1.18
         uses: actions/setup-go@v4
         with:
-          go-version: 1.18.5
+          go-version-file: "go.mod"
       # Required for codegen tests
       - name: Install kind
         uses: helm/kind-action@v1.5.0
@@ -49,12 +42,6 @@ jobs:
       - uses: azure/setup-kubectl@v3
         with:
           version: 'v1.24.7'
-      - uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
       - name: Install deps for codegen
         run: |
           make install-tools
