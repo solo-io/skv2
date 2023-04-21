@@ -123,10 +123,10 @@ type SecretWriter interface {
 type SecretStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given Secret object.
-	UpdateSecretStatus(ctx context.Context, obj *v1.Secret, opts ...client.UpdateOption) error
+	UpdateSecretStatus(ctx context.Context, obj *v1.Secret, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given Secret object's subresource.
-	PatchSecretStatus(ctx context.Context, obj *v1.Secret, patch client.Patch, opts ...client.PatchOption) error
+	PatchSecretStatus(ctx context.Context, obj *v1.Secret, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on Secrets.
@@ -197,11 +197,11 @@ func (c *secretClient) UpsertSecret(ctx context.Context, obj *v1.Secret, transit
 	return err
 }
 
-func (c *secretClient) UpdateSecretStatus(ctx context.Context, obj *v1.Secret, opts ...client.UpdateOption) error {
+func (c *secretClient) UpdateSecretStatus(ctx context.Context, obj *v1.Secret, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *secretClient) PatchSecretStatus(ctx context.Context, obj *v1.Secret, patch client.Patch, opts ...client.PatchOption) error {
+func (c *secretClient) PatchSecretStatus(ctx context.Context, obj *v1.Secret, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
@@ -265,10 +265,10 @@ type ServiceAccountWriter interface {
 type ServiceAccountStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given ServiceAccount object.
-	UpdateServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, opts ...client.UpdateOption) error
+	UpdateServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given ServiceAccount object's subresource.
-	PatchServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, patch client.Patch, opts ...client.PatchOption) error
+	PatchServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on ServiceAccounts.
@@ -339,11 +339,11 @@ func (c *serviceAccountClient) UpsertServiceAccount(ctx context.Context, obj *v1
 	return err
 }
 
-func (c *serviceAccountClient) UpdateServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, opts ...client.UpdateOption) error {
+func (c *serviceAccountClient) UpdateServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *serviceAccountClient) PatchServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, patch client.Patch, opts ...client.PatchOption) error {
+func (c *serviceAccountClient) PatchServiceAccountStatus(ctx context.Context, obj *v1.ServiceAccount, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
@@ -407,10 +407,10 @@ type NamespaceWriter interface {
 type NamespaceStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given Namespace object.
-	UpdateNamespaceStatus(ctx context.Context, obj *v1.Namespace, opts ...client.UpdateOption) error
+	UpdateNamespaceStatus(ctx context.Context, obj *v1.Namespace, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given Namespace object's subresource.
-	PatchNamespaceStatus(ctx context.Context, obj *v1.Namespace, patch client.Patch, opts ...client.PatchOption) error
+	PatchNamespaceStatus(ctx context.Context, obj *v1.Namespace, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on Namespaces.
@@ -483,11 +483,11 @@ func (c *namespaceClient) UpsertNamespace(ctx context.Context, obj *v1.Namespace
 	return err
 }
 
-func (c *namespaceClient) UpdateNamespaceStatus(ctx context.Context, obj *v1.Namespace, opts ...client.UpdateOption) error {
+func (c *namespaceClient) UpdateNamespaceStatus(ctx context.Context, obj *v1.Namespace, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *namespaceClient) PatchNamespaceStatus(ctx context.Context, obj *v1.Namespace, patch client.Patch, opts ...client.PatchOption) error {
+func (c *namespaceClient) PatchNamespaceStatus(ctx context.Context, obj *v1.Namespace, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 

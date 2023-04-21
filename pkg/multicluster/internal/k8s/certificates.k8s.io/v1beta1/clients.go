@@ -109,10 +109,10 @@ type CertificateSigningRequestWriter interface {
 type CertificateSigningRequestStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given CertificateSigningRequest object.
-	UpdateCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, opts ...client.UpdateOption) error
+	UpdateCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given CertificateSigningRequest object's subresource.
-	PatchCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, patch client.Patch, opts ...client.PatchOption) error
+	PatchCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on CertificateSigningRequests.
@@ -183,11 +183,11 @@ func (c *certificateSigningRequestClient) UpsertCertificateSigningRequest(ctx co
 	return err
 }
 
-func (c *certificateSigningRequestClient) UpdateCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, opts ...client.UpdateOption) error {
+func (c *certificateSigningRequestClient) UpdateCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *certificateSigningRequestClient) PatchCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, patch client.Patch, opts ...client.PatchOption) error {
+func (c *certificateSigningRequestClient) PatchCertificateSigningRequestStatus(ctx context.Context, obj *certificates_k8s_io_v1beta1.CertificateSigningRequest, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 

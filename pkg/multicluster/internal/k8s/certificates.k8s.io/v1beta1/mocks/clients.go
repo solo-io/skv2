@@ -308,7 +308,7 @@ func (m *MockCertificateSigningRequestStatusWriter) EXPECT() *MockCertificateSig
 }
 
 // UpdateCertificateSigningRequestStatus mocks base method
-func (m *MockCertificateSigningRequestStatusWriter) UpdateCertificateSigningRequestStatus(ctx context.Context, obj *v1beta10.CertificateSigningRequest, opts ...client.UpdateOption) error {
+func (m *MockCertificateSigningRequestStatusWriter) UpdateCertificateSigningRequestStatus(ctx context.Context, obj *v1beta10.CertificateSigningRequest, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -327,7 +327,7 @@ func (mr *MockCertificateSigningRequestStatusWriterMockRecorder) UpdateCertifica
 }
 
 // PatchCertificateSigningRequestStatus mocks base method
-func (m *MockCertificateSigningRequestStatusWriter) PatchCertificateSigningRequestStatus(ctx context.Context, obj *v1beta10.CertificateSigningRequest, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockCertificateSigningRequestStatusWriter) PatchCertificateSigningRequestStatus(ctx context.Context, obj *v1beta10.CertificateSigningRequest, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
@@ -518,7 +518,7 @@ func (mr *MockCertificateSigningRequestClientMockRecorder) UpsertCertificateSign
 }
 
 // UpdateCertificateSigningRequestStatus mocks base method
-func (m *MockCertificateSigningRequestClient) UpdateCertificateSigningRequestStatus(ctx context.Context, obj *v1beta10.CertificateSigningRequest, opts ...client.UpdateOption) error {
+func (m *MockCertificateSigningRequestClient) UpdateCertificateSigningRequestStatus(ctx context.Context, obj *v1beta10.CertificateSigningRequest, opts ...client.SubResourceUpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
@@ -537,7 +537,7 @@ func (mr *MockCertificateSigningRequestClientMockRecorder) UpdateCertificateSign
 }
 
 // PatchCertificateSigningRequestStatus mocks base method
-func (m *MockCertificateSigningRequestClient) PatchCertificateSigningRequestStatus(ctx context.Context, obj *v1beta10.CertificateSigningRequest, patch client.Patch, opts ...client.PatchOption) error {
+func (m *MockCertificateSigningRequestClient) PatchCertificateSigningRequestStatus(ctx context.Context, obj *v1beta10.CertificateSigningRequest, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {

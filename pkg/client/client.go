@@ -58,12 +58,12 @@ type StatusWriter[T client.Object] interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given obj. obj must be a struct pointer so that obj can be updated
 	// with the content returned by the Server.
-	Update(ctx context.Context, obj T, opts ...client.UpdateOption) error
+	Update(ctx context.Context, obj T, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given object's subresource. obj must be a struct
 	// pointer so that obj can be updated with the content returned by the
 	// Server.
-	Patch(ctx context.Context, obj T, patch client.Patch, opts ...client.PatchOption) error
+	Patch(ctx context.Context, obj T, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 type GenericClient[T client.Object, L client.ObjectList] interface {
@@ -174,10 +174,10 @@ type statusWriter[T client.Object] struct {
 	statusWriter client.StatusWriter
 }
 
-func (s *statusWriter[T]) Update(ctx context.Context, obj T, opts ...client.UpdateOption) error {
+func (s *statusWriter[T]) Update(ctx context.Context, obj T, opts ...client.SubResourceUpdateOption) error {
 	return s.statusWriter.Update(ctx, obj, opts...)
 }
 
-func (s *statusWriter[T]) Patch(ctx context.Context, obj T, patch client.Patch, opts ...client.PatchOption) error {
+func (s *statusWriter[T]) Patch(ctx context.Context, obj T, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return s.statusWriter.Patch(ctx, obj, patch, opts...)
 }

@@ -130,10 +130,10 @@ type RoleWriter interface {
 type RoleStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given Role object.
-	UpdateRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, opts ...client.UpdateOption) error
+	UpdateRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given Role object's subresource.
-	PatchRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, patch client.Patch, opts ...client.PatchOption) error
+	PatchRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on Roles.
@@ -204,11 +204,11 @@ func (c *roleClient) UpsertRole(ctx context.Context, obj *rbac_authorization_k8s
 	return err
 }
 
-func (c *roleClient) UpdateRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, opts ...client.UpdateOption) error {
+func (c *roleClient) UpdateRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *roleClient) PatchRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, patch client.Patch, opts ...client.PatchOption) error {
+func (c *roleClient) PatchRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.Role, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
@@ -272,10 +272,10 @@ type RoleBindingWriter interface {
 type RoleBindingStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given RoleBinding object.
-	UpdateRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, opts ...client.UpdateOption) error
+	UpdateRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given RoleBinding object's subresource.
-	PatchRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, patch client.Patch, opts ...client.PatchOption) error
+	PatchRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on RoleBindings.
@@ -346,11 +346,11 @@ func (c *roleBindingClient) UpsertRoleBinding(ctx context.Context, obj *rbac_aut
 	return err
 }
 
-func (c *roleBindingClient) UpdateRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, opts ...client.UpdateOption) error {
+func (c *roleBindingClient) UpdateRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *roleBindingClient) PatchRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, patch client.Patch, opts ...client.PatchOption) error {
+func (c *roleBindingClient) PatchRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.RoleBinding, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
@@ -414,10 +414,10 @@ type ClusterRoleWriter interface {
 type ClusterRoleStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given ClusterRole object.
-	UpdateClusterRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, opts ...client.UpdateOption) error
+	UpdateClusterRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given ClusterRole object's subresource.
-	PatchClusterRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, patch client.Patch, opts ...client.PatchOption) error
+	PatchClusterRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on ClusterRoles.
@@ -490,11 +490,11 @@ func (c *clusterRoleClient) UpsertClusterRole(ctx context.Context, obj *rbac_aut
 	return err
 }
 
-func (c *clusterRoleClient) UpdateClusterRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, opts ...client.UpdateOption) error {
+func (c *clusterRoleClient) UpdateClusterRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *clusterRoleClient) PatchClusterRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, patch client.Patch, opts ...client.PatchOption) error {
+func (c *clusterRoleClient) PatchClusterRoleStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRole, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
@@ -558,10 +558,10 @@ type ClusterRoleBindingWriter interface {
 type ClusterRoleBindingStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given ClusterRoleBinding object.
-	UpdateClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, opts ...client.UpdateOption) error
+	UpdateClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given ClusterRoleBinding object's subresource.
-	PatchClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, patch client.Patch, opts ...client.PatchOption) error
+	PatchClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on ClusterRoleBindings.
@@ -634,11 +634,11 @@ func (c *clusterRoleBindingClient) UpsertClusterRoleBinding(ctx context.Context,
 	return err
 }
 
-func (c *clusterRoleBindingClient) UpdateClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, opts ...client.UpdateOption) error {
+func (c *clusterRoleBindingClient) UpdateClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *clusterRoleBindingClient) PatchClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, patch client.Patch, opts ...client.PatchOption) error {
+func (c *clusterRoleBindingClient) PatchClusterRoleBindingStatus(ctx context.Context, obj *rbac_authorization_k8s_io_v1.ClusterRoleBinding, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 

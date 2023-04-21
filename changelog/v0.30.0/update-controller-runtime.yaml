@@ -1,0 +1,29 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Update Status API signature to comply with controller-runtime v0.14.x API breakage
+    issueLink: https://github.com/solo-io/skv2/issues/419
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: sigs.k8s.io
+    dependencyRepo: controller-runtime
+    dependencyTag: v0.14.4
+    description: Contains breaking API changes from controller-runtile v0.13
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: k8s.io
+    dependencyRepo: api
+    dependencyTag: v0.26.4
+    description: pulled in by sigs.k8s.io/sontroller-runtime
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: k8s.io
+    dependencyRepo: apiextensions-apiserver
+    dependencyTag: v0.26.4
+    description: pulled in by sigs.k8s.io/sontroller-runtime
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: k8s.io
+    dependencyRepo: client-go
+    dependencyTag: v0.26.4
+    description: pulled in by sigs.k8s.io/sontroller-runtime
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: k8s.io
+    dependencyRepo: code-generator
+    dependencyTag: v0.26.4
+    description: pulled in by sigs.k8s.io/sontroller-runtime

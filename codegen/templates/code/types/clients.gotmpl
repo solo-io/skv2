@@ -129,10 +129,10 @@ type {{ $resource.Kind }}Writer interface {
 type {{ $resource.Kind }}StatusWriter interface {
     // Update updates the fields corresponding to the status subresource for the
     // given {{ $resource.Kind }} object.
-    Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.UpdateOption) error
+    Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.SubResourceUpdateOption) error
 
     // Patch patches the given {{ $resource.Kind }} object's subresource.
-    Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error
+    Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on {{ $resource.Kind }}s.
@@ -224,11 +224,11 @@ func (c *{{ $kindLowerCamel }}Client) Upsert{{ $resource.Kind }}(ctx context.Con
     return err
 }
 
-func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.UpdateOption) error {
+func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, opts ...client.SubResourceUpdateOption) error {
     return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error {
+func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $import_prefix }}{{ $resource.Kind }}, patch client.Patch, opts ...client.SubResourcePatchOption) error {
     return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 

@@ -109,10 +109,10 @@ type ValidatingWebhookConfigurationWriter interface {
 type ValidatingWebhookConfigurationStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given ValidatingWebhookConfiguration object.
-	UpdateValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, opts ...client.UpdateOption) error
+	UpdateValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, opts ...client.SubResourceUpdateOption) error
 
 	// Patch patches the given ValidatingWebhookConfiguration object's subresource.
-	PatchValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, patch client.Patch, opts ...client.PatchOption) error
+	PatchValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 // Client knows how to perform CRUD operations on ValidatingWebhookConfigurations.
@@ -183,11 +183,11 @@ func (c *validatingWebhookConfigurationClient) UpsertValidatingWebhookConfigurat
 	return err
 }
 
-func (c *validatingWebhookConfigurationClient) UpdateValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, opts ...client.UpdateOption) error {
+func (c *validatingWebhookConfigurationClient) UpdateValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, opts ...client.SubResourceUpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *validatingWebhookConfigurationClient) PatchValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, patch client.Patch, opts ...client.PatchOption) error {
+func (c *validatingWebhookConfigurationClient) PatchValidatingWebhookConfigurationStatus(ctx context.Context, obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
