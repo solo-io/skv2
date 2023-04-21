@@ -34,7 +34,7 @@ Name|Version|License
 [go.uber.org/multierr](https://go.uber.org/multierr)|v1.6.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.24.0|MIT License
 [exp/maps](https://golang.org/x/exp/maps)|v0.0.0-20220921164117-439092de6870|BSD 3-clause "New" or "Revised" License
-[x/net](https://golang.org/x/net)|v0.6.0|BSD 3-clause "New" or "Revised" License
+[x/net](https://golang.org/x/net)|v0.7.0|BSD 3-clause "New" or "Revised" License
 [oauth2/internal](https://golang.org/x/oauth2/internal)|v0.0.0-20220223155221-ee480838109b|BSD 3-clause "New" or "Revised" License
 [x/term](https://golang.org/x/term)|v0.5.0|BSD 3-clause "New" or "Revised" License
 [x/text](https://golang.org/x/text)|v0.7.0|BSD 3-clause "New" or "Revised" License
@@ -44,10 +44,10 @@ Name|Version|License
 [gopkg.in/inf.v0](https://gopkg.in/inf.v0)|v0.9.1|BSD 3-clause "New" or "Revised" License
 [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)|v2.4.0|Apache License 2.0
 [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)|v3.0.1|MIT License
-[k8s.io/api](https://k8s.io/api)|v0.26.1|Apache License 2.0
-[k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.26.1|Apache License 2.0
-[k8s.io/client-go](https://k8s.io/client-go)|v0.26.1|Apache License 2.0
-[config/v1alpha1](https://k8s.io/component-base/config/v1alpha1)|v0.26.1|Apache License 2.0
+[k8s.io/api](https://k8s.io/api)|v0.26.4|Apache License 2.0
+[k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.26.4|Apache License 2.0
+[k8s.io/client-go](https://k8s.io/client-go)|v0.26.4|Apache License 2.0
+[config/v1alpha1](https://k8s.io/component-base/config/v1alpha1)|v0.26.4|Apache License 2.0
 [v2/internal](https://k8s.io/klog/v2/internal)|v2.80.1|Apache License 2.0
 [kube-openapi/pkg](https://k8s.io/kube-openapi/pkg)|v0.0.0-20221012153701-172d655c2280|Apache License 2.0
 [k8s.io/utils](https://k8s.io/utils)|v0.0.0-20221128185143-99ec85e7a448|Apache License 2.0
