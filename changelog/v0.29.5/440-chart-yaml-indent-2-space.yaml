@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: chart values are indented 2 spaces instead of 4
+    issueLink: https://github.com/solo-io/skv2/issues/440

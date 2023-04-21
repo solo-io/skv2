@@ -2,9 +2,7 @@
 
 painter:
   enabled: true
-  env:
-    - name: FOO
-      value: BAR
+  env: null
   floatingUserId: false
   image:
     pullPolicy: IfNotPresent
@@ -15,11 +13,11 @@ painter:
   runAsUser: 10101
   serviceType: ""
   sidecars:
-    palette:
+    fooBar:
       env: null
       image:
         pullPolicy: IfNotPresent
         registry: quay.io/solo-io
-        repository: palette
+        repository: painter
         tag: v0.0.0
 

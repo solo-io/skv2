@@ -82,6 +82,11 @@ type Operator struct {
 
 	// Custom values to include at operator level
 	Values interface{}
+
+	// (Optional) If this operator depends on another operator being enabled,
+	// the name of the other operator can be included in this list. This operator
+	// will not be provisioned unless both are enabled (by having values.enabled = true)
+	EnabledDependsOn []string
 }
 
 func (o Operator) FormattedName() string {
@@ -182,7 +187,7 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		}
 		sidecars := map[string]values.UserContainerValues{}
 		for _, sidecar := range operator.Deployment.Sidecars {
-			sidecars[sidecar.Name] = makeContainerDocs(sidecar.Container)
+			sidecars[strcase.ToLowerCamel(sidecar.Name)] = makeContainerDocs(sidecar.Container)
 		}
 
 		helmValues.Operators = append(helmValues.Operators, values.UserOperatorValues{

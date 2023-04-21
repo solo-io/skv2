@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	goyaml "gopkg.in/yaml.v3"
+	rbacv1 "k8s.io/api/rbac/v1"
 	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -40,7 +41,6 @@ var _ = Describe("Cmd", func() {
 	}
 
 	It("generates controller code and manifests for a proto file", func() {
-
 		cmd := &Command{
 			Groups: []Group{
 				{
@@ -116,7 +116,6 @@ var _ = Describe("Cmd", func() {
 	// note that there is no .proto file this is generated from; it simply pulls in field definitions
 	// from other packages
 	It("allows fields from other packages", func() {
-
 		// note that there is no .proto file this is generated from; it simply pulls in field definitions
 		// from other packages
 		cmd := &Command{
@@ -813,7 +812,6 @@ var _ = Describe("Cmd", func() {
 	})
 
 	It("supports overriding the deployment and service specs via helm values", func() {
-
 		cmd := &Command{
 			Chart: &Chart{
 				Operators: []Operator{
@@ -954,7 +952,6 @@ var _ = Describe("Cmd", func() {
 
 		helmValues := map[string]interface{}{
 			"painter": map[string]interface{}{
-
 				"serviceOverrides": marshalMap(&v1.Service{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
@@ -1073,6 +1070,114 @@ var _ = Describe("Cmd", func() {
 		Expect(renderedService.Spec.LoadBalancerIP).To(Equal(loadBalancerIp))
 		Expect(*renderedDeployment.Spec.Replicas).To(Equal(replicas))
 	})
+
+	It("supports enabling one service depending on whether another is enabled", func() {
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "Paint",
+							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Status: &Field{Type: Type{Name: "PaintStatus"}},
+						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name:             "painter",
+						EnabledDependsOn: []string{"test1", "test2"},
+						Rbac: []rbacv1.PolicyRule{
+							{
+								Verbs: []string{"GET"},
+							},
+						},
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
+							},
+						},
+					},
+				},
+				Values: nil,
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		fileContents, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(string(fileContents)).To(ContainSubstring("{{- if and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled }}"))
+
+		expectedSA := "kind: ServiceAccount\nmetadata:\n  labels:\n    app: painter\n  name: painter\n"
+		expectedCR := "kind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: painter"
+
+		type enabledThing struct {
+			Enabled bool `json:"enabled"`
+		}
+		helmValues := map[string]*enabledThing{
+			"painter": &enabledThing{Enabled: true},
+			"test1":   &enabledThing{Enabled: false},
+			"test2":   &enabledThing{Enabled: false},
+		}
+
+		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+		Expect(renderedManifests).NotTo(ContainSubstring(expectedSA))
+		Expect(renderedManifests).NotTo(ContainSubstring(expectedCR))
+
+		helmValues["test1"].Enabled = true
+		renderedManifests = helmTemplate("codegen/test/chart", helmValues)
+		Expect(renderedManifests).NotTo(ContainSubstring(expectedSA))
+		Expect(renderedManifests).NotTo(ContainSubstring(expectedCR))
+
+		helmValues["test2"].Enabled = true
+		renderedManifests = helmTemplate("codegen/test/chart", helmValues)
+		Expect(string(renderedManifests)).To(ContainSubstring(expectedSA))
+		Expect(renderedManifests).To(ContainSubstring(expectedCR))
+	})
+
 	Context("generates CRD with validation schema for a proto file", func() {
 		var cmd *Command
 
@@ -1138,7 +1243,6 @@ var _ = Describe("Cmd", func() {
 								},
 
 								Sidecars: []Sidecar{
-
 									{
 										Name: "palette",
 										Container: Container{
@@ -1254,6 +1358,66 @@ var _ = Describe("Cmd", func() {
 			Expect(string(bytes)).NotTo(ContainSubstring("description:"))
 		})
 	})
+
+	DescribeTable("rendering the sidecar values",
+		func(sidecarName string, expectedSidecarParentKey string) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+								Sidecars: []Sidecar{
+									{
+										Name: sidecarName,
+										Container: Container{
+											Image: Image{
+												Tag:        "v0.0.0",
+												Repository: "painter",
+												Registry:   "quay.io/solo-io",
+												PullPolicy: "IfNotPresent",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-sidecar",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			values := helmValuesFromFile("codegen/test/chart-sidecar/values.yaml")
+			Expect(values["painter"].(map[string]interface{})["sidecars"].(map[string]interface{})[expectedSidecarParentKey]).ToNot(BeNil())
+		},
+
+		Entry("camelCase sidecar name", "fooBar", "fooBar"),
+		Entry("hyphened sidecar name", "foo-bar", "fooBar"),
+	)
 })
 
 func helmTemplate(path string, values interface{}) []byte {
@@ -1276,5 +1440,16 @@ func helmTemplate(path string, values interface{}) []byte {
 		"--values", helmValuesFile.Name(),
 	).CombinedOutput()
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), string(out))
+	return out
+}
+
+func helmValuesFromFile(path string) map[string]interface{} {
+	data, err := ioutil.ReadFile(path)
+	Expect(err).NotTo(HaveOccurred())
+
+	out := make(map[string]interface{})
+	err = yaml.Unmarshal(data, &out)
+	Expect(err).NotTo(HaveOccurred())
+
 	return out
 }
