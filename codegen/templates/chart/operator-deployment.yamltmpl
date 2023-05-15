@@ -95,6 +95,12 @@ spec:
 {{- if [[ $containerVar ]].env }}
         env:
 {{ toYaml [[ $containerVar ]].env | indent 10 }}
+{{- else if [[ $containerVar ]].extraEnvs }}
+        env:
+{{- end }}
+{{- range $name, $item := [[ $containerVar ]].extraEnvs }}
+          - name: {{ $name }}
+{{- $item | toYaml | nindent 12 }}
 {{- end }}
 [[- if $container.VolumeMounts ]]
         volumeMounts:

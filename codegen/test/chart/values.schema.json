@@ -161,6 +161,10 @@
             }
           ]
         },
+        "extraEnvs": {
+          "properties": {},
+          "type": "object"
+        },
         "resources": {
           "properties": {
             "limits": {
@@ -533,6 +537,10 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "extraEnvs": {
+                      "properties": {},
+                      "type": "object"
                     },
                     "resources": {
                       "anyOf": [

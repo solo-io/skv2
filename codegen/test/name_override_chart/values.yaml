@@ -6,6 +6,8 @@ overrideName:
   # Environment variables for the container. For more info, see the [Kubernetes
   # documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core).
   env: null
+  # Extra environment variables for the container
+  extraEnvs: {}
   # Allow the pod to be assigned a dynamic user ID. Required for OpenShift
   # installations.
   floatingUserId: false

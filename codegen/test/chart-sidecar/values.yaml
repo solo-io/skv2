@@ -3,6 +3,7 @@
 painter:
   enabled: true
   env: null
+  extraEnvs: {}
   floatingUserId: false
   image:
     pullPolicy: IfNotPresent
@@ -15,6 +16,7 @@ painter:
   sidecars:
     fooBar:
       env: null
+      extraEnvs: {}
       image:
         pullPolicy: IfNotPresent
         registry: quay.io/solo-io
