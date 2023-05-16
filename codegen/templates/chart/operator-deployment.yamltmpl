@@ -41,7 +41,11 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
-  namespace: {{ .Release.Namespace }}
+  [[- if $operator.Namespace ]]
+    namespace: $operator.Namespace
+  [[- else ]]
+    namespace: {{ .Release.Namespace }}
+  [[- end ]]
 spec:
   selector:
     matchLabels:
