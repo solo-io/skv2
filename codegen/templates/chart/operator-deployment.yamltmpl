@@ -49,8 +49,8 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
-  [[- if $operator.Namespace ]]
-    namespace: $operator.Namespace
+  [[- if $operator.Deployment.Namespace ]]
+    namespace: $operator.Deployment.Namespace
   [[- else ]]
     namespace: {{ .Release.Namespace }}
   [[- end ]]
