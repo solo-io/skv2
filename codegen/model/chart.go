@@ -100,6 +100,7 @@ func (o Operator) FormattedName() string {
 // values for Deployment template
 type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
+	Namespace    string
 	UseDaemonSet bool
 	Container
 	Sidecars                    []Sidecar
