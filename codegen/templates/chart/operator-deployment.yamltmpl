@@ -51,9 +51,9 @@ metadata:
     [[- end ]]
   name: [[ $operator.Name ]]
   [[- if $customDeploymentNamespace ]]
-    namespace: [[ $customDeploymentNamespace ]]
+  namespace: [[ $customDeploymentNamespace ]]
   [[- else ]]
-    namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace }}
   [[- end ]]
 spec:
   selector:
