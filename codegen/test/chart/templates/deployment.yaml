@@ -52,6 +52,12 @@ spec:
 {{- if $painter.env }}
         env:
 {{ toYaml $painter.env | indent 10 }}
+{{- else if $painter.extraEnvs }}
+        env:
+{{- end }}
+{{- range $name, $item := $painter.extraEnvs }}
+          - name: {{ $name }}
+{{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $painter.resources }}
@@ -100,6 +106,12 @@ spec:
 {{- if $palette.env }}
         env:
 {{ toYaml $palette.env | indent 10 }}
+{{- else if $palette.extraEnvs }}
+        env:
+{{- end }}
+{{- range $name, $item := $palette.extraEnvs }}
+          - name: {{ $name }}
+{{- $item | toYaml | nindent 12 }}
 {{- end }}
         volumeMounts:
         - mountPath: /etc/paint

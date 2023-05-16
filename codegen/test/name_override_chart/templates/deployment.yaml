@@ -44,6 +44,12 @@ spec:
 {{- if $painterOriginalName.env }}
         env:
 {{ toYaml $painterOriginalName.env | indent 10 }}
+{{- else if $painterOriginalName.extraEnvs }}
+        env:
+{{- end }}
+{{- range $name, $item := $painterOriginalName.extraEnvs }}
+          - name: {{ $name }}
+{{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $painterOriginalName.resources }}

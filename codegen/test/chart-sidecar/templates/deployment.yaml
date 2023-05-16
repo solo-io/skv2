@@ -42,6 +42,12 @@ spec:
 {{- if $painter.env }}
         env:
 {{ toYaml $painter.env | indent 10 }}
+{{- else if $painter.extraEnvs }}
+        env:
+{{- end }}
+{{- range $name, $item := $painter.extraEnvs }}
+          - name: {{ $name }}
+{{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $painter.resources }}
@@ -81,6 +87,12 @@ spec:
 {{- if $fooBar.env }}
         env:
 {{ toYaml $fooBar.env | indent 10 }}
+{{- else if $fooBar.extraEnvs }}
+        env:
+{{- end }}
+{{- range $name, $item := $fooBar.extraEnvs }}
+          - name: {{ $name }}
+{{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $fooBar.resources }}

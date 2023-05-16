@@ -1158,9 +1158,9 @@ var _ = Describe("Cmd", func() {
 			Enabled bool `json:"enabled"`
 		}
 		helmValues := map[string]*enabledThing{
-			"painter": &enabledThing{Enabled: true},
-			"test1":   &enabledThing{Enabled: false},
-			"test2":   &enabledThing{Enabled: false},
+			"painter": {Enabled: true},
+			"test1":   {Enabled: false},
+			"test2":   {Enabled: false},
 		}
 
 		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
@@ -1417,6 +1417,81 @@ var _ = Describe("Cmd", func() {
 
 		Entry("camelCase sidecar name", "fooBar", "fooBar"),
 		Entry("hyphened sidecar name", "foo-bar", "fooBar"),
+	)
+
+	DescribeTable("rendering extra env vars",
+		func(extraEnvs map[string]interface{}, expectedEnvVars []v1.EnvVar) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-envvars",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			painterValues := map[string]interface{}{"extraEnvs": extraEnvs}
+			helmValues := map[string]interface{}{"painter": painterValues}
+
+			renderedManifests := helmTemplate("codegen/test/chart-envvars", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedEnvVars := renderedDeployment.Spec.Template.Spec.Containers[0].Env
+			Expect(renderedEnvVars).To(ConsistOf(expectedEnvVars))
+		},
+		Entry("no env vars",
+			nil, nil),
+		Entry("value env var",
+			map[string]interface{}{"FOO": map[string]interface{}{"value": "bar"}}, []v1.EnvVar{{Name: "FOO", Value: "bar"}}),
+		Entry("valueFrom env var",
+			map[string]interface{}{"FOO": map[string]interface{}{"valueFrom": map[string]interface{}{"secretKeyRef": map[string]interface{}{"name": "bar", "key": "baz"}}}},
+			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
 })
 
