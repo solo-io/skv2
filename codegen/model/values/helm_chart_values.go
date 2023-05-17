@@ -73,6 +73,7 @@ type UserValues struct {
 type UserContainerValues struct {
 	Image           Image                    `json:"image" desc:"Container image."`
 	Env             []v1.EnvVar              `json:"env" desc:"Environment variables for the container. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core)." omitChildren:"true"`
+	ExtraEnvs       struct{}                 `json:"extraEnvs" desc:"Extra environment variables for the container"`
 	Resources       *v1.ResourceRequirements `json:"resources,omitempty" desc:"Container resource requirements. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#resourcerequirements-v1-core)." omitChildren:"true"`
 	SecurityContext *v1.SecurityContext      `json:"securityContext,omitempty" desc:"Container security context. Set to 'false' to omit the security context entirely. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#securitycontext-v1-core)." omitChildren:"true"`
 }

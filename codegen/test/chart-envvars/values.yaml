@@ -13,13 +13,5 @@ painter:
   ports: {}
   runAsUser: 10101
   serviceType: ""
-  sidecars:
-    fooBar:
-      env: null
-      extraEnvs: {}
-      image:
-        pullPolicy: IfNotPresent
-        registry: quay.io/solo-io
-        repository: painter
-        tag: v0.0.0
+  sidecars: {}
 
