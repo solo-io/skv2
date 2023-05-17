@@ -5,6 +5,7 @@ painter:
   env:
     - name: FOO
       value: BAR
+  extraEnvs: {}
   floatingUserId: false
   image:
     pullPolicy: IfNotPresent
@@ -17,6 +18,7 @@ painter:
   sidecars:
     palette:
       env: null
+      extraEnvs: {}
       image:
         pullPolicy: IfNotPresent
         registry: quay.io/solo-io
