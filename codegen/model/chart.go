@@ -65,6 +65,9 @@ type JsonSchema struct {
 type Operator struct {
 	Name string
 
+	// (Optional) If set, the operator deployment, service, and service account will use this namespace
+	Namespace string
+
 	// (Optional) To change the name referenced in the values file. If not specified a camelcase version of name is used
 	ValuesFileNameOverride string
 
@@ -100,7 +103,6 @@ func (o Operator) FormattedName() string {
 // values for Deployment template
 type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
-	Namespace    string
 	UseDaemonSet bool
 	Container
 	Sidecars                    []Sidecar

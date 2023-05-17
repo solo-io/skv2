@@ -15,7 +15,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customDeploymentAnnotations := $operator.Deployment.CustomDeploymentAnnotations -]]
 [[- $customServiceLabels := $operator.Service.CustomLabels -]]
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
-[[- $customDeploymentNamespace := $operator.Deployment.Namespace ]]
+[[- $customNamespace := $operator.Namespace ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
 ---
@@ -50,8 +50,8 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
-  [[- if $customDeploymentNamespace ]]
-  namespace: [[ $customDeploymentNamespace ]]
+  [[- if $customNamespace ]]
+  namespace: [[ $customNamespace ]]
   [[- else ]]
   namespace: {{ .Release.Namespace }}
   [[- end ]]
@@ -182,7 +182,11 @@ metadata:
   {{- end }}
   {{- end}}
   name: [[ $operator.Name ]]
-  namespace: {{ $.Release.Namespace }}
+  [[- if $customNamespace ]]
+  namespace: [[ $customNamespace ]]
+  [[- else ]]
+  namespace: {{ .Release.Namespace }}
+  [[- end ]]
 {{- end }}
 
 
@@ -205,7 +209,11 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
-  namespace: {{ $.Release.Namespace }}
+  [[- if $customNamespace ]]
+  namespace: [[ $customNamespace ]]
+  [[- else ]]
+  namespace: {{ .Release.Namespace }}
+  [[- end ]]
 spec:
   selector:
     app: [[ $operator.Name ]]
