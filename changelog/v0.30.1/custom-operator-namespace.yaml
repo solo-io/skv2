@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/9491
+    resolvesIssue: false
+    description: >
+      Allows setting a optional operator namespace on the operator that will be used when applying the
+      deployment, service account, and service for said operator.
