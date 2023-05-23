@@ -1,0 +1,6 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/9345
+    resolvesIssue: false
+    description: >
+      "Expose DeploymentOverrides and ServiceOverrides in values.yaml"

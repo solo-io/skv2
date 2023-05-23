@@ -237,9 +237,9 @@ var _ = Describe("Cmd", func() {
 
 		painterNode := node.Content[0].Content[1]
 		enabledMapField := painterNode.Content[0]
-		Expect(enabledMapField.HeadComment).To(Equal("# Enable creation of the deployment/service."))
+		Expect(enabledMapField.HeadComment).To(Equal("# Arbitrary overrides for the component's [deployment\n# template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)"))
 		envMapField := painterNode.Content[2]
-		Expect(envMapField.HeadComment).To(Equal("# Environment variables for the container. For more info, see the [Kubernetes\n# documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core)."))
+		Expect(envMapField.HeadComment).To(Equal("# Enable creation of the deployment/service."))
 	})
 
 	It("generates from templates using a name override", func() {
