@@ -156,7 +156,7 @@ metadata:
   {{- end }}
   {{- end}}
   name: painter
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ .Release.Namespace }}
 {{- end }}
 
 
