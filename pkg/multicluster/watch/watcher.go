@@ -91,7 +91,7 @@ func NewClusterWatcher(ctx context.Context,
 // Option for the configuration of a clusterWatcher
 type Option func(*clusterWatcher)
 
-func (c *clusterWatcher) WithClusterOption(opts ...Option) {
+func WithClusterOption(c *clusterWatcher, opts ...Option) {
 	for _, opt := range opts {
 		opt(c)
 	}
