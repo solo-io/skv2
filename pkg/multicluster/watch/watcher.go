@@ -55,12 +55,13 @@ const (
 )
 
 type clusterWatcher struct {
-	ctx             context.Context
-	handlers        *handlerList
-	managers        *managerSet
-	managerOptions  manager.Options
-	watchNamespaces []string
-	retryOptions    RetryOptions
+	ctx                      context.Context
+	handlers                 *handlerList
+	managers                 *managerSet
+	managerOptions           manager.Options
+	fallbackManagerOverrides []manager.Options
+	watchNamespaces          []string
+	retryOptions             RetryOptions
 }
 
 var _ multicluster.Interface = &clusterWatcher{}
@@ -85,6 +86,25 @@ func NewClusterWatcher(ctx context.Context,
 		managerOptions:  managerOptions,
 		retryOptions:    retryOptions,
 		watchNamespaces: watchNamespaces,
+	}
+}
+
+// Option for the configuration of a clusterWatcher
+type Option func(*clusterWatcher)
+
+func (c *clusterWatcher) WithClusterOption(opts ...Option) {
+	for _, opt := range opts {
+		opt(c)
+	}
+}
+
+// AddFallbackManagerOptions adds options to be applied to the fallback manager.
+func AddFallbackManagerOptions(opts ...manager.Options) Option {
+	return func(c *clusterWatcher) {
+		if c.fallbackManagerOverrides == nil {
+			c.fallbackManagerOverrides = make([]manager.Options, 0)
+		}
+		c.fallbackManagerOverrides = append(c.fallbackManagerOverrides, opts...)
 	}
 }
 
@@ -152,11 +172,26 @@ func (c *clusterWatcher) startManager(clusterName string, restCfg *rest.Config) 
 
 			err = mgr.Start(ctx) // blocking until error is thrown
 			if err != nil {
-				contextutils.LoggerFrom(ctx).Errorf("Manager start failed for cluster %v: %v", clusterName, err)
 
 				// remove failed manager from managers+handlers
 				c.managers.delete(clusterName)
 				c.handlers.RemoveCluster(clusterName)
+
+				for _, fallbackOpts := range c.fallbackManagerOverrides {
+					contextutils.LoggerFrom(ctx).Infof("negotiating down a fallback with cluster %v", clusterName)
+					// fallback to older schema. This is a gross way to handle it
+					// however the controller library we rely on will fail to start a cache if it contains registered schemes
+					// that are not present in the cluster. This is a problem for us because we register schemes for current version
+					opts := c.managerOptionsWithDefaults()
+
+					mgr, err = manager.New(restCfg, fallbackOpts)
+					if err == nil {
+						break
+					}
+
+				}
+				contextutils.LoggerFrom(ctx).Errorf("Manager start failed for cluster %v: %v", clusterName, err)
+
 			}
 
 			// continue the exponentially-backing-off retry
