@@ -17,6 +17,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/strings/slices"
 
 	"github.com/BurntSushi/toml"
@@ -701,6 +702,15 @@ func createCustomTypeMapper(values values.UserHelmValues) customTypeMapper {
 		},
 
 		reflect.TypeOf(resource.Quantity{}): func(t reflect.Type, defaultSchema *jsonschema.Schema) *jsonschema.Schema {
+			return &jsonschema.Schema{
+				AnyOf: []*jsonschema.Schema{
+					{Type: "string"},
+					{Type: "number"},
+				},
+			}
+		},
+
+		reflect.TypeOf(intstr.IntOrString{}): func(t reflect.Type, defaultSchema *jsonschema.Schema) *jsonschema.Schema {
 			return &jsonschema.Schema{
 				AnyOf: []*jsonschema.Schema{
 					{Type: "string"},

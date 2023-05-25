@@ -13,6 +13,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/solo-io/skv2/codegen/model/values"
 	"github.com/solo-io/skv2/codegen/render"
@@ -627,6 +628,30 @@ var _ = Describe("toJSONSchema", func() {
 	It("maps resource quantity as either a string or number", func() {
 		type Type1 struct {
 			Field1 resource.Quantity
+		}
+		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
+		expected := prepareExpected(`
+			{
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"properties": {
+					"Field1": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number"
+							}
+						]
+					}
+				}
+			}`)
+		Expect(result).To(Equal(expected))
+	})
+
+	It("maps intstr.IntOrString as either a string or number", func() {
+		type Type1 struct {
+			Field1 intstr.IntOrString
 		}
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
 		expected := prepareExpected(`
