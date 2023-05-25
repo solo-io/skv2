@@ -5,124 +5,123 @@
 package v1
 
 import (
-    runtime "k8s.io/apimachinery/pkg/runtime"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // Generated Deepcopy methods for Paint
 
 func (in *Paint) DeepCopyInto(out *Paint) {
-    out.TypeMeta = in.TypeMeta
-    in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
-    // deepcopy spec
-    in.Spec.DeepCopyInto(&out.Spec)
-    // deepcopy status
-    in.Status.DeepCopyInto(&out.Status)
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
+	in.Status.DeepCopyInto(&out.Status)
 
-    return
+	return
 }
 
 func (in *Paint) DeepCopy() *Paint {
-    if in == nil {
-        return nil
-    }
-    out := new(Paint)
-    in.DeepCopyInto(out)
-    return out
+	if in == nil {
+		return nil
+	}
+	out := new(Paint)
+	in.DeepCopyInto(out)
+	return out
 }
 
 func (in *Paint) DeepCopyObject() runtime.Object {
-    if c := in.DeepCopy(); c != nil {
-        return c
-    }
-    return nil
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
 }
 
 func (in *PaintList) DeepCopyInto(out *PaintList) {
-    *out = *in
-    out.TypeMeta = in.TypeMeta
-    in.ListMeta.DeepCopyInto(&out.ListMeta)
-    if in.Items != nil {
-        in, out := &in.Items, &out.Items
-        *out = make([]Paint, len(*in))
-        for i := range *in {
-            (*in)[i].DeepCopyInto(&(*out)[i])
-        }
-    }
-    return
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]Paint, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
 }
 
 func (in *PaintList) DeepCopy() *PaintList {
-    if in == nil {
-        return nil
-    }
-    out := new(PaintList)
-    in.DeepCopyInto(out)
-    return out
+	if in == nil {
+		return nil
+	}
+	out := new(PaintList)
+	in.DeepCopyInto(out)
+	return out
 }
 
 func (in *PaintList) DeepCopyObject() runtime.Object {
-    if c := in.DeepCopy(); c != nil {
-        return c
-    }
-    return nil
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
 }
 
 // Generated Deepcopy methods for ClusterResource
 
 func (in *ClusterResource) DeepCopyInto(out *ClusterResource) {
-    out.TypeMeta = in.TypeMeta
-    in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
-    // deepcopy spec
-    in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
 
-    return
+	return
 }
 
 func (in *ClusterResource) DeepCopy() *ClusterResource {
-    if in == nil {
-        return nil
-    }
-    out := new(ClusterResource)
-    in.DeepCopyInto(out)
-    return out
+	if in == nil {
+		return nil
+	}
+	out := new(ClusterResource)
+	in.DeepCopyInto(out)
+	return out
 }
 
 func (in *ClusterResource) DeepCopyObject() runtime.Object {
-    if c := in.DeepCopy(); c != nil {
-        return c
-    }
-    return nil
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
 }
 
 func (in *ClusterResourceList) DeepCopyInto(out *ClusterResourceList) {
-    *out = *in
-    out.TypeMeta = in.TypeMeta
-    in.ListMeta.DeepCopyInto(&out.ListMeta)
-    if in.Items != nil {
-        in, out := &in.Items, &out.Items
-        *out = make([]ClusterResource, len(*in))
-        for i := range *in {
-            (*in)[i].DeepCopyInto(&(*out)[i])
-        }
-    }
-    return
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]ClusterResource, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
 }
 
 func (in *ClusterResourceList) DeepCopy() *ClusterResourceList {
-    if in == nil {
-        return nil
-    }
-    out := new(ClusterResourceList)
-    in.DeepCopyInto(out)
-    return out
+	if in == nil {
+		return nil
+	}
+	out := new(ClusterResourceList)
+	in.DeepCopyInto(out)
+	return out
 }
 
 func (in *ClusterResourceList) DeepCopyObject() runtime.Object {
-    if c := in.DeepCopy(); c != nil {
-        return c
-    }
-    return nil
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
 }
-
