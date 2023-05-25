@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/9194
+    description: intstr.IntOrString fields now output the correct schema instead of an object
+    skipCI: false
