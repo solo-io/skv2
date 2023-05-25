@@ -170,27 +170,43 @@ func (c *clusterWatcher) startManager(clusterName string, restCfg *rest.Config) 
 			c.managers.set(clusterName, mgr, ctx, cancel)
 			c.handlers.AddCluster(ctx, clusterName, mgr)
 
-			err = mgr.Start(ctx) // blocking until error is thrown
-			if err != nil {
+			mgrStartErr := mgr.Start(ctx) // blocking until error is thrown
+			if mgrStartErr != nil {
 
 				// remove failed manager from managers+handlers
 				c.managers.delete(clusterName)
 				c.handlers.RemoveCluster(clusterName)
 
 				for _, fallbackOpts := range c.fallbackManagerOverrides {
+
 					contextutils.LoggerFrom(ctx).Infof("negotiating down a fallback with cluster %v", clusterName)
 					// fallback to older schema. This is a gross way to handle it
 					// however the controller library we rely on will fail to start a cache if it contains registered schemes
 					// that are not present in the cluster. This is a problem for us because we register schemes for current version
-					opts := c.managerOptionsWithDefaults()
-
+					// mimick the default options like at the top of retry
+					fallbackOpts.HealthProbeBindAddress = "0"
+					fallbackOpts.MetricsBindAddress = "0"
 					mgr, err = manager.New(restCfg, fallbackOpts)
+					if err != nil {
+						continue
+					}
+
+					c.managers.set(clusterName, mgr, ctx, cancel)
+					c.handlers.AddCluster(ctx, clusterName, mgr)
+
+					err = mgr.Start(ctx) // blocking until error is thrown
 					if err == nil {
 						break
 					}
 
+					c.managers.delete(clusterName)
+					c.handlers.RemoveCluster(clusterName)
+
 				}
-				contextutils.LoggerFrom(ctx).Errorf("Manager start failed for cluster %v: %v", clusterName, err)
+				// if mgr failed to start and all fallbacks exhausted
+				if mgrStartErr != nil && err != nil {
+					contextutils.LoggerFrom(ctx).Errorf("Manager start failed for cluster %v: %v", clusterName, err)
+				}
 
 			}
 
