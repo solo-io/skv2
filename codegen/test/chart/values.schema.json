@@ -3329,18 +3329,14 @@
                                                     "type": "string"
                                                   },
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -3375,18 +3371,14 @@
                                               "tcpSocket": {
                                                 "properties": {
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -3473,18 +3465,14 @@
                                                     "type": "string"
                                                   },
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -3519,18 +3507,14 @@
                                               "tcpSocket": {
                                                 "properties": {
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -3617,18 +3601,14 @@
                                                     "type": "string"
                                                   },
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -3663,18 +3643,14 @@
                                               "tcpSocket": {
                                                 "properties": {
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -3774,18 +3750,14 @@
                                                                 "type": "string"
                                                               },
                                                               "port": {
-                                                                "properties": {
-                                                                  "Type": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "IntVal": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "StrVal": {
+                                                                "anyOf": [
+                                                                  {
                                                                     "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "number"
                                                                   }
-                                                                },
-                                                                "type": "object"
+                                                                ]
                                                               },
                                                               "host": {
                                                                 "type": "string"
@@ -3827,18 +3799,14 @@
                                                           {
                                                             "properties": {
                                                               "port": {
-                                                                "properties": {
-                                                                  "Type": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "IntVal": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "StrVal": {
+                                                                "anyOf": [
+                                                                  {
                                                                     "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "number"
                                                                   }
-                                                                },
-                                                                "type": "object"
+                                                                ]
                                                               },
                                                               "host": {
                                                                 "type": "string"
@@ -3896,18 +3864,14 @@
                                                                 "type": "string"
                                                               },
                                                               "port": {
-                                                                "properties": {
-                                                                  "Type": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "IntVal": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "StrVal": {
+                                                                "anyOf": [
+                                                                  {
                                                                     "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "number"
                                                                   }
-                                                                },
-                                                                "type": "object"
+                                                                ]
                                                               },
                                                               "host": {
                                                                 "type": "string"
@@ -3949,18 +3913,14 @@
                                                           {
                                                             "properties": {
                                                               "port": {
-                                                                "properties": {
-                                                                  "Type": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "IntVal": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "StrVal": {
+                                                                "anyOf": [
+                                                                  {
                                                                     "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "number"
                                                                   }
-                                                                },
-                                                                "type": "object"
+                                                                ]
                                                               },
                                                               "host": {
                                                                 "type": "string"
@@ -4591,18 +4551,14 @@
                                                     "type": "string"
                                                   },
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -4637,18 +4593,14 @@
                                               "tcpSocket": {
                                                 "properties": {
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -4735,18 +4687,14 @@
                                                     "type": "string"
                                                   },
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -4781,18 +4729,14 @@
                                               "tcpSocket": {
                                                 "properties": {
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -4879,18 +4823,14 @@
                                                     "type": "string"
                                                   },
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -4925,18 +4865,14 @@
                                               "tcpSocket": {
                                                 "properties": {
                                                   "port": {
-                                                    "properties": {
-                                                      "Type": {
-                                                        "type": "integer"
-                                                      },
-                                                      "IntVal": {
-                                                        "type": "integer"
-                                                      },
-                                                      "StrVal": {
+                                                    "anyOf": [
+                                                      {
                                                         "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
                                                       }
-                                                    },
-                                                    "type": "object"
+                                                    ]
                                                   },
                                                   "host": {
                                                     "type": "string"
@@ -5036,18 +4972,14 @@
                                                                 "type": "string"
                                                               },
                                                               "port": {
-                                                                "properties": {
-                                                                  "Type": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "IntVal": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "StrVal": {
+                                                                "anyOf": [
+                                                                  {
                                                                     "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "number"
                                                                   }
-                                                                },
-                                                                "type": "object"
+                                                                ]
                                                               },
                                                               "host": {
                                                                 "type": "string"
@@ -5089,18 +5021,14 @@
                                                           {
                                                             "properties": {
                                                               "port": {
-                                                                "properties": {
-                                                                  "Type": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "IntVal": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "StrVal": {
+                                                                "anyOf": [
+                                                                  {
                                                                     "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "number"
                                                                   }
-                                                                },
-                                                                "type": "object"
+                                                                ]
                                                               },
                                                               "host": {
                                                                 "type": "string"
@@ -5158,18 +5086,14 @@
                                                                 "type": "string"
                                                               },
                                                               "port": {
-                                                                "properties": {
-                                                                  "Type": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "IntVal": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "StrVal": {
+                                                                "anyOf": [
+                                                                  {
                                                                     "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "number"
                                                                   }
-                                                                },
-                                                                "type": "object"
+                                                                ]
                                                               },
                                                               "host": {
                                                                 "type": "string"
@@ -5211,18 +5135,14 @@
                                                           {
                                                             "properties": {
                                                               "port": {
-                                                                "properties": {
-                                                                  "Type": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "IntVal": {
-                                                                    "type": "integer"
-                                                                  },
-                                                                  "StrVal": {
+                                                                "anyOf": [
+                                                                  {
                                                                     "type": "string"
+                                                                  },
+                                                                  {
+                                                                    "type": "number"
                                                                   }
-                                                                },
-                                                                "type": "object"
+                                                                ]
                                                               },
                                                               "host": {
                                                                 "type": "string"
@@ -5851,18 +5771,14 @@
                                                 "type": "string"
                                               },
                                               "port": {
-                                                "properties": {
-                                                  "Type": {
-                                                    "type": "integer"
-                                                  },
-                                                  "IntVal": {
-                                                    "type": "integer"
-                                                  },
-                                                  "StrVal": {
+                                                "anyOf": [
+                                                  {
                                                     "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
                                                   }
-                                                },
-                                                "type": "object"
+                                                ]
                                               },
                                               "host": {
                                                 "type": "string"
@@ -5897,18 +5813,14 @@
                                           "tcpSocket": {
                                             "properties": {
                                               "port": {
-                                                "properties": {
-                                                  "Type": {
-                                                    "type": "integer"
-                                                  },
-                                                  "IntVal": {
-                                                    "type": "integer"
-                                                  },
-                                                  "StrVal": {
+                                                "anyOf": [
+                                                  {
                                                     "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
                                                   }
-                                                },
-                                                "type": "object"
+                                                ]
                                               },
                                               "host": {
                                                 "type": "string"
@@ -5988,18 +5900,14 @@
                                                 "type": "string"
                                               },
                                               "port": {
-                                                "properties": {
-                                                  "Type": {
-                                                    "type": "integer"
-                                                  },
-                                                  "IntVal": {
-                                                    "type": "integer"
-                                                  },
-                                                  "StrVal": {
+                                                "anyOf": [
+                                                  {
                                                     "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
                                                   }
-                                                },
-                                                "type": "object"
+                                                ]
                                               },
                                               "host": {
                                                 "type": "string"
@@ -6034,18 +5942,14 @@
                                           "tcpSocket": {
                                             "properties": {
                                               "port": {
-                                                "properties": {
-                                                  "Type": {
-                                                    "type": "integer"
-                                                  },
-                                                  "IntVal": {
-                                                    "type": "integer"
-                                                  },
-                                                  "StrVal": {
+                                                "anyOf": [
+                                                  {
                                                     "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
                                                   }
-                                                },
-                                                "type": "object"
+                                                ]
                                               },
                                               "host": {
                                                 "type": "string"
@@ -6125,18 +6029,14 @@
                                                 "type": "string"
                                               },
                                               "port": {
-                                                "properties": {
-                                                  "Type": {
-                                                    "type": "integer"
-                                                  },
-                                                  "IntVal": {
-                                                    "type": "integer"
-                                                  },
-                                                  "StrVal": {
+                                                "anyOf": [
+                                                  {
                                                     "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
                                                   }
-                                                },
-                                                "type": "object"
+                                                ]
                                               },
                                               "host": {
                                                 "type": "string"
@@ -6171,18 +6071,14 @@
                                           "tcpSocket": {
                                             "properties": {
                                               "port": {
-                                                "properties": {
-                                                  "Type": {
-                                                    "type": "integer"
-                                                  },
-                                                  "IntVal": {
-                                                    "type": "integer"
-                                                  },
-                                                  "StrVal": {
+                                                "anyOf": [
+                                                  {
                                                     "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
                                                   }
-                                                },
-                                                "type": "object"
+                                                ]
                                               },
                                               "host": {
                                                 "type": "string"
@@ -6275,18 +6171,14 @@
                                                             "type": "string"
                                                           },
                                                           "port": {
-                                                            "properties": {
-                                                              "Type": {
-                                                                "type": "integer"
-                                                              },
-                                                              "IntVal": {
-                                                                "type": "integer"
-                                                              },
-                                                              "StrVal": {
+                                                            "anyOf": [
+                                                              {
                                                                 "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "number"
                                                               }
-                                                            },
-                                                            "type": "object"
+                                                            ]
                                                           },
                                                           "host": {
                                                             "type": "string"
@@ -6328,18 +6220,14 @@
                                                       {
                                                         "properties": {
                                                           "port": {
-                                                            "properties": {
-                                                              "Type": {
-                                                                "type": "integer"
-                                                              },
-                                                              "IntVal": {
-                                                                "type": "integer"
-                                                              },
-                                                              "StrVal": {
+                                                            "anyOf": [
+                                                              {
                                                                 "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "number"
                                                               }
-                                                            },
-                                                            "type": "object"
+                                                            ]
                                                           },
                                                           "host": {
                                                             "type": "string"
@@ -6397,18 +6285,14 @@
                                                             "type": "string"
                                                           },
                                                           "port": {
-                                                            "properties": {
-                                                              "Type": {
-                                                                "type": "integer"
-                                                              },
-                                                              "IntVal": {
-                                                                "type": "integer"
-                                                              },
-                                                              "StrVal": {
+                                                            "anyOf": [
+                                                              {
                                                                 "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "number"
                                                               }
-                                                            },
-                                                            "type": "object"
+                                                            ]
                                                           },
                                                           "host": {
                                                             "type": "string"
@@ -6450,18 +6334,14 @@
                                                       {
                                                         "properties": {
                                                           "port": {
-                                                            "properties": {
-                                                              "Type": {
-                                                                "type": "integer"
-                                                              },
-                                                              "IntVal": {
-                                                                "type": "integer"
-                                                              },
-                                                              "StrVal": {
+                                                            "anyOf": [
+                                                              {
                                                                 "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "number"
                                                               }
-                                                            },
-                                                            "type": "object"
+                                                            ]
                                                           },
                                                           "host": {
                                                             "type": "string"
@@ -8285,42 +8165,20 @@
                                 "maxUnavailable": {
                                   "anyOf": [
                                     {
-                                      "properties": {
-                                        "Type": {
-                                          "type": "integer"
-                                        },
-                                        "IntVal": {
-                                          "type": "integer"
-                                        },
-                                        "StrVal": {
-                                          "type": "string"
-                                        }
-                                      },
-                                      "type": "object"
+                                      "type": "string"
                                     },
                                     {
-                                      "type": "null"
+                                      "type": "number"
                                     }
                                   ]
                                 },
                                 "maxSurge": {
                                   "anyOf": [
                                     {
-                                      "properties": {
-                                        "Type": {
-                                          "type": "integer"
-                                        },
-                                        "IntVal": {
-                                          "type": "integer"
-                                        },
-                                        "StrVal": {
-                                          "type": "string"
-                                        }
-                                      },
-                                      "type": "object"
+                                      "type": "string"
                                     },
                                     {
-                                      "type": "null"
+                                      "type": "number"
                                     }
                                   ]
                                 }
@@ -8691,18 +8549,14 @@
                                 "type": "integer"
                               },
                               "targetPort": {
-                                "properties": {
-                                  "Type": {
-                                    "type": "integer"
-                                  },
-                                  "IntVal": {
-                                    "type": "integer"
-                                  },
-                                  "StrVal": {
+                                "anyOf": [
+                                  {
                                     "type": "string"
+                                  },
+                                  {
+                                    "type": "number"
                                   }
-                                },
-                                "type": "object"
+                                ]
                               },
                               "nodePort": {
                                 "type": "integer"
