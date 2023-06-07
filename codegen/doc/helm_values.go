@@ -74,6 +74,8 @@ func GenerateHelmValuesDoc(s interface{}, topLevelKey string, topLevelDesc strin
 
 	docReflect(addValue, path, topLevelDesc, cfgT.Type(), cfgT)
 
+	sort.Strings(values)
+
 	return values
 }
 
