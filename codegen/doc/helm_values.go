@@ -55,7 +55,7 @@ func (v HelmValues) ToMarkdown(title string) string {
 	}
 	
 	s := result.String()
-	slice := []string{result}
+	slice := []string{s}
 	sorted := sort.Strings(slice)
 	
 	return sorted
