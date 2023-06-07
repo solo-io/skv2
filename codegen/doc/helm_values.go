@@ -51,11 +51,7 @@ func (v HelmValues) ToMarkdown(title string) string {
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
 	for _, value := range v {
-        if _, k := HelmValues[value]; !k {
-            HelmValues[value] = true
-            result = append(result, value)
-        }
-		fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
+        fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
 	}
 	return result.String()
 }
