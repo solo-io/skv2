@@ -260,12 +260,13 @@ func (c Chart) GenerateHelmDoc() string {
 }
 
 func removeDuplicates(strSlice []string) []string {
-    allKeys := make(map[string]bool)
-    list := []string{}
-    for _, item := range strSlice {
-        if _, value := allKeys[item]; !value {
-            allKeys[item] = true
-            list = append(list, item)
+    for k, e := range strSlice {
+        allKeys := make(map[string]bool)
+        for _, item := range e {
+            if _, value := allKeys[item]; !value {
+                allKeys[item] = true
+                list[k] = append(list[k], item)
+            }
         }
     }
     return list
