@@ -53,7 +53,9 @@ func (v HelmValues) ToMarkdown(title string) string {
 	for _, value := range v {
 		fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
 	}
-	return result.String()
+	sort.Strings(result.String())
+
+	return result
 }
 
 type addValue func(HelmValue)
@@ -73,8 +75,6 @@ func GenerateHelmValuesDoc(s interface{}, topLevelKey string, topLevelDesc strin
 	}
 
 	docReflect(addValue, path, topLevelDesc, cfgT.Type(), cfgT)
-
-	sort.Strings(values)
 
 	return values
 }
