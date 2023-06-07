@@ -54,11 +54,11 @@ func (v HelmValues) ToMarkdown(title string) string {
 		fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
 	}
 	
-	result := result.String()
-	result := []string{result}
-	result := sort.Strings(result)
+	s := result.String()
+	slice := []string{result}
+	sorted := sort.Strings(slice)
 	
-	return result
+	return sorted
 }
 
 type addValue func(HelmValue)
