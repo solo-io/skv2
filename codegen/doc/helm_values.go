@@ -53,8 +53,11 @@ func (v HelmValues) ToMarkdown(title string) string {
 	for _, value := range v {
 		fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
 	}
-	sort.Strings(result.String())
-
+	
+	result := result.String()
+	result := []string{result}
+	result := sort.Strings(result)
+	
 	return result
 }
 
