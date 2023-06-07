@@ -248,5 +248,9 @@ func (c Chart) GenerateHelmDoc() string {
 		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
 
+	sort.SliceStable(helmValuesForDoc, func(i, j string) bool {
+		return HelmValue[i].keyPath < HelmValue[j].keyPath
+	})
+
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
 }

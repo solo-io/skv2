@@ -74,10 +74,6 @@ func GenerateHelmValuesDoc(s interface{}, topLevelKey string, topLevelDesc strin
 
 	docReflect(addValue, path, topLevelDesc, cfgT.Type(), cfgT)
 
-	sort.SliceStable(values, func(i, j string) bool {
-		return HelmValue[i].Key < HelmValue[j].Key
-	})
-
 	return values
 }
 
