@@ -249,7 +249,7 @@ func (c Chart) GenerateHelmDoc() string {
 		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
 
-	helmValuesForDoc = removeDuplicates(helmValuesForDoc)
+	helmValuesForDoc = removeDuplicate(helmValuesForDoc)
 
 	// alphabetize all values
 	sort.Slice(helmValuesForDoc, func(i, j int) bool {
@@ -259,14 +259,13 @@ func (c Chart) GenerateHelmDoc() string {
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
 }
 
-func removeDuplicates(strSlice []string) []string {
-    for k, e := range strSlice {
-        allKeys := make(map[string]bool)
-        for _, item := range e {
-            if _, value := allKeys[item]; !value {
-                allKeys[item] = true
-                list[k] = append(list[k], item)
-            }
+func removeDuplicate[T string | int](sliceList []T) []T {
+    allKeys := make(map[T]bool)
+    list := []T{}
+    for _, item := range sliceList {
+        if _, value := allKeys[item]; !value {
+            allKeys[item] = true
+            list = append(list, item)
         }
     }
     return list
