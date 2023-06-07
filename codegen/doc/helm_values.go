@@ -50,11 +50,6 @@ func (v HelmValues) ToMarkdown(title string) string {
 	fmt.Fprintln(result, fmt.Sprintf(header, title))
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
-	
-	sort.SliceStable(v, func(i, j string) bool {
-		return value[i].Key < values[j].Key
-	})
-
 	for _, value := range v {
 		fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
 	}
