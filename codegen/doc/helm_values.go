@@ -50,9 +50,6 @@ func (v HelmValues) ToMarkdown(title string) string {
 	fmt.Fprintln(result, fmt.Sprintf(header, title))
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
-	sort.SliceStable(HelmValue, func(i, j string) bool {
-		return HelmValue[i].Key < HelmValue[j].Key
-	})
 	for _, value := range v {
 		fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
 	}
@@ -76,6 +73,10 @@ func GenerateHelmValuesDoc(s interface{}, topLevelKey string, topLevelDesc strin
 	}
 
 	docReflect(addValue, path, topLevelDesc, cfgT.Type(), cfgT)
+
+	sort.SliceStable(values, func(i, j string) bool {
+		return HelmValue[i].Key < HelmValue[j].Key
+	})
 
 	return values
 }
