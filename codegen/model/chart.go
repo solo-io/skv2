@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"reflect"
+	"sort"
 
 	"github.com/solo-io/skv2/codegen/model/values"
 
@@ -249,7 +250,7 @@ func (c Chart) GenerateHelmDoc() string {
 	}
 
 	sort.SliceStable(helmValuesForDoc, func(i, j string) bool {
-		return HelmValue[i].keyPath < HelmValue[j].keyPath
+		return values[i].keyPath < values[j].keyPath
 	})
 
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
