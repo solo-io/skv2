@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"reflect"
+	"sort"
 
 	"github.com/solo-io/skv2/codegen/model/values"
 
