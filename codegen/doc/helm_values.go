@@ -51,6 +51,20 @@ func (v HelmValues) ToMarkdown(title string) string {
 		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 	}
 
+	uniques := []string{}
+	for i := 0; i < len(slice); i++ {
+		duplicate := false
+		for j := 0; j < len(uniques); j++ {
+			if slice[i] == uniques[j] {
+				duplicate = true
+				break
+			}
+		}
+		if !duplicate {
+			uniques = append(uniques, slice[i])
+		}
+	}
+
     //bucket := make(map[string]bool)
     //uniques := []string{}
     //for _, row := range list {
@@ -60,11 +74,12 @@ func (v HelmValues) ToMarkdown(title string) string {
     //    }
     //}
 
+
 	result := new(strings.Builder)
 	fmt.Fprintln(result, fmt.Sprintf(header, title))
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
-	for _, goodRow := range list { //should be uniques
+	for _, goodRow := range uniques {
         fmt.Fprintf(result, goodRow)
 	}
 	return result.String()
