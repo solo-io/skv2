@@ -52,11 +52,7 @@ func (v HelmValues) ToMarkdown(title string) string {
 	// format values as md table rows
 	list := []string{}
 	for _, value := range v {
-		if strings.Contains(value.Description, "hideFromDoc") {
-			list = append(list, fmt.Sprintf(""))
-		} else {
-			list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
-		}
+		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 	}
 
 	// remove any duplicates
