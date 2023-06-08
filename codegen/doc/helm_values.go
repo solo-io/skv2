@@ -46,30 +46,32 @@ type HelmValue struct {
 type HelmValues []HelmValue
 
 func (v HelmValues) ToMarkdown(title string) string {
+	// format values as md table rows
 	list := []string{}
 	for _, value := range v {
 		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 	}
 
-    bucket := make(map[string]bool)
-    uniques := []string{}
-    for _, row := range list {
-        if _, value := bucket[row]; !value {
-            bucket[row] = true
-            uniques = append(uniques, row)
-        }
-    }
+	// remove any duplicates
+	bucket := make(map[string]bool)
+	uniques := []string{}
+	for _, row := range list {
+		if _, value := bucket[row]; !value {
+			bucket[row] = true
+			uniques = append(uniques, row)
+		}
+	}
 
+	// build md table from unique rows
 	result := new(strings.Builder)
 	fmt.Fprintln(result, fmt.Sprintf(header, title))
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
-	for _, goodRow := range uniques {
-        fmt.Fprintf(result, goodRow)
+	for _, uniqueRow := range uniques {
+		fmt.Fprintf(result, uniqueRow)
 	}
 	return result.String()
 }
-
 
 type addValue func(HelmValue)
 
@@ -129,18 +131,18 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 				}
 			}
 		}
-	//case reflect.Slice:
-	//	lst := len(path) - 1
-	//	path[lst] = path[lst] + "[]"
+	case reflect.Slice:
+		lst := len(path) - 1
+		path[lst] = path[lst] + "[]"
 
 		// add entry for slice field itself
-	//	addValue(HelmValue{Key: strings.Join(path, "."), Type: "[]" + typ.Elem().Kind().String(), DefaultValue: valToString(val), Description: desc})
+		addValue(HelmValue{Key: strings.Join(path, "."), Type: "[]" + typ.Elem().Kind().String(), DefaultValue: valToString(val), Description: desc})
 
-	//	docReflect(addValue, path, desc, typ.Elem(), reflect.Value{})
+		docReflect(addValue, path, desc, typ.Elem(), reflect.Value{})
 	case reflect.Struct:
 
 		// add entry for struct field itself, ignoring the top level struct
-		if len(path) > 0 {
+		if len(path) > 1 {
 			addValue(HelmValue{Key: strings.Join(path, "."), Type: typ.Kind().String(), DefaultValue: " ", Description: desc})
 		}
 
