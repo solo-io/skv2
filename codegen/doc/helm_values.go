@@ -52,7 +52,7 @@ func (v HelmValues) ToMarkdown(title string) string {
 	// format values as md table rows
 	list := []string{}
 	for _, value := range v {
-		if value, ok := value.Tag.Lookup("hideField"); ok {
+		if value, ok := value.Lookup("hideField"); ok {
 			if value == "true" {
 				list = append(list, fmt.Sprintf(""))
 			} else {
