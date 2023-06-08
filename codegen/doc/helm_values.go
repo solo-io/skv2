@@ -48,42 +48,26 @@ type HelmValues []HelmValue
 func (v HelmValues) ToMarkdown(title string) string {
 	list := []string{}
 	for _, value := range v {
-		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|", value.Key, value.Type, value.Description, value.DefaultValue))
+		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 	}
 
-	uniques := []string{}
-	for i := 0; i < len(list); i++ {
-		duplicate := false
-		for j := 0; j < len(uniques); j++ {
-			if list[i] == uniques[j] {
-				duplicate = true
-				break
-			}
-		}
-		if !duplicate {
-			uniques = append(uniques, list[i])
-		}
-	}
-
-    //bucket := make(map[string]bool)
-    //uniques := []string{}
-    //for _, row := range list {
-    //    if _, value := bucket[row]; !value {
-    //        bucket[row] = true
-    //        uniques = append(uniques, row)
-    //    }
-    //}
-
+    bucket := make(map[string]bool)
+    uniques := []string{}
+    for _, row := range list {
+        if _, value := bucket[row]; !value {
+            bucket[row] = true
+            uniques = append(uniques, row)
+        }
+    }
 
 	result := new(strings.Builder)
 	fmt.Fprintln(result, fmt.Sprintf(header, title))
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
 	for _, goodRow := range uniques {
-        fmt.Fprintf(result, fmt.Sprintf("%s\n", goodRow))
+        fmt.Fprintf(result, goodRow)
 	}
 	return result.String()
-    
 }
 
 
