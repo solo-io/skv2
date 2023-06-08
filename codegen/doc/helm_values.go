@@ -54,8 +54,8 @@ func (v HelmValues) ToMarkdown(title string) string {
 	for _, value := range v {
 		st := reflect.TypeOf(v)
 		for i := 0; i < st.NumField(); i++ {
-			value := st.Field(i)
-			if hideField, ok := value.Tag.Lookup("hideField"); ok {
+			field := st.Field(i)
+			if hideField, ok := field.Tag.Lookup("hideField"); ok {
 				if hideField == "true" {
 					list = append(list, fmt.Sprintf(""))
 				} else {
