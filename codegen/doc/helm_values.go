@@ -46,17 +46,18 @@ type HelmValue struct {
 type HelmValues []HelmValue
 
 func (v HelmValues) ToMarkdown(title string) string {
-
-	for _, value := range v {
-		fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
+	listOfRows := []string{}
+	for _, printedRow := range v {
+		printedRow = fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
+		listOfRows = append(listOfRows, printedRow)
 	}
 
     allKeys := make(map[string]bool)
-    list := []string{}
-    for _, item := range v {
-        if _, value := allKeys[item]; !value {
-            allKeys[item] = true
-            list = append(list, item)
+    finalList := []string{}
+    for _, row := range listOfRows {
+        if _, value := allKeys[row]; !value {
+            allKeys[row] = true
+            finalList = append(finalList, row)
         }
     }
 
@@ -64,8 +65,8 @@ func (v HelmValues) ToMarkdown(title string) string {
 	fmt.Fprintln(result, fmt.Sprintf(header, title))
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
-	for _, row := range v {
-        fmt.Fprintf(result, row)
+	for _, goodRow := range finalList {
+        fmt.Fprintf(result, goodRow)
 	}
 	return result.String()
     
