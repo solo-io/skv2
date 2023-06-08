@@ -105,9 +105,7 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 	case reflect.Map:
 
 		// add entry for map itself
-		if len(path) > 0 {
-			addValue(HelmValue{Key: strings.Join(path, "."), Type: getMapType(typ), DefaultValue: valToString(val), Description: desc})
-		}
+		addValue(HelmValue{Key: strings.Join(path, "."), Type: getMapType(typ), DefaultValue: valToString(val), Description: desc})
 
 		if typ.Key().Kind() == reflect.String {
 			docReflect(addValue, append(path, "<MAP_KEY>"), desc, typ.Elem(), reflect.Value{})
