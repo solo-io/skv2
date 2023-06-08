@@ -258,15 +258,3 @@ func (c Chart) GenerateHelmDoc() string {
 
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
 }
-
-func removeDuplicates(s []HelmValue) []HelmValue {
-	bucket := make(map[HelmValue]bool)
-	var result []HelmValue
-	for _, str := range s {
-	   if _, ok := bucket[str]; !ok {
-		  bucket[str] = true
-		  result = append(result, str)
-	   }
-	}
-	return result
- }

@@ -56,6 +56,18 @@ func (v HelmValues) ToMarkdown(title string) string {
 	return result.String()
 }
 
+func removeDuplicates(s HelmValues) HelmValues {
+	bucket := make(map[HelmValues]bool)
+	var result HelmValues
+	for _, str := range s {
+	   if _, ok := bucket[str]; !ok {
+		  bucket[str] = true
+		  result = append(result, str)
+	   }
+	}
+	return result
+}
+
 type addValue func(HelmValue)
 
 func GenerateHelmValuesDoc(s interface{}, topLevelKey string, topLevelDesc string) HelmValues {
