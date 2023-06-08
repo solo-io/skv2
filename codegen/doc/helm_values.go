@@ -46,27 +46,31 @@ type HelmValue struct {
 type HelmValues []HelmValue
 
 func (v HelmValues) ToMarkdown(title string) string {
+
+	for _, value := range v {
+		fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
+	}
+
+    allKeys := make(map[string]bool)
+    list := []string{}
+    for _, item := range v {
+        if _, value := allKeys[item]; !value {
+            allKeys[item] = true
+            list = append(list, item)
+        }
+    }
+
 	result := new(strings.Builder)
 	fmt.Fprintln(result, fmt.Sprintf(header, title))
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
-	for _, value := range v {
-        fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue)
+	for _, row := range v {
+        fmt.Fprintf(result, row)
 	}
 	return result.String()
+    
 }
 
-func removeDuplicates(s HelmValues) HelmValues {
-	bucket := make(map[HelmValue]bool)
-	var result HelmValues
-	for _, str := range s {
-	   if _, ok := bucket[str]; !ok {
-		  bucket[str] = true
-		  result = append(result, str)
-	   }
-	}
-	return result
-}
 
 type addValue func(HelmValue)
 
