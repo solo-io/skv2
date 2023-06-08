@@ -48,8 +48,7 @@ type HelmValues []HelmValue
 func (v HelmValues) ToMarkdown(title string) string {
 	listOfRows := []string{}
 	for _, printedRow := range v {
-		printedRow = fmt.Sprintf("|%s|%s|%s|%s|\n", printedRow.Key, printedRow.Type, printedRow.Description, printedRow.DefaultValue)
-		listOfRows = append(listOfRows, printedRow)
+		listOfRows = append(listOfRows, fmt.Sprintf("|%s|%s|%s|%s|\n", printedRow.Key, printedRow.Type, printedRow.Description, printedRow.DefaultValue))
 	}
 
     allKeys := make(map[string]bool)
