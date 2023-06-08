@@ -51,23 +51,20 @@ type HelmValues []HelmValue
 func (v HelmValues) ToMarkdown(title string) string {
 	// format values as md table rows
 	list := []string{}
-	st := reflect.TypeOf(v)
-	for i := 0; i < st.NumField(); i++ {
-		value := st.Field(i)
-		if hideField, ok := value.Tag.Lookup("hideField"); ok {
-			if hideField == "true" {
-				list = append(list, fmt.Sprintf(""))
+	for _, value := range v {
+		st := reflect.TypeOf(v)
+		for i := 0; i < st.NumField(); i++ {
+			value := st.Field(i)
+			if hideField, ok := value.Tag.Lookup("hideField"); ok {
+				if hideField == "true" {
+					list = append(list, fmt.Sprintf(""))
+				} else {
+					list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
+				}
 			} else {
-				list = append(list, value)
+				list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 			}
-		} else {
-			list = append(list, value)
 		}
-	}
-
-	newList := []string{}
-	for _, value := range list {
-		newList = append(newList, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 	}
 
 	// remove any duplicates
