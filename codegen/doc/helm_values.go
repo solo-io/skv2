@@ -52,19 +52,10 @@ func (v HelmValues) ToMarkdown(title string) string {
 	// format values as md table rows
 	list := []string{}
 	for _, value := range v {
-		st := reflect.TypeOf(v)
-		for i := 0; i < st.NumField(); i++ {
-			field := st.Field(i)
-			if hideField, ok := field.Tag.Lookup("hideField"); ok {
-				if hideField == "true" {
-					list = append(list, fmt.Sprintf(""))
-				} else {
-					continue
-				}
-			} else {
-				continue
-			}
-		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
+		if strings.Contains(value.Description, "hideFromDoc") {
+			list = append(list, fmt.Sprintf(""))
+		} else {
+			list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 		}
 	}
 
