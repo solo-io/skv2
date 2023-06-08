@@ -249,8 +249,6 @@ func (c Chart) GenerateHelmDoc() string {
 		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 	}
 
-	helmValuesForDoc = doc.removeDuplicates(helmValuesForDoc)
-
 	// alphabetize all values
 	sort.Slice(helmValuesForDoc, func(i, j int) bool {
 		return helmValuesForDoc[i].Key < helmValuesForDoc[j].Key
