@@ -52,16 +52,16 @@ func (v HelmValues) ToMarkdown(title string) string {
 	}
 
 	uniques := []string{}
-	for i := 0; i < len(slice); i++ {
+	for i := 0; i < len(list); i++ {
 		duplicate := false
 		for j := 0; j < len(uniques); j++ {
-			if slice[i] == uniques[j] {
+			if list[i] == uniques[j] {
 				duplicate = true
 				break
 			}
 		}
 		if !duplicate {
-			uniques = append(uniques, slice[i])
+			uniques = append(uniques, list[i])
 		}
 	}
 
