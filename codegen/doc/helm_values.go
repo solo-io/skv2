@@ -129,14 +129,14 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 				}
 			}
 		}
-	case reflect.Slice:
-		lst := len(path) - 1
-		path[lst] = path[lst] + "[]"
+	//case reflect.Slice:
+	//	lst := len(path) - 1
+	//	path[lst] = path[lst] + "[]"
 
 		// add entry for slice field itself
-		addValue(HelmValue{Key: strings.Join(path, "."), Type: "[]" + typ.Elem().Kind().String(), DefaultValue: valToString(val), Description: desc})
+	//	addValue(HelmValue{Key: strings.Join(path, "."), Type: "[]" + typ.Elem().Kind().String(), DefaultValue: valToString(val), Description: desc})
 
-		docReflect(addValue, path, desc, typ.Elem(), reflect.Value{})
+	//	docReflect(addValue, path, desc, typ.Elem(), reflect.Value{})
 	case reflect.Struct:
 
 		// add entry for struct field itself, ignoring the top level struct
