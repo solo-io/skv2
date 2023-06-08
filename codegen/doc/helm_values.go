@@ -58,10 +58,10 @@ func (v HelmValues) ToMarkdown(title string) string {
 			if hideField == "true" {
 				list = append(list, fmt.Sprintf(""))
 			} else {
-				continue
+				list = append(list, value)
 			}
 		} else {
-			continue
+			list = append(list, value)
 		}
 	}
 
