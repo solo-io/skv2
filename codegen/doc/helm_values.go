@@ -49,10 +49,6 @@ func (v HelmValues) ToMarkdown(title string) string {
 	// format values as md table rows
 	list := []string{}
 	for _, value := range v {
-		// if $hide_field_from_doc specified, do not include in doc table
-		if strings.Contains(value.Description, "$hide_field_from_doc") {
-			return nil
-		}
 		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 	}
 
