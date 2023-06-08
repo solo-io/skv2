@@ -20,6 +20,9 @@ const (
 	// if specified, hide the value of the field
 	hideValueTag = "hideValue"
 
+	// if specified, hide the entire field
+	hideFieldTag = "hideField"
+
 	// the field name
 	jsonTag = "json"
 
@@ -49,7 +52,13 @@ func (v HelmValues) ToMarkdown(title string) string {
 	// format values as md table rows
 	list := []string{}
 	for _, value := range v {
-		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
+		if value, ok := value.Tag.Lookup("hideField"); ok {
+			if value == "true" {
+				list = append(list, fmt.Sprintf(""))
+			} else {
+			list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
+			}
+		}
 	}
 
 	// remove any duplicates
