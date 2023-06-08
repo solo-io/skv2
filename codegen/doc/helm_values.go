@@ -142,7 +142,7 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 	case reflect.Struct:
 
 		// add entry for struct field itself, ignoring the top level struct
-		if len(path) > 1 {
+		if len(path) > 0 {
 			addValue(HelmValue{Key: strings.Join(path, "."), Type: typ.Kind().String(), DefaultValue: " ", Description: desc})
 		}
 
