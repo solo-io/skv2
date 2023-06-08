@@ -225,25 +225,25 @@ func (c Chart) GenerateHelmDoc() string {
 	helmValues := c.BuildChartValues()
 
 	// generate documentation for custom values
-	helmValuesForDoc := doc.GenerateHelmValuesDoc(helmValues.CustomValues, "", "")
+//	helmValuesForDoc := doc.GenerateHelmValuesDoc(helmValues.CustomValues, "", "")
 
 	// generate documentation for operator values
-	for _, operatorWithValues := range helmValues.Operators {
-
-		name := operatorWithValues.FormattedName()
-		values := operatorWithValues.Values
+//	for _, operatorWithValues := range helmValues.Operators {
+//
+//		name := operatorWithValues.FormattedName()
+//		values := operatorWithValues.Values
 
 		// clear image tag so it doesn't show build time commit hashes
-		values.Image.Tag = ""
-		for name, container := range values.Sidecars {
-			container.Image.Tag = ""
-			values.Sidecars[name] = container
-		}
+//		values.Image.Tag = ""
+//		for name, container := range values.Sidecars {
+//			container.Image.Tag = ""
+//			values.Sidecars[name] = container
+//		}
 
-		keyPath := name
-		if operatorWithValues.ValuePath != "" {
-			keyPath = fmt.Sprintf("%s.%s", operatorWithValues.ValuePath, name)
-		}
+//		keyPath := name
+//		if operatorWithValues.ValuePath != "" {
+//			keyPath = fmt.Sprintf("%s.%s", operatorWithValues.ValuePath, name)
+//		}
 
 //		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(operatorWithValues.CustomValues, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
 //		helmValuesForDoc = append(helmValuesForDoc, doc.GenerateHelmValuesDoc(values, keyPath, fmt.Sprintf("Configuration for the %s deployment.", name))...)
