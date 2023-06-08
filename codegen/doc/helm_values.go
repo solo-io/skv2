@@ -52,7 +52,7 @@ func (v HelmValues) ToMarkdown(title string) string {
 		// if $hide_field_from_doc specified, do not include in doc table
 		if strings.Contains(value.Description, "$hide_field_from_doc") {
 			return nil
-		} else list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
+		} list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
 	}
 
 	// remove any duplicates
