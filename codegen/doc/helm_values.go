@@ -57,7 +57,7 @@ func (v HelmValues) ToMarkdown(title string) string {
 }
 
 func removeDuplicates(s HelmValues) HelmValues {
-	bucket := make(map[HelmValues]bool)
+	bucket := make(map[HelmValue]bool)
 	var result HelmValues
 	for _, str := range s {
 	   if _, ok := bucket[str]; !ok {
