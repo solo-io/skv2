@@ -48,7 +48,7 @@ type HelmValues []HelmValue
 func (v HelmValues) ToMarkdown(title string) string {
 	list := []string{}
 	for _, value := range v {
-		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
+		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|", value.Key, value.Type, value.Description, value.DefaultValue))
 	}
 
 	uniques := []string{}
@@ -80,7 +80,7 @@ func (v HelmValues) ToMarkdown(title string) string {
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
 	for _, goodRow := range uniques {
-        fmt.Fprintf(result, goodRow)
+        fmt.Fprintf(result, fmt.Sprintf("%s\n", goodRow))
 	}
 	return result.String()
     
