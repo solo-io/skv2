@@ -46,12 +46,29 @@ type HelmValue struct {
 type HelmValues []HelmValue
 
 func (v HelmValues) ToMarkdown(title string) string {
+	// format values as md table rows
+	list := []string{}
+	for _, value := range v {
+		list = append(list, fmt.Sprintf("|%s|%s|%s|%s|\n", value.Key, value.Type, value.Description, value.DefaultValue))
+	}
+
+	// remove any duplicates
+	bucket := make(map[string]bool)
+	uniques := []string{}
+	for _, row := range list {
+		if _, value := bucket[row]; !value {
+			bucket[row] = true
+			uniques = append(uniques, row)
+		}
+	}
+
+	// build md table from unique rows
 	result := new(strings.Builder)
 	fmt.Fprintln(result, fmt.Sprintf(header, title))
-	fmt.Fprintln(result, "|Option|Type|Default Value|Description|")
+	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
-	for _, value := range v {
-		fmt.Fprintf(result, "|%s|%s|%s|%s|\n", value.Key, value.Type, value.DefaultValue, value.Description)
+	for _, uniqueRow := range uniques {
+		fmt.Fprintf(result, uniqueRow)
 	}
 	return result.String()
 }

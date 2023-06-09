@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/7838
+    description: Removes duplicate rows in Helm ref docs & alphabetizes table rows
