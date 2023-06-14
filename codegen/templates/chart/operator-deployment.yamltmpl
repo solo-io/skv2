@@ -15,7 +15,6 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customDeploymentAnnotations := $operator.Deployment.CustomDeploymentAnnotations -]]
 [[- $customServiceLabels := $operator.Service.CustomLabels -]]
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
-[[- $customNamespace := $operator.Namespace ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
 ---
@@ -50,8 +49,13 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
-  [[- if $customNamespace ]]
-  namespace: [[ $customNamespace ]]
+  [[- if $operator.Values ]]
+{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
+{{- if $[[ $operatorVar ]].namespace }}
+  namespace: {{ $[[ $operatorVar ]].namespace }}
+{{- else }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
   [[- else ]]
   namespace: {{ .Release.Namespace }}
   [[- end ]]
@@ -182,8 +186,13 @@ metadata:
   {{- end }}
   {{- end}}
   name: [[ $operator.Name ]]
-  [[- if $customNamespace ]]
-  namespace: [[ $customNamespace ]]
+  [[- if $operator.Values ]]
+{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
+{{- if $[[ $operatorVar ]].namespace }}
+  namespace: {{ $[[ $operatorVar ]].namespace }}
+{{- else }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
   [[- else ]]
   namespace: {{ .Release.Namespace }}
   [[- end ]]
@@ -209,8 +218,13 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
-  [[- if $customNamespace ]]
-  namespace: [[ $customNamespace ]]
+  [[- if $operator.Values ]]
+{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
+{{- if $[[ $operatorVar ]].namespace }}
+  namespace: {{ $[[ $operatorVar ]].namespace }}
+{{- else }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
   [[- else ]]
   namespace: {{ .Release.Namespace }}
   [[- end ]]
