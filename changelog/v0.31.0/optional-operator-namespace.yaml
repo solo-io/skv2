@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/9491
+    resolvesIssue: false
+    description: >
+      Remove optional operator namespace from operator options. Instead, set the operator namespace in the 
+      operator values and if the namespace exists it will be used, otherwise the default release namespace will be used.
