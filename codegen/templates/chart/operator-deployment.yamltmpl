@@ -49,16 +49,7 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
-  [[- if $operator.Values ]]
-{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
-{{- if $[[ $operatorVar ]].namespace }}
-  namespace: {{ $[[ $operatorVar ]].namespace }}
-{{- else }}
-  namespace: {{ .Release.Namespace }}
-{{- end }}
-  [[- else ]]
-  namespace: {{ .Release.Namespace }}
-  [[- end ]]
+  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 spec:
   selector:
     matchLabels:
@@ -186,16 +177,7 @@ metadata:
   {{- end }}
   {{- end}}
   name: [[ $operator.Name ]]
-  [[- if $operator.Values ]]
-{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
-{{- if $[[ $operatorVar ]].namespace }}
-  namespace: {{ $[[ $operatorVar ]].namespace }}
-{{- else }}
-  namespace: {{ .Release.Namespace }}
-{{- end }}
-  [[- else ]]
-  namespace: {{ .Release.Namespace }}
-  [[- end ]]
+  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 {{- end }}
 
 
@@ -218,16 +200,7 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
-  [[- if $operator.Values ]]
-{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
-{{- if $[[ $operatorVar ]].namespace }}
-  namespace: {{ $[[ $operatorVar ]].namespace }}
-{{- else }}
-  namespace: {{ .Release.Namespace }}
-{{- end }}
-  [[- else ]]
-  namespace: {{ .Release.Namespace }}
-  [[- end ]]
+  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 spec:
   selector:
     app: [[ $operator.Name ]]
