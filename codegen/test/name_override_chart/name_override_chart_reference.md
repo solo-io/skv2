@@ -7,8 +7,8 @@ weight: 2
 
 |Option|Type|Description|Default Value|
 |------|----|-----------|-------------|
-|overrideName|struct|| |
 |overrideName|struct|Configuration for the overrideName deployment.| |
+|overrideName|struct|| |
 |overrideName.deploymentOverrides|struct|Arbitrary overrides for the component's [deployment template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/).| |
 |overrideName.enabled|bool|Enable creation of the deployment/service.|true|
 |overrideName.env[]|slice|Environment variables for the container. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core).|null|

@@ -17,8 +17,10 @@ type SecretSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	List(filterResource ...func(*v1.Secret) bool) []*v1.Secret
 	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	UnsortedList(filterResource ...func(*v1.Secret) bool) []*v1.Secret
 	// Return the Set as a map of key to resource.
 	Map() map[string]*v1.Secret
@@ -238,8 +240,10 @@ type ServiceAccountSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	List(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
 	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	UnsortedList(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
 	// Return the Set as a map of key to resource.
 	Map() map[string]*v1.ServiceAccount
@@ -459,8 +463,10 @@ type NamespaceSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	List(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace
 	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	UnsortedList(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace
 	// Return the Set as a map of key to resource.
 	Map() map[string]*v1.Namespace
