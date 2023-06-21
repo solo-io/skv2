@@ -1,0 +1,6 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Generated Kubernetes resource code that includes filters now has an additional comment with how to use the filter.
+      This is needed as our filter code is opposite of regular predicate-style filtering (e.g. if a filter returns true, it is
+      excluded rather than included), to prevent confusion for developers.

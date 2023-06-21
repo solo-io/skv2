@@ -17,8 +17,10 @@ type PaintSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	List(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
 	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	UnsortedList(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
 	// Return the Set as a map of key to resource.
 	Map() map[string]*things_test_io_v1.Paint
@@ -238,8 +240,10 @@ type ClusterResourceSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	List(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
 	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
 	UnsortedList(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
 	// Return the Set as a map of key to resource.
 	Map() map[string]*things_test_io_v1.ClusterResource
