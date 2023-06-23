@@ -25,7 +25,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: [[ $operator.Name ]]-{{ .Release.Namespace }}
+  name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
   labels:
     app: [[ $operator.Name ]]
 rules:
@@ -36,16 +36,16 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: [[ $operator.Name ]]-{{ .Release.Namespace }}
+  name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
   labels:
     app: [[ $operator.Name ]]
 subjects:
 - kind: ServiceAccount
   name: [[ $operator.Name ]]
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 roleRef:
   kind: ClusterRole
-  name: [[ $operator.Name ]]-{{ .Release.Namespace }}
+  name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
   apiGroup: rbac.authorization.k8s.io
 
 {{- end }}
