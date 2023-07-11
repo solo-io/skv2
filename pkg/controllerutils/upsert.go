@@ -113,7 +113,7 @@ func UpdateStatus(
 	c client.Client,
 	obj client.Object,
 ) (controllerutil.OperationResult, error) {
-	existing, updateNeeded, err := needUpdate(ctx, c, obj)
+	existing, updateNeeded, err := needUpdate(ctx, c, false, obj)
 	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
 	}
@@ -137,7 +137,7 @@ func UpdateStatusImmutable(
 	c client.Client,
 	obj client.Object,
 ) (controllerutil.OperationResult, error) {
-	existing, updateNeeded, err := needUpdate(ctx, c, obj)
+	existing, updateNeeded, err := needUpdate(ctx, c, true, obj)
 	if err != nil || !updateNeeded {
 		return controllerutil.OperationResultNone, err
 	}
@@ -147,17 +147,23 @@ func UpdateStatusImmutable(
 
 	// https://github.com/solo-io/skv2/issues/344
 	copyOfObj.SetUID(existing.GetUID())
+	copyOfObj.SetCreationTimestamp(existing.GetCreationTimestamp())
+	copyOfObj.SetResourceVersion(existing.GetResourceVersion())
 
 	return update(ctx, c, copyOfObj)
 }
 
-func needUpdate(ctx context.Context, c client.Client, obj client.Object) (client.Object, bool, error) {
+func needUpdate(ctx context.Context, c client.Client, deepCopy bool, obj client.Object) (client.Object, bool, error) {
 	key := client.ObjectKeyFromObject(obj)
 
 	// create empty object of the same type so that Get will work
 	existing := reflect.New(reflect.TypeOf(obj).Elem()).Interface().(client.Object)
 	if err := c.Get(ctx, key, existing); err != nil {
 		return nil, false, err
+	}
+
+	if deepCopy {
+		existing = existing.DeepCopyObject().(client.Object)
 	}
 
 	if ObjectStatusesEqual(existing, obj) {
