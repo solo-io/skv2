@@ -18,21 +18,33 @@ import (
 
 // Create CRDs for a group
 func CustomResourceDefinitions(
-	group model.Group,
-) (objects []metav1.Object, err error) {
-	for _, resource := range group.Resources {
+	groups []*model.Group,
+) (objects []apiextv1.CustomResourceDefinition, err error) {
+	resourcesByKind := make(map[string][]model.Resource)
+	for _, group := range groups {
+		for _, resource := range group.Resources {
+			resourcesByKind[resource.Kind] = append(resourcesByKind[resource.Kind], resource)
+		}
+	}
 
-		var validationSchema *apiextv1.CustomResourceValidation
-		validationSchema, err = constructValidationSchema(
-			group.RenderValidationSchemas,
-			resource,
-			group.OpenApiSchemas,
-		)
-		if err != nil {
-			return nil, err
+	//objects = make([]apiextv1.CustomResourceDefinition, 0, len(resourcesByKind))
+	for _, resources := range resourcesByKind {
+		validationSchemas := make(map[string]*apiextv1.CustomResourceValidation)
+		for _, resource := range resources {
+			var validationSchema *apiextv1.CustomResourceValidation
+			validationSchema, err = constructValidationSchema(
+				resource.Group.RenderValidationSchemas,
+				resource,
+				resource.Group.OpenApiSchemas,
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			validationSchemas[resource.Group.String()] = validationSchema
 		}
 
-		objects = append(objects, CustomResourceDefinition(resource, validationSchema, group.SkipSpecHash))
+		objects = append(objects, *CustomResourceDefinition(resources, validationSchemas, true)) //group.SkipSpecHash))
 	}
 	return objects, nil
 }
@@ -117,27 +129,40 @@ func validateStructural(s *apiextv1.JSONSchemaProps) error {
 }
 
 func CustomResourceDefinition(
-	resource model.Resource,
-	validationSchema *apiextv1.CustomResourceValidation,
+	resources []model.Resource,
+	validationSchemas map[string]*apiextv1.CustomResourceValidation,
 	withoutSpecHash bool,
 ) *apiextv1.CustomResourceDefinition {
 
-	group := resource.Group.Group
-	version := resource.Group.Version
-	kind := resource.Kind
+	group := resources[0].Group.Group
+	kind := resources[0].Kind
 	kindLowerPlural := strings.ToLower(stringutils.Pluralize(kind))
 	kindLower := strings.ToLower(kind)
 
-	var status *apiextv1.CustomResourceSubresourceStatus
-	if resource.Status != nil {
-		status = &apiextv1.CustomResourceSubresourceStatus{}
-	}
-
 	scope := apiextv1.NamespaceScoped
-	if resource.ClusterScoped {
+	if resources[0].ClusterScoped {
 		scope = apiextv1.ClusterScoped
 	}
 
+	versions := make([]apiextv1.CustomResourceDefinitionVersion, 0, len(resources))
+	for _, resource := range resources {
+		var status *apiextv1.CustomResourceSubresourceStatus
+		if resource.Status != nil {
+			status = &apiextv1.CustomResourceSubresourceStatus{}
+		}
+
+		v := apiextv1.CustomResourceDefinitionVersion{
+			Name:                     resource.Group.Version,
+			Served:                   true,
+			Storage:                  true,
+			AdditionalPrinterColumns: resource.AdditionalPrinterColumns,
+			Subresources: &apiextv1.CustomResourceSubresources{
+				Status: status,
+			},
+			Schema: validationSchemas[resource.Group.String()],
+		}
+		versions = append(versions, v)
+	}
 	crd := &apiextv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: apiextv1.SchemeGroupVersion.String(),
@@ -147,27 +172,16 @@ func CustomResourceDefinition(
 			Name: fmt.Sprintf("%s.%s", kindLowerPlural, group),
 		},
 		Spec: apiextv1.CustomResourceDefinitionSpec{
-			Group: group,
-			Scope: scope,
-			Versions: []apiextv1.CustomResourceDefinitionVersion{
-				{
-					Name:                     version,
-					Served:                   true,
-					Storage:                  true,
-					AdditionalPrinterColumns: resource.AdditionalPrinterColumns,
-					Subresources: &apiextv1.CustomResourceSubresources{
-						Status: status,
-					},
-					Schema: validationSchema,
-				},
-			},
+			Group:    group,
+			Scope:    scope,
+			Versions: versions,
 			Names: apiextv1.CustomResourceDefinitionNames{
 				Plural:     kindLowerPlural,
 				Singular:   kindLower,
 				Kind:       kind,
-				ShortNames: resource.ShortNames,
+				ShortNames: resources[0].ShortNames,
 				ListKind:   kind + "List",
-				Categories: resource.Categories,
+				Categories: resources[0].Categories,
 			},
 		},
 	}
@@ -182,7 +196,7 @@ func CustomResourceDefinition(
 		}
 	}
 
-	if validationSchema != nil {
+	if len(validationSchemas) > 0 {
 		// Setting PreserveUnknownFields to false ensures that objects with unknown fields are rejected.
 		crd.Spec.PreserveUnknownFields = false
 	}

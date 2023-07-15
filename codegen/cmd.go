@@ -146,14 +146,16 @@ func (c Command) Execute() error {
 		group := group // pike
 		groups = append(groups, &group)
 	}
-	for i, group := range groups {
+	for _, group := range groups {
 		group := group // pike
 		c.initGroup(group, descriptors)
+	}
 
-		if err := c.generateGroup(*group, protoOpts, c.GroupOptions); err != nil {
-			return err
-		}
+	if err := c.generateGroup(groups, protoOpts, c.GroupOptions); err != nil {
+		return err
+	}
 
+	for i, group := range groups {
 		// replace group in Groups array with the group including generated fields
 		c.Groups[i] = *group
 	}
@@ -240,7 +242,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 }
 
 func (c Command) generateGroup(
-	grp model.Group,
+	grps []*model.Group,
 	protoOpts proto.Options,
 	groupOptions model.GroupOptions,
 ) error {
@@ -250,25 +252,27 @@ func (c Command) generateGroup(
 		Header: c.GeneratedHeader,
 	}
 
-	protoTypes, err := render.RenderProtoTypes(grp)
-	if err != nil {
-		return err
+	for _, grp := range grps {
+		protoTypes, err := render.RenderProtoTypes(*grp)
+		if err != nil {
+			return err
+		}
+
+		if err := fileWriter.WriteFiles(protoTypes); err != nil {
+			return err
+		}
+
+		apiTypes, err := render.RenderApiTypes(*grp)
+		if err != nil {
+			return err
+		}
+
+		if err := fileWriter.WriteFiles(apiTypes); err != nil {
+			return err
+		}
 	}
 
-	if err := fileWriter.WriteFiles(protoTypes); err != nil {
-		return err
-	}
-
-	apiTypes, err := render.RenderApiTypes(grp)
-	if err != nil {
-		return err
-	}
-
-	if err := fileWriter.WriteFiles(apiTypes); err != nil {
-		return err
-	}
-
-	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, protoOpts, groupOptions, grp)
+	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, protoOpts, groupOptions, grps)
 	if err != nil {
 		return err
 	}
@@ -277,8 +281,10 @@ func (c Command) generateGroup(
 		return err
 	}
 
-	if err := render.KubeCodegen(grp); err != nil {
-		return err
+	for _, grp := range grps {
+		if err := render.KubeCodegen(*grp); err != nil {
+			return err
+		}
 	}
 
 	return nil

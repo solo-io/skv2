@@ -26,10 +26,11 @@ import (
 
 // creates a k8s resource for a group
 // this gets turned into a k8s manifest file
-type MakeResourceFunc func(group Group) ([]metav1.Object, error)
+type MakeResourceFunc func(groups []*Group) ([]metav1.Object, error)
 
 // renders kubernetes from templates
 type ManifestsRenderer struct {
+	templateRenderer
 	AppName       string // used for labeling
 	ResourceFuncs map[OutFile]MakeResourceFunc
 	ManifestDir   string
@@ -40,46 +41,57 @@ func RenderManifests(
 	appName, manifestDir, protoDir string,
 	protoOpts protoutil.Options,
 	groupOptions model.GroupOptions,
-	grp Group,
+	grps []*Group,
 ) ([]OutFile, error) {
 	defaultManifestsRenderer := ManifestsRenderer{
 		AppName:     appName,
 		ManifestDir: manifestDir,
 		ProtoDir:    protoDir,
-		ResourceFuncs: map[OutFile]MakeResourceFunc{
-			{
-				Path: manifestDir + "/crds/" + grp.Group + "_" + grp.Version + "_" + "crds.yaml",
-			}: func(group Group) ([]metav1.Object, error) {
-				return kuberesource.CustomResourceDefinitions(group)
-			},
-		},
 	}
-	return defaultManifestsRenderer.RenderManifests(grp, protoOpts, groupOptions)
+	return defaultManifestsRenderer.RenderManifests(grps, protoOpts, groupOptions)
 }
 
-func (r ManifestsRenderer) RenderManifests(grp Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
-	if !grp.RenderManifests {
-		return nil, nil
+func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
+	// if !grp.RenderManifests {
+	// 	return nil, nil
+	// }
+
+	for _, grp := range grps {
+		if grp.RenderValidationSchemas {
+			var err error
+			oapiSchemas, err := generateOpenApi(*grp, r.ProtoDir, protoOpts, groupOptions)
+			if err != nil {
+				return nil, err
+			}
+			grp.OpenApiSchemas = oapiSchemas
+		}
 	}
 
-	if grp.RenderValidationSchemas {
-		var err error
-		oapiSchemas, err := generateOpenApi(grp, r.ProtoDir, protoOpts, groupOptions)
-		if err != nil {
-			return nil, err
-		}
-		grp.OpenApiSchemas = oapiSchemas
+	grpsByG := make(map[string][]*Group)
+	for _, grp := range grps {
+		grpsByG[grp.Group] = append(grpsByG[grp.Group], grp)
 	}
 
 	var renderedFiles []OutFile
-	for out, mkFunc := range r.ResourceFuncs {
-		content, err := r.renderManifest(r.AppName, mkFunc, grp)
+
+	for _, selectedGrps := range grpsByG {
+		crds, err := r.createCrds(r.AppName, selectedGrps)
 		if err != nil {
 			return nil, err
 		}
-		out.Content = content
+		out, err := r.renderManifest(r.AppName, selectedGrps[0].Group, crds)
+		if err != nil {
+			return nil, err
+		}
+		renderedFiles = append(renderedFiles, out)
+
+		out, err = r.renderTemplatedManifest(r.AppName, selectedGrps[0].Group, crds)
+		if err != nil {
+			return nil, err
+		}
 		renderedFiles = append(renderedFiles, out)
 	}
+
 	return renderedFiles, nil
 }
 
@@ -198,7 +210,7 @@ func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[stri
 	return unstructuredFields, nil
 }
 
-func SetVersionForObject(obj metav1.Object, version string) {
+func SetVersionForObject(obj *apiextv1.CustomResourceDefinition, version string) {
 	if version == "" {
 		return
 	}
@@ -218,41 +230,76 @@ func SetVersionForObject(obj metav1.Object, version string) {
 		}
 
 		a[crdutils.CRDVersionKey] = strippedVersion.String()
+
 		obj.SetAnnotations(a)
 	}
 }
 
-func (r ManifestsRenderer) renderManifest(appName string, mk MakeResourceFunc, group Group) (string, error) {
-	objs, err := mk(group)
-	if err != nil {
-		return "", err
+func (r ManifestsRenderer) renderManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
+	outFile := OutFile{
+		Path: r.ManifestDir + "/crds/" + groupName + "_" + "crds.yaml",
 	}
 
 	var objManifests []string
 	for _, obj := range objs {
-		// find the annotation of the manifest, and add to them
-		SetVersionForObject(obj, group.AddChartVersion)
-		manifest, err := marshalObjToYaml(appName, obj)
+		manifest, err := marshalObjToYaml(appName, &obj)
 		if err != nil {
-			return "", err
+			return OutFile{}, err
 		}
 		objManifests = append(objManifests, manifest)
 	}
 
-	return strings.Join(objManifests, "\n---\n"), nil
+	outFile.Content = strings.Join(objManifests, "\n---\n")
+	return outFile, nil
+}
+
+func (r ManifestsRenderer) renderTemplatedManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
+	renderer := DefaultTemplateRenderer
+
+	// when rendering helm charts, we need
+	// to use a custom delimiter
+	renderer.left = "[["
+	renderer.right = "]]"
+
+	defaultManifestRenderer := ChartRenderer{
+		templateRenderer: renderer,
+	}
+
+	outFile := OutFile{Path: r.ManifestDir + "/templates/" + groupName + "_" + "crds.yaml"}
+	templatesToRender := inputTemplates{
+		"manifests/crd.yamltmpl": outFile,
+	}
+	files, err := defaultManifestRenderer.renderCoreTemplates(templatesToRender, objs)
+	if err != nil {
+		return OutFile{}, err
+	}
+	return files[0], nil
+}
+
+func (r ManifestsRenderer) createCrds(appName string, groups []*Group) ([]apiextv1.CustomResourceDefinition, error) {
+	objs, err := kuberesource.CustomResourceDefinitions(groups)
+	if err != nil {
+		return nil, err
+	}
+
+	for i, obj := range objs {
+		// find the annotation of the manifest, and add to them
+		SetVersionForObject(&objs[i], groups[0].AddChartVersion)
+
+		labels := obj.GetLabels()
+		if labels == nil {
+			labels = map[string]string{}
+		}
+
+		labels["app"] = appName
+		labels["app.kubernetes.io/name"] = appName
+
+		objs[i].SetLabels(labels)
+	}
+	return objs, nil
 }
 
 func marshalObjToYaml(appName string, obj metav1.Object) (string, error) {
-	labels := obj.GetLabels()
-	if labels == nil {
-		labels = map[string]string{}
-	}
-
-	labels["app"] = appName
-	labels["app.kubernetes.io/name"] = appName
-
-	obj.SetLabels(labels)
-
 	yam, err := yaml.Marshal(obj)
 	if err != nil {
 		return "", err

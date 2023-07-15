@@ -1,0 +1,30 @@
+[[- range $crd := . -]]
+[[- if and (lt (len $crd.Spec.Versions) 2) (string_contains (index $crd.Spec.Versions 0).Name "alpha") ]]
+{{- if index $.Values.experimental.api "[[ $crd.GetName ]]/[[ (index $crd.Spec.Versions 0).Name ]]" }}
+[[- end ]]
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations: [[- $crd.GetAnnotations | toYaml | nindent 4 ]]
+  labels: [[- $crd.GetLabels | toYaml | nindent 4 ]]
+  name: [[ $crd.GetName ]]
+spec:
+  group: [[ $crd.Spec.Group ]]
+  names: [[- $crd.Spec.Names | toYaml | nindent 4 ]]
+  scope: [[ $crd.Spec.Scope ]]
+  versions:
+  [[- range $version := $crd.Spec.Versions ]]
+  [[- if and (gt (len $crd.Spec.Versions) 1) (string_contains $version.Name "alpha") ]]
+  {{- if index $.Values.experimental.api "[[ $crd.GetName ]]/[[ $version.Name ]]" }}
+  [[- end ]]
+  -
+  [[- $version | toYaml | indent 4 | trimPrefix "   " ]]
+  [[- if and (gt (len $crd.Spec.Versions) 1) (string_contains $version.Name "alpha") ]]
+  {{- end }}
+  [[- end ]]
+  [[- end ]]
+[[- if and (lt (len $crd.Spec.Versions) 2) (string_contains (index $crd.Spec.Versions 0).Name "alpha") ]]
+{{- end  }}
+[[- end ]]
+---
+[[ end ]]
