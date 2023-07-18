@@ -17,11 +17,11 @@ import (
 type EventHandler interface {
 	Create(object client.Object) error
 
-	Delete(object client.Object) error
+	Delete(ctx context.Context, object client.Object) error
 
-	Update(old, new client.Object) error
+	Update(ctx context.Context, old, new client.Object) error
 
-	Generic(object client.Object) error
+	Generic(ctx context.Context, object client.Object) error
 }
 
 // an EventWatcher is a controller-runtime reconciler that
@@ -90,19 +90,19 @@ func (w *eventWatcher) Reconcile(ctx context.Context, request reconcile.Request)
 
 	switch evt := event.(type) {
 	case createEvent:
-		if err := w.eventHandler.Create(evt.Object); err != nil {
+		if err := w.eventHandler.Create(ctx, evt.Object); err != nil {
 			return reconcile.Result{}, err
 		}
 	case updateEvent:
-		if err := w.eventHandler.Update(evt.ObjectOld, evt.ObjectNew); err != nil {
+		if err := w.eventHandler.Update(ctx, evt.ObjectOld, evt.ObjectNew); err != nil {
 			return reconcile.Result{}, err
 		}
 	case deleteEvent:
-		if err := w.eventHandler.Delete(evt.Object); err != nil {
+		if err := w.eventHandler.Delete(ctx, evt.Object); err != nil {
 			return reconcile.Result{}, err
 		}
 	case genericEvent:
-		if err := w.eventHandler.Generic(evt.Object); err != nil {
+		if err := w.eventHandler.Generic(ctx, evt.Object); err != nil {
 			return reconcile.Result{}, err
 		}
 	default:
