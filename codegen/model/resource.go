@@ -172,6 +172,10 @@ type Resource struct {
 
 	// If enabled, the unmarshal will NOT allow unknown fields.
 	StrictUnmarshal bool
+
+	Stored bool
+
+	Deprecated bool
 }
 
 type Field struct {

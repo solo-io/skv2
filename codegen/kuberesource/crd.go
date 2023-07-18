@@ -154,7 +154,8 @@ func CustomResourceDefinition(
 		v := apiextv1.CustomResourceDefinitionVersion{
 			Name:                     resource.Group.Version,
 			Served:                   true,
-			Storage:                  true,
+			Storage:                  resource.Stored,
+			Deprecated:               resource.Deprecated,
 			AdditionalPrinterColumns: resource.AdditionalPrinterColumns,
 			Subresources: &apiextv1.CustomResourceSubresources{
 				Status: status,
