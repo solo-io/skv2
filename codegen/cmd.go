@@ -6,8 +6,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rotisserie/eris"
+	"k8s.io/utils/strings/slices"
 
 	protovendor "github.com/solo-io/anyvendor/pkg/proto"
 	"github.com/solo-io/skv2/codegen/metrics"
@@ -341,7 +343,15 @@ func (c Command) initGroup(
 					// default to the resource API Group name
 					matchingProtoPackage = resource.Group.Group
 				}
+				// TODO (dmitri-d): can we change protobuf package to contain version instead?
+				// for example, workspace.proto package is "admin.gloo.solo.io";
+				// can we change it to "admin.gloo.solo.io.v2"?
 				if fileDescriptor.GetPackage() == matchingProtoPackage {
+					path := strings.Split(fileDescriptor.GetName(), "/")
+					if !slices.Contains(path, resource.Group.Version) {
+						return false
+					}
+
 					if message := fileDescriptor.GetMessage(fieldType.Name); message != nil {
 						fieldType.Message = message
 						fieldType.GoPackage = fileDescriptor.GetOptions().GetGoPackage()
