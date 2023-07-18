@@ -8,14 +8,13 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // Stoppable is a stoppable source
 type Stoppable interface {
 	source.Source
-	inject.Stoppable
+	InjectStopChannel(<-chan struct{}) error
 }
 
 // DynamicSource is a funnel for sources that can be
