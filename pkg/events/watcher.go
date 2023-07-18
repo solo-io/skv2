@@ -15,7 +15,7 @@ import (
 )
 
 type EventHandler interface {
-	Create(object client.Object) error
+	Create(ctx context.Context, object client.Object) error
 
 	Delete(ctx context.Context, object client.Object) error
 
@@ -58,7 +58,7 @@ func (w *watcher) Watch(ctx context.Context, eventHandler EventHandler, predicat
 	}
 
 	// create a source for the resource type
-	src := &source.Kind{Type: w.resource}
+	src := source.Kind(w.mgr.GetCache(), w.resource)
 
 	// send watch events to the Cache
 	if err := ctl.Watch(src, reconciler.events, predicates...); err != nil {
