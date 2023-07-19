@@ -138,8 +138,8 @@ func docReflect(addValue addValue, path []string, desc string, typ reflect.Type,
 		// add entry for slice field itself
 		addValue(HelmValue{Key: strings.Join(path, "."), Type: "[]" + typ.Elem().Kind().String(), DefaultValue: valToString(val), Description: desc})
 
-		// if element is a struct, recurse
-		if typ.Elem().Kind() == reflect.Struct {
+		// if element is a struct or pointer, recurse
+		if typ.Elem().Kind() == reflect.Struct || typ.Elem().Kind() == reflect.Ptr {
 			docReflect(addValue, path, desc, typ.Elem(), reflect.Value{})
 		}
 	case reflect.Struct:

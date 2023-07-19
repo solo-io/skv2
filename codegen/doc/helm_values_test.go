@@ -112,11 +112,15 @@ var _ = Describe("GenerateHelmValuesDoc", func() {
 	})
 
 	It("handles slices of structs", func() {
+		type Nested struct {
+			Nest []int
+		}
 		type ChildType2 struct {
 			Field2 string `json:"myCoolField2" desc:"my field 2"`
 		}
 		type ChildType struct {
-			Field1 []string `json:"myCoolField" desc:"my field"`
+			Field1 []string  `json:"myCoolField" desc:"my field"`
+			Nested []*Nested `json:"nested" desc:"nested struct"`
 		}
 		type Parent struct {
 			ChildType  []ChildType `json:"childType" desc:"child type"`
@@ -126,6 +130,14 @@ var _ = Describe("GenerateHelmValuesDoc", func() {
 			ChildType: []ChildType{
 				{
 					Field1: []string{"default"},
+					Nested: []*Nested{
+						{
+							Nest: []int{1, 2, 3},
+						},
+						{
+							Nest: []int{4, 5, 6},
+						},
+					},
 				},
 			},
 			ChildType2: ChildType2{
@@ -147,7 +159,7 @@ var _ = Describe("GenerateHelmValuesDoc", func() {
 			{
 				Key:          "test.childType[]",
 				Type:         "[]struct",
-				DefaultValue: "[{\"myCoolField\":[\"default\"]}]",
+				DefaultValue: "[{\"myCoolField\":[\"default\"],\"nested\":[{\"Nest\":[1,2,3]},{\"Nest\":[4,5,6]}]}]",
 				Description:  "child type",
 			},
 			{
@@ -155,6 +167,18 @@ var _ = Describe("GenerateHelmValuesDoc", func() {
 				Type:         "[]string",
 				DefaultValue: " ",
 				Description:  "my field",
+			},
+			{
+				Key:          "test.childType[].nested[]",
+				Type:         "[]ptr",
+				DefaultValue: " ",
+				Description:  "nested struct",
+			},
+			{
+				Key:          "test.childType[].nested[][]",
+				Type:         "[]int",
+				DefaultValue: " ",
+				Description:  "",
 			},
 			{
 				Key:          "test.childType2",
