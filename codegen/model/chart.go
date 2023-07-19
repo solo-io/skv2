@@ -251,7 +251,10 @@ func (c Chart) GenerateHelmDoc() string {
 
 	// alphabetize all values
 	sort.Slice(helmValuesForDoc, func(i, j int) bool {
-		return helmValuesForDoc[i].Key < helmValuesForDoc[j].Key
+		if helmValuesForDoc[i].Key != helmValuesForDoc[j].Key {
+			return helmValuesForDoc[i].Key < helmValuesForDoc[j].Key
+		}
+		return helmValuesForDoc[i].Description < helmValuesForDoc[j].Description
 	})
 
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
