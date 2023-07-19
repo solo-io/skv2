@@ -254,7 +254,10 @@ func (c Chart) GenerateHelmDoc() string {
 		if helmValuesForDoc[i].Key != helmValuesForDoc[j].Key {
 			return helmValuesForDoc[i].Key < helmValuesForDoc[j].Key
 		}
-		return helmValuesForDoc[i].Description < helmValuesForDoc[j].Description
+		if helmValuesForDoc[i].Description != helmValuesForDoc[j].Description {
+			return helmValuesForDoc[i].Description < helmValuesForDoc[j].Description
+		}
+		return helmValuesForDoc[i].Type < helmValuesForDoc[j].Type
 	})
 
 	return helmValuesForDoc.ToMarkdown(c.ValuesReferenceDocs.Title)
