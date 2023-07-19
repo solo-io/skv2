@@ -151,12 +151,6 @@ var _ = Describe("GenerateHelmValuesDoc", func() {
 				Description:  "child type",
 			},
 			{
-				Key:          "test.childType[]",
-				Type:         "struct",
-				DefaultValue: " ",
-				Description:  "child type",
-			},
-			{
 				Key:          "test.childType[].myCoolField[]",
 				Type:         "[]string",
 				DefaultValue: " ",
