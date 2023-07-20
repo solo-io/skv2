@@ -114,6 +114,10 @@ type Group struct {
 
 	// Some resources use pointer slices for the Items field.
 	PointerSlices bool `default:"false"`
+
+	// true if this should not be considered "experimental"
+	// even if the Version string contains "alpha"
+	Grandfathered bool
 }
 
 type GroupOptions struct {
