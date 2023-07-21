@@ -1,7 +1,0 @@
-changelog:
-  - type: HELM
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/9491
-    resolvesIssue: false
-    description: >
-      Updated the operator rbac template to write the `ClusterRoleBinding` resource to the custom operator namespace
-      if it is provided in the operator values.
