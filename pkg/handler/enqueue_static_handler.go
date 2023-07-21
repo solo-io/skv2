@@ -29,9 +29,6 @@ type BroadcastRequests struct {
 	WorkQueues *skqueue.MultiClusterQueues
 }
 
-// TODO: (sam-heilbron)
-// How should the context be propagated?
-
 // Create implements EventHandler
 func (e *BroadcastRequests) Create(ctx context.Context, evt event.CreateEvent, q workqueue.RateLimitingInterface) {
 	if evt.Object == nil {
