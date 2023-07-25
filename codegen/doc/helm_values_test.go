@@ -79,4 +79,120 @@ var _ = Describe("GenerateHelmValuesDoc", func() {
 		}
 		Expect(result).To(Equal(expected))
 	})
+
+	It("handles slices", func() {
+		type ChildType struct {
+			Field1 []string `json:"myCoolField" desc:"my field"`
+		}
+
+		c := ChildType{
+			Field1: []string{"default"},
+		}
+
+		result := doc.GenerateHelmValuesDoc(
+			c,
+			"test",
+			"my test",
+		)
+		expected := doc.HelmValues{
+			{
+				Key:          "test",
+				Type:         "struct",
+				DefaultValue: " ",
+				Description:  "my test",
+			},
+			{
+				Key:          "test.myCoolField[]",
+				Type:         "[]string",
+				DefaultValue: "[\"default\"]",
+				Description:  "my field",
+			},
+		}
+		Expect(result).To(Equal(expected))
+	})
+
+	It("handles slices of structs", func() {
+		type Nested struct {
+			Nest []int
+		}
+		type ChildType2 struct {
+			Field2 string `json:"myCoolField2" desc:"my field 2"`
+		}
+		type ChildType struct {
+			Field1 []string  `json:"myCoolField" desc:"my field"`
+			Nested []*Nested `json:"nested" desc:"nested struct"`
+		}
+		type Parent struct {
+			ChildType  []ChildType `json:"childType" desc:"child type"`
+			ChildType2 ChildType2  `json:"childType2" desc:"child type 2"`
+		}
+		p := Parent{
+			ChildType: []ChildType{
+				{
+					Field1: []string{"default"},
+					Nested: []*Nested{
+						{
+							Nest: []int{1, 2, 3},
+						},
+						{
+							Nest: []int{4, 5, 6},
+						},
+					},
+				},
+			},
+			ChildType2: ChildType2{
+				Field2: "default",
+			},
+		}
+		result := doc.GenerateHelmValuesDoc(
+			p,
+			"test",
+			"my test",
+		)
+		expected := doc.HelmValues{
+			{
+				Key:          "test",
+				Type:         "struct",
+				DefaultValue: " ",
+				Description:  "my test",
+			},
+			{
+				Key:          "test.childType[]",
+				Type:         "[]struct",
+				DefaultValue: "[{\"myCoolField\":[\"default\"],\"nested\":[{\"Nest\":[1,2,3]},{\"Nest\":[4,5,6]}]}]",
+				Description:  "child type",
+			},
+			{
+				Key:          "test.childType[].myCoolField[]",
+				Type:         "[]string",
+				DefaultValue: " ",
+				Description:  "my field",
+			},
+			{
+				Key:          "test.childType[].nested[]",
+				Type:         "[]ptr",
+				DefaultValue: " ",
+				Description:  "nested struct",
+			},
+			{
+				Key:          "test.childType[].nested[][]",
+				Type:         "[]int",
+				DefaultValue: " ",
+				Description:  "",
+			},
+			{
+				Key:          "test.childType2",
+				Type:         "struct",
+				DefaultValue: " ",
+				Description:  "child type 2",
+			},
+			{
+				Key:          "test.childType2.myCoolField2",
+				Type:         "string",
+				DefaultValue: "default",
+				Description:  "my field 2",
+			},
+		}
+		Expect(result).To(Equal(expected))
+	})
 })
