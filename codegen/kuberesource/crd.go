@@ -18,13 +18,13 @@ import (
 
 // Create CRDs for a group
 func CustomResourceDefinitions(
-	groups []model.Group,
+	groups []*model.Group,
 ) (objects []apiextv1.CustomResourceDefinition, err error) {
 	resourcesByKind := make(map[string][]model.Resource)
 	skipHashByKind := make(map[string]bool)
 	for _, group := range groups {
-		for _, resource := range group.Resources {
-			resourcesByKind[resource.Kind] = append(resourcesByKind[resource.Kind], resource)
+		for i, resource := range group.Resources {
+			resourcesByKind[resource.Kind] = append(resourcesByKind[resource.Kind], group.Resources[i])
 			skipHashByKind[resource.Kind] = skipHashByKind[resource.Kind] || resource.Group.SkipSpecHash
 		}
 	}

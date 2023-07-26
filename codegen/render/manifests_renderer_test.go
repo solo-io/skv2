@@ -53,11 +53,11 @@ var _ = Describe("ManifestsRenderer", func() {
 
 	Describe("CRD gen", func() {
 		var (
-			grps []model.Group
+			grps []*model.Group
 		)
 
 		BeforeEach(func() {
-			grps = []model.Group{{
+			grps = []*model.Group{{
 				RenderManifests: true,
 				AddChartVersion: "1.0.0",
 				Resources: []model.Resource{
@@ -87,10 +87,11 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps,
 			)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(outFiles).To(HaveLen(1))
+			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
 			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": b6ec737002f7d02e"))
-
+			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
+			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": b6ec737002f7d02e"))
 		})
 	})
 })

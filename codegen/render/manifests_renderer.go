@@ -41,7 +41,7 @@ func RenderManifests(
 	appName, manifestDir, protoDir string,
 	protoOpts protoutil.Options,
 	groupOptions model.GroupOptions,
-	grps []Group,
+	grps []*Group,
 ) ([]OutFile, error) {
 	defaultManifestsRenderer := ManifestsRenderer{
 		AppName:     appName,
@@ -51,7 +51,7 @@ func RenderManifests(
 	return defaultManifestsRenderer.RenderManifests(grps, protoOpts, groupOptions)
 }
 
-func (r ManifestsRenderer) RenderManifests(grps []Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
+func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
 	// if !grp.RenderManifests {
 	// 	return nil, nil
 	// }
@@ -59,7 +59,7 @@ func (r ManifestsRenderer) RenderManifests(grps []Group, protoOpts protoutil.Opt
 	for _, grp := range grps {
 		if grp.RenderValidationSchemas {
 			var err error
-			oapiSchemas, err := generateOpenApi(grp, r.ProtoDir, protoOpts, groupOptions)
+			oapiSchemas, err := generateOpenApi(*grp, r.ProtoDir, protoOpts, groupOptions)
 			if err != nil {
 				return nil, err
 			}
@@ -67,25 +67,26 @@ func (r ManifestsRenderer) RenderManifests(grps []Group, protoOpts protoutil.Opt
 		}
 	}
 
-	grpsByG := make(map[string][]Group)
+	grpsByGroupName := make(map[string][]*Group)
 	for _, grp := range grps {
-		grpsByG[grp.Group] = append(grpsByG[grp.Group], grp)
+		grpsByGroupName[grp.Group] = append(grpsByGroupName[grp.Group], grp)
 	}
 
 	var renderedFiles []OutFile
 
-	for _, selectedGrps := range grpsByG {
+	for groupName, selectedGrps := range grpsByGroupName {
 		crds, err := r.createCrds(r.AppName, selectedGrps)
 		if err != nil {
 			return nil, err
 		}
-		out, err := r.renderManifest(r.AppName, selectedGrps[0].Group, crds)
+		// TODO (dmitri-d): this can be removed once we migrate to use platform charts exclusively
+		out, err := r.renderLegacyManifest(r.AppName, groupName, crds)
 		if err != nil {
 			return nil, err
 		}
 		renderedFiles = append(renderedFiles, out)
 
-		out, err = r.renderTemplatedManifest(r.AppName, selectedGrps[0].Group, crds)
+		out, err = r.renderTemplatedManifest(r.AppName, groupName, crds)
 		if err != nil {
 			return nil, err
 		}
@@ -235,7 +236,8 @@ func SetVersionForObject(obj metav1.Object, version string) {
 	}
 }
 
-func (r ManifestsRenderer) renderManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
+// TODO (dmitri-d): this can be removed once we migrate to use platform charts exclusively
+func (r ManifestsRenderer) renderLegacyManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
 	outFile := OutFile{
 		Path: r.ManifestDir + "/crds/" + groupName + "_" + "crds.yaml",
 	}
@@ -276,7 +278,7 @@ func (r ManifestsRenderer) renderTemplatedManifest(appName, groupName string, ob
 	return files[0], nil
 }
 
-func (r ManifestsRenderer) createCrds(appName string, groups []Group) ([]apiextv1.CustomResourceDefinition, error) {
+func (r ManifestsRenderer) createCrds(appName string, groups []*Group) ([]apiextv1.CustomResourceDefinition, error) {
 	objs, err := kuberesource.CustomResourceDefinitions(groups)
 	if err != nil {
 		return nil, err

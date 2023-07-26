@@ -141,11 +141,11 @@ func (c Command) Execute() error {
 		return err
 	}
 
-	var groups []model.Group
+	var groups []*model.Group
 	for _, group := range c.Groups {
 		group := group // pike
 		c.initGroup(&group, descriptors)
-		groups = append(groups, group)
+		groups = append(groups, &group)
 	}
 
 	if err := c.generateGroup(groups, protoOpts, c.GroupOptions); err != nil {
@@ -153,7 +153,9 @@ func (c Command) Execute() error {
 	}
 
 	// replace group in Groups array with the group including generated fields
-	copy(c.Groups, groups)
+	for i, group := range groups {
+		c.Groups[i] = *group
+	}
 
 	for _, template := range c.TopLevelTemplates {
 		if err := c.generateTopLevelTemplates(template); err != nil {
@@ -237,7 +239,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 }
 
 func (c Command) generateGroup(
-	grps []model.Group,
+	grps []*model.Group,
 	protoOpts proto.Options,
 	groupOptions model.GroupOptions,
 ) error {
@@ -248,7 +250,7 @@ func (c Command) generateGroup(
 	}
 
 	for _, grp := range grps {
-		protoTypes, err := render.RenderProtoTypes(grp)
+		protoTypes, err := render.RenderProtoTypes(*grp)
 		if err != nil {
 			return err
 		}
@@ -257,7 +259,7 @@ func (c Command) generateGroup(
 			return err
 		}
 
-		apiTypes, err := render.RenderApiTypes(grp)
+		apiTypes, err := render.RenderApiTypes(*grp)
 		if err != nil {
 			return err
 		}
@@ -277,7 +279,7 @@ func (c Command) generateGroup(
 	}
 
 	for _, grp := range grps {
-		if err := render.KubeCodegen(grp); err != nil {
+		if err := render.KubeCodegen(*grp); err != nil {
 			return err
 		}
 	}

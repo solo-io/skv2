@@ -15,11 +15,11 @@ var _ = Describe("Crd", func() {
 
 	Describe("CRD gen", func() {
 		var (
-			grps []model.Group
+			grps []*model.Group
 		)
 
 		BeforeEach(func() {
-			grps = []model.Group{{
+			grps = []*model.Group{{
 				Resources: []model.Resource{
 					{
 						Kind: "kind",
