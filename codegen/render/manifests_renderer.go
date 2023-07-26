@@ -41,7 +41,7 @@ func RenderManifests(
 	appName, manifestDir, protoDir string,
 	protoOpts protoutil.Options,
 	groupOptions model.GroupOptions,
-	grps []*Group,
+	grps []Group,
 ) ([]OutFile, error) {
 	defaultManifestsRenderer := ManifestsRenderer{
 		AppName:     appName,
@@ -51,7 +51,7 @@ func RenderManifests(
 	return defaultManifestsRenderer.RenderManifests(grps, protoOpts, groupOptions)
 }
 
-func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
+func (r ManifestsRenderer) RenderManifests(grps []Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
 	// if !grp.RenderManifests {
 	// 	return nil, nil
 	// }
@@ -59,7 +59,7 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 	for _, grp := range grps {
 		if grp.RenderValidationSchemas {
 			var err error
-			oapiSchemas, err := generateOpenApi(*grp, r.ProtoDir, protoOpts, groupOptions)
+			oapiSchemas, err := generateOpenApi(grp, r.ProtoDir, protoOpts, groupOptions)
 			if err != nil {
 				return nil, err
 			}
@@ -67,7 +67,7 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 		}
 	}
 
-	grpsByG := make(map[string][]*Group)
+	grpsByG := make(map[string][]Group)
 	for _, grp := range grps {
 		grpsByG[grp.Group] = append(grpsByG[grp.Group], grp)
 	}
@@ -210,7 +210,7 @@ func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[stri
 	return unstructuredFields, nil
 }
 
-func SetVersionForObject(obj *apiextv1.CustomResourceDefinition, version string) {
+func SetVersionForObject(obj metav1.Object, version string) {
 	if version == "" {
 		return
 	}
@@ -276,7 +276,7 @@ func (r ManifestsRenderer) renderTemplatedManifest(appName, groupName string, ob
 	return files[0], nil
 }
 
-func (r ManifestsRenderer) createCrds(appName string, groups []*Group) ([]apiextv1.CustomResourceDefinition, error) {
+func (r ManifestsRenderer) createCrds(appName string, groups []Group) ([]apiextv1.CustomResourceDefinition, error) {
 	objs, err := kuberesource.CustomResourceDefinitions(groups)
 	if err != nil {
 		return nil, err
@@ -284,7 +284,7 @@ func (r ManifestsRenderer) createCrds(appName string, groups []*Group) ([]apiext
 
 	for i, obj := range objs {
 		// find the annotation of the manifest, and add to them
-		SetVersionForObject(&objs[i], groups[0].AddChartVersion)
+		SetVersionForObject(objs[i].GetObjectMeta(), groups[0].AddChartVersion)
 
 		labels := obj.GetLabels()
 		if labels == nil {

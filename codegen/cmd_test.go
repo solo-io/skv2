@@ -1514,6 +1514,7 @@ func helmTemplate(path string, values interface{}) []byte {
 		path,
 		"--values", helmValuesFile.Name(),
 	).CombinedOutput()
+
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), string(out))
 	return out
 }

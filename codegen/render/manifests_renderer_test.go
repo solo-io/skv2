@@ -53,11 +53,11 @@ var _ = Describe("ManifestsRenderer", func() {
 
 	Describe("CRD gen", func() {
 		var (
-			grp model.Group
+			grps []model.Group
 		)
 
 		BeforeEach(func() {
-			grp = model.Group{
+			grps = []model.Group{{
 				RenderManifests: true,
 				AddChartVersion: "1.0.0",
 				Resources: []model.Resource{
@@ -69,10 +69,13 @@ var _ = Describe("ManifestsRenderer", func() {
 								Message: &v1.AcrylicType{},
 							},
 						},
+						Stored: true,
 					},
-				},
+				}},
 			}
-			grp.Init()
+			for i := range grps {
+				grps[i].Init()
+			}
 		})
 		It("Renderse manifests with chart and spec hash", func() {
 
@@ -81,7 +84,7 @@ var _ = Describe("ManifestsRenderer", func() {
 				"appName", "manifestDir", "protoDir",
 				nil,
 				model.GroupOptions{},
-				grp,
+				grps,
 			)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(1))

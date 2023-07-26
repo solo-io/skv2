@@ -18,17 +18,18 @@ import (
 
 // Create CRDs for a group
 func CustomResourceDefinitions(
-	groups []*model.Group,
+	groups []model.Group,
 ) (objects []apiextv1.CustomResourceDefinition, err error) {
 	resourcesByKind := make(map[string][]model.Resource)
+	skipHashByKind := make(map[string]bool)
 	for _, group := range groups {
 		for _, resource := range group.Resources {
 			resourcesByKind[resource.Kind] = append(resourcesByKind[resource.Kind], resource)
+			skipHashByKind[resource.Kind] = skipHashByKind[resource.Kind] || resource.Group.SkipSpecHash
 		}
 	}
 
-	//objects = make([]apiextv1.CustomResourceDefinition, 0, len(resourcesByKind))
-	for _, resources := range resourcesByKind {
+	for kind, resources := range resourcesByKind {
 		validationSchemas := make(map[string]*apiextv1.CustomResourceValidation)
 		for _, resource := range resources {
 			var validationSchema *apiextv1.CustomResourceValidation
@@ -44,7 +45,7 @@ func CustomResourceDefinitions(
 			validationSchemas[resource.Group.String()] = validationSchema
 		}
 
-		objects = append(objects, *CustomResourceDefinition(resources, validationSchemas, true)) //group.SkipSpecHash))
+		objects = append(objects, *CustomResourceDefinition(resources, validationSchemas, skipHashByKind[kind]))
 	}
 	return objects, nil
 }
@@ -140,6 +141,9 @@ func CustomResourceDefinition(
 	kindLower := strings.ToLower(kind)
 
 	scope := apiextv1.NamespaceScoped
+	// TODO (dmitri-d) Should we check if all resources have the same scope
+	// bail if not?
+	// Same for ShortNames and Categories below
 	if resources[0].ClusterScoped {
 		scope = apiextv1.ClusterScoped
 	}

@@ -6,10 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/rotisserie/eris"
-	"k8s.io/utils/strings/slices"
 
 	protovendor "github.com/solo-io/anyvendor/pkg/proto"
 	"github.com/solo-io/skv2/codegen/metrics"
@@ -143,24 +141,19 @@ func (c Command) Execute() error {
 		return err
 	}
 
-	var groups []*model.Group
+	var groups []model.Group
 	for _, group := range c.Groups {
 		group := group // pike
-		groups = append(groups, &group)
-	}
-	for _, group := range groups {
-		group := group // pike
-		c.initGroup(group, descriptors)
+		c.initGroup(&group, descriptors)
+		groups = append(groups, group)
 	}
 
 	if err := c.generateGroup(groups, protoOpts, c.GroupOptions); err != nil {
 		return err
 	}
 
-	for i, group := range groups {
-		// replace group in Groups array with the group including generated fields
-		c.Groups[i] = *group
-	}
+	// replace group in Groups array with the group including generated fields
+	copy(c.Groups, groups)
 
 	for _, template := range c.TopLevelTemplates {
 		if err := c.generateTopLevelTemplates(template); err != nil {
@@ -244,7 +237,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 }
 
 func (c Command) generateGroup(
-	grps []*model.Group,
+	grps []model.Group,
 	protoOpts proto.Options,
 	groupOptions model.GroupOptions,
 ) error {
@@ -255,7 +248,7 @@ func (c Command) generateGroup(
 	}
 
 	for _, grp := range grps {
-		protoTypes, err := render.RenderProtoTypes(*grp)
+		protoTypes, err := render.RenderProtoTypes(grp)
 		if err != nil {
 			return err
 		}
@@ -264,7 +257,7 @@ func (c Command) generateGroup(
 			return err
 		}
 
-		apiTypes, err := render.RenderApiTypes(*grp)
+		apiTypes, err := render.RenderApiTypes(grp)
 		if err != nil {
 			return err
 		}
@@ -284,7 +277,7 @@ func (c Command) generateGroup(
 	}
 
 	for _, grp := range grps {
-		if err := render.KubeCodegen(*grp); err != nil {
+		if err := render.KubeCodegen(grp); err != nil {
 			return err
 		}
 	}
@@ -343,15 +336,14 @@ func (c Command) initGroup(
 					// default to the resource API Group name
 					matchingProtoPackage = resource.Group.Group
 				}
-				// TODO (dmitri-d): can we change protobuf package to contain version instead?
-				// for example, workspace.proto package is "admin.gloo.solo.io";
-				// can we change it to "admin.gloo.solo.io.v2"?
+				// TODO (dmitri-d): This assumes we only ever have a single message with a given name, and breaks when we
+				// have multiple versions of the same proto message.
+				// `go_package`` is not a reliable way to determine the package version, as it is not always set.
+				// protobuf path is not reliable either, as it is not always contains the version (see test/test_api.proto).
+				// A common approach is to include the version in the proto package name, perhaps we could adopt that?
+				// For example, workspace.proto package now is "admin.gloo.solo.io", it would change to
+				// "admin.gloo.solo.io.v2" with such an approach.
 				if fileDescriptor.GetPackage() == matchingProtoPackage {
-					path := strings.Split(fileDescriptor.GetName(), "/")
-					if !slices.Contains(path, resource.Group.Version) {
-						return false
-					}
-
 					if message := fileDescriptor.GetMessage(fieldType.Name); message != nil {
 						fieldType.Message = message
 						fieldType.GoPackage = fileDescriptor.GetOptions().GetGoPackage()
