@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	goyaml "gopkg.in/yaml.v3"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -1336,10 +1337,7 @@ var _ = Describe("Cmd", func() {
 			Expect(string(bytes)).To(ContainSubstring("description: OpenAPI gen test for recursive fields"))
 		})
 
-		// TODO (dmitri-d): this is flaky, as the ordering of generated CustomResourceDefinitions is unstable
-		// when the "Paint" CRD isn't the first in the list, the test fails.
-		// Can't remove "ClusterResource" either, as kube_crud_test and kube_multicluster_test depend on crds
-		// this suite.
+		// TODO (dmitri-d): kube_crud_test and kube_multicluster_test depend on crds in this suite.
 		It("generates google.protobuf.Value with no type", func() {
 			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
@@ -1348,8 +1346,16 @@ var _ = Describe("Cmd", func() {
 
 			bytes, err := ioutil.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
+			paintCrdYaml := ""
+			for _, crd := range strings.Split(string(bytes), "---") {
+				if strings.Contains(crd, "kind: Paint") {
+					paintCrdYaml = crd
+				}
+			}
+			Expect(paintCrdYaml).ToNot(BeEmpty())
+
 			generatedCrd := &v12.CustomResourceDefinition{}
-			Expect(yaml.Unmarshal(bytes, &generatedCrd)).NotTo(HaveOccurred())
+			Expect(yaml.Unmarshal([]byte(paintCrdYaml), &generatedCrd)).NotTo(HaveOccurred())
 			protobufValueField := generatedCrd.Spec.Versions[0].Schema.OpenAPIV3Schema.Properties["spec"].Properties["recursiveType"].Properties["protobufValue"]
 			// access the field to make sure it's not nil
 			Expect(protobufValueField.XPreserveUnknownFields).ToNot(BeNil())
