@@ -123,11 +123,6 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 		return err
 	}
 
-	// send us watch events
-	if err := ctl.Watch(source.Kind(r.mgr.GetCache(), r.resource), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
-		return err
-	}
-
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -137,6 +132,11 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 		if synced := r.mgr.GetCache().WaitForCacheSync(timeoutCtx); !synced {
 			return errors.Errorf("waiting for cache sync failed")
 		}
+	}
+
+	// send us watch events
+	if err := ctl.Watch(source.Kind(r.mgr.GetCache(), r.resource), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+		return err
 	}
 
 	return nil
