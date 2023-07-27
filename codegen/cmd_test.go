@@ -54,11 +54,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -133,6 +135,7 @@ var _ = Describe("Cmd", func() {
 								Name:      "KubernetesCluster",
 								GoPackage: "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1",
 							}},
+							Stored: true,
 						},
 					},
 					RenderManifests:  true,
@@ -171,11 +174,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -256,11 +261,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -375,11 +382,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -1195,11 +1204,13 @@ var _ = Describe("Cmd", func() {
 								Kind:   "Paint",
 								Spec:   Field{Type: Type{Name: "PaintSpec"}},
 								Status: &Field{Type: Type{Name: "PaintStatus"}},
+								Stored: true,
 							},
 							{
 								Kind:          "ClusterResource",
 								Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 								ClusterScoped: true,
+								Stored:        true,
 							},
 						},
 						RenderManifests:         true,
@@ -1315,7 +1326,7 @@ var _ = Describe("Cmd", func() {
 		})
 
 		It("can include field descriptions", func() {
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
@@ -1325,8 +1336,12 @@ var _ = Describe("Cmd", func() {
 			Expect(string(bytes)).To(ContainSubstring("description: OpenAPI gen test for recursive fields"))
 		})
 
+		// TODO (dmitri-d): this is flaky, as the ordering of generated CustomResourceDefinitions is unstable
+		// when the "Paint" CRD isn't the first in the list, the test fails.
+		// Can't remove "ClusterResource" either, as kube_crud_test and kube_multicluster_test depend on crds
+		// this suite.
 		It("generates google.protobuf.Value with no type", func() {
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
@@ -1334,7 +1349,7 @@ var _ = Describe("Cmd", func() {
 			bytes, err := ioutil.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
 			generatedCrd := &v12.CustomResourceDefinition{}
-			Expect(yaml.Unmarshal(bytes, generatedCrd)).NotTo(HaveOccurred())
+			Expect(yaml.Unmarshal(bytes, &generatedCrd)).NotTo(HaveOccurred())
 			protobufValueField := generatedCrd.Spec.Versions[0].Schema.OpenAPIV3Schema.Properties["spec"].Properties["recursiveType"].Properties["protobufValue"]
 			// access the field to make sure it's not nil
 			Expect(protobufValueField.XPreserveUnknownFields).ToNot(BeNil())
@@ -1346,7 +1361,7 @@ var _ = Describe("Cmd", func() {
 			// write this manifest to a different dir to avoid modifying the crd file from the
 			// above test, which other tests seem to depend on
 			cmd.ManifestRoot = "codegen/test/chart-no-desc"
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			cmd.Groups[0].SkipSchemaDescriptions = true
 

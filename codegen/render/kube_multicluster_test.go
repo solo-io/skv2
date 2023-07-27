@@ -40,6 +40,7 @@ func WithRemoteClusterContextDescribe(text string, body func()) bool {
 	return Describe(text, body)
 }
 
+// TODO (dmitri-d): Remove dependency of these tests on crds generated in cmd_test
 var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 	var (
 		ctx             context.Context
@@ -66,7 +67,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		for _, kubeContext := range []string{"", remoteContext} {
-			err = applyFile("things.test.io_v1_crds.yaml", "--context", kubeContext)
+			err = applyFile("things.test.io_crds.yaml", "--context", kubeContext)
 
 			Expect(err).NotTo(HaveOccurred())
 			cfg := test.MustConfig(kubeContext)
