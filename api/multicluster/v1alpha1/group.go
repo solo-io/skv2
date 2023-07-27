@@ -26,6 +26,7 @@ var Group = model.Group{
 					Name: "KubernetesClusterStatus",
 				},
 			},
+			Stored: true,
 		},
 	},
 	RenderManifests:         true,

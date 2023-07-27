@@ -5,24 +5,22 @@
 // Definitions for the Kubernetes Controllers
 package controller
 
-
-
 import (
 	"context"
 
-    things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
-    "github.com/pkg/errors"
-    "github.com/solo-io/skv2/pkg/ezkube"
-    "github.com/solo-io/skv2/pkg/reconcile"
-    "sigs.k8s.io/controller-runtime/pkg/manager"
-    "sigs.k8s.io/controller-runtime/pkg/predicate"
+	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Reconcile Upsert events for the Paint Resource.
 // implemented by the user
 type PaintReconciler interface {
-    ReconcilePaint(obj *things_test_io_v1.Paint) (reconcile.Result, error)
+	ReconcilePaint(obj *things_test_io_v1.Paint) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the Paint Resource.
@@ -30,117 +28,116 @@ type PaintReconciler interface {
 // before being deleted.
 // implemented by the user
 type PaintDeletionReconciler interface {
-    ReconcilePaintDeletion(req reconcile.Request) error
+	ReconcilePaintDeletion(req reconcile.Request) error
 }
 
 type PaintReconcilerFuncs struct {
-    OnReconcilePaint func(obj *things_test_io_v1.Paint) (reconcile.Result, error)
-    OnReconcilePaintDeletion func(req reconcile.Request) error
+	OnReconcilePaint         func(obj *things_test_io_v1.Paint) (reconcile.Result, error)
+	OnReconcilePaintDeletion func(req reconcile.Request) error
 }
 
 func (f *PaintReconcilerFuncs) ReconcilePaint(obj *things_test_io_v1.Paint) (reconcile.Result, error) {
-    if f.OnReconcilePaint == nil {
-        return reconcile.Result{}, nil
-    }
-    return f.OnReconcilePaint(obj)
+	if f.OnReconcilePaint == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcilePaint(obj)
 }
 
 func (f *PaintReconcilerFuncs) ReconcilePaintDeletion(req reconcile.Request) error {
-    if f.OnReconcilePaintDeletion == nil {
-        return nil
-    }
-    return f.OnReconcilePaintDeletion(req)
+	if f.OnReconcilePaintDeletion == nil {
+		return nil
+	}
+	return f.OnReconcilePaintDeletion(req)
 }
 
 // Reconcile and finalize the Paint Resource
 // implemented by the user
 type PaintFinalizer interface {
-    PaintReconciler
+	PaintReconciler
 
-    // name of the finalizer used by this handler.
-    // finalizer names should be unique for a single task
-    PaintFinalizerName() string
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	PaintFinalizerName() string
 
-    // finalize the object before it is deleted.
-    // Watchers created with a finalizing handler will a
-    FinalizePaint(obj *things_test_io_v1.Paint) error
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizePaint(obj *things_test_io_v1.Paint) error
 }
 
 type PaintReconcileLoop interface {
-    RunPaintReconciler(ctx context.Context, rec PaintReconciler, predicates ...predicate.Predicate) error
+	RunPaintReconciler(ctx context.Context, rec PaintReconciler, predicates ...predicate.Predicate) error
 }
 
 type paintReconcileLoop struct {
-    loop reconcile.Loop
+	loop reconcile.Loop
 }
 
 func NewPaintReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) PaintReconcileLoop {
-    return &paintReconcileLoop{
-    	// empty cluster indicates this reconciler is built for the local cluster
-        loop: reconcile.NewLoop(name, "", mgr, &things_test_io_v1.Paint{}, options),
-    }
+	return &paintReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &things_test_io_v1.Paint{}, options),
+	}
 }
 
 func (c *paintReconcileLoop) RunPaintReconciler(ctx context.Context, reconciler PaintReconciler, predicates ...predicate.Predicate) error {
-    genericReconciler := genericPaintReconciler{
-        reconciler: reconciler,
-    }
+	genericReconciler := genericPaintReconciler{
+		reconciler: reconciler,
+	}
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(PaintFinalizer); ok {
-        reconcilerWrapper = genericPaintFinalizer{
-            genericPaintReconciler: genericReconciler,
-            finalizingReconciler: finalizingReconciler,
-        }
-    } else {
-        reconcilerWrapper = genericReconciler
-    }
+		reconcilerWrapper = genericPaintFinalizer{
+			genericPaintReconciler: genericReconciler,
+			finalizingReconciler:   finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericPaintHandler implements a generic reconcile.Reconciler
 type genericPaintReconciler struct {
-    reconciler PaintReconciler
+	reconciler PaintReconciler
 }
 
 func (r genericPaintReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*things_test_io_v1.Paint)
-    if !ok {
-        return reconcile.Result{}, errors.Errorf("internal error: Paint handler received event for %T", object)
-    }
-    return r.reconciler.ReconcilePaint(obj)
+	obj, ok := object.(*things_test_io_v1.Paint)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: Paint handler received event for %T", object)
+	}
+	return r.reconciler.ReconcilePaint(obj)
 }
 
 func (r genericPaintReconciler) ReconcileDeletion(request reconcile.Request) error {
-    if deletionReconciler, ok := r.reconciler.(PaintDeletionReconciler); ok {
-        return deletionReconciler.ReconcilePaintDeletion(request)
-    }
-    return nil
+	if deletionReconciler, ok := r.reconciler.(PaintDeletionReconciler); ok {
+		return deletionReconciler.ReconcilePaintDeletion(request)
+	}
+	return nil
 }
 
 // genericPaintFinalizer implements a generic reconcile.FinalizingReconciler
 type genericPaintFinalizer struct {
-    genericPaintReconciler
-    finalizingReconciler PaintFinalizer
+	genericPaintReconciler
+	finalizingReconciler PaintFinalizer
 }
 
-
 func (r genericPaintFinalizer) FinalizerName() string {
-    return r.finalizingReconciler.PaintFinalizerName()
+	return r.finalizingReconciler.PaintFinalizerName()
 }
 
 func (r genericPaintFinalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*things_test_io_v1.Paint)
-    if !ok {
-        return errors.Errorf("internal error: Paint handler received event for %T", object)
-    }
-    return r.finalizingReconciler.FinalizePaint(obj)
+	obj, ok := object.(*things_test_io_v1.Paint)
+	if !ok {
+		return errors.Errorf("internal error: Paint handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizePaint(obj)
 }
 
 // Reconcile Upsert events for the ClusterResource Resource.
 // implemented by the user
 type ClusterResourceReconciler interface {
-    ReconcileClusterResource(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
+	ReconcileClusterResource(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the ClusterResource Resource.
@@ -148,109 +145,108 @@ type ClusterResourceReconciler interface {
 // before being deleted.
 // implemented by the user
 type ClusterResourceDeletionReconciler interface {
-    ReconcileClusterResourceDeletion(req reconcile.Request) error
+	ReconcileClusterResourceDeletion(req reconcile.Request) error
 }
 
 type ClusterResourceReconcilerFuncs struct {
-    OnReconcileClusterResource func(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
-    OnReconcileClusterResourceDeletion func(req reconcile.Request) error
+	OnReconcileClusterResource         func(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error)
+	OnReconcileClusterResourceDeletion func(req reconcile.Request) error
 }
 
 func (f *ClusterResourceReconcilerFuncs) ReconcileClusterResource(obj *things_test_io_v1.ClusterResource) (reconcile.Result, error) {
-    if f.OnReconcileClusterResource == nil {
-        return reconcile.Result{}, nil
-    }
-    return f.OnReconcileClusterResource(obj)
+	if f.OnReconcileClusterResource == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileClusterResource(obj)
 }
 
 func (f *ClusterResourceReconcilerFuncs) ReconcileClusterResourceDeletion(req reconcile.Request) error {
-    if f.OnReconcileClusterResourceDeletion == nil {
-        return nil
-    }
-    return f.OnReconcileClusterResourceDeletion(req)
+	if f.OnReconcileClusterResourceDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileClusterResourceDeletion(req)
 }
 
 // Reconcile and finalize the ClusterResource Resource
 // implemented by the user
 type ClusterResourceFinalizer interface {
-    ClusterResourceReconciler
+	ClusterResourceReconciler
 
-    // name of the finalizer used by this handler.
-    // finalizer names should be unique for a single task
-    ClusterResourceFinalizerName() string
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	ClusterResourceFinalizerName() string
 
-    // finalize the object before it is deleted.
-    // Watchers created with a finalizing handler will a
-    FinalizeClusterResource(obj *things_test_io_v1.ClusterResource) error
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeClusterResource(obj *things_test_io_v1.ClusterResource) error
 }
 
 type ClusterResourceReconcileLoop interface {
-    RunClusterResourceReconciler(ctx context.Context, rec ClusterResourceReconciler, predicates ...predicate.Predicate) error
+	RunClusterResourceReconciler(ctx context.Context, rec ClusterResourceReconciler, predicates ...predicate.Predicate) error
 }
 
 type clusterResourceReconcileLoop struct {
-    loop reconcile.Loop
+	loop reconcile.Loop
 }
 
 func NewClusterResourceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ClusterResourceReconcileLoop {
-    return &clusterResourceReconcileLoop{
-    	// empty cluster indicates this reconciler is built for the local cluster
-        loop: reconcile.NewLoop(name, "", mgr, &things_test_io_v1.ClusterResource{}, options),
-    }
+	return &clusterResourceReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &things_test_io_v1.ClusterResource{}, options),
+	}
 }
 
 func (c *clusterResourceReconcileLoop) RunClusterResourceReconciler(ctx context.Context, reconciler ClusterResourceReconciler, predicates ...predicate.Predicate) error {
-    genericReconciler := genericClusterResourceReconciler{
-        reconciler: reconciler,
-    }
+	genericReconciler := genericClusterResourceReconciler{
+		reconciler: reconciler,
+	}
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(ClusterResourceFinalizer); ok {
-        reconcilerWrapper = genericClusterResourceFinalizer{
-            genericClusterResourceReconciler: genericReconciler,
-            finalizingReconciler: finalizingReconciler,
-        }
-    } else {
-        reconcilerWrapper = genericReconciler
-    }
+		reconcilerWrapper = genericClusterResourceFinalizer{
+			genericClusterResourceReconciler: genericReconciler,
+			finalizingReconciler:             finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericClusterResourceHandler implements a generic reconcile.Reconciler
 type genericClusterResourceReconciler struct {
-    reconciler ClusterResourceReconciler
+	reconciler ClusterResourceReconciler
 }
 
 func (r genericClusterResourceReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*things_test_io_v1.ClusterResource)
-    if !ok {
-        return reconcile.Result{}, errors.Errorf("internal error: ClusterResource handler received event for %T", object)
-    }
-    return r.reconciler.ReconcileClusterResource(obj)
+	obj, ok := object.(*things_test_io_v1.ClusterResource)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: ClusterResource handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileClusterResource(obj)
 }
 
 func (r genericClusterResourceReconciler) ReconcileDeletion(request reconcile.Request) error {
-    if deletionReconciler, ok := r.reconciler.(ClusterResourceDeletionReconciler); ok {
-        return deletionReconciler.ReconcileClusterResourceDeletion(request)
-    }
-    return nil
+	if deletionReconciler, ok := r.reconciler.(ClusterResourceDeletionReconciler); ok {
+		return deletionReconciler.ReconcileClusterResourceDeletion(request)
+	}
+	return nil
 }
 
 // genericClusterResourceFinalizer implements a generic reconcile.FinalizingReconciler
 type genericClusterResourceFinalizer struct {
-    genericClusterResourceReconciler
-    finalizingReconciler ClusterResourceFinalizer
+	genericClusterResourceReconciler
+	finalizingReconciler ClusterResourceFinalizer
 }
 
-
 func (r genericClusterResourceFinalizer) FinalizerName() string {
-    return r.finalizingReconciler.ClusterResourceFinalizerName()
+	return r.finalizingReconciler.ClusterResourceFinalizerName()
 }
 
 func (r genericClusterResourceFinalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*things_test_io_v1.ClusterResource)
-    if !ok {
-        return errors.Errorf("internal error: ClusterResource handler received event for %T", object)
-    }
-    return r.finalizingReconciler.FinalizeClusterResource(obj)
+	obj, ok := object.(*things_test_io_v1.ClusterResource)
+	if !ok {
+		return errors.Errorf("internal error: ClusterResource handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeClusterResource(obj)
 }
