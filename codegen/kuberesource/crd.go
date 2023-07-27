@@ -2,6 +2,7 @@ package kuberesource
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/mitchellh/hashstructure"
@@ -31,6 +32,9 @@ func CustomResourceDefinitions(
 
 	for kind, resources := range resourcesByKind {
 		validationSchemas := make(map[string]*apiextv1.CustomResourceValidation)
+		resources := resources
+		// make version ordering deterministic
+		sort.Slice(resources, func(i, j int) bool { return resources[i].Version < resources[j].Version })
 		for _, resource := range resources {
 			var validationSchema *apiextv1.CustomResourceValidation
 			validationSchema, err = constructValidationSchema(
@@ -142,7 +146,7 @@ func CustomResourceDefinition(
 
 	scope := apiextv1.NamespaceScoped
 	// TODO (dmitri-d) Should we check if all resources have the same scope
-	// bail if not?
+	// and bail if not?
 	// Same for ShortNames and Categories below
 	if resources[0].ClusterScoped {
 		scope = apiextv1.ClusterScoped

@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    crd.solo.io/specHash: 52f9159d46759d37
+    crd.solo.io/specHash: 6d9fb6fb4e2b4cf1
   labels:
     app: ""
     app.kubernetes.io/name: ""
@@ -91,6 +91,7 @@ spec:
                     type: boolean
                 type: object
               recursiveType:
+                description: OpenAPI gen test for recursive fields
                 properties:
                   protobufValue:
                     x-kubernetes-preserve-unknown-fields: true
@@ -98,6 +99,9 @@ spec:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
                   recursiveFieldOutermostScope:
+                    description: |-
+                      Ensure that FieldOptions can be defined using package name resolution that starts from the
+                      outermost scope: https://developers.google.com/protocol-buffers/docs/proto3#packages_and_name_resolution
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
                   repeatedRecursiveField:
@@ -129,7 +133,7 @@ spec:
             type: object
         type: object
     served: true
-    storage: true
+    storage: false
     subresources:
       status: {}
 
@@ -138,7 +142,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    crd.solo.io/specHash: a7f6c51daca2a86e
+    crd.solo.io/specHash: 4e5d137cbc4ab67f
   labels:
     app: ""
     app.kubernetes.io/name: ""
@@ -163,5 +167,5 @@ spec:
             type: object
         type: object
     served: true
-    storage: true
+    storage: false
     subresources: {}
