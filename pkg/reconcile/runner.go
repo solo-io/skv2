@@ -3,6 +3,7 @@ package reconcile
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/rotisserie/eris"
 
@@ -127,10 +128,13 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 		return err
 	}
 
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
 	// Only wait for cache sync if specified in options
 	if r.options.WaitForCacheSync {
 		rec.logger.V(1).Info("waiting for cache sync...")
-		if synced := r.mgr.GetCache().WaitForCacheSync(ctx); !synced {
+		if synced := r.mgr.GetCache().WaitForCacheSync(timeoutCtx); !synced {
 			return errors.Errorf("waiting for cache sync failed")
 		}
 	}
