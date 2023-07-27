@@ -52,12 +52,15 @@ func RenderManifests(
 }
 
 func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
-	// if !grp.RenderManifests {
-	// 	return nil, nil
-	// }
+	grpsByGroupName := make(map[string][]*Group)
+	shouldRenderGroups := make(map[string]bool)
+	for _, grp := range grps {
+		grpsByGroupName[grp.Group] = append(grpsByGroupName[grp.Group], grp)
+		shouldRenderGroups[grp.Group] = shouldRenderGroups[grp.Group] || grp.RenderManifests
+	}
 
 	for _, grp := range grps {
-		if grp.RenderValidationSchemas {
+		if grp.RenderValidationSchemas && shouldRenderGroups[grp.Group] {
 			var err error
 			oapiSchemas, err := generateOpenApi(*grp, r.ProtoDir, protoOpts, groupOptions)
 			if err != nil {
@@ -67,14 +70,13 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 		}
 	}
 
-	grpsByGroupName := make(map[string][]*Group)
-	for _, grp := range grps {
-		grpsByGroupName[grp.Group] = append(grpsByGroupName[grp.Group], grp)
-	}
-
 	var renderedFiles []OutFile
 
 	for groupName, selectedGrps := range grpsByGroupName {
+		if !shouldRenderGroups[groupName] {
+			continue
+		}
+
 		crds, err := r.createCrds(r.AppName, selectedGrps)
 		if err != nil {
 			return nil, err
