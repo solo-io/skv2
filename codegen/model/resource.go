@@ -115,9 +115,10 @@ type Group struct {
 	// Some resources use pointer slices for the Items field.
 	PointerSlices bool `default:"false"`
 
-	// true if this should not be considered "experimental"
-	// even if the Version string contains "alpha"
-	Grandfathered bool
+	// Set to true to skip rendering of conditional loading logic
+	// for CRDs containing alpha-versioned resources.
+	// Used by codegen/templates/manifests/crd.yamltmpl
+	SkipConditionalCRDLoading bool
 
 	// Skip generation of crd manifests that live in crd/ directory of a chart
 	SkipCRDManifest bool

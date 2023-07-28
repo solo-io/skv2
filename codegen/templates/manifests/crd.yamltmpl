@@ -1,6 +1,6 @@
 [[- range $crd := .Crds -]]
-[[- if and (and (lt (len $crd.Spec.Versions) 2) (string_contains (index $crd.Spec.Versions 0).Name "alpha")) (should_not_skip $crd.Spec.Group (index $crd.Spec.Versions 0).Name $.ShouldSkip) ]]
-{{- if has "[[ $crd.GetName ]]/[[ (index $crd.Spec.Versions 0).Name ]]" $.Values.enabledExperimentalApi }}
+[[- if render_conditional_crd_template $crd (index $crd.Spec.Versions 0).Name $.ShouldSkip ]]
+{{- if has "[[ $crd.GetName ]]/[[ (index $crd.Spec.Versions 0).Name ]]" $.Values.[[ $.EnabledAlphaApiFlagName ]] }}
 [[- end ]]
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -14,16 +14,16 @@ spec:
   scope: [[ $crd.Spec.Scope ]]
   versions:
   [[- range $version := $crd.Spec.Versions ]]
-  [[- if and (and (gt (len $crd.Spec.Versions) 1) (string_contains $version.Name "alpha")) (should_not_skip $crd.Spec.Group $version.Name $.ShouldSkip) ]]
-  {{- if has "[[ $crd.GetName ]]/[[ $version.Name ]]" $.Values.enabledExperimentalApi }}
+  [[- if render_conditional_crd_template $crd $version.Name $.ShouldSkip ]]
+  {{- if has "[[ $crd.GetName ]]/[[ $version.Name ]]" $.Values.[[ $.EnabledAlphaApiFlagName ]] }}
   [[- end ]]
   -
   [[- $version | toYaml | indent 4 | trimPrefix "   " ]]
-  [[- if and (and (gt (len $crd.Spec.Versions) 1) (string_contains $version.Name "alpha")) (should_not_skip $crd.Spec.Group $version.Name $.ShouldSkip) ]]
+  [[- if render_conditional_crd_template $crd $version.Name $.ShouldSkip ]]
   {{- end }}
   [[- end ]]
   [[- end ]]
-[[- if and (and (lt (len $crd.Spec.Versions) 2) (string_contains (index $crd.Spec.Versions 0).Name "alpha")) (should_not_skip $crd.Spec.Group (index $crd.Spec.Versions 0).Name $.ShouldSkip) ]]
+[[- if render_conditional_crd_template $crd (index $crd.Spec.Versions 0).Name $.ShouldSkip ]]
 {{- end  }}
 [[- end ]]
 ---

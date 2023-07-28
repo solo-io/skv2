@@ -84,7 +84,7 @@ var _ = Describe("ManifestsRenderer", func() {
 
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir",
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -132,7 +132,7 @@ var _ = Describe("ManifestsRenderer", func() {
 
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir",
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -158,9 +158,9 @@ var _ = Describe("ManifestsRenderer", func() {
 					Group:   "things.test.io",
 					Version: "v1alpha1",
 				},
-				RenderManifests: true,
-				AddChartVersion: "1.0.0",
-				Grandfathered:   true,
+				RenderManifests:           true,
+				AddChartVersion:           "1.0.0",
+				SkipConditionalCRDLoading: true,
 				Resources: []model.Resource{
 					{
 						Kind: "kind",
@@ -181,7 +181,7 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renders manifests without template", func() {
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir",
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -243,9 +243,9 @@ var _ = Describe("ManifestsRenderer", func() {
 						Group:   "things.test.io",
 						Version: "v1alpha1",
 					},
-					RenderManifests: true,
-					AddChartVersion: "1.0.0",
-					Grandfathered:   true,
+					RenderManifests:           true,
+					AddChartVersion:           "1.0.0",
+					SkipConditionalCRDLoading: true,
 					Resources: []model.Resource{
 						{
 							Kind: "kind",
@@ -267,7 +267,7 @@ var _ = Describe("ManifestsRenderer", func() {
 
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir",
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
 				nil,
 				model.GroupOptions{},
 				grps,

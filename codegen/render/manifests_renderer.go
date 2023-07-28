@@ -35,23 +35,28 @@ type ManifestsRenderer struct {
 	ResourceFuncs map[OutFile]MakeResourceFunc
 	ManifestDir   string
 	ProtoDir      string
+	// the name of the flag to pass the list of enabled alpha-level crds
+	// used in codegen/templates/manifests/crd.yamltmpl
+	EnabledAlphaApiFlagName string
 }
 
 type templateArgs struct {
-	Crds       []apiextv1.CustomResourceDefinition
-	ShouldSkip map[string]bool
+	Crds                    []apiextv1.CustomResourceDefinition
+	ShouldSkip              map[string]bool
+	EnabledAlphaApiFlagName string
 }
 
 func RenderManifests(
-	appName, manifestDir, protoDir string,
+	appName, manifestDir, protoDir, enabledAlphaApiFlagName string,
 	protoOpts protoutil.Options,
 	groupOptions model.GroupOptions,
 	grps []*Group,
 ) ([]OutFile, error) {
 	defaultManifestsRenderer := ManifestsRenderer{
-		AppName:     appName,
-		ManifestDir: manifestDir,
-		ProtoDir:    protoDir,
+		AppName:                 appName,
+		ManifestDir:             manifestDir,
+		ProtoDir:                protoDir,
+		EnabledAlphaApiFlagName: enabledAlphaApiFlagName,
 	}
 	return defaultManifestsRenderer.RenderManifests(grps, protoOpts, groupOptions)
 }
@@ -65,7 +70,7 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 	for _, grp := range grps {
 		grpsByGroupName[grp.Group] = append(grpsByGroupName[grp.Group], grp)
 		shouldRenderGroups[grp.Group] = shouldRenderGroups[grp.Group] || grp.RenderManifests
-		grandfatheredGroups[grp.GroupVersion.String()] = grandfatheredGroups[grp.GroupVersion.String()] || grp.Grandfathered
+		grandfatheredGroups[grp.GroupVersion.String()] = grandfatheredGroups[grp.GroupVersion.String()] || grp.SkipConditionalCRDLoading
 		shouldSkipCRDManifest[grp.Group] =
 			shouldSkipCRDManifest[grp.Group] || grp.SkipCRDManifest
 		shouldSkipTemplatedCRDManifest[grp.Group] =
@@ -288,9 +293,10 @@ func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	templatesToRender := inputTemplates{
 		"manifests/crd.yamltmpl": outFile,
 	}
+	// validate that templates will render ok
 	files, err := defaultManifestRenderer.renderCoreTemplates(
 		templatesToRender,
-		templateArgs{Crds: objs, ShouldSkip: grandfatheredGroups})
+		templateArgs{Crds: objs, ShouldSkip: grandfatheredGroups, EnabledAlphaApiFlagName: r.EnabledAlphaApiFlagName})
 	if err != nil {
 		return OutFile{}, err
 	}
