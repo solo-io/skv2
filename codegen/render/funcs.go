@@ -133,8 +133,7 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		"opVar": opVar,
 
 		"should_not_skip": func(group, version string, skips map[string]bool) bool {
-			_, ok := skips[group+"/"+version]
-			return !ok
+			return !skips[group+"/"+version]
 		},
 	}
 

@@ -37,4 +37,5 @@ var Group = model.Group{
 	MockgenDirective:        true,
 	ApiRoot:                 "pkg/api",
 	CustomTemplates:         contrib.AllGroupCustomTemplates,
+	Grandfathered:           true,
 }
