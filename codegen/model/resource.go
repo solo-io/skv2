@@ -183,8 +183,15 @@ type Resource struct {
 	// If enabled, the unmarshal will NOT allow unknown fields.
 	StrictUnmarshal bool
 
+	// Corresponds to CRD's versions.storage field
+	// Only one version of a resource can be marked as "stored"
+	// Set to false by default
+	// See https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/custom-resource-definition-v1/#CustomResourceDefinitionSpec
 	Stored bool
 
+	// Corresponds to CRD's versions.deprecated field
+	// Set to false by default
+	// See https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/custom-resource-definition-v1/#CustomResourceDefinitionSpec
 	Deprecated bool
 }
 

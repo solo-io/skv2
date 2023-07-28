@@ -148,7 +148,7 @@ func (c Command) Execute() error {
 		groups = append(groups, &group)
 	}
 
-	if err := c.generateGroup(groups, protoOpts, c.GroupOptions); err != nil {
+	if err := c.generateGroups(groups, protoOpts, c.GroupOptions); err != nil {
 		return err
 	}
 
@@ -238,7 +238,7 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 	return descriptors, nil
 }
 
-func (c Command) generateGroup(
+func (c Command) generateGroups(
 	grps []*model.Group,
 	protoOpts proto.Options,
 	groupOptions model.GroupOptions,

@@ -294,6 +294,8 @@ func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	if err != nil {
 		return OutFile{}, err
 	}
+	// if we got here there's one item in []files,
+	// as we only rendered one template and there were no errors
 	return files[0], nil
 }
 

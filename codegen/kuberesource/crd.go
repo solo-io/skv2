@@ -147,24 +147,20 @@ func validateCRDResources(resources []model.Resource) error {
 		return nil
 	}
 
-	previousScope := resources[0].ClusterScoped
-	previousShortName := resources[0].ShortNames
-	previousCategories := resources[0].Categories
+	scope := resources[0].ClusterScoped
+	shortNames := resources[0].ShortNames
+	categories := resources[0].Categories
 
 	for i := 1; i < len(resources); i++ {
-		if resources[i].ClusterScoped != previousScope {
+		if resources[i].ClusterScoped != scope {
 			return fmt.Errorf("mismatched 'currentScope' in versions of CRD for resource kind %s", resources[i].Kind)
 		}
-		if !cmp.Equal(resources[i].ShortNames, previousShortName) {
+		if !cmp.Equal(resources[i].ShortNames, shortNames) {
 			return fmt.Errorf("mismatched 'ShortNames' in versions of CRD for resource kind %s", resources[i].Kind)
 		}
-		if !cmp.Equal(resources[i].Categories, previousCategories) {
+		if !cmp.Equal(resources[i].Categories, categories) {
 			return fmt.Errorf("mismatched 'Categories' in versions of CRD for resource kind %s", resources[i].Kind)
 		}
-
-		previousScope = resources[i].ClusterScoped
-		previousShortName = resources[i].ShortNames
-		previousCategories = resources[i].Categories
 	}
 
 	return nil
