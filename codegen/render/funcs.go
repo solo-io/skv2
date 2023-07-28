@@ -131,6 +131,11 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		"containerConfigs": containerConfigs,
 
 		"opVar": opVar,
+
+		"should_not_skip": func(group, version string, skips map[string]bool) bool {
+			_, ok := skips[group+"/"+version]
+			return !ok
+		},
 	}
 
 	for k, v := range skv2Funcs {

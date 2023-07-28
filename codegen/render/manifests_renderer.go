@@ -37,6 +37,11 @@ type ManifestsRenderer struct {
 	ProtoDir      string
 }
 
+type templateArgs struct {
+	Crds       []apiextv1.CustomResourceDefinition
+	ShouldSkip map[string]bool
+}
+
 func RenderManifests(
 	appName, manifestDir, protoDir string,
 	protoOpts protoutil.Options,
@@ -54,9 +59,13 @@ func RenderManifests(
 func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
 	grpsByGroupName := make(map[string][]*Group)
 	shouldRenderGroups := make(map[string]bool)
+	grandfatheredGroups := make(map[string]bool)
 	for _, grp := range grps {
 		grpsByGroupName[grp.Group] = append(grpsByGroupName[grp.Group], grp)
 		shouldRenderGroups[grp.Group] = shouldRenderGroups[grp.Group] || grp.RenderManifests
+		if grp.Grandfathered {
+			grandfatheredGroups[grp.GroupVersion.String()] = true
+		}
 	}
 
 	for _, grp := range grps {
@@ -88,7 +97,7 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 		}
 		renderedFiles = append(renderedFiles, out)
 
-		out, err = r.renderTemplatedManifest(r.AppName, groupName, crds)
+		out, err = r.renderTemplatedManifest(r.AppName, groupName, crds, grandfatheredGroups)
 		if err != nil {
 			return nil, err
 		}
@@ -257,7 +266,10 @@ func (r ManifestsRenderer) renderLegacyManifest(appName, groupName string, objs 
 	return outFile, nil
 }
 
-func (r ManifestsRenderer) renderTemplatedManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
+func (r ManifestsRenderer) renderTemplatedManifest(appName, groupName string,
+	objs []apiextv1.CustomResourceDefinition,
+	grandfatheredGroups map[string]bool) (OutFile, error) {
+
 	renderer := DefaultTemplateRenderer
 
 	// when rendering helm charts, we need
@@ -273,7 +285,9 @@ func (r ManifestsRenderer) renderTemplatedManifest(appName, groupName string, ob
 	templatesToRender := inputTemplates{
 		"manifests/crd.yamltmpl": outFile,
 	}
-	files, err := defaultManifestRenderer.renderCoreTemplates(templatesToRender, objs)
+	files, err := defaultManifestRenderer.renderCoreTemplates(
+		templatesToRender,
+		templateArgs{Crds: objs, ShouldSkip: grandfatheredGroups})
 	if err != nil {
 		return OutFile{}, err
 	}
