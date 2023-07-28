@@ -36,22 +36,12 @@ func CustomResourceDefinitions(
 	kinds := maps.Keys(resourcesByKind)
 	sort.Strings(kinds)
 	for _, kind := range kinds {
-		validationSchemas := make(map[string]*apiextv1.CustomResourceValidation)
 		resources := resourcesByKind[kind]
 		// make version ordering deterministic
 		sort.Slice(resources, func(i, j int) bool { return resources[i].Version < resources[j].Version })
-		for _, resource := range resources {
-			var validationSchema *apiextv1.CustomResourceValidation
-			validationSchema, err = constructValidationSchema(
-				resource.Group.RenderValidationSchemas,
-				resource,
-				resource.Group.OpenApiSchemas,
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			validationSchemas[resource.Group.String()] = validationSchema
+		validationSchemas, err := constructValidationSchemas(resources)
+		if err != nil {
+			return nil, err
 		}
 
 		crd, err := CustomResourceDefinition(resources, validationSchemas, skipHashByKind[kind])
@@ -61,6 +51,24 @@ func CustomResourceDefinitions(
 		objects = append(objects, *crd)
 	}
 	return objects, nil
+}
+
+func constructValidationSchemas(resources []model.Resource) (map[string]*apiextv1.CustomResourceValidation, error) {
+	validationSchemas := make(map[string]*apiextv1.CustomResourceValidation)
+	for _, resource := range resources {
+		var validationSchema *apiextv1.CustomResourceValidation
+		validationSchema, err := constructValidationSchema(
+			resource.Group.RenderValidationSchemas,
+			resource,
+			resource.Group.OpenApiSchemas,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		validationSchemas[resource.Group.String()] = validationSchema
+	}
+	return validationSchemas, nil
 }
 
 func constructValidationSchema(
