@@ -4,6 +4,39 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
+    crd.solo.io/specHash: a7f6c51daca2a86e
+  labels:
+    app: ""
+    app.kubernetes.io/name: ""
+  name: clusterresources.things.test.io
+spec:
+  group: things.test.io
+  names:
+    kind: ClusterResource
+    listKind: ClusterResourceList
+    plural: clusterresources
+    singular: clusterresource
+  scope: Cluster
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              imported:
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
     crd.solo.io/specHash: 52f9159d46759d37
   labels:
     app: ""
@@ -132,36 +165,3 @@ spec:
     storage: true
     subresources:
       status: {}
-
----
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  annotations:
-    crd.solo.io/specHash: a7f6c51daca2a86e
-  labels:
-    app: ""
-    app.kubernetes.io/name: ""
-  name: clusterresources.things.test.io
-spec:
-  group: things.test.io
-  names:
-    kind: ClusterResource
-    listKind: ClusterResourceList
-    plural: clusterresources
-    singular: clusterresource
-  scope: Cluster
-  versions:
-  - name: v1
-    schema:
-      openAPIV3Schema:
-        properties:
-          spec:
-            properties:
-              imported:
-                type: string
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources: {}

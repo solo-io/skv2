@@ -57,9 +57,7 @@ var _ = Describe("Crd", func() {
 			Expect(o).To(HaveLen(2))
 			// note: we intentionally provide the "b6ec737002f7d02e" hash in the test, as it shouldn't change
 			// between runs.
-			hash0 := o[0].GetAnnotations()[crdutils.CRDSpecHashKey] == "b6ec737002f7d02e"
-			hash1 := o[1].GetAnnotations()[crdutils.CRDSpecHashKey] == "b6ec737002f7d02e"
-			Expect(hash0 || hash1).To(BeTrue())
+			Expect(o[0].GetAnnotations()).To(HaveKeyWithValue(crdutils.CRDSpecHashKey, "b6ec737002f7d02e"))
 		})
 		It("should not generate spec hash", func() {
 			grps[0].SkipSpecHash = true

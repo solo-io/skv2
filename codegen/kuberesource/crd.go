@@ -8,6 +8,7 @@ import (
 	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 	"github.com/solo-io/skv2/pkg/crdutils"
+	"golang.org/x/exp/maps"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/codegen/model"
@@ -30,9 +31,12 @@ func CustomResourceDefinitions(
 		}
 	}
 
-	for kind, resources := range resourcesByKind {
+	// Make ordering of crds in a group deterministic
+	kinds := maps.Keys(resourcesByKind)
+	sort.Strings(kinds)
+	for _, kind := range kinds {
 		validationSchemas := make(map[string]*apiextv1.CustomResourceValidation)
-		resources := resources
+		resources := resourcesByKind[kind]
 		// make version ordering deterministic
 		sort.Slice(resources, func(i, j int) bool { return resources[i].Version < resources[j].Version })
 		for _, resource := range resources {
