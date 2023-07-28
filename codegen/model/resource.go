@@ -118,6 +118,12 @@ type Group struct {
 	// true if this should not be considered "experimental"
 	// even if the Version string contains "alpha"
 	Grandfathered bool
+
+	// Skip generation of crd manifests that live in crd/ directory of a chart
+	SkipCRDManifest bool
+
+	// Skip generation of templated crd manifests that live in templates/ dir of a chart
+	SkipTemplatedCRDManifest bool
 }
 
 type GroupOptions struct {

@@ -1,8 +1,11 @@
 package kuberesource_test
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
@@ -83,4 +86,87 @@ var _ = Describe("Crd", func() {
 
 	})
 
+	Describe("CRD gen with errors", func() {
+		It("should return an error when scopes are mismatched", func() {
+			resources := []model.Resource{
+				{
+					Kind: "kind",
+					Spec: model.Field{
+						Type: model.Type{
+							Name:    "test",
+							Message: &v1.AcrylicType{},
+						},
+					},
+					ClusterScoped: true,
+				},
+				{
+					Kind: "kind",
+					Spec: model.Field{
+						Type: model.Type{
+							Name:    "test",
+							Message: &v1.PaintColor{},
+						},
+					},
+					ClusterScoped: false,
+				},
+			}
+
+			_, err := CustomResourceDefinition(resources, map[string]*apiextv1.CustomResourceValidation{}, false)
+			Expect(err).To(Equal(fmt.Errorf("mismatched 'currentScope' in versions of CRD for resource kind kind")))
+		})
+		It("should return an error when ShortNames are mismatched", func() {
+			resources := []model.Resource{
+				{
+					Kind: "kind",
+					Spec: model.Field{
+						Type: model.Type{
+							Name:    "test",
+							Message: &v1.AcrylicType{},
+						},
+					},
+					ShortNames: []string{"name1", "name2"},
+				},
+				{
+					Kind: "kind",
+					Spec: model.Field{
+						Type: model.Type{
+							Name:    "test",
+							Message: &v1.PaintColor{},
+						},
+					},
+					ShortNames: []string{"name2", "name3"},
+				},
+			}
+
+			_, err := CustomResourceDefinition(resources, map[string]*apiextv1.CustomResourceValidation{}, false)
+			Expect(err).To(Equal(fmt.Errorf("mismatched 'ShortNames' in versions of CRD for resource kind kind")))
+		})
+		It("should return an error when Categories are mismatched", func() {
+			resources := []model.Resource{
+				{
+					Kind: "kind",
+					Spec: model.Field{
+						Type: model.Type{
+							Name:    "test",
+							Message: &v1.AcrylicType{},
+						},
+					},
+					Categories: []string{"cat1", "cat2"},
+				},
+				{
+					Kind: "kind",
+					Spec: model.Field{
+						Type: model.Type{
+							Name:    "test",
+							Message: &v1.PaintColor{},
+						},
+					},
+					Categories: []string{"cat2", "cat3"},
+				},
+			}
+
+			_, err := CustomResourceDefinition(resources, map[string]*apiextv1.CustomResourceValidation{}, false)
+			Expect(err).To(Equal(fmt.Errorf("mismatched 'Categories' in versions of CRD for resource kind kind")))
+		})
+	})
 })

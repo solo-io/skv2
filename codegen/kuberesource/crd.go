@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 	"github.com/solo-io/skv2/pkg/crdutils"
@@ -53,7 +54,11 @@ func CustomResourceDefinitions(
 			validationSchemas[resource.Group.String()] = validationSchema
 		}
 
-		objects = append(objects, *CustomResourceDefinition(resources, validationSchemas, skipHashByKind[kind]))
+		crd, err := CustomResourceDefinition(resources, validationSchemas, skipHashByKind[kind])
+		if err != nil {
+			return nil, err
+		}
+		objects = append(objects, *crd)
 	}
 	return objects, nil
 }
@@ -137,11 +142,44 @@ func validateStructural(s *apiextv1.JSONSchemaProps) error {
 	return nil
 }
 
+func validateCRDResources(resources []model.Resource) error {
+	if len(resources) < 2 {
+		return nil
+	}
+
+	previousScope := resources[0].ClusterScoped
+	previousShortName := resources[0].ShortNames
+	previousCategories := resources[0].Categories
+
+	for i := 1; i < len(resources); i++ {
+		if resources[i].ClusterScoped != previousScope {
+			return fmt.Errorf("mismatched 'currentScope' in versions of CRD for resource kind %s", resources[i].Kind)
+		}
+		if !cmp.Equal(resources[i].ShortNames, previousShortName) {
+			return fmt.Errorf("mismatched 'ShortNames' in versions of CRD for resource kind %s", resources[i].Kind)
+		}
+		if !cmp.Equal(resources[i].Categories, previousCategories) {
+			return fmt.Errorf("mismatched 'Categories' in versions of CRD for resource kind %s", resources[i].Kind)
+		}
+
+		previousScope = resources[i].ClusterScoped
+		previousShortName = resources[i].ShortNames
+		previousCategories = resources[i].Categories
+	}
+
+	return nil
+}
+
 func CustomResourceDefinition(
 	resources []model.Resource,
 	validationSchemas map[string]*apiextv1.CustomResourceValidation,
 	withoutSpecHash bool,
-) *apiextv1.CustomResourceDefinition {
+) (*apiextv1.CustomResourceDefinition, error) {
+
+	err := validateCRDResources(resources)
+	if err != nil {
+		return nil, err
+	}
 
 	group := resources[0].Group.Group
 	kind := resources[0].Kind
@@ -149,9 +187,6 @@ func CustomResourceDefinition(
 	kindLower := strings.ToLower(kind)
 
 	scope := apiextv1.NamespaceScoped
-	// TODO (dmitri-d) Should we check if all resources have the same scope
-	// and bail if not?
-	// Same for ShortNames and Categories below
 	if resources[0].ClusterScoped {
 		scope = apiextv1.ClusterScoped
 	}
@@ -213,5 +248,5 @@ func CustomResourceDefinition(
 		// Setting PreserveUnknownFields to false ensures that objects with unknown fields are rejected.
 		crd.Spec.PreserveUnknownFields = false
 	}
-	return crd
+	return crd, nil
 }

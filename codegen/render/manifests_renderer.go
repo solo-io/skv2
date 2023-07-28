@@ -59,13 +59,17 @@ func RenderManifests(
 func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
 	grpsByGroupName := make(map[string][]*Group)
 	shouldRenderGroups := make(map[string]bool)
+	shouldSkipCRDManifest := make(map[string]bool)
+	shouldSkipTemplatedCRDManifest := make(map[string]bool)
 	grandfatheredGroups := make(map[string]bool)
 	for _, grp := range grps {
 		grpsByGroupName[grp.Group] = append(grpsByGroupName[grp.Group], grp)
 		shouldRenderGroups[grp.Group] = shouldRenderGroups[grp.Group] || grp.RenderManifests
-		if grp.Grandfathered {
-			grandfatheredGroups[grp.GroupVersion.String()] = true
-		}
+		grandfatheredGroups[grp.GroupVersion.String()] = grandfatheredGroups[grp.GroupVersion.String()] || grp.Grandfathered
+		shouldSkipCRDManifest[grp.Group] =
+			shouldSkipCRDManifest[grp.Group] || grp.SkipCRDManifest
+		shouldSkipTemplatedCRDManifest[grp.Group] =
+			shouldSkipTemplatedCRDManifest[grp.Group] || grp.SkipTemplatedCRDManifest
 	}
 
 	for _, grp := range grps {
@@ -90,14 +94,13 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 		if err != nil {
 			return nil, err
 		}
-		// TODO (dmitri-d): this can be removed once we migrate to use platform charts exclusively
-		out, err := r.renderLegacyManifest(r.AppName, groupName, crds)
+		out, err := r.renderCRDManifest(r.AppName, groupName, crds)
 		if err != nil {
 			return nil, err
 		}
 		renderedFiles = append(renderedFiles, out)
 
-		out, err = r.renderTemplatedManifest(r.AppName, groupName, crds, grandfatheredGroups)
+		out, err = r.renderTemplatedCRDManifest(r.AppName, groupName, crds, grandfatheredGroups)
 		if err != nil {
 			return nil, err
 		}
@@ -248,7 +251,7 @@ func SetVersionForObject(obj metav1.Object, version string) {
 }
 
 // TODO (dmitri-d): this can be removed once we migrate to use platform charts exclusively
-func (r ManifestsRenderer) renderLegacyManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
+func (r ManifestsRenderer) renderCRDManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
 	outFile := OutFile{
 		Path: r.ManifestDir + "/crds/" + groupName + "_" + "crds.yaml",
 	}
@@ -266,7 +269,7 @@ func (r ManifestsRenderer) renderLegacyManifest(appName, groupName string, objs 
 	return outFile, nil
 }
 
-func (r ManifestsRenderer) renderTemplatedManifest(appName, groupName string,
+func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	objs []apiextv1.CustomResourceDefinition,
 	grandfatheredGroups map[string]bool) (OutFile, error) {
 
