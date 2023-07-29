@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -293,7 +294,11 @@ func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	templatesToRender := inputTemplates{
 		"manifests/crd.yamltmpl": outFile,
 	}
-	// validate that templates will render ok
+
+	if err := r.canRenderCRDTemplate(objs, grandfatheredGroups); err != nil {
+		return OutFile{}, err
+	}
+
 	files, err := defaultManifestRenderer.renderCoreTemplates(
 		templatesToRender,
 		templateArgs{Crds: objs, ShouldSkip: grandfatheredGroups, EnabledAlphaApiFlagName: r.EnabledAlphaApiFlagName})
@@ -303,6 +308,17 @@ func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	// if we got here there's one item in []files,
 	// as we only rendered one template and there were no errors
 	return files[0], nil
+}
+
+func (r ManifestsRenderer) canRenderCRDTemplate(objs []apiextv1.CustomResourceDefinition, grandfatheredGroups map[string]bool) error {
+	for _, obj := range objs {
+		for _, v := range obj.Spec.Versions {
+			if strings.Contains(v.Name, "alpha") && !grandfatheredGroups[obj.Spec.Group+"/"+v.Name] && r.EnabledAlphaApiFlagName == "" {
+				return fmt.Errorf("error rendering CRD template for kind %s: 'EnabledAlphaApiFlagName' is not defined", obj.Spec.Names.Kind)
+			}
+		}
+	}
+	return nil
 }
 
 func (r ManifestsRenderer) createCrds(appName string, groups []*Group) ([]apiextv1.CustomResourceDefinition, error) {

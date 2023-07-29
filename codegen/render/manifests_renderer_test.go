@@ -1,6 +1,7 @@
 package render_test
 
 import (
+	"fmt"
 	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -282,4 +283,162 @@ var _ = Describe("ManifestsRenderer", func() {
 		})
 	})
 
+	Describe("Generate combined alpha, grandfathered alpha, and non-alpha versioned CRD", func() {
+		var (
+			grps []*model.Group
+		)
+
+		BeforeEach(func() {
+			grps = []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v3alpha1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v2",
+					},
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					}},
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1alpha1",
+					},
+					RenderManifests:           true,
+					AddChartVersion:           "1.0.0",
+					SkipConditionalCRDLoading: true,
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+		})
+		It("Renderse manifests with chart and spec hash", func() {
+
+			// get api-level code gen options from descriptors
+			outFiles, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
+			// only v3alpha1 version of the CRDs is conditionally rendered, v2 and v1alpha1 have no conditions surrounding them
+			Expect(outFiles[1].Content).To(ContainSubstring("subresources: {}\n  {{- if has \"kinds.things.test.io/v3alpha1\" $.Values.enabledExperimentalApi }}"))
+			Expect(outFiles[1].Content).ToNot(ContainSubstring("{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}\n  - name: v2alpha1"))
+			Expect(outFiles[1].Content).To(ContainSubstring("{{- end }}\n---\n"))
+			Expect(strings.Count(outFiles[1].Content, "{{- end }}")).To(Equal(1))
+		})
+	})
+
+	Describe("Render CRD template when 'EnabledAlphaApiFlagName' isn't set", func() {
+		It("and resource contains an alpha version that should not be skipped", func() {
+			grps := []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v3alpha1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+
+			_, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).ToNot(BeNil())
+			Expect(err).To(Equal(fmt.Errorf("error rendering CRD template for kind kind: 'EnabledAlphaApiFlagName' is not defined")))
+		})
+		It("and resource contains an alpha version that should be skipped", func() {
+			grps := []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v3alpha1",
+				},
+				RenderManifests:           true,
+				AddChartVersion:           "1.0.0",
+				SkipConditionalCRDLoading: true,
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+
+			_, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).To(BeNil())
+		})
+	})
 })
