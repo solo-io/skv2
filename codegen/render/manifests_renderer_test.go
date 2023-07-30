@@ -364,9 +364,12 @@ var _ = Describe("ManifestsRenderer", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only v3alpha1 version of the CRDs is conditionally rendered, v2 and v1alpha1 have no conditions surrounding them
-			Expect(outFiles[1].Content).To(ContainSubstring("subresources: {}\n  {{- if has \"kinds.things.test.io/v3alpha1\" $.Values.enabledExperimentalApi }}"))
+			expectedTemplateString := "subresources: {}\n  {{- if has \"kinds.things.test.io/v3alpha1\" $.Values.enabledExperimentalApi }}"
+			Expect(outFiles[1].Content).To(ContainSubstring(expectedTemplateString))
+			Expect(strings.Count(outFiles[1].Content, expectedTemplateString)).To(Equal(1))
 			Expect(outFiles[1].Content).ToNot(ContainSubstring("{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}\n  - name: v2alpha1"))
 			Expect(outFiles[1].Content).To(ContainSubstring("{{- end }}\n---\n"))
+			Expect(strings.Count(outFiles[1].Content, "{{- end }}\n---\n")).To(Equal(1))
 			Expect(strings.Count(outFiles[1].Content, "{{- end }}")).To(Equal(1))
 		})
 	})

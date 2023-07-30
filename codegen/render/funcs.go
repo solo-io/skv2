@@ -133,10 +133,12 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 
 		"opVar": opVar,
 
-		"render_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
-			wrapWholeCrd := len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
-			wrapSingleVersion := len(crd.Spec.Versions) > 1 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
-			return wrapWholeCrd || wrapSingleVersion
+		"render_outer_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
+			return len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
+		},
+
+		"render_inner_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
+			return len(crd.Spec.Versions) > 1 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
 		},
 	}
 
