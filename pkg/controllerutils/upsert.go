@@ -139,6 +139,8 @@ func UpdateStatusImmutable(
 
 	// Always valid because obj is client.Object
 	copyOfObj := obj.DeepCopyObject().(client.Object)
+	copyOfObj.SetCreationTimestamp(existing.GetCreationTimestamp())
+	copyOfObj.SetResourceVersion(existing.GetResourceVersion())
 
 	// https://github.com/solo-io/skv2/issues/344
 	copyOfObj.SetUID(existing.GetUID())
