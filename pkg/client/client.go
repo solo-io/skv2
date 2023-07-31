@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -75,6 +76,10 @@ type GenericClient[T client.Object, L client.ObjectList] interface {
 	Scheme() *runtime.Scheme
 	// RESTMapper returns the rest this client is using.
 	RESTMapper() meta.RESTMapper
+	// GroupVersionKindFor returns the GroupVersionKind for the given object.
+	GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error)
+	// IsObjectNamespaced returns true if the GroupVersionKind of the object is namespaced.
+	IsObjectNamespaced(obj runtime.Object) (bool, error)
 }
 
 func NewGenericClient[T client.Object, L client.ObjectList](
@@ -168,6 +173,14 @@ func (g *genericClient[T, L]) Scheme() *runtime.Scheme {
 
 func (g *genericClient[T, L]) RESTMapper() meta.RESTMapper {
 	return g.genericClient.RESTMapper()
+}
+
+func (g *genericClient[T, L]) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	return g.genericClient.GroupVersionKindFor(obj)
+}
+
+func (g *genericClient[T, L]) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	return g.genericClient.IsObjectNamespaced(obj)
 }
 
 type statusWriter[T client.Object] struct {
