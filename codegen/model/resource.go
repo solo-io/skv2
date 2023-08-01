@@ -114,6 +114,17 @@ type Group struct {
 
 	// Some resources use pointer slices for the Items field.
 	PointerSlices bool `default:"false"`
+
+	// Set to true to skip rendering of conditional loading logic
+	// for CRDs containing alpha-versioned resources.
+	// Used by codegen/templates/manifests/crd.yamltmpl
+	SkipConditionalCRDLoading bool
+
+	// Skip generation of crd manifests that live in crd/ directory of a chart
+	SkipCRDManifest bool
+
+	// Skip generation of templated crd manifests that live in templates/ dir of a chart
+	SkipTemplatedCRDManifest bool
 }
 
 type GroupOptions struct {
@@ -172,6 +183,17 @@ type Resource struct {
 
 	// If enabled, the unmarshal will NOT allow unknown fields.
 	StrictUnmarshal bool
+
+	// Corresponds to CRD's versions.storage field
+	// Only one version of a resource can be marked as "stored"
+	// Set to false by default
+	// See https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/custom-resource-definition-v1/#CustomResourceDefinitionSpec
+	Stored bool
+
+	// Corresponds to CRD's versions.deprecated field
+	// Set to false by default
+	// See https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/custom-resource-definition-v1/#CustomResourceDefinitionSpec
+	Deprecated bool
 }
 
 type Field struct {
