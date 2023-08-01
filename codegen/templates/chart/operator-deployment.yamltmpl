@@ -49,7 +49,11 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
+[[- if $operator.NamespaceFromValuePath ]]
+  namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
   namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
 spec:
   selector:
     matchLabels:
@@ -177,7 +181,11 @@ metadata:
   {{- end }}
   {{- end}}
   name: [[ $operator.Name ]]
+[[- if $operator.NamespaceFromValuePath ]]
+  namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
   namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
 {{- end }}
 
 
@@ -200,7 +208,11 @@ metadata:
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   name: [[ $operator.Name ]]
+[[- if $operator.NamespaceFromValuePath ]]
+  namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
   namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
 spec:
   selector:
     app: [[ $operator.Name ]]
