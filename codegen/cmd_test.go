@@ -1306,7 +1306,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}`
 
-		expectedClusterRoleBindingTmpl := `kind: ClusterRoleBinding
+		expectedClusterRoleBindingTmpl := `
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
