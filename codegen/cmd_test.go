@@ -1267,7 +1267,8 @@ var _ = Describe("Cmd", func() {
 		deployment, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedDeploymentTmpl := `kind: Deployment
+		expectedDeploymentTmpl := `
+kind: Deployment
 metadata:
   labels:
     app: painter
@@ -1276,7 +1277,8 @@ metadata:
   name: painter
   namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}`
 
-		expectedSATmpl := `apiVersion: v1
+		expectedSATmpl := `
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
@@ -1298,7 +1300,8 @@ metadata:
 		rbac, err := os.ReadFile("codegen/test/chart/templates/rbac.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedClusterRoleTmpl := `kind: ClusterRole
+		expectedClusterRoleTmpl := `
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}`
@@ -1328,7 +1331,8 @@ roleRef:
 			},
 		}
 
-		expectedDeployment := `kind: Deployment
+		expectedDeployment := `
+kind: Deployment
 metadata:
   labels:
     app: painter
@@ -1337,19 +1341,22 @@ metadata:
   name: painter
   namespace: test-namespace`
 
-		expectedSA := `kind: ServiceAccount
+		expectedSA := `
+kind: ServiceAccount
 metadata:
   labels:
     app: painter
   name: painter
   namespace: test-namespace`
 
-		expectedClusterRole := `kind: ClusterRole
+		expectedClusterRole := `
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-test-namespace`
 
-		expectedClusterRoleBinding := `kind: ClusterRoleBinding
+		expectedClusterRoleBinding := `
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-test-namespace
