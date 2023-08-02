@@ -88,6 +88,10 @@ type Operator struct {
 	// the name of the other operator can be included in this list. This operator
 	// will not be provisioned unless both are enabled (by having values.enabled = true)
 	EnabledDependsOn []string
+
+	// (Optional) If this operator should be applied to a namespace
+	// specified in a common value (e.g. "$Values.common.addonNamespace") specify the full value path here
+	NamespaceFromValuePath string
 }
 
 func (o Operator) FormattedName() string {

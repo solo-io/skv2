@@ -25,7 +25,11 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+[[- if $operator.NamespaceFromValuePath ]]
+  name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
   name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
   labels:
     app: [[ $operator.Name ]]
 rules:
@@ -36,16 +40,28 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+[[- if $operator.NamespaceFromValuePath ]]
+  name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
   name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
   labels:
     app: [[ $operator.Name ]]
 subjects:
 - kind: ServiceAccount
   name: [[ $operator.Name ]]
+[[- if $operator.NamespaceFromValuePath ]]
+  namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
   namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
 roleRef:
   kind: ClusterRole
+[[- if $operator.NamespaceFromValuePath ]]
+  name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
   name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
   apiGroup: rbac.authorization.k8s.io
 
 {{- end }}
