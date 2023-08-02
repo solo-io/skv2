@@ -26,7 +26,7 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
 [[- if $operator.NamespaceFromValuePath ]]
-  namespace: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+  name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
   name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 [[- end ]]
@@ -41,7 +41,7 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
 [[- if $operator.NamespaceFromValuePath ]]
-  namespace: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+  name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
   name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 [[- end ]]
@@ -54,7 +54,7 @@ subjects:
 roleRef:
   kind: ClusterRole
 [[- if $operator.NamespaceFromValuePath ]]
-  namespace: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+  name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
   name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 [[- end ]]
