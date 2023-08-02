@@ -3,3 +3,4 @@ changelog:
     issueLink:   https://github.com/solo-io/gloo-mesh-enterprise/issues/10786
     description: >
       Add the ability to specify an operator namespace using a value path. (e.g. `$.Values.common.namespace`)
+    resolvesIssue: false
