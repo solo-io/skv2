@@ -50,7 +50,11 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: [[ $operator.Name ]]
+[[- if $operator.NamespaceFromValuePath ]]
+  namespace: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
   namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
 roleRef:
   kind: ClusterRole
 [[- if $operator.NamespaceFromValuePath ]]
