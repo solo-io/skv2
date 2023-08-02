@@ -1267,8 +1267,30 @@ var _ = Describe("Cmd", func() {
 		deployment, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedDeploymentTmpl := "kind: Deployment\nmetadata:\n  labels:\n    app: painter\n  annotations:\n    app.kubernetes.io/name: painter\n  name: painter\n  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}"
-		expectedSATmpl := "apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  labels:\n    app: painter\n  {{- if $painter.serviceAccount}}\n  {{- if $painter.serviceAccount.extraAnnotations }}\n  annotations:\n    {{- range $key, $value := $painter.serviceAccount.extraAnnotations }}\n    {{ $key }}: {{ $value }}\n    {{- end }}\n  {{- end }}\n  {{- end}}\n  name: painter\n  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}"
+		expectedDeploymentTmpl := `kind: Deployment
+metadata:
+  labels:
+    app: painter
+  annotations:
+    app.kubernetes.io/name: painter
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}`
+
+		expectedSATmpl := `apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: painter
+  {{- if $painter.serviceAccount}}
+  {{- if $painter.serviceAccount.extraAnnotations }}
+  annotations:
+    {{- range $key, $value := $painter.serviceAccount.extraAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+  {{- end}}
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}`
 
 		Expect(string(deployment)).To(ContainSubstring(expectedDeploymentTmpl))
 		Expect(string(deployment)).To(ContainSubstring(expectedSATmpl))
@@ -1276,8 +1298,25 @@ var _ = Describe("Cmd", func() {
 		rbac, err := os.ReadFile("codegen/test/chart/templates/rbac.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedClusterRoleTmpl := "kind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}"
-		expectedClusterRoleBindingTmpl := "kind: ClusterRoleBinding\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}\n  labels:\n    app: painter\nsubjects:\n- kind: ServiceAccount\n  name: painter\n  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}\nroleRef:\n  kind: ClusterRole\n  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}\n  apiGroup: rbac.authorization.k8s.io"
+		expectedClusterRoleTmpl := `kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}`
+
+		expectedClusterRoleBindingTmpl := `kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
+  apiGroup: rbac.authorization.k8s.io`
 
 		Expect(string(rbac)).To(ContainSubstring(expectedClusterRoleTmpl))
 		Expect(string(rbac)).To(ContainSubstring(expectedClusterRoleBindingTmpl))
@@ -1289,10 +1328,41 @@ var _ = Describe("Cmd", func() {
 			},
 		}
 
-		expectedDeployment := "kind: Deployment\nmetadata:\n  labels:\n    app: painter\n  annotations:\n    app.kubernetes.io/name: painter\n  name: painter\n  namespace: test-namespace"
-		expectedSA := "kind: ServiceAccount\nmetadata:\n  labels:\n    app: painter\n  name: painter\n  namespace: test-namespace"
-		expectedClusterRole := "kind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: painter-test-namespace"
-		expectedClusterRoleBinding := "kind: ClusterRoleBinding\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: painter-test-namespace\n  labels:\n    app: painter\nsubjects:\n- kind: ServiceAccount\n  name: painter\n  namespace: test-namespace\nroleRef:\n  kind: ClusterRole\n  name: painter-test-namespace\n  apiGroup: rbac.authorization.k8s.io"
+		expectedDeployment := `kind: Deployment
+metadata:
+  labels:
+    app: painter
+  annotations:
+    app.kubernetes.io/name: painter
+  name: painter
+  namespace: test-namespace`
+
+		expectedSA := `kind: ServiceAccount
+metadata:
+  labels:
+    app: painter
+  name: painter
+  namespace: test-namespace`
+
+		expectedClusterRole := `kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-test-namespace`
+
+		expectedClusterRoleBinding := `kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-test-namespace
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: test-namespace
+roleRef:
+  kind: ClusterRole
+  name: painter-test-namespace
+  apiGroup: rbac.authorization.k8s.io`
 
 		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
 		Expect(renderedManifests).To(ContainSubstring(expectedSA))
