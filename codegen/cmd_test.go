@@ -1178,6 +1178,197 @@ var _ = Describe("Cmd", func() {
 		Expect(renderedManifests).To(ContainSubstring(expectedCR))
 	})
 
+	It("supports rendering namespace template with custom value if provided", func() {
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "Paint",
+							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Status: &Field{Type: Type{Name: "PaintStatus"}},
+						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name:                   "painter",
+						NamespaceFromValuePath: "$.Values.common.namespace",
+						Rbac: []rbacv1.PolicyRule{
+							{
+								Verbs: []string{"GET"},
+							},
+						},
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
+							},
+						},
+					},
+				},
+				Values: nil,
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		// Test that the deployment, SA, and CR templates are rendered correctly
+		deployment, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
+		Expect(err).NotTo(HaveOccurred())
+
+		expectedDeploymentTmpl := `
+kind: Deployment
+metadata:
+  labels:
+    app: painter
+  annotations:
+    app.kubernetes.io/name: painter
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}`
+
+		expectedSATmpl := `
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: painter
+  {{- if $painter.serviceAccount}}
+  {{- if $painter.serviceAccount.extraAnnotations }}
+  annotations:
+    {{- range $key, $value := $painter.serviceAccount.extraAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+  {{- end}}
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}`
+
+		Expect(string(deployment)).To(ContainSubstring(expectedDeploymentTmpl))
+		Expect(string(deployment)).To(ContainSubstring(expectedSATmpl))
+
+		rbac, err := os.ReadFile("codegen/test/chart/templates/rbac.yaml")
+		Expect(err).NotTo(HaveOccurred())
+
+		expectedClusterRoleTmpl := `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}`
+
+		expectedClusterRoleBindingTmpl := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
+  apiGroup: rbac.authorization.k8s.io`
+
+		Expect(string(rbac)).To(ContainSubstring(expectedClusterRoleTmpl))
+		Expect(string(rbac)).To(ContainSubstring(expectedClusterRoleBindingTmpl))
+
+		// Test that the deployment, SA, and CR are rendered with the custom namespace value
+		helmValues := map[string]interface{}{
+			"common": map[string]interface{}{
+				"namespace": "test-namespace",
+			},
+		}
+
+		expectedDeployment := `
+kind: Deployment
+metadata:
+  labels:
+    app: painter
+  annotations:
+    app.kubernetes.io/name: painter
+  name: painter
+  namespace: test-namespace`
+
+		expectedSA := `
+kind: ServiceAccount
+metadata:
+  labels:
+    app: painter
+  name: painter
+  namespace: test-namespace`
+
+		expectedClusterRole := `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-test-namespace`
+
+		expectedClusterRoleBinding := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-test-namespace
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: test-namespace
+roleRef:
+  kind: ClusterRole
+  name: painter-test-namespace
+  apiGroup: rbac.authorization.k8s.io`
+
+		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+		Expect(renderedManifests).To(ContainSubstring(expectedSA))
+		Expect(renderedManifests).To(ContainSubstring(expectedDeployment))
+		Expect(renderedManifests).To(ContainSubstring(expectedClusterRole))
+		Expect(renderedManifests).To(ContainSubstring(expectedClusterRoleBinding))
+	})
+
 	Context("generates CRD with validation schema for a proto file", func() {
 		var cmd *Command
 
