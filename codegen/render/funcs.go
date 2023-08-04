@@ -14,7 +14,8 @@ import (
 	"github.com/solo-io/skv2/codegen/model/values"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 	"google.golang.org/protobuf/types/known/structpb"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -130,8 +131,10 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"containerConfigs": containerConfigs,
-
-		"opVar": opVar,
+		"cleanVolume":      cleanVolume,
+		"toListItem":       toListItem,
+		"opVar":            opVar,
+		"combine":          combine,
 
 		"render_outer_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
 			return len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
@@ -153,10 +156,29 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	return f
 }
 
+func combine(a, b []interface{}) []interface{} {
+	return append(a, b...)
+}
+
+func toListItem(item interface{}) []interface{} {
+	return []interface{}{item}
+}
+
+// Remove custom values from k8s volume
+func cleanVolume(item interface{}) interface{} {
+	x := item.(model.Volume)
+	x.EnableStatement = ""
+	return x
+}
+
 type containerConfig struct {
 	model.Container
-	Name      string
-	ValuesVar string
+	model.Service
+	Rbac []rbacv1.PolicyRule
+
+	Name            string
+	ValuesVar       string
+	EnableStatement string
 }
 
 func containerConfigs(op model.Operator) []containerConfig {
@@ -168,11 +190,21 @@ func containerConfigs(op model.Operator) []containerConfig {
 	}}
 
 	for _, sidecar := range op.Deployment.Sidecars {
-		configs = append(configs, containerConfig{
-			Container: sidecar.Container,
-			Name:      sidecar.Name,
-			ValuesVar: valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
-		})
+		config := containerConfig{
+			EnableStatement: sidecar.EnableStatement, // Change this to base name of operator e.g: $.Values.glooAgent.X
+			Rbac:            sidecar.Rbac,
+			Service:         sidecar.Service,
+			Container:       sidecar.Container,
+			Name:            sidecar.Name,
+			ValuesVar:       valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
+		}
+
+		// Thoughts?
+		if sidecar.EnableStatement != "" {
+			config.ValuesVar = fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(sidecar.Name))
+		}
+
+		configs = append(configs, config)
 	}
 
 	return configs
@@ -728,7 +760,7 @@ func createCustomTypeMapper(values values.UserHelmValues) customTypeMapper {
 			}
 		},
 
-		reflect.TypeOf(v1.SecurityContext{}): func(t reflect.Type, defaultSchema *jsonschema.Schema) *jsonschema.Schema {
+		reflect.TypeOf(corev1.SecurityContext{}): func(t reflect.Type, defaultSchema *jsonschema.Schema) *jsonschema.Schema {
 			return &jsonschema.Schema{
 				AnyOf: []*jsonschema.Schema{
 					defaultSchema,

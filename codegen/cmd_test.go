@@ -3,6 +3,7 @@ package codegen_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -40,7 +41,107 @@ var _ = Describe("Cmd", func() {
 	skv2Imports.External["github.com/solo-io/cue"] = []string{
 		"encoding/protobuf/cue/cue.proto",
 	}
+	It("install conditional sidecars", func() {
+		var (
+			agentConditional = "and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar)"
+		)
 
+		cmd := &Command{
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name: "gloo-mgmt-server",
+						Service: Service{
+							Ports: []ServicePort{{
+								Name:        "grpc",
+								DefaultPort: 9900,
+							}},
+						},
+						Rbac: []rbacv1.PolicyRule{{
+							Verbs:     []string{"*"},
+							APIGroups: []string{"coordination.k8s.io"},
+							Resources: []string{"leases"},
+						}},
+						Deployment: Deployment{
+							Sidecars: []Sidecar{{
+								Name: "gloo-agent",
+								Rbac: []rbacv1.PolicyRule{{
+									Verbs:     []string{"*"},
+									APIGroups: []string{"apiextensions.k8s.io"},
+									Resources: []string{"customresourcedefinitions"},
+								}},
+								Container: Container{
+									Image: Image{
+										Registry:   "gcr.io/gloo-mesh",
+										Repository: "gloo-mesh-agent",
+										Tag:        "0.0.1",
+									},
+								},
+								Service: Service{
+									Ports: []ServicePort{{
+										Name:        "grpc",
+										DefaultPort: 9977,
+									}},
+								},
+								EnableStatement: agentConditional,
+							}},
+							Container: Container{
+								Image: Image{
+									Registry:   "gcr.io/gloo-mesh",
+									Repository: "gloo-mesh-mgmt-server",
+									Tag:        "0.0.1",
+								},
+								VolumeMounts: []v1.VolumeMount{{
+									Name:      "license-keys",
+									MountPath: "/etc/gloo-mesh/license-keys",
+									ReadOnly:  true,
+								}},
+							},
+							Volumes: []Volume{
+								{
+									Volume: v1.Volume{
+										Name: "license-keys",
+										VolumeSource: v1.VolumeSource{
+											Secret: &v1.SecretVolumeSource{
+												SecretName: "license-keys",
+											},
+										},
+									},
+								},
+								{
+									EnableStatement: agentConditional,
+									Volume: v1.Volume{
+										Name: "agent-volume",
+										VolumeSource: v1.VolumeSource{
+											Secret: &v1.SecretVolumeSource{
+												SecretName: "agent-volume",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						Name:                  "gloo-agent",
+						CustomEnableCondition: `and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)`,
+					},
+				},
+			},
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+
+		absPath, err := filepath.Abs("./test/chart/templates/deployment.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to get abs path")
+
+		deployment, err := os.ReadFile(absPath)
+		Expect(err).NotTo(HaveOccurred(), "failed to read deployment.yaml")
+
+		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s -}}", agentConditional)))
+		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
+	})
 	It("generates controller code and manifests for a proto file", func() {
 		cmd := &Command{
 			Groups: []Group{
@@ -723,11 +824,13 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Volumes: []v1.Volume{
+							Volumes: []Volume{
 								{
-									Name: "paint",
-									VolumeSource: v1.VolumeSource{
-										EmptyDir: &v1.EmptyDirVolumeSource{},
+									Volume: v1.Volume{
+										Name: "paint",
+										VolumeSource: v1.VolumeSource{
+											EmptyDir: &v1.EmptyDirVolumeSource{},
+										},
 									},
 								},
 							},
@@ -886,11 +989,13 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Volumes: []v1.Volume{
+							Volumes: []Volume{
 								{
-									Name: "paint",
-									VolumeSource: v1.VolumeSource{
-										EmptyDir: &v1.EmptyDirVolumeSource{},
+									Volume: v1.Volume{
+										Name: "paint",
+										VolumeSource: v1.VolumeSource{
+											EmptyDir: &v1.EmptyDirVolumeSource{},
+										},
 									},
 								},
 							},
@@ -1117,8 +1222,7 @@ var _ = Describe("Cmd", func() {
 			Chart: &Chart{
 				Operators: []Operator{
 					{
-						Name:             "painter",
-						EnabledDependsOn: []string{"test1", "test2"},
+						Name: "painter",
 						Rbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
@@ -1476,11 +1580,13 @@ roleRef:
 									},
 								},
 
-								Volumes: []v1.Volume{
+								Volumes: []Volume{
 									{
-										Name: "paint",
-										VolumeSource: v1.VolumeSource{
-											EmptyDir: &v1.EmptyDirVolumeSource{},
+										Volume: v1.Volume{
+											Name: "paint",
+											VolumeSource: v1.VolumeSource{
+												EmptyDir: &v1.EmptyDirVolumeSource{},
+											},
 										},
 									},
 								},

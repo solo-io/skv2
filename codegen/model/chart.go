@@ -9,7 +9,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/doc"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
@@ -92,6 +92,12 @@ type Operator struct {
 	// (Optional) If this operator should be applied to a namespace
 	// specified in a common value (e.g. "$Values.common.addonNamespace") specify the full value path here
 	NamespaceFromValuePath string
+
+	// Optional: if specified, the operator resources will be abled based on the
+	// condition specified in the enable statement.
+	//
+	// E.g: `and (.Values.operator.customValueA) (.Values.operator.customValueB)`
+	CustomEnableCondition string
 }
 
 func (o Operator) FormattedName() string {
@@ -108,7 +114,7 @@ type Deployment struct {
 	UseDaemonSet bool
 	Container
 	Sidecars                    []Sidecar
-	Volumes                     []v1.Volume
+	Volumes                     []Volume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
@@ -119,25 +125,34 @@ type Deployment struct {
 type Container struct {
 	// not configurable via helm values
 	Args           []string
-	VolumeMounts   []v1.VolumeMount
-	ReadinessProbe *v1.Probe
-	LivenessProbe  *v1.Probe
+	VolumeMounts   []corev1.VolumeMount
+	ReadinessProbe *corev1.Probe
+	LivenessProbe  *corev1.Probe
 
 	Image           Image
-	Env             []v1.EnvVar
-	Resources       *v1.ResourceRequirements
-	SecurityContext *v1.SecurityContext
+	Env             []corev1.EnvVar
+	Resources       *corev1.ResourceRequirements
+	SecurityContext *corev1.SecurityContext
 }
 
 // sidecars require a container config and a unique name
 type Sidecar struct {
 	Container
-	Name string
+	Service
+	Rbac []rbacv1.PolicyRule
+
+	Name            string
+	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"`
+}
+
+type Volume struct {
+	corev1.Volume
+	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"`
 }
 
 // values for struct template
 type Service struct {
-	Type              v1.ServiceType
+	Type              corev1.ServiceType
 	Ports             []ServicePort
 	CustomLabels      map[string]string
 	CustomAnnotations map[string]string
