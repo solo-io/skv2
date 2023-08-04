@@ -5,8 +5,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 */]]
 
 [[- range $operator := $.Operators -]]
-[[- $operatorVar := (lower_camel $operator.Name) -]]
-[[- if $operator.ClusterRbac ]]
+[[- $operatorVar := (lower_camel $operator.Name) ]]
 # Rbac manifests for [[ $operator.Name ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator)]]}}
@@ -20,6 +19,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
   [[- $enabledCheck = print $enabledCheck " }}" -]]
 [[- end ]]
 [[ $enabledCheck ]]
+[[- if $operator.ClusterRbac ]]
 ---
 
 kind: ClusterRole
@@ -64,8 +64,7 @@ roleRef:
 [[- end ]]
   apiGroup: rbac.authorization.k8s.io
 
-{{- end }}
-[[- end ]]
+[[ end ]]
 
 [[- if $operator.NamespacedRbac -]]
 ---
@@ -113,4 +112,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 [[- end ]]
+
+{{- end }}
+
 [[- end ]]
