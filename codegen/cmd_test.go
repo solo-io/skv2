@@ -1222,7 +1222,8 @@ var _ = Describe("Cmd", func() {
 			Chart: &Chart{
 				Operators: []Operator{
 					{
-						Name: "painter",
+						Name:                  "painter",
+						CustomEnableCondition: "and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled",
 						Rbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
