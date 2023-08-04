@@ -131,10 +131,8 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"containerConfigs": containerConfigs,
-		"cleanVolume":      cleanVolume,
 		"toListItem":       toListItem,
 		"opVar":            opVar,
-		"combine":          combine,
 
 		"render_outer_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
 			return len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
@@ -156,26 +154,15 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	return f
 }
 
-func combine(a, b []interface{}) []interface{} {
-	return append(a, b...)
-}
-
 func toListItem(item interface{}) []interface{} {
 	return []interface{}{item}
-}
-
-// Remove custom values from k8s volume
-func cleanVolume(item interface{}) interface{} {
-	x := item.(model.Volume)
-	x.EnableStatement = ""
-	return x
 }
 
 type containerConfig struct {
 	model.Container
 	model.Service
-	Rbac []rbacv1.PolicyRule
-
+	Rbac            []rbacv1.PolicyRule
+	Volumes         []corev1.Volume
 	Name            string
 	ValuesVar       string
 	EnableStatement string
@@ -193,13 +180,13 @@ func containerConfigs(op model.Operator) []containerConfig {
 		config := containerConfig{
 			EnableStatement: sidecar.EnableStatement, // Change this to base name of operator e.g: $.Values.glooAgent.X
 			Rbac:            sidecar.Rbac,
+			Volumes:         sidecar.Volumes,
 			Service:         sidecar.Service,
 			Container:       sidecar.Container,
 			Name:            sidecar.Name,
 			ValuesVar:       valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
 		}
 
-		// Thoughts?
 		if sidecar.EnableStatement != "" {
 			config.ValuesVar = fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(sidecar.Name))
 		}

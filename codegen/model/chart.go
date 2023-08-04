@@ -109,7 +109,7 @@ type Deployment struct {
 	UseDaemonSet bool
 	Container
 	Sidecars                    []Sidecar
-	Volumes                     []Volume
+	Volumes                     []corev1.Volume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
@@ -134,14 +134,9 @@ type Container struct {
 type Sidecar struct {
 	Container
 	Service
-	Rbac []rbacv1.PolicyRule
-
+	Rbac            []rbacv1.PolicyRule
+	Volumes         []corev1.Volume
 	Name            string
-	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"`
-}
-
-type Volume struct {
-	corev1.Volume
 	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"`
 }
 

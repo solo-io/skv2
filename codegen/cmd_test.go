@@ -65,6 +65,14 @@ var _ = Describe("Cmd", func() {
 						Deployment: Deployment{
 							Sidecars: []Sidecar{{
 								Name: "gloo-agent",
+								Volumes: []v1.Volume{{
+									Name: "agent-volume",
+									VolumeSource: v1.VolumeSource{
+										Secret: &v1.SecretVolumeSource{
+											SecretName: "agent-volume",
+										},
+									},
+								}},
 								Rbac: []rbacv1.PolicyRule{{
 									Verbs:     []string{"*"},
 									APIGroups: []string{"apiextensions.k8s.io"},
@@ -97,25 +105,12 @@ var _ = Describe("Cmd", func() {
 									ReadOnly:  true,
 								}},
 							},
-							Volumes: []Volume{
+							Volumes: []v1.Volume{
 								{
-									Volume: v1.Volume{
-										Name: "license-keys",
-										VolumeSource: v1.VolumeSource{
-											Secret: &v1.SecretVolumeSource{
-												SecretName: "license-keys",
-											},
-										},
-									},
-								},
-								{
-									EnableStatement: agentConditional,
-									Volume: v1.Volume{
-										Name: "agent-volume",
-										VolumeSource: v1.VolumeSource{
-											Secret: &v1.SecretVolumeSource{
-												SecretName: "agent-volume",
-											},
+									Name: "license-keys",
+									VolumeSource: v1.VolumeSource{
+										Secret: &v1.SecretVolumeSource{
+											SecretName: "license-keys",
 										},
 									},
 								},
@@ -141,6 +136,7 @@ var _ = Describe("Cmd", func() {
 
 		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s -}}", agentConditional)))
 		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
+		Expect(deployment).To(ContainSubstring("name: agent-volume"))
 	})
 	It("generates controller code and manifests for a proto file", func() {
 		cmd := &Command{
@@ -824,13 +820,11 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Volumes: []Volume{
+							Volumes: []v1.Volume{
 								{
-									Volume: v1.Volume{
-										Name: "paint",
-										VolumeSource: v1.VolumeSource{
-											EmptyDir: &v1.EmptyDirVolumeSource{},
-										},
+									Name: "paint",
+									VolumeSource: v1.VolumeSource{
+										EmptyDir: &v1.EmptyDirVolumeSource{},
 									},
 								},
 							},
@@ -989,13 +983,11 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Volumes: []Volume{
+							Volumes: []v1.Volume{
 								{
-									Volume: v1.Volume{
-										Name: "paint",
-										VolumeSource: v1.VolumeSource{
-											EmptyDir: &v1.EmptyDirVolumeSource{},
-										},
+									Name: "paint",
+									VolumeSource: v1.VolumeSource{
+										EmptyDir: &v1.EmptyDirVolumeSource{},
 									},
 								},
 							},
@@ -1581,13 +1573,11 @@ roleRef:
 									},
 								},
 
-								Volumes: []Volume{
+								Volumes: []v1.Volume{
 									{
-										Volume: v1.Volume{
-											Name: "paint",
-											VolumeSource: v1.VolumeSource{
-												EmptyDir: &v1.EmptyDirVolumeSource{},
-											},
+										Name: "paint",
+										VolumeSource: v1.VolumeSource{
+											EmptyDir: &v1.EmptyDirVolumeSource{},
 										},
 									},
 								},
