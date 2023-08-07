@@ -250,7 +250,7 @@ spec:
 {{- end }}
 
 [[- range $container := $containers -]]
-[[- if and (gt (len $container.EnableStatement) 0) (gt (len $operator.Service.Ports) 0) ]]
+[[- if and (gt (len $container.EnableStatement) 0) (gt (len $container.Service.Ports) 0) ]]
 [[ printf "\n---" ]]
 [[ $containerVar := printf "$.Values.%s" (lower_camel $container.Name) ]]
 [[- printf "\n{{- if %s -}}" $container.EnableStatement ]]

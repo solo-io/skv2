@@ -137,7 +137,8 @@ type Sidecar struct {
 	Rbac            []rbacv1.PolicyRule
 	Volumes         []corev1.Volume
 	Name            string
-	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"`
+	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"` // Optional: if specified, the operator resources will be abled based on the condition specified in the enable statement.
+	ValuesPath      string `json:"valuesPath,omitempty" yaml:"valuesPath,omitempty"`           // Override for values path in generated yaml.
 }
 
 // values for struct template
@@ -197,6 +198,11 @@ func (c Chart) BuildChartValues() values.UserHelmValues {
 		}
 		sidecars := map[string]values.UserContainerValues{}
 		for _, sidecar := range operator.Deployment.Sidecars {
+			// Note: We don't want to render docs for conditional sidecars
+			if sidecar.ValuesPath != "" {
+				continue
+			}
+
 			sidecars[strcase.ToLowerCamel(sidecar.Name)] = makeContainerDocs(sidecar.Container)
 		}
 

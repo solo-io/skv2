@@ -187,8 +187,8 @@ func containerConfigs(op model.Operator) []containerConfig {
 			ValuesVar:       valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
 		}
 
-		if sidecar.EnableStatement != "" {
-			config.ValuesVar = fmt.Sprintf("$.Values.%s", strcase.ToLowerCamel(sidecar.Name))
+		if sidecar.ValuesPath != "" {
+			config.ValuesVar = sidecar.ValuesPath
 		}
 
 		configs = append(configs, config)

@@ -63,36 +63,49 @@ var _ = Describe("Cmd", func() {
 							Resources: []string{"leases"},
 						}},
 						Deployment: Deployment{
-							Sidecars: []Sidecar{{
-								Name: "gloo-agent",
-								Volumes: []v1.Volume{{
-									Name: "agent-volume",
-									VolumeSource: v1.VolumeSource{
-										Secret: &v1.SecretVolumeSource{
-											SecretName: "agent-volume",
+							Sidecars: []Sidecar{
+								{
+									Name: "gloo-agent",
+									Volumes: []v1.Volume{
+										{
+											Name: "agent-volume",
+											VolumeSource: v1.VolumeSource{
+												Secret: &v1.SecretVolumeSource{
+													SecretName: "agent-volume",
+												},
+											},
+										},
+										{
+											Name: "agent-volume-2",
+											VolumeSource: v1.VolumeSource{
+												Secret: &v1.SecretVolumeSource{
+													SecretName: "agent-volume",
+												},
+											},
 										},
 									},
-								}},
-								Rbac: []rbacv1.PolicyRule{{
-									Verbs:     []string{"*"},
-									APIGroups: []string{"apiextensions.k8s.io"},
-									Resources: []string{"customresourcedefinitions"},
-								}},
-								Container: Container{
-									Image: Image{
-										Registry:   "gcr.io/gloo-mesh",
-										Repository: "gloo-mesh-agent",
-										Tag:        "0.0.1",
-									},
-								},
-								Service: Service{
-									Ports: []ServicePort{{
-										Name:        "grpc",
-										DefaultPort: 9977,
+									Rbac: []rbacv1.PolicyRule{{
+										Verbs:     []string{"*"},
+										APIGroups: []string{"apiextensions.k8s.io"},
+										Resources: []string{"customresourcedefinitions"},
 									}},
+									Container: Container{
+										Image: Image{
+											Registry:   "gcr.io/gloo-mesh",
+											Repository: "gloo-mesh-agent",
+											Tag:        "0.0.1",
+										},
+									},
+									Service: Service{
+										Ports: []ServicePort{{
+											Name:        "grpc",
+											DefaultPort: 9977,
+										}},
+									},
+									EnableStatement: agentConditional,
+									ValuesPath:      "$.Values.glooAgent",
 								},
-								EnableStatement: agentConditional,
-							}},
+							},
 							Container: Container{
 								Image: Image{
 									Registry:   "gcr.io/gloo-mesh",
@@ -123,12 +136,12 @@ var _ = Describe("Cmd", func() {
 					},
 				},
 			},
-			ManifestRoot: "codegen/test/chart",
+			ManifestRoot: "codegen/test/chart/conditional-sidecar",
 		}
 
 		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
 
-		absPath, err := filepath.Abs("./test/chart/templates/deployment.yaml")
+		absPath, err := filepath.Abs("./test/chart/conditional-sidecar/templates/deployment.yaml")
 		Expect(err).NotTo(HaveOccurred(), "failed to get abs path")
 
 		deployment, err := os.ReadFile(absPath)
@@ -137,6 +150,7 @@ var _ = Describe("Cmd", func() {
 		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s -}}", agentConditional)))
 		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
 		Expect(deployment).To(ContainSubstring("name: agent-volume"))
+		Expect(deployment).To(ContainSubstring("{{ $.Values.glooAgent.ports.grpc }}"))
 	})
 	It("generates controller code and manifests for a proto file", func() {
 		cmd := &Command{
