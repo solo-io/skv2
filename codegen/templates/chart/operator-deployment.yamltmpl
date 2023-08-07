@@ -80,7 +80,7 @@ spec:
 [[ toYaml $volumes | indent 6 ]]
 [[- end ]]
 [[- range $container := $containers -]]
-[[- if (gt (len $container.EnableStatement) 0) ]]
+[[- if and (gt (len $container.EnableStatement) 0) ($container.Volumes) ]]
 [[- printf "\n{{- if %s -}}" $container.EnableStatement ]]
 [[- range $volume := $container.Volumes ]]
 [[ toYaml (toListItem $volume) | indent 6 ]]
