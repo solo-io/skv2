@@ -80,14 +80,12 @@ spec:
 [[ toYaml $volumes | indent 6 ]]
 [[- end ]]
 [[- range $container := $containers -]]
-[[- range $volume := $container.Volumes ]]
 [[- if (gt (len $container.EnableStatement) 0) ]]
 [[- printf "\n{{- if %s -}}" $container.EnableStatement ]]
-[[- end ]]
+[[- range $volume := $container.Volumes ]]
 [[ toYaml (toListItem $volume) | indent 6 ]]
-[[- if (gt (len $container.EnableStatement) 0) ]]
-{{- end }}
 [[- end ]]
+{{- end }}
 [[- end ]]
 [[- end ]]
       containers:
@@ -255,9 +253,7 @@ spec:
 [[- if and (gt (len $container.EnableStatement) 0) (gt (len $operator.Service.Ports) 0) ]]
 [[ printf "\n---" ]]
 [[ $containerVar := printf "$.Values.%s" (lower_camel $container.Name) ]]
-[[- if (gt (len $container.EnableStatement) 0) ]]
 [[- printf "\n{{- if %s -}}" $container.EnableStatement ]]
-[[- end ]]
 apiVersion: v1
 kind: Service
 metadata:
@@ -282,9 +278,7 @@ spec:
   - name: [[ lower $port.Name ]]
     port: {{ [[ $containerVar ]].ports.[[ $port.Name ]] }}
   [[- end ]]
-[[- if (gt (len $container.EnableStatement) 0) ]]
 {{- end }}
-[[- end ]]
 [[- end ]]
 [[- end ]]
 [[ end ]]
