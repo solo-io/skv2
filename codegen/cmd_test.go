@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	goyaml "gopkg.in/yaml.v3"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -54,11 +55,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -133,6 +136,7 @@ var _ = Describe("Cmd", func() {
 								Name:      "KubernetesCluster",
 								GoPackage: "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1",
 							}},
+							Stored: true,
 						},
 					},
 					RenderManifests:  true,
@@ -171,11 +175,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -256,11 +262,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -375,11 +383,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -1178,6 +1188,197 @@ var _ = Describe("Cmd", func() {
 		Expect(renderedManifests).To(ContainSubstring(expectedCR))
 	})
 
+	It("supports rendering namespace template with custom value if provided", func() {
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "Paint",
+							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Status: &Field{Type: Type{Name: "PaintStatus"}},
+						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name:                   "painter",
+						NamespaceFromValuePath: "$.Values.common.namespace",
+						Rbac: []rbacv1.PolicyRule{
+							{
+								Verbs: []string{"GET"},
+							},
+						},
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
+							},
+						},
+					},
+				},
+				Values: nil,
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		// Test that the deployment, SA, and CR templates are rendered correctly
+		deployment, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
+		Expect(err).NotTo(HaveOccurred())
+
+		expectedDeploymentTmpl := `
+kind: Deployment
+metadata:
+  labels:
+    app: painter
+  annotations:
+    app.kubernetes.io/name: painter
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}`
+
+		expectedSATmpl := `
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: painter
+  {{- if $painter.serviceAccount}}
+  {{- if $painter.serviceAccount.extraAnnotations }}
+  annotations:
+    {{- range $key, $value := $painter.serviceAccount.extraAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+  {{- end}}
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}`
+
+		Expect(string(deployment)).To(ContainSubstring(expectedDeploymentTmpl))
+		Expect(string(deployment)).To(ContainSubstring(expectedSATmpl))
+
+		rbac, err := os.ReadFile("codegen/test/chart/templates/rbac.yaml")
+		Expect(err).NotTo(HaveOccurred())
+
+		expectedClusterRoleTmpl := `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}`
+
+		expectedClusterRoleBindingTmpl := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
+  apiGroup: rbac.authorization.k8s.io`
+
+		Expect(string(rbac)).To(ContainSubstring(expectedClusterRoleTmpl))
+		Expect(string(rbac)).To(ContainSubstring(expectedClusterRoleBindingTmpl))
+
+		// Test that the deployment, SA, and CR are rendered with the custom namespace value
+		helmValues := map[string]interface{}{
+			"common": map[string]interface{}{
+				"namespace": "test-namespace",
+			},
+		}
+
+		expectedDeployment := `
+kind: Deployment
+metadata:
+  labels:
+    app: painter
+  annotations:
+    app.kubernetes.io/name: painter
+  name: painter
+  namespace: test-namespace`
+
+		expectedSA := `
+kind: ServiceAccount
+metadata:
+  labels:
+    app: painter
+  name: painter
+  namespace: test-namespace`
+
+		expectedClusterRole := `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-test-namespace`
+
+		expectedClusterRoleBinding := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-test-namespace
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: test-namespace
+roleRef:
+  kind: ClusterRole
+  name: painter-test-namespace
+  apiGroup: rbac.authorization.k8s.io`
+
+		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+		Expect(renderedManifests).To(ContainSubstring(expectedSA))
+		Expect(renderedManifests).To(ContainSubstring(expectedDeployment))
+		Expect(renderedManifests).To(ContainSubstring(expectedClusterRole))
+		Expect(renderedManifests).To(ContainSubstring(expectedClusterRoleBinding))
+	})
+
 	Context("generates CRD with validation schema for a proto file", func() {
 		var cmd *Command
 
@@ -1195,11 +1396,13 @@ var _ = Describe("Cmd", func() {
 								Kind:   "Paint",
 								Spec:   Field{Type: Type{Name: "PaintSpec"}},
 								Status: &Field{Type: Type{Name: "PaintStatus"}},
+								Stored: true,
 							},
 							{
 								Kind:          "ClusterResource",
 								Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 								ClusterScoped: true,
+								Stored:        true,
 							},
 						},
 						RenderManifests:         true,
@@ -1315,7 +1518,7 @@ var _ = Describe("Cmd", func() {
 		})
 
 		It("can include field descriptions", func() {
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
@@ -1325,16 +1528,25 @@ var _ = Describe("Cmd", func() {
 			Expect(string(bytes)).To(ContainSubstring("description: OpenAPI gen test for recursive fields"))
 		})
 
+		// TODO (dmitri-d): kube_crud_test and kube_multicluster_test depend on crds in this suite.
 		It("generates google.protobuf.Value with no type", func() {
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
 			bytes, err := ioutil.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
+			paintCrdYaml := ""
+			for _, crd := range strings.Split(string(bytes), "---") {
+				if strings.Contains(crd, "kind: Paint") {
+					paintCrdYaml = crd
+				}
+			}
+			Expect(paintCrdYaml).ToNot(BeEmpty())
+
 			generatedCrd := &v12.CustomResourceDefinition{}
-			Expect(yaml.Unmarshal(bytes, generatedCrd)).NotTo(HaveOccurred())
+			Expect(yaml.Unmarshal([]byte(paintCrdYaml), &generatedCrd)).NotTo(HaveOccurred())
 			protobufValueField := generatedCrd.Spec.Versions[0].Schema.OpenAPIV3Schema.Properties["spec"].Properties["recursiveType"].Properties["protobufValue"]
 			// access the field to make sure it's not nil
 			Expect(protobufValueField.XPreserveUnknownFields).ToNot(BeNil())
@@ -1346,7 +1558,7 @@ var _ = Describe("Cmd", func() {
 			// write this manifest to a different dir to avoid modifying the crd file from the
 			// above test, which other tests seem to depend on
 			cmd.ManifestRoot = "codegen/test/chart-no-desc"
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			cmd.Groups[0].SkipSchemaDescriptions = true
 
@@ -1514,6 +1726,7 @@ func helmTemplate(path string, values interface{}) []byte {
 		path,
 		"--values", helmValuesFile.Name(),
 	).CombinedOutput()
+
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), string(out))
 	return out
 }

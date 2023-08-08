@@ -31,12 +31,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
+// TODO (dmitri-d): Remove dependency of these tests on crds generated in cmd_test
 func applyFile(file string, extraArgs ...string) error {
 	path := filepath.Join(util.GetModuleRoot(), "codegen/test/chart/crds", file)
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
+
 	return util.KubectlApply(b, extraArgs...)
 }
 
@@ -117,7 +119,8 @@ var _ = Describe("Generated Code", func() {
 		log.SetLogger(zaputil.New(
 			zaputil.Level(&logLevel),
 		))
-		err := applyFile("things.test.io_v1_crds.yaml")
+		err := applyFile("things.test.io_crds.yaml")
+
 		Expect(err).NotTo(HaveOccurred())
 		ns = randutils.RandString(4)
 		kube = kubehelp.MustKubeClient()

@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 	"google.golang.org/protobuf/types/known/structpb"
 	v1 "k8s.io/api/core/v1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -131,6 +132,14 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		"containerConfigs": containerConfigs,
 
 		"opVar": opVar,
+
+		"render_outer_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
+			return len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
+		},
+
+		"render_inner_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
+			return len(crd.Spec.Versions) > 1 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
+		},
 	}
 
 	for k, v := range skv2Funcs {
