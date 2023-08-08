@@ -8,6 +8,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $operatorVar := (lower_camel $operator.Name) -]]
 
 [[/* custom values defined in codegen model */]]
+[[- $containers := containerConfigs $operator -]]
 [[- $volumes := $operator.Deployment.Volumes -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
@@ -16,18 +17,14 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customServiceLabels := $operator.Service.CustomLabels -]]
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
-{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
+{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]] }}
 ---
-[[- $enabledCheck := print "{{- if $" $operatorVar ".enabled }}" -]]
-[[- if $operator.EnabledDependsOn -]]
-  [[- $enabledCheck = print "{{- if and $" $operatorVar ".enabled" -]]
-  [[- range $index, $element := $operator.EnabledDependsOn -]]
-    [[- $enabledCheck = print $enabledCheck " $.Values." $element ".enabled" -]]
-  [[- end -]]
-  [[- $enabledCheck = print $enabledCheck " }}" -]]
+[[- $operatorEnabledCondition := printf "\n{{- if $%s.enabled -}}\n" $operatorVar ]]
+[[- if (gt (len $operator.CustomEnableCondition) 0) ]]
+[[- $operatorEnabledCondition = printf "\n{{- if %s }}\n" $operator.CustomEnableCondition ]]
 [[- end ]]
 
-{{- define "[[ $operator.Name ]].deploymentSpec"}}
+{{- define "[[ $operator.Name ]].deploymentSpec" }}
 [[- $workloadKind := "Deployment" ]]
 [[- if $operator.Deployment.UseDaemonSet ]]
 [[- $workloadKind = "DaemonSet" ]]
@@ -82,8 +79,20 @@ spec:
       volumes:
 [[ toYaml $volumes | indent 6 ]]
 [[- end ]]
+[[- range $container := $containers -]]
+[[- if and (gt (len $container.EnableStatement) 0) ($container.Volumes) ]]
+[[- printf "\n{{- if %s -}}" $container.EnableStatement ]]
+[[- range $volume := $container.Volumes ]]
+[[ toYaml (toListItem $volume) | indent 6 ]]
+[[- end ]]
+{{- end }}
+[[- end ]]
+[[- end ]]
       containers:
-[[- range $container := containerConfigs $operator ]]
+[[- range $container := $containers ]]
+[[- if (gt (len $container.EnableStatement) 0) ]]
+[[- printf "\n{{- if %s -}}" $container.EnableStatement ]]
+[[- end ]]
 [[- $containerName := lower_camel $container.Name ]]
 [[- $containerVar := printf "$%s" $containerName ]]
 [[- $imageVar := printf "$%s%s" $containerName "Image" ]]
@@ -117,7 +126,7 @@ spec:
           requests:
             cpu: 500m
             memory: 256Mi
-{{- end}}
+{{- end }}
         {{- /*
           Render securityContext configs if it is set.
           If securityContext is not set, render the default securityContext.
@@ -139,7 +148,7 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- end}}
+{{- end }}
 [[- if $container.ReadinessProbe ]]
         readinessProbe:
 [[ toYaml $container.ReadinessProbe | indent 10 ]]
@@ -147,6 +156,9 @@ spec:
 [[- if $container.LivenessProbe ]]
         livenessProbe:
 [[ toYaml $container.LivenessProbe | indent 10 ]]
+[[- end ]]
+[[- if (gt (len $container.EnableStatement) 0) ]]
+{{- end }}
 [[- end ]]
 [[- end ]]
       {{- if $[[ $operatorVar ]]Image.pullSecret }}
@@ -156,7 +168,7 @@ spec:
 {{- end }} {{/* define "[[ $operator.Name ]].deploymentSpec" */}}
 
 {{/* Render [[ $operator.Name ]] deployment template with overrides from values*/}}
-[[ $enabledCheck ]]
+[[- $operatorEnabledCondition -]]
 {{- $[[ $operatorVar ]]DeploymentOverrides := dict }}
 {{- if $[[ $operatorVar ]].deploymentOverrides }}
 {{- $[[ $operatorVar ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
@@ -166,7 +178,7 @@ spec:
 {{- end }}
 ---
 
-[[ $enabledCheck ]]
+[[- $operatorEnabledCondition -]]
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -225,7 +237,7 @@ spec:
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
 
-[[ $enabledCheck ]]
+[[- $operatorEnabledCondition -]]
 {{/* Render [[ $operator.Name ]] service template with overrides from values*/}}
 {{- $[[ $operatorVar ]]ServiceOverrides := dict }}
 {{- if $[[ $operatorVar ]].serviceOverrides }}
@@ -237,6 +249,37 @@ spec:
 {{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]ServiceOverrides "[[ $operator.Name ]].serviceSpec") }}
 {{- end }}
 
----
-
+[[- range $container := $containers -]]
+[[- if and (gt (len $container.EnableStatement) 0) (gt (len $container.Service.Ports) 0) ]]
+[[ printf "\n---" ]]
+[[ $containerVar := printf "$%s" ($container.Name | lower_camel) ]]
+{{- [[ $containerVar ]] := [[ $container.ValuesVar ]] }}
+[[- printf "\n{{- if %s -}}" $container.EnableStatement ]]
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: [[ $container.Name ]]
+    [[- range $key, $value := $container.Service.CustomLabels ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
+  annotations:
+    app.kubernetes.io/name: [[ $container.Name ]]
+    [[- range $key, $value := $container.Service.CustomAnnotations ]]
+    [[ $key ]]: [[ $value ]]
+    [[- end ]]
+  name: [[ $container.Name ]]
+  namespace: {{ default .Release.Namespace $[[ $operatorVar ]].namespace }}
+spec:
+  selector:
+    app: [[ $operator.Name ]]
+  type: {{ [[ $containerVar ]].serviceType }}
+  ports:
+  [[- range $port := $container.Service.Ports ]]
+  - name: [[ lower $port.Name ]]
+    port: {{ [[ $containerVar ]].ports.[[ $port.Name ]] }}
+  [[- end ]]
+{{- end }}
+[[- end ]]
+[[- end ]]
 [[ end ]]

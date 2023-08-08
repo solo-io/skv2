@@ -2,10 +2,10 @@
 
 
 
-{{- $painterOriginalName := $.Values.overrideName}}
+{{- $painterOriginalName := $.Values.overrideName }}
 ---
 
-{{- define "painter-original-name.deploymentSpec"}}
+{{- define "painter-original-name.deploymentSpec" }}
 
 # Deployment manifest for painter-original-name
 
@@ -58,7 +58,7 @@ spec:
           requests:
             cpu: 500m
             memory: 256Mi
-{{- end}}
+{{- end }}
         {{- /*
           Render securityContext configs if it is set.
           If securityContext is not set, render the default securityContext.
@@ -80,7 +80,7 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- end}}
+{{- end }}
       {{- if $painterOriginalNameImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $painterOriginalNameImage.pullSecret }}
@@ -88,7 +88,7 @@ spec:
 {{- end }} {{/* define "painter-original-name.deploymentSpec" */}}
 
 {{/* Render painter-original-name deployment template with overrides from values*/}}
-{{- if $painterOriginalName.enabled }}
+{{- if $painterOriginalName.enabled -}}
 {{- $painterOriginalNameDeploymentOverrides := dict }}
 {{- if $painterOriginalName.deploymentOverrides }}
 {{- $painterOriginalNameDeploymentOverrides = $painterOriginalName.deploymentOverrides  }}
@@ -97,8 +97,7 @@ spec:
 {{ include "skv2.utils.merge" (list . $painterOriginalNameDeploymentOverrides "painter-original-name.deploymentSpec") }}
 {{- end }}
 ---
-
-{{- if $painterOriginalName.enabled }}
+{{- if $painterOriginalName.enabled -}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -120,8 +119,7 @@ metadata:
 {{- define "painter-original-name.serviceSpec"}}
 
 {{- end }} {{/* define "painter-original-name.serviceSpec" */}}
-
-{{- if $painterOriginalName.enabled }}
+{{- if $painterOriginalName.enabled -}}
 {{/* Render painter-original-name service template with overrides from values*/}}
 {{- $painterOriginalNameServiceOverrides := dict }}
 {{- if $painterOriginalName.serviceOverrides }}
@@ -132,6 +130,4 @@ metadata:
 
 {{ include "skv2.utils.merge" (list . $painterOriginalNameServiceOverrides "painter-original-name.serviceSpec") }}
 {{- end }}
-
----
 
