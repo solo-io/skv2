@@ -252,7 +252,8 @@ spec:
 [[- range $container := $containers -]]
 [[- if and (gt (len $container.EnableStatement) 0) (gt (len $container.Service.Ports) 0) ]]
 [[ printf "\n---" ]]
-[[ $containerVar := printf "$.Values.%s" (lower_camel $container.Name) ]]
+[[ $containerVar := printf "$%s" ($container.Name | lower_camel) ]]
+{{- [[ $containerVar ]] := [[ $container.ValuesVar ]] }}
 [[- printf "\n{{- if %s -}}" $container.EnableStatement ]]
 apiVersion: v1
 kind: Service

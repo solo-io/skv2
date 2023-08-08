@@ -214,6 +214,7 @@ spec:
 
 ---
 
+{{- $glooAgent := $.Values.glooAgent }}
 {{- if and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar) -}}
 apiVersion: v1
 kind: Service
@@ -227,10 +228,10 @@ metadata:
 spec:
   selector:
     app: gloo-mgmt-server
-  type: {{ $.Values.glooAgent.serviceType }}
+  type: {{ $glooAgent.serviceType }}
   ports:
   - name: grpc
-    port: {{ $.Values.glooAgent.ports.grpc }}
+    port: {{ $glooAgent.ports.grpc }}
 {{- end }}
 
 
