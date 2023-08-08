@@ -142,6 +142,8 @@ func UpdateStatusImmutable(
 
 	// https://github.com/solo-io/skv2/issues/344
 	copyOfObj.SetUID(existing.GetUID())
+	copyOfObj.SetCreationTimestamp(existing.GetCreationTimestamp())
+	copyOfObj.SetResourceVersion(existing.GetResourceVersion())
 
 	return update(ctx, c, copyOfObj)
 }
