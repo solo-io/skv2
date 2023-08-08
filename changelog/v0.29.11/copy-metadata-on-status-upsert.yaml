@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      "Copy metadata from the existing object to the upserted object when upserting a status."
