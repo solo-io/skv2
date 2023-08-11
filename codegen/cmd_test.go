@@ -1109,7 +1109,7 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:             "painter",
 						EnabledDependsOn: []string{"test1", "test2"},
-						Rbac: []rbacv1.PolicyRule{
+						ClusterRbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
 							},
@@ -1216,7 +1216,7 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:                   "painter",
 						NamespaceFromValuePath: "$.Values.common.namespace",
-						Rbac: []rbacv1.PolicyRule{
+						ClusterRbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
 							},
