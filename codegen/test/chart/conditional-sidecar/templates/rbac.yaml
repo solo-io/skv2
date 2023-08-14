@@ -5,6 +5,7 @@
 
 {{- $glooMgmtServer := $.Values.glooMgmtServer }}
 {{- if $glooMgmtServer.enabled -}}
+
 ---
 
 kind: ClusterRole

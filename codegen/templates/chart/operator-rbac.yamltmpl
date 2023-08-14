@@ -16,7 +16,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 [[- $operatorEnabledCondition = printf "\n{{- if %s }}\n" $operator.CustomEnableCondition -]]
 [[- end -]]
 [[- $operatorEnabledCondition -]]
-[[- if $operator.ClusterRbac -]]
+[[- if $operator.ClusterRbac ]]
 ---
 
 kind: ClusterRole
@@ -73,7 +73,7 @@ roleRef:
 
 [[- end ]][[/* if $operator.ClusterRbac */]]
 
-[[- if $operator.NamespaceRbac -]]
+[[- if $operator.NamespaceRbac ]]
 ---
 
 kind: Role
