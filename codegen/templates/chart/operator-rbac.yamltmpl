@@ -9,17 +9,13 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 [[- if $operator.ClusterRbac ]]
 # Rbac manifests for [[ $operator.Name ]]
 
-{{- $[[ $operatorVar ]] := [[ (opVar $operator)]]}}
+{{- $[[ $operatorVar ]] := [[ (opVar $operator)]] }}
 
-[[- $enabledCheck := print "{{- if $" $operatorVar ".enabled }}" -]]
-[[- if $operator.EnabledDependsOn -]]
-  [[- $enabledCheck = print "{{- if and $" $operatorVar ".enabled" -]]
-  [[- range $index, $element := $operator.EnabledDependsOn -]]
-    [[- $enabledCheck = print $enabledCheck " $.Values." $element ".enabled" -]]
-  [[- end -]]
-  [[- $enabledCheck = print $enabledCheck " }}" -]]
-[[- end ]]
-[[ $enabledCheck ]]
+[[- $operatorEnabledCondition := printf "\n{{- if $%s.enabled -}}\n" $operatorVar -]]
+[[- if (gt (len $operator.CustomEnableCondition) 0) -]]
+[[- $operatorEnabledCondition = printf "\n{{- if %s }}\n" $operator.CustomEnableCondition -]]
+[[- end -]]
+[[- $operatorEnabledCondition -]]
 ---
 
 kind: ClusterRole
@@ -34,7 +30,17 @@ metadata:
     app: [[ $operator.Name ]]
 rules:
 [[ toYaml $operator.ClusterRbac ]]
-
+[[- range $container := containerConfigs $operator -]]
+[[- if and ($container.Rbac) (gt (len $container.EnableStatement) 0) ]]
+[[ printf "{{- if %s }}" $container.EnableStatement ]]
+[[- end ]]
+[[- range $rule := $container.Rbac ]]
+[[ toYaml (toListItem $rule) ]]
+[[- end ]]
+[[- if and ($container.Rbac) (gt (len $container.EnableStatement) 0) ]]
+{{- end }}
+[[- end ]]
+[[- end ]]
 ---
 
 kind: ClusterRoleBinding
