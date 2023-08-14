@@ -6,7 +6,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 
 [[- range $operator := $.Operators -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
-[[- if $operator.Rbac ]]
+[[- if or $operator.ClusterRbac $operator.NamespaceRbac ]]
 # Rbac manifests for [[ $operator.Name ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator)]] }}
@@ -16,6 +16,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 [[- $operatorEnabledCondition = printf "\n{{- if %s }}\n" $operator.CustomEnableCondition -]]
 [[- end -]]
 [[- $operatorEnabledCondition -]]
+[[- if $operator.ClusterRbac ]]
 ---
 
 kind: ClusterRole
@@ -29,7 +30,7 @@ metadata:
   labels:
     app: [[ $operator.Name ]]
 rules:
-[[ toYaml $operator.Rbac ]]
+[[ toYaml $operator.ClusterRbac ]]
 [[- range $container := containerConfigs $operator -]]
 [[- if and ($container.Rbac) (gt (len $container.EnableStatement) 0) ]]
 [[ printf "{{- if %s }}" $container.EnableStatement ]]
@@ -70,6 +71,52 @@ roleRef:
 [[- end ]]
   apiGroup: rbac.authorization.k8s.io
 
-{{- end }}
+[[- end ]][[/* if $operator.ClusterRbac */]]
+
+[[- if $operator.NamespaceRbac ]]
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: [[ $operator.Name ]]
+[[- if $operator.NamespaceFromValuePath ]]
+  namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
+  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 [[- end ]]
+  labels:
+    app: [[ $operator.Name ]]
+rules:
+[[ toYaml $operator.NamespaceRbac ]]
+
+---
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: [[ $operator.Name ]]
+[[- if $operator.NamespaceFromValuePath ]]
+  namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
+  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
 [[- end ]]
+  labels:
+    app: [[ $operator.Name ]]
+subjects:
+- kind: ServiceAccount
+  name: [[ $operator.Name ]]
+[[- if $operator.NamespaceFromValuePath ]]
+  namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
+[[- else ]]
+  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+[[- end ]]
+roleRef:
+  kind: Role
+  name: [[ $operator.Name ]]
+  apiGroup: rbac.authorization.k8s.io
+
+[[- end ]][[/* if $operator.NamespaceRbac */]]
+{{- end }}[[/* $operatorEnabledCondition */]]
+[[- end ]][[/* if or $operator.ClusterRbac $operator.NamespaceRbac */]]
+[[- end ]][[/* range $operator := $.Operators */]]
