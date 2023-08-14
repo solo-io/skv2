@@ -57,7 +57,7 @@ var _ = Describe("Cmd", func() {
 								DefaultPort: 9900,
 							}},
 						},
-						Rbac: []rbacv1.PolicyRule{{
+						ClusterRbac: []rbacv1.PolicyRule{{
 							Verbs:     []string{"*"},
 							APIGroups: []string{"coordination.k8s.io"},
 							Resources: []string{"leases"},
@@ -1230,7 +1230,7 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:                  "painter",
 						CustomEnableCondition: "and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled",
-						Rbac: []rbacv1.PolicyRule{
+						ClusterRbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
 							},
@@ -1337,7 +1337,7 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:                   "painter",
 						NamespaceFromValuePath: "$.Values.common.namespace",
-						Rbac: []rbacv1.PolicyRule{
+						ClusterRbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
 							},

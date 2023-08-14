@@ -79,7 +79,7 @@ type Operator struct {
 	ClusterRbac []rbacv1.PolicyRule
 
 	// these populate the generated Role for the operator
-	NamespacedRbac []rbacv1.PolicyRule
+	NamespaceRbac []rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
 	Service Service
