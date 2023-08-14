@@ -1795,6 +1795,115 @@ roleRef:
 			map[string]interface{}{"FOO": map[string]interface{}{"valueFrom": map[string]interface{}{"secretKeyRef": map[string]interface{}{"name": "bar", "key": "baz"}}}},
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
+
+	It("can configure cluster-scoped and namespace-scoped RBAC", func() {
+		cmd := &Command{
+			RenderProtos: false,
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name:                  "painter",
+						CustomEnableCondition: "$painter.enabled",
+						ClusterRbac: []rbacv1.PolicyRule{
+							{
+								Verbs: []string{"GET"},
+							},
+						},
+						NamespaceRbac: []rbacv1.PolicyRule{
+							{
+								Verbs:     []string{"GET", "LIST", "WATCH"},
+								APIGroups: []string{""},
+								Resources: []string{"secrets"},
+							},
+						},
+					},
+				},
+				Values: nil,
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+
+		absPath, err := filepath.Abs("./codegen/test/chart/templates/rbac.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to get abs path")
+
+		rbac, err := os.ReadFile(absPath)
+		Expect(err).NotTo(HaveOccurred(), "failed to read rbac.yaml")
+		roleTmpl := `
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter
+  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  labels:
+    app: painter
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - GET
+  - LIST
+  - WATCH`
+		roleBindingTmpl := `
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter
+  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+roleRef:
+  kind: Role
+  name: painter
+  apiGroup: rbac.authorization.k8s.io`
+		clusterRoleTmpl := `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  labels:
+    app: painter
+rules:
+- verbs:
+  - GET`
+		clusterRoleBindingTmpl := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  apiGroup: rbac.authorization.k8s.io`
+		Expect(rbac).To(ContainSubstring(roleTmpl))
+		Expect(rbac).To(ContainSubstring(roleBindingTmpl))
+		Expect(rbac).To(ContainSubstring(clusterRoleTmpl))
+		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl))
+	})
 })
 
 func helmTemplate(path string, values interface{}) []byte {
