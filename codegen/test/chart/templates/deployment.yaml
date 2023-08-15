@@ -14,41 +14,31 @@ kind: Deployment
 metadata:
   labels:
     app: painter
-    deployment: labels
   annotations:
     app.kubernetes.io/name: painter
-    deployment: annotation
   name: painter
   namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
 spec:
   selector:
     matchLabels:
       app: painter
-      pod: labels
   template:
     metadata:
       labels:
         app: painter
-        pod: labels
       annotations:
         app.kubernetes.io/name: painter
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
-        pod: annotations
     spec:
       serviceAccountName: painter
-      volumes:
-      - emptyDir: {}
-        name: paint
       containers:
 {{- $painter := $.Values.painter }}
 {{- $painterImage := $painter.image }}
       - name: painter
         image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
         imagePullPolicy: {{ $painterImage.pullPolicy }}
-        args:
-        - foo
 {{- if $painter.env }}
         env:
 {{ toYaml $painter.env | indent 10 }}
@@ -89,69 +79,6 @@ spec:
             drop:
             - ALL
 {{- end }}
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 10
-{{- $palette := $.Values.painter.sidecars.palette }}
-{{- $paletteImage := $palette.image }}
-      - name: palette
-        image: {{ $paletteImage.registry }}/{{ $paletteImage.repository }}:{{ $paletteImage.tag }}
-        imagePullPolicy: {{ $paletteImage.pullPolicy }}
-        args:
-        - bar
-        - baz
-{{- if $palette.env }}
-        env:
-{{ toYaml $palette.env | indent 10 }}
-{{- else if $palette.extraEnvs }}
-        env:
-{{- end }}
-{{- range $name, $item := $palette.extraEnvs }}
-          - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
-{{- end }}
-        volumeMounts:
-        - mountPath: /etc/paint
-          name: paint
-        resources:
-{{- if $palette.resources }}
-{{ toYaml $palette.resources | indent 10}}
-{{- else}}
-          requests:
-            cpu: 500m
-            memory: 256Mi
-{{- end }}
-        {{- /*
-          Render securityContext configs if it is set.
-          If securityContext is not set, render the default securityContext.
-          If securityContext is set to 'false', render an empty map.
-        */}}
-        securityContext:
-{{- if or ($palette.securityContext) (eq "map[]" (printf "%v" $palette.securityContext)) }}
-{{ toYaml $palette.securityContext | indent 10}}
-{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
-{{- else if eq (ternary $palette.securityContext true (eq "bool" (printf "%T" $palette.securityContext))) false }}
-          {}
-{{- else}}
-          runAsNonRoot: true
-          {{- if not $painter.floatingUserId }}
-          runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
-          {{- end }}
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-{{- end }}
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 60
       {{- if $painterImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $painterImage.pullSecret }}
@@ -159,7 +86,7 @@ spec:
 {{- end }} {{/* define "painter.deploymentSpec" */}}
 
 {{/* Render painter deployment template with overrides from values*/}}
-{{- if $painter.enabled -}}
+{{- if $painter.enabled }}
 {{- $painterDeploymentOverrides := dict }}
 {{- if $painter.deploymentOverrides }}
 {{- $painterDeploymentOverrides = $painter.deploymentOverrides  }}
@@ -168,7 +95,7 @@ spec:
 {{ include "skv2.utils.merge" (list . $painterDeploymentOverrides "painter.deploymentSpec") }}
 {{- end }}
 ---
-{{- if $painter.enabled -}}
+{{- if $painter.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -190,7 +117,7 @@ metadata:
 {{- define "painter.serviceSpec"}}
 
 {{- end }} {{/* define "painter.serviceSpec" */}}
-{{- if $painter.enabled -}}
+{{- if $painter.enabled }}
 {{/* Render painter service template with overrides from values*/}}
 {{- $painterServiceOverrides := dict }}
 {{- if $painter.serviceOverrides }}
