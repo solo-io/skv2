@@ -4,7 +4,7 @@
 # Rbac manifests for gloo-mgmt-server
 
 {{- $glooMgmtServer := $.Values.glooMgmtServer }}
-{{- if $glooMgmtServer.enabled -}}
+{{- if $glooMgmtServer.enabled }}
 
 ---
 
