@@ -11,7 +11,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator)]] }}
 
-[[- $operatorEnabledCondition := printf "\n{{- if $%s.enabled -}}\n" $operatorVar -]]
+[[- $operatorEnabledCondition := printf "\n{{- if $%s.enabled }}\n" $operatorVar -]]
 [[- if (gt (len $operator.CustomEnableCondition) 0) -]]
 [[- $operatorEnabledCondition = printf "\n{{- if %s }}\n" $operator.CustomEnableCondition -]]
 [[- end -]]
