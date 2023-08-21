@@ -75,11 +75,8 @@ type Operator struct {
 	// deployment config
 	Deployment Deployment
 
-	// these populate the generated ClusterRole for the operator
-	ClusterRbac []rbacv1.PolicyRule
-
-	// these populate the generated Role for the operator
-	NamespaceRbac []rbacv1.PolicyRule
+	// these populate the generated ClusterRole or Role for the operator
+	Rbac []rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
 	Service Service
