@@ -1525,10 +1525,7 @@ roleRef:
 										},
 									},
 									ReadinessProbe: &ReadinessProbe{
-										Path:                "/",
-										Port:                "8080",
-										PeriodSeconds:       10,
-										InitialDelaySeconds: 5,
+										Exec: []string{"redis-cli", "ping"},
 									},
 								},
 

@@ -90,11 +90,10 @@ spec:
             - ALL
 {{- end }}
         readinessProbe:
-          httpGet:
-            path: /
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 10
+          exec:
+            command:
+            - redis-cli
+            - ping
 {{- $palette := $.Values.painter.sidecars.palette }}
 {{- $paletteImage := $palette.image }}
       - name: palette

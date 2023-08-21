@@ -134,6 +134,7 @@ type Container struct {
 }
 
 type ReadinessProbe struct {
+	Exec                []string // optional: if specified, the readiness probe will be an exec probe with the specified commands
 	Port                string
 	Path                string
 	PeriodSeconds       int
