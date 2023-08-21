@@ -1525,7 +1525,9 @@ roleRef:
 										},
 									},
 									ReadinessProbe: &ReadinessProbe{
-										Exec: []string{"redis-cli", "ping"},
+										Exec:                []string{"redis-cli", "ping"},
+										PeriodSeconds:       10,
+										InitialDelaySeconds: 5,
 									},
 								},
 

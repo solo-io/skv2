@@ -94,6 +94,8 @@ spec:
             command:
             - redis-cli
             - ping
+          initialDelaySeconds: 5
+          periodSeconds: 10
 {{- $palette := $.Values.painter.sidecars.palette }}
 {{- $paletteImage := $palette.image }}
       - name: palette

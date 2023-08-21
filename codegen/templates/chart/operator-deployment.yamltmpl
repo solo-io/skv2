@@ -161,9 +161,9 @@ spec:
           httpGet:
             path: [[ $container.ReadinessProbe.Path ]]
             port: [[ $container.ReadinessProbe.Port ]]
+        [[- end ]]
           initialDelaySeconds: [[ $container.ReadinessProbe.InitialDelaySeconds ]]
           periodSeconds: [[ $container.ReadinessProbe.PeriodSeconds ]]
-        [[- end ]]
 [[- end ]]
 [[- if $container.LivenessProbe ]]
         livenessProbe:
