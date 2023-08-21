@@ -151,7 +151,11 @@ spec:
 {{- end }}
 [[- if $container.ReadinessProbe ]]
         readinessProbe:
-[[ toYaml $container.ReadinessProbe | indent 10 ]]
+          httpGet:
+            path: [[ $container.readinessProbe.Path ]]
+            port: [[ $container.readinessProbe.Port ]]
+          initialDelaySeconds: [[ $container.readinessProbe.InitialDelaySeconds ]]
+          periodSeconds: [[ $container.readinessProbe.PeriodSeconds ]]
 [[- end ]]
 [[- if $container.LivenessProbe ]]
         livenessProbe:
