@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -57,7 +56,7 @@ var _ = Describe("Cmd", func() {
 								DefaultPort: 9900,
 							}},
 						},
-						ClusterRbac: []rbacv1.PolicyRule{{
+						Rbac: []rbacv1.PolicyRule{{
 							Verbs:     []string{"*"},
 							APIGroups: []string{"coordination.k8s.io"},
 							Resources: []string{"leases"},
@@ -1230,7 +1229,7 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:                  "painter",
 						CustomEnableCondition: "and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled",
-						ClusterRbac: []rbacv1.PolicyRule{
+						Rbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
 							},
@@ -1337,7 +1336,7 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:                   "painter",
 						NamespaceFromValuePath: "$.Values.common.namespace",
-						ClusterRbac: []rbacv1.PolicyRule{
+						Rbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
 							},
@@ -1412,13 +1411,13 @@ metadata:
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedClusterRoleTmpl := `
-kind: ClusterRole
+kind: {{ $isClusterScoped }}Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}`
 
 		expectedClusterRoleBindingTmpl := `
-kind: ClusterRoleBinding
+kind: {{ $isClusterScoped }}RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
@@ -1429,7 +1428,7 @@ subjects:
   name: painter
   namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}
 roleRef:
-  kind: ClusterRole
+  kind: {{ $isClusterScoped }}Role
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
   apiGroup: rbac.authorization.k8s.io`
 
@@ -1634,7 +1633,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			bytes, err := ioutil.ReadFile(crdFilePath)
+			bytes, err := os.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(bytes)).To(ContainSubstring("description: OpenAPI gen test for recursive fields"))
 		})
@@ -1646,7 +1645,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			bytes, err := ioutil.ReadFile(crdFilePath)
+			bytes, err := os.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
 			paintCrdYaml := ""
 			for _, crd := range strings.Split(string(bytes), "---") {
@@ -1676,7 +1675,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			bytes, err := ioutil.ReadFile(crdFilePath)
+			bytes, err := os.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(bytes)).NotTo(ContainSubstring("description:"))
 		})
@@ -1817,7 +1816,7 @@ roleRef:
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
 
-	It("can configure cluster-scoped and namespace-scoped RBAC", func() {
+	It("can configure namespace-scoped RBAC", func() {
 		cmd := &Command{
 			RenderProtos: false,
 			Chart: &Chart{
@@ -1825,12 +1824,7 @@ roleRef:
 					{
 						Name:                  "painter",
 						CustomEnableCondition: "$painter.enabled",
-						ClusterRbac: []rbacv1.PolicyRule{
-							{
-								Verbs: []string{"GET"},
-							},
-						},
-						NamespaceRbac: []rbacv1.PolicyRule{
+						Rbac: []rbacv1.PolicyRule{
 							{
 								Verbs:     []string{"GET", "LIST", "WATCH"},
 								APIGroups: []string{""},
@@ -1863,11 +1857,10 @@ roleRef:
 		rbac, err := os.ReadFile(absPath)
 		Expect(err).NotTo(HaveOccurred(), "failed to read rbac.yaml")
 		roleTmpl := `
-kind: Role
+kind: {{ $isClusterScoped }}Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
   labels:
     app: painter
 rules:
@@ -1880,33 +1873,7 @@ rules:
   - LIST
   - WATCH`
 		roleBindingTmpl := `
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
-  labels:
-    app: painter
-subjects:
-- kind: ServiceAccount
-  name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
-roleRef:
-  kind: Role
-  name: painter
-  apiGroup: rbac.authorization.k8s.io`
-		clusterRoleTmpl := `
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
-  labels:
-    app: painter
-rules:
-- verbs:
-  - GET`
-		clusterRoleBindingTmpl := `
-kind: ClusterRoleBinding
+kind: {{ $isClusterScoped }}RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
@@ -1917,13 +1884,11 @@ subjects:
   name: painter
   namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
 roleRef:
-  kind: ClusterRole
+  kind: {{ $isClusterScoped }}Role
   name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
   apiGroup: rbac.authorization.k8s.io`
-		Expect(rbac).To(ContainSubstring(roleTmpl))
-		Expect(rbac).To(ContainSubstring(roleBindingTmpl))
-		Expect(rbac).To(ContainSubstring(clusterRoleTmpl))
-		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl))
+		Expect(string(rbac)).To(ContainSubstring(roleTmpl))
+		Expect(string(rbac)).To(ContainSubstring(roleBindingTmpl))
 	})
 })
 
@@ -1931,7 +1896,7 @@ func helmTemplate(path string, values interface{}) []byte {
 	raw, err := yaml.Marshal(values)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
-	helmValuesFile, err := ioutil.TempFile("", "-helm-values-skv2-test")
+	helmValuesFile, err := os.CreateTemp("", "-helm-values-skv2-test")
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 	_, err = helmValuesFile.Write(raw)
@@ -1952,7 +1917,7 @@ func helmTemplate(path string, values interface{}) []byte {
 }
 
 func helmValuesFromFile(path string) map[string]interface{} {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	Expect(err).NotTo(HaveOccurred())
 
 	out := make(map[string]interface{})
