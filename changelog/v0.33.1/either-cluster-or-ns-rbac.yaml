@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink:   https://github.com/solo-io/gloo-mesh-enterprise/issues/10521
+    description: >
+      Fixes previous ns-scoped rbac implementation to only allow specifying cluster- or ns-scoped rbac policy.
+    resolvesIssue: false
