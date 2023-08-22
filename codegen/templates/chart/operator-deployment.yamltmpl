@@ -167,7 +167,7 @@ spec:
         [[- end ]]
         [[- if $container.ReadinessProbe.PeriodSeconds ]]
           periodSeconds: [[ $container.ReadinessProbe.PeriodSeconds ]]
-        [[- end]]
+        [[- end ]]
 [[- end ]]
 [[- if $container.LivenessProbe ]]
         livenessProbe:
