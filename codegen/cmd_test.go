@@ -1842,7 +1842,7 @@ roleRef:
 		rbac, err := os.ReadFile(absPath)
 		Expect(err).NotTo(HaveOccurred(), "failed to read rbac.yaml")
 		roleTmpl := `
-kind: Role
+kind: {{ $isClusterScoped }}Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
@@ -1859,7 +1859,7 @@ rules:
   - LIST
   - WATCH`
 		roleBindingTmpl := `
-kind: RoleBinding
+kind: {{ $isClusterScoped }}RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
@@ -1871,7 +1871,7 @@ subjects:
   name: painter
   namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
 roleRef:
-  kind: Role
+  kind: {{ $isClusterScoped }}Role
   name: painter
   apiGroup: rbac.authorization.k8s.io`
 		clusterRoleTmpl := `
