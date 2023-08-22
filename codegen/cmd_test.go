@@ -56,7 +56,7 @@ var _ = Describe("Cmd", func() {
 								DefaultPort: 9900,
 							}},
 						},
-						Rbac: []rbacv1.PolicyRule{{
+						ClusterRbac: []rbacv1.PolicyRule{{
 							Verbs:     []string{"*"},
 							APIGroups: []string{"coordination.k8s.io"},
 							Resources: []string{"leases"},
@@ -1229,7 +1229,7 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:                  "painter",
 						CustomEnableCondition: "and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled",
-						Rbac: []rbacv1.PolicyRule{
+						ClusterRbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
 							},
@@ -1336,7 +1336,7 @@ var _ = Describe("Cmd", func() {
 					{
 						Name:                   "painter",
 						NamespaceFromValuePath: "$.Values.common.namespace",
-						Rbac: []rbacv1.PolicyRule{
+						ClusterRbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
 							},
@@ -1411,13 +1411,13 @@ metadata:
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedClusterRoleTmpl := `
-kind: {{ $isClusterScoped }}Role
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}`
 
 		expectedClusterRoleBindingTmpl := `
-kind: {{ $isClusterScoped }}RoleBinding
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
@@ -1428,7 +1428,7 @@ subjects:
   name: painter
   namespace: {{ $.Values.common.namespace | default $.Release.Namespace }}
 roleRef:
-  kind: {{ $isClusterScoped }}Role
+  kind: ClusterRole
   name: painter-{{ $.Values.common.namespace | default $.Release.Namespace }}
   apiGroup: rbac.authorization.k8s.io`
 
@@ -1816,7 +1816,7 @@ roleRef:
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
 
-	It("can configure namespace-scoped RBAC", func() {
+	It("can configure cluster-scoped and namespace-scoped RBAC", func() {
 		cmd := &Command{
 			RenderProtos: false,
 			Chart: &Chart{
@@ -1824,7 +1824,12 @@ roleRef:
 					{
 						Name:                  "painter",
 						CustomEnableCondition: "$painter.enabled",
-						Rbac: []rbacv1.PolicyRule{
+						ClusterRbac: []rbacv1.PolicyRule{
+							{
+								Verbs: []string{"GET"},
+							},
+						},
+						NamespaceRbac: []rbacv1.PolicyRule{
 							{
 								Verbs:     []string{"GET", "LIST", "WATCH"},
 								APIGroups: []string{""},
@@ -1860,7 +1865,8 @@ roleRef:
 kind: {{ $isClusterScoped }}Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  name: painter
+  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
   labels:
     app: painter
 rules:
@@ -1876,7 +1882,8 @@ rules:
 kind: {{ $isClusterScoped }}RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  name: painter
+  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
   labels:
     app: painter
 subjects:
@@ -1885,10 +1892,37 @@ subjects:
   namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
 roleRef:
   kind: {{ $isClusterScoped }}Role
+  name: painter
+  apiGroup: rbac.authorization.k8s.io`
+		clusterRoleTmpl := `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  labels:
+    app: painter
+rules:
+- verbs:
+  - GET`
+		clusterRoleBindingTmpl := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+roleRef:
+  kind: ClusterRole
   name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
   apiGroup: rbac.authorization.k8s.io`
 		Expect(string(rbac)).To(ContainSubstring(roleTmpl))
 		Expect(string(rbac)).To(ContainSubstring(roleBindingTmpl))
+		Expect(rbac).To(ContainSubstring(clusterRoleTmpl))
+		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl))
 	})
 })
 

@@ -5,15 +5,10 @@
 
 {{- $glooMgmtServer := $.Values.glooMgmtServer }}
 {{- if $glooMgmtServer.enabled }}
-{{- $isClusterScoped := "Cluster" }}
-{{- if $glooMgmtServer.watchNamespaces }}
-  {{- if len $glooMgmtServer.watchNamespaces }}
-    {{- $isClusterScoped = "" }}
-  {{- end }}
-{{- end }}
+
 ---
 
-kind: {{ $isClusterScoped }}Role
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: gloo-mgmt-server-{{ default .Release.Namespace $.Values.glooMgmtServer.namespace }}
@@ -36,7 +31,7 @@ rules:
 {{- end }}
 ---
 
-kind: {{ $isClusterScoped }}RoleBinding
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: gloo-mgmt-server-{{ default .Release.Namespace $.Values.glooMgmtServer.namespace }}
@@ -47,8 +42,7 @@ subjects:
   name: gloo-mgmt-server
   namespace: {{ default .Release.Namespace $.Values.glooMgmtServer.namespace }}
 roleRef:
-  kind: {{ $isClusterScoped }}Role
+  kind: ClusterRole
   name: gloo-mgmt-server-{{ default .Release.Namespace $.Values.glooMgmtServer.namespace }}
   apiGroup: rbac.authorization.k8s.io
-
 {{- end }}
