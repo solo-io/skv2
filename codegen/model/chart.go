@@ -135,8 +135,8 @@ type Container struct {
 
 type ReadinessProbe struct {
 	Exec                []string // optional: if specified, the readiness probe will be an exec probe with the specified commands
+	Path                string   // Path to access on the HTTP server. Either specify Path and Port for httpGet probes, or specify Exec
 	Port                string
-	Path                string
 	PeriodSeconds       int
 	InitialDelaySeconds int
 }
