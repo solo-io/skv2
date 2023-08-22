@@ -121,13 +121,21 @@ type Container struct {
 	// not configurable via helm values
 	Args           []string
 	VolumeMounts   []corev1.VolumeMount
-	ReadinessProbe *corev1.Probe
+	ReadinessProbe *ReadinessProbe
 	LivenessProbe  *corev1.Probe
 
 	Image           Image
 	Env             []corev1.EnvVar
 	Resources       *corev1.ResourceRequirements
 	SecurityContext *corev1.SecurityContext
+}
+
+type ReadinessProbe struct {
+	Exec                []string // optional: if specified, the readiness probe will be an exec probe with the specified commands
+	Port                string
+	Path                string
+	PeriodSeconds       int
+	InitialDelaySeconds int
 }
 
 // sidecars require a container config and a unique name

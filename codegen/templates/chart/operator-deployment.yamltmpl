@@ -151,7 +151,23 @@ spec:
 {{- end }}
 [[- if $container.ReadinessProbe ]]
         readinessProbe:
-[[ toYaml $container.ReadinessProbe | indent 10 ]]
+        [[- if $container.ReadinessProbe.Exec ]]
+          exec:
+            command:
+            [[- range $command := $container.ReadinessProbe.Exec ]]
+            - [[ $command ]]
+            [[- end ]]
+        [[- else ]]
+          httpGet:
+            path: [[ $container.ReadinessProbe.Path ]]
+            port: [[ $container.ReadinessProbe.Port ]]
+        [[- end ]]
+        [[- if $container.ReadinessProbe.InitialDelaySeconds ]]
+          initialDelaySeconds: [[ $container.ReadinessProbe.InitialDelaySeconds ]]
+        [[- end ]]
+        [[- if $container.ReadinessProbe.PeriodSeconds ]]
+          periodSeconds: [[ $container.ReadinessProbe.PeriodSeconds ]]
+        [[- end]]
 [[- end ]]
 [[- if $container.LivenessProbe ]]
         livenessProbe:
