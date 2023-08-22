@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink:   https://github.com/solo-io/gloo-mesh-enterprise/issues/10521
+    description: >
+      Fixes whitespace issue in operator rbac template.
+    resolvesIssue: false
