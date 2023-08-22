@@ -115,13 +115,21 @@ type Container struct {
 	// not configurable via helm values
 	Args           []string
 	VolumeMounts   []v1.VolumeMount
-	ReadinessProbe *v1.Probe
+	ReadinessProbe *ReadinessProbe
 	LivenessProbe  *v1.Probe
 
 	Image           Image
 	Env             []v1.EnvVar
 	Resources       *v1.ResourceRequirements
 	SecurityContext *v1.SecurityContext
+}
+
+type ReadinessProbe struct {
+	Exec                []string // optional: if specified, the readiness probe will be an exec probe with the specified commands
+	Path                string   // Path to access on the HTTP server. Either specify Path and Port for httpGet probes, or specify Exec
+	Port                string
+	PeriodSeconds       int
+	InitialDelaySeconds int
 }
 
 // sidecars require a container config and a unique name
