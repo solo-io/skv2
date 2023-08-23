@@ -1,10 +1,14 @@
 package render_test
 
 import (
+	"fmt"
+	"strings"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/render"
@@ -51,13 +55,13 @@ var _ = Describe("ManifestsRenderer", func() {
 		Expect(obj).To(Equal(expectedObj))
 	})
 
-	Describe("CRD gen", func() {
+	Describe("Generate non-alpha versioned CRD", func() {
 		var (
-			grp model.Group
+			grps []*model.Group
 		)
 
 		BeforeEach(func() {
-			grp = model.Group{
+			grps = []*model.Group{{
 				RenderManifests: true,
 				AddChartVersion: "1.0.0",
 				Resources: []model.Resource{
@@ -69,25 +73,375 @@ var _ = Describe("ManifestsRenderer", func() {
 								Message: &v1.AcrylicType{},
 							},
 						},
+						Stored: true,
 					},
-				},
+				}},
 			}
-			grp.Init()
+			for i := range grps {
+				grps[i].Init()
+			}
 		})
 		It("Renderse manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir",
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
 				nil,
 				model.GroupOptions{},
-				grp,
+				grps,
 			)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(outFiles).To(HaveLen(1))
+			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
 			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": b6ec737002f7d02e"))
+			// only alpha versioned CRDs contain logic to conditionally render templates
+			Expect(outFiles[0].Content).To(Equal(outFiles[0].Content))
+		})
+	})
 
+	Describe("Generate alpha versioned CRD", func() {
+		var (
+			grps []*model.Group
+		)
+
+		BeforeEach(func() {
+			grps = []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v1alpha1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: true,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+		})
+		It("Renders manifests with template and spec hash", func() {
+
+			// get api-level code gen options from descriptors
+			outFiles, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
+			// only alpha versioned CRDs contain logic to conditionally render templates
+			Expect(outFiles[1].Content).To(HavePrefix("\n{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}"))
+			Expect(outFiles[1].Content).To(HaveSuffix("{{- end  }}\n---\n"))
+			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
+			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": 80c06d3e2484e4c8"))
+		})
+	})
+
+	Describe("Skip template for grandfathered alpha versioned CRD", func() {
+		var (
+			grps []*model.Group
+		)
+
+		BeforeEach(func() {
+			grps = []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v1alpha1",
+				},
+				RenderManifests:           true,
+				AddChartVersion:           "1.0.0",
+				SkipConditionalCRDLoading: true,
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: true,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+		})
+		It("Renders manifests without template", func() {
+			// get api-level code gen options from descriptors
+			outFiles, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
+			// only alpha versioned CRDs contain logic to conditionally render templates
+			Expect(outFiles[1].Content).ToNot(ContainSubstring("{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}"))
+			Expect(outFiles[1].Content).ToNot(ContainSubstring("{{- end  }}"))
+		})
+	})
+
+	Describe("Generate combined alpha, grandfathered alpha, and non-alpha versioned CRD", func() {
+		var (
+			grps []*model.Group
+		)
+
+		BeforeEach(func() {
+			grps = []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v3alpha1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v2",
+					},
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					}},
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1alpha1",
+					},
+					RenderManifests:           true,
+					AddChartVersion:           "1.0.0",
+					SkipConditionalCRDLoading: true,
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+		})
+		It("Renderse manifests with chart and spec hash", func() {
+
+			// get api-level code gen options from descriptors
+			outFiles, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
+			// only v3alpha1 version of the CRDs is conditionally rendered, v2 and v1alpha1 have no conditions surrounding them
+			Expect(outFiles[1].Content).To(ContainSubstring("subresources: {}\n  {{- if has \"kinds.things.test.io/v3alpha1\" $.Values.enabledExperimentalApi }}"))
+			Expect(outFiles[1].Content).ToNot(ContainSubstring("{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}\n  - name: v2alpha1"))
+			Expect(outFiles[1].Content).To(ContainSubstring("{{- end }}\n---\n"))
+			Expect(strings.Count(outFiles[1].Content, "{{- end }}")).To(Equal(1))
+		})
+	})
+
+	Describe("Generate combined alpha, grandfathered alpha, and non-alpha versioned CRD", func() {
+		var (
+			grps []*model.Group
+		)
+
+		BeforeEach(func() {
+			grps = []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v3alpha1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v2",
+					},
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					}},
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1alpha1",
+					},
+					RenderManifests:           true,
+					AddChartVersion:           "1.0.0",
+					SkipConditionalCRDLoading: true,
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+		})
+		It("Renderse manifests with chart and spec hash", func() {
+
+			// get api-level code gen options from descriptors
+			outFiles, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
+			// only v3alpha1 version of the CRDs is conditionally rendered, v2 and v1alpha1 have no conditions surrounding them
+			expectedTemplateString := "subresources: {}\n  {{- if has \"kinds.things.test.io/v3alpha1\" $.Values.enabledExperimentalApi }}"
+			Expect(outFiles[1].Content).To(ContainSubstring(expectedTemplateString))
+			Expect(strings.Count(outFiles[1].Content, expectedTemplateString)).To(Equal(1))
+			Expect(outFiles[1].Content).ToNot(ContainSubstring("{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}\n  - name: v2alpha1"))
+			Expect(outFiles[1].Content).To(ContainSubstring("{{- end }}\n---\n"))
+			Expect(strings.Count(outFiles[1].Content, "{{- end }}\n---\n")).To(Equal(1))
+			Expect(strings.Count(outFiles[1].Content, "{{- end }}")).To(Equal(1))
+		})
+	})
+
+	Describe("Render CRD template when 'EnabledAlphaApiFlagName' isn't set", func() {
+		It("and resource contains an alpha version that should not be skipped", func() {
+			grps := []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v3alpha1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+
+			_, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).ToNot(BeNil())
+			Expect(err).To(Equal(fmt.Errorf("error rendering CRD template for kind kind: 'EnabledAlphaApiFlagName' is not defined")))
+		})
+		It("and resource contains an alpha version that should be skipped", func() {
+			grps := []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v3alpha1",
+				},
+				RenderManifests:           true,
+				AddChartVersion:           "1.0.0",
+				SkipConditionalCRDLoading: true,
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+
+			_, err := render.RenderManifests(
+				"appName", "manifestDir", "protoDir", "",
+				nil,
+				model.GroupOptions{},
+				grps,
+			)
+			Expect(err).To(BeNil())
 		})
 	})
 })

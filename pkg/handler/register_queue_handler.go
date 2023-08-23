@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"sync"
 
 	apqueue "github.com/solo-io/skv2/pkg/workqueue"
@@ -14,7 +15,7 @@ import (
 func QueueRegisteringHandler(cluster string, queues *apqueue.MultiClusterQueues) handler.EventHandler {
 	do := &sync.Once{}
 	return &handler.Funcs{
-		CreateFunc: func(_ event.CreateEvent, queue workqueue.RateLimitingInterface) {
+		CreateFunc: func(ctx context.Context, _ event.CreateEvent, queue workqueue.RateLimitingInterface) {
 			do.Do(func() {
 				queues.Set(cluster, queue)
 			})

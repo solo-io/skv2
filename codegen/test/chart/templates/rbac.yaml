@@ -4,7 +4,7 @@
 # Rbac manifests for painter
 
 {{- $painter := $.Values.painter }}
-{{- if $painter.enabled }}
+{{ if $painter.enabled }}
 
 ---
 
@@ -33,15 +33,9 @@ roleRef:
   kind: ClusterRole
   name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
   apiGroup: rbac.authorization.k8s.io
-{{- $isClusterScoped := "Cluster" }}
-{{- if $painter.watchNamespaces }}
-  {{- if len $painter.watchNamespaces }}
-    {{- $isClusterScoped = "" }}
-  {{- end }}
-{{- end }}
 ---
 
-kind: {{ $isClusterScoped }}Role
+kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
@@ -60,7 +54,7 @@ rules:
 
 ---
 
-kind: {{ $isClusterScoped }}RoleBinding
+kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
@@ -72,7 +66,7 @@ subjects:
   name: painter
   namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
 roleRef:
-  kind: {{ $isClusterScoped }}Role
+  kind: Role
   name: painter
   apiGroup: rbac.authorization.k8s.io
 {{- end }}

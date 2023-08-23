@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	goyaml "gopkg.in/yaml.v3"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -146,8 +147,8 @@ var _ = Describe("Cmd", func() {
 		deployment, err := os.ReadFile(absPath)
 		Expect(err).NotTo(HaveOccurred(), "failed to read deployment.yaml")
 
-		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s -}}", agentConditional)))
-		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
+		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{ if %s }}", agentConditional)))
+		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{ if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
 		Expect(deployment).To(ContainSubstring("name: agent-volume"))
 		Expect(deployment).To(ContainSubstring("{{ $glooAgent.ports.grpc }}"))
 	})
@@ -165,11 +166,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -244,6 +247,7 @@ var _ = Describe("Cmd", func() {
 								Name:      "KubernetesCluster",
 								GoPackage: "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1",
 							}},
+							Stored: true,
 						},
 					},
 					RenderManifests:  true,
@@ -282,11 +286,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -367,11 +373,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -486,11 +494,13 @@ var _ = Describe("Cmd", func() {
 							Kind:   "Paint",
 							Spec:   Field{Type: Type{Name: "PaintSpec"}},
 							Status: &Field{Type: Type{Name: "PaintStatus"}},
+							Stored: true,
 						},
 						{
 							Kind:          "ClusterResource",
 							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 							ClusterScoped: true,
+							Stored:        true,
 						},
 					},
 					RenderManifests:  true,
@@ -781,13 +791,9 @@ var _ = Describe("Cmd", func() {
 										Value: "BAR",
 									},
 								},
-								ReadinessProbe: &v1.Probe{
-									ProbeHandler: v1.ProbeHandler{
-										HTTPGet: &v1.HTTPGetAction{
-											Path: "/",
-											Port: intstr.FromInt(8080),
-										},
-									},
+								ReadinessProbe: &ReadinessProbe{
+									Path:                "/",
+									Port:                "8080",
 									PeriodSeconds:       10,
 									InitialDelaySeconds: 5,
 								},
@@ -944,13 +950,9 @@ var _ = Describe("Cmd", func() {
 										Value: "BAR",
 									},
 								},
-								ReadinessProbe: &v1.Probe{
-									ProbeHandler: v1.ProbeHandler{
-										HTTPGet: &v1.HTTPGetAction{
-											Path: "/",
-											Port: intstr.FromInt(8080),
-										},
-									},
+								ReadinessProbe: &ReadinessProbe{
+									Path:                "/",
+									Port:                "8080",
 									PeriodSeconds:       10,
 									InitialDelaySeconds: 5,
 								},
@@ -1260,7 +1262,7 @@ var _ = Describe("Cmd", func() {
 		fileContents, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(string(fileContents)).To(ContainSubstring("{{- if and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled }}"))
+		Expect(string(fileContents)).To(ContainSubstring("{{ if and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled }}"))
 
 		expectedSA := "kind: ServiceAccount\nmetadata:\n  labels:\n    app: painter\n  name: painter\n"
 		expectedCR := "kind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: painter"
@@ -1497,11 +1499,13 @@ roleRef:
 								Kind:   "Paint",
 								Spec:   Field{Type: Type{Name: "PaintSpec"}},
 								Status: &Field{Type: Type{Name: "PaintStatus"}},
+								Stored: true,
 							},
 							{
 								Kind:          "ClusterResource",
 								Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
 								ClusterScoped: true,
+								Stored:        true,
 							},
 						},
 						RenderManifests:         true,
@@ -1532,13 +1536,8 @@ roleRef:
 											Value: "BAR",
 										},
 									},
-									ReadinessProbe: &v1.Probe{
-										ProbeHandler: v1.ProbeHandler{
-											HTTPGet: &v1.HTTPGetAction{
-												Path: "/",
-												Port: intstr.FromInt(8080),
-											},
-										},
+									ReadinessProbe: &ReadinessProbe{
+										Exec:                []string{"redis-cli", "ping"},
 										PeriodSeconds:       10,
 										InitialDelaySeconds: 5,
 									},
@@ -1617,7 +1616,7 @@ roleRef:
 		})
 
 		It("can include field descriptions", func() {
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
@@ -1627,16 +1626,25 @@ roleRef:
 			Expect(string(bytes)).To(ContainSubstring("description: OpenAPI gen test for recursive fields"))
 		})
 
+		// TODO (dmitri-d): kube_crud_test and kube_multicluster_test depend on crds in this suite.
 		It("generates google.protobuf.Value with no type", func() {
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
 			bytes, err := ioutil.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
+			paintCrdYaml := ""
+			for _, crd := range strings.Split(string(bytes), "---") {
+				if strings.Contains(crd, "kind: Paint") {
+					paintCrdYaml = crd
+				}
+			}
+			Expect(paintCrdYaml).ToNot(BeEmpty())
+
 			generatedCrd := &v12.CustomResourceDefinition{}
-			Expect(yaml.Unmarshal(bytes, generatedCrd)).NotTo(HaveOccurred())
+			Expect(yaml.Unmarshal([]byte(paintCrdYaml), &generatedCrd)).NotTo(HaveOccurred())
 			protobufValueField := generatedCrd.Spec.Versions[0].Schema.OpenAPIV3Schema.Properties["spec"].Properties["recursiveType"].Properties["protobufValue"]
 			// access the field to make sure it's not nil
 			Expect(protobufValueField.XPreserveUnknownFields).ToNot(BeNil())
@@ -1648,7 +1656,7 @@ roleRef:
 			// write this manifest to a different dir to avoid modifying the crd file from the
 			// above test, which other tests seem to depend on
 			cmd.ManifestRoot = "codegen/test/chart-no-desc"
-			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_v1_crds.yaml")
+			crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/crds/things.test.io_crds.yaml")
 
 			cmd.Groups[0].SkipSchemaDescriptions = true
 
@@ -1925,6 +1933,7 @@ func helmTemplate(path string, values interface{}) []byte {
 		path,
 		"--values", helmValuesFile.Name(),
 	).CombinedOutput()
+
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), string(out))
 	return out
 }
