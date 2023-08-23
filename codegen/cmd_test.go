@@ -670,13 +670,9 @@ var _ = Describe("Cmd", func() {
 										Value: "BAR",
 									},
 								},
-								ReadinessProbe: &v1.Probe{
-									ProbeHandler: v1.ProbeHandler{
-										HTTPGet: &v1.HTTPGetAction{
-											Path: "/",
-											Port: intstr.FromInt(8080),
-										},
-									},
+								ReadinessProbe: &ReadinessProbe{
+									Path:                "/",
+									Port:                "8080",
 									PeriodSeconds:       10,
 									InitialDelaySeconds: 5,
 								},
@@ -833,13 +829,9 @@ var _ = Describe("Cmd", func() {
 										Value: "BAR",
 									},
 								},
-								ReadinessProbe: &v1.Probe{
-									ProbeHandler: v1.ProbeHandler{
-										HTTPGet: &v1.HTTPGetAction{
-											Path: "/",
-											Port: intstr.FromInt(8080),
-										},
-									},
+								ReadinessProbe: &ReadinessProbe{
+									Path:                "/",
+									Port:                "8080",
 									PeriodSeconds:       10,
 									InitialDelaySeconds: 5,
 								},
@@ -1230,13 +1222,8 @@ var _ = Describe("Cmd", func() {
 											Value: "BAR",
 										},
 									},
-									ReadinessProbe: &v1.Probe{
-										ProbeHandler: v1.ProbeHandler{
-											HTTPGet: &v1.HTTPGetAction{
-												Path: "/",
-												Port: intstr.FromInt(8080),
-											},
-										},
+									ReadinessProbe: &ReadinessProbe{
+										Exec:                []string{"redis-cli", "ping"},
 										PeriodSeconds:       10,
 										InitialDelaySeconds: 5,
 									},
