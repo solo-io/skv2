@@ -146,7 +146,7 @@ func (r *runner[T]) RunReconciler(
 	}
 
 	// send us watch events
-	if err := ctl.Watch(source.Kind(r.mgr.GetCache(), obj), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	if err := ctl.Watch(&source.Kind{Type: obj}, &handler.EnqueueRequestForObject{}, predicates...); err != nil {
 		return err
 	}
 

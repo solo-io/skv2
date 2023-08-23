@@ -11,9 +11,9 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator)]] }}
 
-[[- $operatorEnabledCondition := printf "\n{{ if $%s.enabled }}\n" $operatorVar -]]
+[[- $operatorEnabledCondition := printf "\n{{- if $%s.enabled }}\n" $operatorVar -]]
 [[- if (gt (len $operator.CustomEnableCondition) 0) -]]
-[[- $operatorEnabledCondition = printf "\n{{ if %s }}\n" $operator.CustomEnableCondition -]]
+[[- $operatorEnabledCondition = printf "\n{{- if %s }}\n" $operator.CustomEnableCondition -]]
 [[- end -]]
 [[- $operatorEnabledCondition -]]
 [[- if $operator.ClusterRbac ]]
@@ -33,7 +33,7 @@ rules:
 [[ toYaml $operator.ClusterRbac ]]
 [[- range $container := containerConfigs $operator -]]
 [[- if and ($container.Rbac) (gt (len $container.EnableStatement) 0) ]]
-[[ printf "{{ if %s }}" $container.EnableStatement ]]
+[[ printf "{{- if %s }}" $container.EnableStatement ]]
 [[- end ]]
 [[- range $rule := $container.Rbac ]]
 [[ toYaml (toListItem $rule) ]]

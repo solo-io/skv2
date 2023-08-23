@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"context"
-
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -13,26 +11,26 @@ type MultiHandler struct {
 	Handlers []handler.EventHandler
 }
 
-func (h *MultiHandler) Create(ctx context.Context, evt event.CreateEvent, queue workqueue.RateLimitingInterface) {
+func (h *MultiHandler) Create(evt event.CreateEvent, queue workqueue.RateLimitingInterface) {
 	for _, hl := range h.Handlers {
-		hl.Create(ctx, evt, queue)
+		hl.Create(evt, queue)
 	}
 }
 
-func (h *MultiHandler) Update(ctx context.Context, evt event.UpdateEvent, queue workqueue.RateLimitingInterface) {
+func (h *MultiHandler) Update(evt event.UpdateEvent, queue workqueue.RateLimitingInterface) {
 	for _, hl := range h.Handlers {
-		hl.Update(ctx, evt, queue)
+		hl.Update(evt, queue)
 	}
 }
 
-func (h *MultiHandler) Delete(ctx context.Context, evt event.DeleteEvent, queue workqueue.RateLimitingInterface) {
+func (h *MultiHandler) Delete(evt event.DeleteEvent, queue workqueue.RateLimitingInterface) {
 	for _, hl := range h.Handlers {
-		hl.Delete(ctx, evt, queue)
+		hl.Delete(evt, queue)
 	}
 }
 
-func (h *MultiHandler) Generic(ctx context.Context, evt event.GenericEvent, queue workqueue.RateLimitingInterface) {
+func (h *MultiHandler) Generic(evt event.GenericEvent, queue workqueue.RateLimitingInterface) {
 	for _, hl := range h.Handlers {
-		hl.Generic(ctx, evt, queue)
+		hl.Generic(evt, queue)
 	}
 }

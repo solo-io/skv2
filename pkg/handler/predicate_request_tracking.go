@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"context"
-
 	"github.com/solo-io/skv2/pkg/request"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -22,19 +20,17 @@ type MultiClusterRequestTracker struct {
 	Requests *request.MultiClusterRequests
 }
 
-func (h *MultiClusterRequestTracker) Create(ctx context.Context, evt event.CreateEvent, queue workqueue.RateLimitingInterface) {
+func (h *MultiClusterRequestTracker) Create(evt event.CreateEvent, queue workqueue.RateLimitingInterface) {
 	h.Requests.Append(h.Cluster, RequestForObject(evt.Object))
 }
 
-func (h *MultiClusterRequestTracker) Delete(ctx context.Context, evt event.DeleteEvent, queue workqueue.RateLimitingInterface) {
+func (h *MultiClusterRequestTracker) Delete(evt event.DeleteEvent, queue workqueue.RateLimitingInterface) {
 	h.Requests.Remove(h.Cluster, RequestForObject(evt.Object))
 }
 
-func (h *MultiClusterRequestTracker) Update(context.Context, event.UpdateEvent, workqueue.RateLimitingInterface) {
-}
+func (h *MultiClusterRequestTracker) Update(event.UpdateEvent, workqueue.RateLimitingInterface) {}
 
-func (h *MultiClusterRequestTracker) Generic(context.Context, event.GenericEvent, workqueue.RateLimitingInterface) {
-}
+func (h *MultiClusterRequestTracker) Generic(event.GenericEvent, workqueue.RateLimitingInterface) {}
 
 func RequestForObject(meta v1.Object) reconcile.Request {
 	return reconcile.Request{NamespacedName: types.NamespacedName{

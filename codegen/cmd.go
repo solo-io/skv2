@@ -106,10 +106,6 @@ type Command struct {
 
 	// context of the command
 	ctx context.Context
-
-	// the name of the flag to pass the list of enabled alpha-level crds
-	// used in codegen/templates/manifests/crd.yamltmpl
-	EnabledAlphaApiFlagName string
 }
 
 // function to execute skv2 code gen from another repository
@@ -148,16 +144,17 @@ func (c Command) Execute() error {
 	var groups []*model.Group
 	for _, group := range c.Groups {
 		group := group // pike
-		c.initGroup(&group, descriptors)
 		groups = append(groups, &group)
 	}
-
-	if err := c.generateGroups(groups, protoOpts, c.GroupOptions); err != nil {
-		return err
-	}
-
-	// replace group in Groups array with the group including generated fields
 	for i, group := range groups {
+		group := group // pike
+		c.initGroup(group, descriptors)
+
+		if err := c.generateGroup(*group, protoOpts, c.GroupOptions); err != nil {
+			return err
+		}
+
+		// replace group in Groups array with the group including generated fields
 		c.Groups[i] = *group
 	}
 
@@ -242,8 +239,8 @@ func (c Command) renderProtos() ([]*collector.DescriptorWithPath, error) {
 	return descriptors, nil
 }
 
-func (c Command) generateGroups(
-	grps []*model.Group,
+func (c Command) generateGroup(
+	grp model.Group,
 	protoOpts proto.Options,
 	groupOptions model.GroupOptions,
 ) error {
@@ -253,27 +250,25 @@ func (c Command) generateGroups(
 		Header: c.GeneratedHeader,
 	}
 
-	for _, grp := range grps {
-		protoTypes, err := render.RenderProtoTypes(*grp)
-		if err != nil {
-			return err
-		}
-
-		if err := fileWriter.WriteFiles(protoTypes); err != nil {
-			return err
-		}
-
-		apiTypes, err := render.RenderApiTypes(*grp)
-		if err != nil {
-			return err
-		}
-
-		if err := fileWriter.WriteFiles(apiTypes); err != nil {
-			return err
-		}
+	protoTypes, err := render.RenderProtoTypes(grp)
+	if err != nil {
+		return err
 	}
 
-	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, c.EnabledAlphaApiFlagName, protoOpts, groupOptions, grps)
+	if err := fileWriter.WriteFiles(protoTypes); err != nil {
+		return err
+	}
+
+	apiTypes, err := render.RenderApiTypes(grp)
+	if err != nil {
+		return err
+	}
+
+	if err := fileWriter.WriteFiles(apiTypes); err != nil {
+		return err
+	}
+
+	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, protoOpts, groupOptions, grp)
 	if err != nil {
 		return err
 	}
@@ -282,10 +277,8 @@ func (c Command) generateGroups(
 		return err
 	}
 
-	for _, grp := range grps {
-		if err := render.KubeCodegen(*grp); err != nil {
-			return err
-		}
+	if err := render.KubeCodegen(grp); err != nil {
+		return err
 	}
 
 	return nil
@@ -342,13 +335,6 @@ func (c Command) initGroup(
 					// default to the resource API Group name
 					matchingProtoPackage = resource.Group.Group
 				}
-				// TODO (dmitri-d): This assumes we only ever have a single message with a given name, and breaks when we
-				// have multiple versions of the same proto message.
-				// `go_package`` is not a reliable way to determine the package version, as it is not always set.
-				// protobuf path is not reliable either, as it is not always contains the version (see test/test_api.proto).
-				// A common approach is to include the version in the proto package name, perhaps we could adopt that?
-				// For example, workspace.proto package now is "admin.gloo.solo.io", it would change to
-				// "admin.gloo.solo.io.v2" with such an approach.
 				if fileDescriptor.GetPackage() == matchingProtoPackage {
 					if message := fileDescriptor.GetMessage(fieldType.Name); message != nil {
 						fieldType.Message = message

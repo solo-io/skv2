@@ -3240,27 +3240,6 @@
                                         },
                                         "type": "object"
                                       },
-                                      "resizePolicy": {
-                                        "anyOf": [
-                                          {
-                                            "items": {
-                                              "properties": {
-                                                "resourceName": {
-                                                  "type": "string"
-                                                },
-                                                "restartPolicy": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "type": "object"
-                                            },
-                                            "type": "array"
-                                          },
-                                          {
-                                            "type": "null"
-                                          }
-                                        ]
-                                      },
                                       "volumeMounts": {
                                         "anyOf": [
                                           {
@@ -4483,27 +4462,6 @@
                                         },
                                         "type": "object"
                                       },
-                                      "resizePolicy": {
-                                        "anyOf": [
-                                          {
-                                            "items": {
-                                              "properties": {
-                                                "resourceName": {
-                                                  "type": "string"
-                                                },
-                                                "restartPolicy": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "type": "object"
-                                            },
-                                            "type": "array"
-                                          },
-                                          {
-                                            "type": "null"
-                                          }
-                                        ]
-                                      },
                                       "volumeMounts": {
                                         "anyOf": [
                                           {
@@ -5725,27 +5683,6 @@
                                           }
                                         },
                                         "type": "object"
-                                      },
-                                      "resizePolicy": {
-                                        "anyOf": [
-                                          {
-                                            "items": {
-                                              "properties": {
-                                                "resourceName": {
-                                                  "type": "string"
-                                                },
-                                                "restartPolicy": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "type": "object"
-                                            },
-                                            "type": "array"
-                                          },
-                                          {
-                                            "type": "null"
-                                          }
-                                        ]
                                       },
                                       "volumeMounts": {
                                         "anyOf": [

@@ -1,7 +1,6 @@
 package events
 
 import (
-	"context"
 	"sync"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -95,19 +94,19 @@ func (c *cache) handleEvent(evt eventType, q workqueue.RateLimitingInterface) {
 	}})
 }
 
-func (c *cache) Create(ctx context.Context, evt event.CreateEvent, q workqueue.RateLimitingInterface) {
+func (c *cache) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
 	c.handleEvent(createEvent(evt), q)
 }
 
-func (c *cache) Update(ctx context.Context, evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
+func (c *cache) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
 	c.handleEvent(updateEvent(evt), q)
 }
 
-func (c *cache) Delete(ctx context.Context, evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
+func (c *cache) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
 	c.handleEvent(deleteEvent(evt), q)
 }
 
-func (c *cache) Generic(ctx context.Context, evt event.GenericEvent, q workqueue.RateLimitingInterface) {
+func (c *cache) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
 	c.handleEvent(genericEvent(evt), q)
 }
 

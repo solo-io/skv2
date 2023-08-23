@@ -1,5 +1,0 @@
-changelog:
-  - type: BREAKING_CHANGE
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/9019 
-    description: >
-      Add support for conditional rendering of CRDs.

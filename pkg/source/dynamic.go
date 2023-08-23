@@ -5,17 +5,17 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"github.com/solo-io/go-utils/contextutils"
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // Stoppable is a stoppable source
 type Stoppable interface {
 	source.Source
-	InjectStopChannel(<-chan struct{}) error
+	inject.Stoppable
 }
 
 // DynamicSource is a funnel for sources that can be
@@ -98,7 +98,6 @@ func (s *DynamicSource) Start(ctx context.Context, h handler.EventHandler, i wor
 
 // only Stoppable sources are currently supported
 func (s *DynamicSource) Add(id string, src Stoppable) error {
-	contextutils.LoggerFrom(s.ctx).DPanic("DynamicSource.Add() may not work as expected due to the removal of dependency injection functions from controller-runtime in 15.0. See https://github.com/kubernetes-sigs/controller-runtime/releases")
 	s.lock.Lock()
 	defer s.lock.Unlock()
 

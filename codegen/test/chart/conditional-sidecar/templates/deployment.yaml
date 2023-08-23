@@ -37,7 +37,7 @@ spec:
       - name: license-keys
         secret:
           secretName: license-keys
-{{ if and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar) }}
+{{- if and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar) -}}
       - name: agent-volume
         secret:
           secretName: agent-volume
@@ -95,7 +95,7 @@ spec:
             drop:
             - ALL
 {{- end }}
-{{ if and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar) }}
+{{- if and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar) -}}
 {{- $glooAgent := $.Values.glooAgent }}
 {{- $glooAgentImage := $glooAgent.image }}
       - name: gloo-agent
@@ -149,7 +149,7 @@ spec:
 {{- end }} {{/* define "gloo-mgmt-server.deploymentSpec" */}}
 
 {{/* Render gloo-mgmt-server deployment template with overrides from values*/}}
-{{ if $glooMgmtServer.enabled }}
+{{- if $glooMgmtServer.enabled -}}
 {{- $glooMgmtServerDeploymentOverrides := dict }}
 {{- if $glooMgmtServer.deploymentOverrides }}
 {{- $glooMgmtServerDeploymentOverrides = $glooMgmtServer.deploymentOverrides  }}
@@ -158,7 +158,7 @@ spec:
 {{ include "skv2.utils.merge" (list . $glooMgmtServerDeploymentOverrides "gloo-mgmt-server.deploymentSpec") }}
 {{- end }}
 ---
-{{ if $glooMgmtServer.enabled }}
+{{- if $glooMgmtServer.enabled -}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -200,7 +200,7 @@ spec:
     port: {{ $glooMgmtServer.ports.grpc }}
 
 {{- end }} {{/* define "gloo-mgmt-server.serviceSpec" */}}
-{{ if $glooMgmtServer.enabled }}
+{{- if $glooMgmtServer.enabled -}}
 {{/* Render gloo-mgmt-server service template with overrides from values*/}}
 {{- $glooMgmtServerServiceOverrides := dict }}
 {{- if $glooMgmtServer.serviceOverrides }}
@@ -215,7 +215,7 @@ spec:
 ---
 
 {{- $glooAgent := $.Values.glooAgent }}
-{{ if and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar) }}
+{{- if and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar) -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -319,7 +319,7 @@ spec:
 {{- end }} {{/* define "gloo-agent.deploymentSpec" */}}
 
 {{/* Render gloo-agent deployment template with overrides from values*/}}
-{{ if and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar) }}
+{{- if and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar) }}
 {{- $glooAgentDeploymentOverrides := dict }}
 {{- if $glooAgent.deploymentOverrides }}
 {{- $glooAgentDeploymentOverrides = $glooAgent.deploymentOverrides  }}
@@ -328,7 +328,7 @@ spec:
 {{ include "skv2.utils.merge" (list . $glooAgentDeploymentOverrides "gloo-agent.deploymentSpec") }}
 {{- end }}
 ---
-{{ if and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar) }}
+{{- if and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar) }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -350,7 +350,7 @@ metadata:
 {{- define "gloo-agent.serviceSpec"}}
 
 {{- end }} {{/* define "gloo-agent.serviceSpec" */}}
-{{ if and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar) }}
+{{- if and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar) }}
 {{/* Render gloo-agent service template with overrides from values*/}}
 {{- $glooAgentServiceOverrides := dict }}
 {{- if $glooAgent.serviceOverrides }}

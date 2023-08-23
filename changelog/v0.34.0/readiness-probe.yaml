@@ -1,5 +1,0 @@
-changelog:
-  - type: BREAKING_CHANGE
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/11314
-    resolvesIssue: false
-    description: Use custom type for readiness probe to allow passing in templates for values.
