@@ -33,7 +33,7 @@ rules:
 [[ toYaml $operator.ClusterRbac ]]
 [[- range $container := containerConfigs $operator -]]
 [[- if and ($container.Rbac) (gt (len $container.EnableStatement) 0) ]]
-[[ printf "{{- if %s }}" $container.EnableStatement ]]
+[[ printf "{{ if %s }}" $container.EnableStatement ]]
 [[- end ]]
 [[- range $rule := $container.Rbac ]]
 [[ toYaml (toListItem $rule) ]]
