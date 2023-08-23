@@ -88,7 +88,7 @@ spec:
 {{- end }} {{/* define "painter-original-name.deploymentSpec" */}}
 
 {{/* Render painter-original-name deployment template with overrides from values*/}}
-{{- if $painterOriginalName.enabled -}}
+{{ if $painterOriginalName.enabled }}
 {{- $painterOriginalNameDeploymentOverrides := dict }}
 {{- if $painterOriginalName.deploymentOverrides }}
 {{- $painterOriginalNameDeploymentOverrides = $painterOriginalName.deploymentOverrides  }}
@@ -97,7 +97,7 @@ spec:
 {{ include "skv2.utils.merge" (list . $painterOriginalNameDeploymentOverrides "painter-original-name.deploymentSpec") }}
 {{- end }}
 ---
-{{- if $painterOriginalName.enabled -}}
+{{ if $painterOriginalName.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -119,7 +119,7 @@ metadata:
 {{- define "painter-original-name.serviceSpec"}}
 
 {{- end }} {{/* define "painter-original-name.serviceSpec" */}}
-{{- if $painterOriginalName.enabled -}}
+{{ if $painterOriginalName.enabled }}
 {{/* Render painter-original-name service template with overrides from values*/}}
 {{- $painterOriginalNameServiceOverrides := dict }}
 {{- if $painterOriginalName.serviceOverrides }}
