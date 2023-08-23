@@ -11,7 +11,7 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
   labels:
     app: painter
 rules:
@@ -22,30 +22,70 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
   labels:
     app: painter
 subjects:
 - kind: ServiceAccount
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  namespace: {{ default .Release.Namespace $painter.namespace }}
 roleRef:
   kind: ClusterRole
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
   apiGroup: rbac.authorization.k8s.io
-{{- $isClusterScoped := "Cluster" }}
+
+{{- $clusterScoped := true }}
 {{- if $painter.watchNamespaces }}
   {{- if len $painter.watchNamespaces }}
-    {{- $isClusterScoped = "" }}
+    {{- $clusterScoped = false }}
   {{- end }}
 {{- end }}
+
+{{- if $clusterScoped }}
 ---
 
-kind: {{ $isClusterScoped }}Role
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  labels:
+    app: painter
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - GET
+  - LIST
+  - WATCH
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ default .Release.Namespace $painter.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter
+  apiGroup: rbac.authorization.k8s.io
+
+{{- else }}
+{{- $namespaces := (append $painter.watchNamespaces (default .Release.Namespace $painter.namespace)) }}
+{{- range $ns := $namespaces }}
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter
+  namespace: {{ $ns }}
   labels:
     app: painter
 rules:
@@ -60,19 +100,22 @@ rules:
 
 ---
 
-kind: {{ $isClusterScoped }}RoleBinding
+kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  namespace: {{ $ns }}
   labels:
     app: painter
 subjects:
 - kind: ServiceAccount
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  namespace: {{ default $.Release.Namespace $painter.namespace }}
 roleRef:
-  kind: {{ $isClusterScoped }}Role
+  kind: Role
   name: painter
   apiGroup: rbac.authorization.k8s.io
+
+{{- end }}
+{{- end }}
 {{- end }}

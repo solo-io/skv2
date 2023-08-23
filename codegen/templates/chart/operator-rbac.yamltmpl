@@ -9,7 +9,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 [[- if or $operator.ClusterRbac $operator.NamespaceRbac ]]
 # Rbac manifests for [[ $operator.Name ]]
 
-{{- $[[ $operatorVar ]] := [[ (opVar $operator)]] }}
+{{- $[[ $operatorVar ]] := [[ (opVar $operator) ]] }}
 
 [[- $operatorEnabledCondition := printf "\n{{- if $%s.enabled }}\n" $operatorVar -]]
 [[- if (gt (len $operator.CustomEnableCondition) 0) -]]
@@ -25,20 +25,20 @@ metadata:
 [[- if $operator.NamespaceFromValuePath ]]
   name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
-  name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+  name: [[ $operator.Name ]]-{{ default .Release.Namespace $[[ $operatorVar ]].namespace }}
 [[- end ]]
   labels:
     app: [[ $operator.Name ]]
 rules:
 [[ toYaml $operator.ClusterRbac ]]
 [[- range $container := containerConfigs $operator -]]
-[[- if and ($container.Rbac) (gt (len $container.EnableStatement) 0) ]]
+[[- if and ($container.ClusterRbac) (gt (len $container.EnableStatement) 0) ]]
 [[ printf "{{- if %s }}" $container.EnableStatement ]]
 [[- end ]]
-[[- range $rule := $container.Rbac ]]
+[[- range $rule := $container.ClusterRbac ]]
 [[ toYaml (toListItem $rule) ]]
 [[- end ]]
-[[- if and ($container.Rbac) (gt (len $container.EnableStatement) 0) ]]
+[[- if and ($container.ClusterRbac) (gt (len $container.EnableStatement) 0) ]]
 {{- end }}
 [[- end ]]
 [[- end ]]
@@ -50,7 +50,7 @@ metadata:
 [[- if $operator.NamespaceFromValuePath ]]
   name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
-  name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+  name: [[ $operator.Name ]]-{{ default .Release.Namespace $[[ $operatorVar ]].namespace }}
 [[- end ]]
   labels:
     app: [[ $operator.Name ]]
@@ -60,37 +60,86 @@ subjects:
 [[- if $operator.NamespaceFromValuePath ]]
   namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
-  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+  namespace: {{ default .Release.Namespace $[[ $operatorVar ]].namespace }}
 [[- end ]]
 roleRef:
   kind: ClusterRole
 [[- if $operator.NamespaceFromValuePath ]]
   name: [[ $operator.Name ]]-[[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
-  name: [[ $operator.Name ]]-{{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+  name: [[ $operator.Name ]]-{{ default .Release.Namespace $[[ $operatorVar ]].namespace }}
 [[- end ]]
   apiGroup: rbac.authorization.k8s.io
 
 [[- end ]][[/* if $operator.ClusterRbac */]]
 
 [[- if $operator.NamespaceRbac ]]
-{{- $isClusterScoped := "Cluster" }}
+
+{{- $clusterScoped := true }}
 {{- if $[[ $operatorVar ]].watchNamespaces }}
   {{- if len $[[ $operatorVar ]].watchNamespaces }}
-    {{- $isClusterScoped = "" }}
+    {{- $clusterScoped = false }}
   {{- end }}
 {{- end }}
+
+{{- if $clusterScoped }}
 ---
 
-kind: {{ $isClusterScoped }}Role
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  name: [[ $operator.Name ]]
+  labels:
+    app: [[ $operator.Name ]]
+rules:
+[[ toYaml $operator.NamespaceRbac ]]
+[[- range $container := containerConfigs $operator -]]
+[[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
+[[ printf "{{- if %s }}" $container.EnableStatement ]]
+[[- end ]]
+[[- range $rule := $container.NamespaceRbac ]]
+[[ toYaml (toListItem $rule) ]]
+[[- end ]]
+[[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
+{{- end }}
+[[- end ]]
+[[- end ]]
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: [[ $operator.Name ]]
+  labels:
+    app: [[ $operator.Name ]]
+subjects:
+- kind: ServiceAccount
   name: [[ $operator.Name ]]
 [[- if $operator.NamespaceFromValuePath ]]
   namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
-  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+  namespace: {{ default .Release.Namespace $[[ $operatorVar ]].namespace }}
 [[- end ]]
+roleRef:
+  kind: ClusterRole
+  name: [[ $operator.Name ]]
+  apiGroup: rbac.authorization.k8s.io
+
+{{- else }}
+
+[[- if $operator.NamespaceFromValuePath ]]
+{{- $namespaces := (append $[[ $operatorVar ]].watchNamespaces ([[ $operator.NamespaceFromValuePath ]] | default $.Release.Namespace)) }}
+[[- else ]]
+{{- $namespaces := (append $[[ $operatorVar ]].watchNamespaces (default .Release.Namespace $[[ $operatorVar ]].namespace)) }}
+[[- end ]]
+{{- range $ns := $namespaces }}
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: [[ $operator.Name ]]
+  namespace: {{ $ns }}
   labels:
     app: [[ $operator.Name ]]
 rules:
@@ -98,15 +147,11 @@ rules:
 
 ---
 
-kind: {{ $isClusterScoped }}RoleBinding
+kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: [[ $operator.Name ]]
-[[- if $operator.NamespaceFromValuePath ]]
-  namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
-[[- else ]]
-  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
-[[- end ]]
+  namespace: {{ $ns }}
   labels:
     app: [[ $operator.Name ]]
 subjects:
@@ -115,13 +160,15 @@ subjects:
 [[- if $operator.NamespaceFromValuePath ]]
   namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
-  namespace: {{ default .Release.Namespace [[ (opVar $operator) ]].namespace }}
+  namespace: {{ default $.Release.Namespace $[[ $operatorVar ]].namespace }}
 [[- end ]]
 roleRef:
-  kind: {{ $isClusterScoped }}Role
+  kind: Role
   name: [[ $operator.Name ]]
   apiGroup: rbac.authorization.k8s.io
 
+{{- end }}[[/* range $namespaces := $operatorVar.watchNamespaces */]]
+{{- end }}[[/* if $clusterScoped */]]
 [[- end ]][[/* if $operator.NamespaceRbac */]]
 {{- end }}[[/* $operatorEnabledCondition */]]
 [[- end ]][[/* if or $operator.ClusterRbac $operator.NamespaceRbac */]]
