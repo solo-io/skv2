@@ -59,6 +59,7 @@ rules:
   - GET
   - LIST
   - WATCH
+
 ---
 
 kind: ClusterRoleBinding

@@ -95,7 +95,7 @@ rules:
 [[ toYaml $operator.NamespaceRbac ]]
 [[- range $container := containerConfigs $operator -]]
 [[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
-[[ printf "{{- if %s }}" $container.EnableStatement ]]
+[[ printf "{{ if %s }}" $container.EnableStatement ]]
 [[- end ]]
 [[- range $rule := $container.NamespaceRbac ]]
 [[ toYaml (toListItem $rule) ]]
@@ -104,6 +104,7 @@ rules:
 {{- end }}
 [[- end ]]
 [[- end ]]
+
 ---
 
 kind: ClusterRoleBinding
@@ -144,6 +145,17 @@ metadata:
     app: [[ $operator.Name ]]
 rules:
 [[ toYaml $operator.NamespaceRbac ]]
+[[- range $container := containerConfigs $operator -]]
+[[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
+[[ printf "{{ if %s }}" $container.EnableStatement ]]
+[[- end ]]
+[[- range $rule := $container.NamespaceRbac ]]
+[[ toYaml (toListItem $rule) ]]
+[[- end ]]
+[[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
+{{- end }}
+[[- end ]]
+[[- end ]]
 
 ---
 
