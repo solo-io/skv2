@@ -169,7 +169,7 @@ type Resource struct {
 	Status *Field
 
 	// Whether or not the resource is cluster-scoped.
-	// This is important when rendering the CustomResourceDefinition manifest.
+	// This is important when rendering the CustomResourceDefinition manifest and RBAC policies.
 	ClusterScoped bool
 
 	// Set the short name of the resource
