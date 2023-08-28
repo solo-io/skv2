@@ -146,8 +146,8 @@ var _ = Describe("Cmd", func() {
 		deployment, err := os.ReadFile(absPath)
 		Expect(err).NotTo(HaveOccurred(), "failed to read deployment.yaml")
 
-		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s -}}", agentConditional)))
-		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{- if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
+		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{ if %s }}", agentConditional)))
+		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{ if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
 		Expect(deployment).To(ContainSubstring("name: agent-volume"))
 		Expect(deployment).To(ContainSubstring("{{ $glooAgent.ports.grpc }}"))
 	})
@@ -790,13 +790,9 @@ var _ = Describe("Cmd", func() {
 										Value: "BAR",
 									},
 								},
-								ReadinessProbe: &v1.Probe{
-									ProbeHandler: v1.ProbeHandler{
-										HTTPGet: &v1.HTTPGetAction{
-											Path: "/",
-											Port: intstr.FromInt(8080),
-										},
-									},
+								ReadinessProbe: &ReadinessProbe{
+									Path:                "/",
+									Port:                "8080",
 									PeriodSeconds:       10,
 									InitialDelaySeconds: 5,
 								},
@@ -953,13 +949,9 @@ var _ = Describe("Cmd", func() {
 										Value: "BAR",
 									},
 								},
-								ReadinessProbe: &v1.Probe{
-									ProbeHandler: v1.ProbeHandler{
-										HTTPGet: &v1.HTTPGetAction{
-											Path: "/",
-											Port: intstr.FromInt(8080),
-										},
-									},
+								ReadinessProbe: &ReadinessProbe{
+									Path:                "/",
+									Port:                "8080",
 									PeriodSeconds:       10,
 									InitialDelaySeconds: 5,
 								},
@@ -1269,7 +1261,7 @@ var _ = Describe("Cmd", func() {
 		fileContents, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(string(fileContents)).To(ContainSubstring("{{- if and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled }}"))
+		Expect(string(fileContents)).To(ContainSubstring("{{ if and $painter.enabled $.Values.test1.enabled $.Values.test2.enabled }}"))
 
 		expectedSA := "kind: ServiceAccount\nmetadata:\n  labels:\n    app: painter\n  name: painter\n"
 		expectedCR := "kind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: painter"
@@ -1543,13 +1535,8 @@ roleRef:
 											Value: "BAR",
 										},
 									},
-									ReadinessProbe: &v1.Probe{
-										ProbeHandler: v1.ProbeHandler{
-											HTTPGet: &v1.HTTPGetAction{
-												Path: "/",
-												Port: intstr.FromInt(8080),
-											},
-										},
+									ReadinessProbe: &ReadinessProbe{
+										Exec:                []string{"redis-cli", "ping"},
 										PeriodSeconds:       10,
 										InitialDelaySeconds: 5,
 									},
