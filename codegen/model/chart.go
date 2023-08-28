@@ -78,7 +78,8 @@ type Operator struct {
 	// these populate the generated ClusterRole for the operator
 	ClusterRbac []rbacv1.PolicyRule
 
-	// these populate the generated Role for the operator
+	// these populate either a generated ClusterRole or Roles for the operator.
+	// Helm flag 'watchNamespaces' determines which.
 	NamespaceRbac []rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
@@ -137,7 +138,8 @@ type Container struct {
 type Sidecar struct {
 	Container
 	Service
-	Rbac            []rbacv1.PolicyRule
+	ClusterRbac     []rbacv1.PolicyRule
+	NamespaceRbac   []rbacv1.PolicyRule
 	Volumes         []corev1.Volume
 	Name            string
 	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"` // Optional: if specified, the operator resources will be abled based on the condition specified in the enable statement.

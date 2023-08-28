@@ -83,7 +83,7 @@ var _ = Describe("Cmd", func() {
 											},
 										},
 									},
-									Rbac: []rbacv1.PolicyRule{{
+									ClusterRbac: []rbacv1.PolicyRule{{
 										Verbs:     []string{"*"},
 										APIGroups: []string{"apiextensions.k8s.io"},
 										Resources: []string{"customresourcedefinitions"},
@@ -1861,12 +1861,68 @@ roleRef:
 
 		rbac, err := os.ReadFile(absPath)
 		Expect(err).NotTo(HaveOccurred(), "failed to read rbac.yaml")
-		roleTmpl := `
-kind: {{ $isClusterScoped }}Role
+		clusterRoleTmpl1 := `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
+  labels:
+    app: painter
+rules:
+- verbs:
+  - GET`
+		clusterRoleBindingTmpl1 := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ default .Release.Namespace $painter.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
+  apiGroup: rbac.authorization.k8s.io`
+		clusterRoleTmpl2 := `
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  labels:
+    app: painter
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - GET
+  - LIST
+  - WATCH`
+		clusterRoleBindingTmpl2 := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ default .Release.Namespace $painter.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter
+  apiGroup: rbac.authorization.k8s.io`
+		roleTmpl := `
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter
+  namespace: {{ $ns }}
   labels:
     app: painter
 rules:
@@ -1879,50 +1935,27 @@ rules:
   - LIST
   - WATCH`
 		roleBindingTmpl := `
-kind: {{ $isClusterScoped }}RoleBinding
+kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  namespace: {{ $ns }}
   labels:
     app: painter
 subjects:
 - kind: ServiceAccount
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  namespace: {{ default $.Release.Namespace $painter.namespace }}
 roleRef:
-  kind: {{ $isClusterScoped }}Role
+  kind: Role
   name: painter
   apiGroup: rbac.authorization.k8s.io`
-		clusterRoleTmpl := `
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
-  labels:
-    app: painter
-rules:
-- verbs:
-  - GET`
-		clusterRoleBindingTmpl := `
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
-  labels:
-    app: painter
-subjects:
-- kind: ServiceAccount
-  name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
-roleRef:
-  kind: ClusterRole
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
-  apiGroup: rbac.authorization.k8s.io`
+		Expect(rbac).To(ContainSubstring(clusterRoleTmpl1))
+		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl1))
+		Expect(rbac).To(ContainSubstring(clusterRoleTmpl2))
+		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl2))
 		Expect(string(rbac)).To(ContainSubstring(roleTmpl))
 		Expect(string(rbac)).To(ContainSubstring(roleBindingTmpl))
-		Expect(rbac).To(ContainSubstring(clusterRoleTmpl))
-		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl))
 	})
 })
 
