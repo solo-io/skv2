@@ -78,7 +78,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 {{- else }}
-{{- $namespaces := (append $painter.watchNamespaces (default .Release.Namespace $painter.namespace)) }}
+{{- $namespaces := (append $painter.watchNamespaces (default .Release.Namespace $painter.namespace) | mustUniq) }}
 {{- range $ns := $namespaces }}
 ---
 

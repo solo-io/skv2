@@ -129,9 +129,9 @@ roleRef:
 {{- else }}
 
 [[- if $operator.NamespaceFromValuePath ]]
-{{- $namespaces := (append $[[ $operatorVar ]].watchNamespaces ([[ $operator.NamespaceFromValuePath ]] | default $.Release.Namespace)) }}
+{{- $namespaces := (append $[[ $operatorVar ]].watchNamespaces ([[ $operator.NamespaceFromValuePath ]] | default $.Release.Namespace) | mustUniq) }}
 [[- else ]]
-{{- $namespaces := (append $[[ $operatorVar ]].watchNamespaces (default .Release.Namespace $[[ $operatorVar ]].namespace)) }}
+{{- $namespaces := (append $[[ $operatorVar ]].watchNamespaces (default .Release.Namespace $[[ $operatorVar ]].namespace) | mustUniq) }}
 [[- end ]]
 {{- range $ns := $namespaces }}
 ---

@@ -78,8 +78,8 @@ type Operator struct {
 	// these populate the generated ClusterRole for the operator
 	ClusterRbac []rbacv1.PolicyRule
 
-	// these populate the generated (Cluster)Role for the operator
-	// toggles between ClusterRole and Role based on helm flag at templating time
+	// these populate either a generated ClusterRole or Roles for the operator.
+	// Helm flag 'watchNamespaces' determines which.
 	NamespaceRbac []rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
