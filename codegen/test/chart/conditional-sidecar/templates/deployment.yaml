@@ -194,7 +194,7 @@ spec:
   type: {{ $glooMgmtServer.serviceType }}
   ports:
   - name: grpc
-    port: {{ $glooMgmtServer.ports.grpc }}
+    port: {{ index $glooMgmtServer "ports" "grpc" }}
 
 {{- end }} {{/* define "gloo-mgmt-server.serviceSpec" */}}
 {{ if $glooMgmtServer.enabled }}
