@@ -41,9 +41,7 @@ var _ = Describe("Cmd", func() {
 		"encoding/protobuf/cue/cue.proto",
 	}
 	It("install conditional sidecars", func() {
-		var (
-			agentConditional = "and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar)"
-		)
+		agentConditional := "and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar)"
 
 		cmd := &Command{
 			Chart: &Chart{
@@ -1781,6 +1779,81 @@ roleRef:
 		Entry("valueFrom env var",
 			map[string]interface{}{"FOO": map[string]interface{}{"valueFrom": map[string]interface{}{"secretKeyRef": map[string]interface{}{"name": "bar", "key": "baz"}}}},
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
+	)
+
+	DescribeTable("rendering service ports",
+		func(portName string) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+							Service: Service{
+								Ports: []ServicePort{{
+									Name:        portName,
+									DefaultPort: 9900,
+								}},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-svcport",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			helmValues := map[string]interface{}{}
+
+			renderedManifests := helmTemplate("codegen/test/chart-svcport", helmValues)
+
+			var renderedSvc *v1.Service
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Service" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedSvc = &v1.Service{}
+				err = json.Unmarshal(bytes, renderedSvc)
+				Expect(err).NotTo(HaveOccurred())
+				break
+			}
+			Expect(renderedSvc).NotTo(BeNil())
+			Expect(renderedSvc.Spec.Ports[0].Name).To(Equal(portName))
+		},
+		Entry("port name without hyphen", "foo"),
+		Entry("port name with hyphen", "foo-bar"),
 	)
 
 	It("can configure cluster-scoped and namespace-scoped RBAC", func() {

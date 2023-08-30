@@ -248,7 +248,7 @@ spec:
   ports:
   [[- range $port := $operator.Service.Ports ]]
   - name: [[ lower $port.Name ]]
-    port: {{ $[[ $operatorVar ]].ports.[[ $port.Name ]] }}
+    port: {{ index $[[ $operatorVar ]] "ports" "[[ $port.Name ]]" }}
   [[- end ]]
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
