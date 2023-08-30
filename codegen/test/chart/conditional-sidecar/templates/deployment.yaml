@@ -28,9 +28,6 @@ spec:
         app: gloo-mgmt-server
       annotations:
         app.kubernetes.io/name: gloo-mgmt-server
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
     spec:
       serviceAccountName: gloo-mgmt-server
       volumes:
@@ -261,9 +258,6 @@ spec:
         app: gloo-agent
       annotations:
         app.kubernetes.io/name: gloo-agent
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
     spec:
       serviceAccountName: gloo-agent
       containers:

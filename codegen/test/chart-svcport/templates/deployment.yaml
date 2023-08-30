@@ -76,51 +76,6 @@ spec:
             drop:
             - ALL
 {{- end }}
-{{- $fooBar := $.Values.painter.sidecars.fooBar }}
-{{- $fooBarImage := $fooBar.image }}
-      - name: foo-bar
-        image: {{ $fooBarImage.registry }}/{{ $fooBarImage.repository }}:{{ $fooBarImage.tag }}
-        imagePullPolicy: {{ $fooBarImage.pullPolicy }}
-{{- if $fooBar.env }}
-        env:
-{{ toYaml $fooBar.env | indent 10 }}
-{{- else if $fooBar.extraEnvs }}
-        env:
-{{- end }}
-{{- range $name, $item := $fooBar.extraEnvs }}
-          - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
-{{- end }}
-        resources:
-{{- if $fooBar.resources }}
-{{ toYaml $fooBar.resources | indent 10}}
-{{- else}}
-          requests:
-            cpu: 500m
-            memory: 256Mi
-{{- end }}
-        {{- /*
-          Render securityContext configs if it is set.
-          If securityContext is not set, render the default securityContext.
-          If securityContext is set to 'false', render an empty map.
-        */}}
-        securityContext:
-{{- if or ($fooBar.securityContext) (eq "map[]" (printf "%v" $fooBar.securityContext)) }}
-{{ toYaml $fooBar.securityContext | indent 10}}
-{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
-{{- else if eq (ternary $fooBar.securityContext true (eq "bool" (printf "%T" $fooBar.securityContext))) false }}
-          {}
-{{- else}}
-          runAsNonRoot: true
-          {{- if not $painter.floatingUserId }}
-          runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
-          {{- end }}
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-{{- end }}
       {{- if $painterImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $painterImage.pullSecret }}
@@ -157,6 +112,26 @@ metadata:
 
 
 {{- define "painter.serviceSpec"}}
+
+# Service for painter
+{{/* Define variables in function scope */}}
+{{- $painter := $.Values.painter}}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: painter
+  annotations:
+    app.kubernetes.io/name: painter
+  name: painter
+  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+spec:
+  selector:
+    app: painter
+  type: {{ $painter.serviceType }}
+  ports:
+  - name: foo-bar
+    port: {{ index $painter "ports" "foo-bar" }}
 
 {{- end }} {{/* define "painter.serviceSpec" */}}
 {{ if $painter.enabled }}
