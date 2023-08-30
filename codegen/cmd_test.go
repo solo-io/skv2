@@ -1151,12 +1151,9 @@ var _ = Describe("Cmd", func() {
 			"extrapod": "labels",
 		}))
 		Expect(renderedDeployment.Spec.Template.Annotations).To(Equal(map[string]string{
-			"prometheus.io/port":     "9091",
-			"prometheus.io/scrape":   "true",
 			"app.kubernetes.io/name": "painter",
 			"extrapod":               "annotations",
 			"pod":                    "annotations",
-			"prometheus.io/path":     "/metrics",
 		}))
 		Expect(renderedService.Labels).To(Equal(map[string]string{
 			"app":          "painter",

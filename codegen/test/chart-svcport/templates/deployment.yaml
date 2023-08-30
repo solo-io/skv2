@@ -28,9 +28,6 @@ spec:
         app: painter
       annotations:
         app.kubernetes.io/name: painter
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
     spec:
       serviceAccountName: painter
       containers:
