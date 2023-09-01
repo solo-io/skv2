@@ -17,6 +17,7 @@ Expressions evaluating SKv2 Config use [[ "[[" ]] and [[ "]]" ]]
 [[- end -]]
 [[- $operatorEnabledCondition -]]
 [[- if $operator.ClusterRbac ]]
+
 ---
 
 kind: ClusterRole
@@ -42,6 +43,7 @@ rules:
 {{- end }}
 [[- end ]]
 [[- end ]]
+
 ---
 
 kind: ClusterRoleBinding
@@ -75,14 +77,6 @@ roleRef:
 
 [[- if $operator.NamespaceRbac ]]
 
-{{- $clusterScoped := true }}
-{{- if $[[ $operatorVar ]].watchNamespaces }}
-  {{- if len $[[ $operatorVar ]].watchNamespaces }}
-    {{- $clusterScoped = false }}
-  {{- end }}
-{{- end }}
-
-{{- if $clusterScoped }}
 ---
 
 kind: ClusterRole
@@ -92,17 +86,12 @@ metadata:
   labels:
     app: [[ $operator.Name ]]
 rules:
-[[ toYaml $operator.NamespaceRbac ]]
-[[- range $container := containerConfigs $operator -]]
-[[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
-[[ printf "{{ if %s }}" $container.EnableStatement ]]
+[[- range $enabledFromValuePath, $policies := $operator.NamespaceRbac ]]
+{{- if not [[ $enabledFromValuePath ]] }}
+[[- range $policy := $policies ]]
+[[ toYaml (toListItem $policy) ]]
 [[- end ]]
-[[- range $rule := $container.NamespaceRbac ]]
-[[ toYaml (toListItem $rule) ]]
-[[- end ]]
-[[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
 {{- end }}
-[[- end ]]
 [[- end ]]
 
 ---
@@ -126,14 +115,16 @@ roleRef:
   name: [[ $operator.Name ]]
   apiGroup: rbac.authorization.k8s.io
 
-{{- else }}
 
+[[- range $enabledFromValuePath, $policies := $operator.NamespaceRbac ]]
+{{- if [[ $enabledFromValuePath ]] }}
 [[- if $operator.NamespaceFromValuePath ]]
-{{- $namespaces := (append $[[ $operatorVar ]].watchNamespaces ([[ $operator.NamespaceFromValuePath ]] | default $.Release.Namespace) | mustUniq) }}
+  {{- $namespaces := (append $enabledFromValuePath ([[ $operator.NamespaceFromValuePath ]] | default $.Release.Namespace) | mustUniq) }}
 [[- else ]]
-{{- $namespaces := (append $[[ $operatorVar ]].watchNamespaces (default .Release.Namespace $[[ $operatorVar ]].namespace) | mustUniq) }}
+  {{- $namespaces := (append $enabledFromValuePath (default .Release.Namespace $[[ $operatorVar ]].namespace) | mustUniq) }}
 [[- end ]]
-{{- range $ns := $namespaces }}
+  {{- range $ns := $namespaces }}
+
 ---
 
 kind: Role
@@ -144,17 +135,8 @@ metadata:
   labels:
     app: [[ $operator.Name ]]
 rules:
-[[ toYaml $operator.NamespaceRbac ]]
-[[- range $container := containerConfigs $operator -]]
-[[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
-[[ printf "{{ if %s }}" $container.EnableStatement ]]
-[[- end ]]
-[[- range $rule := $container.NamespaceRbac ]]
-[[ toYaml (toListItem $rule) ]]
-[[- end ]]
-[[- if and ($container.NamespaceRbac) (gt (len $container.EnableStatement) 0) ]]
-{{- end }}
-[[- end ]]
+[[- range $policy := $policies ]]
+[[ toYaml (toListItem $policy) ]]
 [[- end ]]
 
 ---
@@ -179,8 +161,9 @@ roleRef:
   name: [[ $operator.Name ]]
   apiGroup: rbac.authorization.k8s.io
 
-{{- end }}[[/* range $namespaces := $operatorVar.watchNamespaces */]]
-{{- end }}[[/* if $clusterScoped */]]
+  {{- end }}[[/* range $ns := $namespaces */]]
+{{- end }}[[/* if not $enabledFromValuePath */]]
+[[- end ]][[/* range $enabledFromValuePath, $policies := $operator.NamespaceRbac */]]
 [[- end ]][[/* if $operator.NamespaceRbac */]]
 {{- end }}[[/* $operatorEnabledCondition */]]
 [[- end ]][[/* if or $operator.ClusterRbac $operator.NamespaceRbac */]]
