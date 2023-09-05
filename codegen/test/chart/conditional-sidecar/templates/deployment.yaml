@@ -48,6 +48,9 @@ spec:
       - name: gloo-mgmt-server
         image: {{ $glooMgmtServerImage.registry }}/{{ $glooMgmtServerImage.repository }}:{{ $glooMgmtServerImage.tag }}
         imagePullPolicy: {{ $glooMgmtServerImage.pullPolicy }}
+        ports:
+        - name: grpc
+          port: {{ index $glooMgmtServer "ports" "grpc" }}
 {{- if $glooMgmtServer.env }}
         env:
 {{ toYaml $glooMgmtServer.env | indent 10 }}
@@ -98,6 +101,9 @@ spec:
       - name: gloo-agent
         image: {{ $glooAgentImage.registry }}/{{ $glooAgentImage.repository }}:{{ $glooAgentImage.tag }}
         imagePullPolicy: {{ $glooAgentImage.pullPolicy }}
+        ports:
+        - name: grpc
+          port: {{ index $glooMgmtServer "ports" "grpc" }}
 {{- if $glooAgent.env }}
         env:
 {{ toYaml $glooAgent.env | indent 10 }}

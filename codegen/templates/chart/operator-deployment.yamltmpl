@@ -102,6 +102,13 @@ spec:
         args:
 [[ toYaml $container.Args | indent 8 ]]
 [[- end ]]
+[[- if (gt (len $operator.Service.Ports) 0) ]]
+        ports:
+        [[- range $port := $operator.Service.Ports ]]
+        - name: [[ lower $port.Name ]]
+          port: {{ index $[[ $operatorVar ]] "ports" "[[ $port.Name ]]" }}
+        [[- end ]]
+[[- end ]]
 {{- if [[ $containerVar ]].env }}
         env:
 {{ toYaml [[ $containerVar ]].env | indent 10 }}
