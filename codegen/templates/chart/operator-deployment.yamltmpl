@@ -67,9 +67,6 @@ spec:
         [[- end ]]
       annotations:
         app.kubernetes.io/name: [[ $operator.Name ]]
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
         [[- range $key, $value := $customPodAnnotations ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
@@ -248,7 +245,7 @@ spec:
   ports:
   [[- range $port := $operator.Service.Ports ]]
   - name: [[ lower $port.Name ]]
-    port: {{ $[[ $operatorVar ]].ports.[[ $port.Name ]] }}
+    port: {{ index $[[ $operatorVar ]] "ports" "[[ $port.Name ]]" }}
   [[- end ]]
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}

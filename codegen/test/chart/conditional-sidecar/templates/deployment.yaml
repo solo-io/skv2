@@ -28,9 +28,6 @@ spec:
         app: gloo-mgmt-server
       annotations:
         app.kubernetes.io/name: gloo-mgmt-server
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
     spec:
       serviceAccountName: gloo-mgmt-server
       volumes:
@@ -197,7 +194,7 @@ spec:
   type: {{ $glooMgmtServer.serviceType }}
   ports:
   - name: grpc
-    port: {{ $glooMgmtServer.ports.grpc }}
+    port: {{ index $glooMgmtServer "ports" "grpc" }}
 
 {{- end }} {{/* define "gloo-mgmt-server.serviceSpec" */}}
 {{ if $glooMgmtServer.enabled }}
@@ -261,9 +258,6 @@ spec:
         app: gloo-agent
       annotations:
         app.kubernetes.io/name: gloo-agent
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
     spec:
       serviceAccountName: gloo-agent
       containers:
