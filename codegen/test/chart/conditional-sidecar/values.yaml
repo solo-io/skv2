@@ -26,6 +26,6 @@ glooMgmtServer:
     grpc: 9900
   runAsUser: 10101
   serviceOverrides: null
-  serviceType: ""
+  serviceType: LoadBalancer
   sidecars: {}
 

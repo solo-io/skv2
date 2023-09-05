@@ -84,6 +84,9 @@ type Operator struct {
 	// if at least one port is defined, create a Service for it
 	Service Service
 
+	// (Optional) Extra services to create for this operator
+	ExtraServices []Service
+
 	// Custom values to include at operator level
 	Values interface{}
 
@@ -131,6 +134,7 @@ type Container struct {
 	Env             []corev1.EnvVar
 	Resources       *corev1.ResourceRequirements
 	SecurityContext *corev1.SecurityContext
+	ContainerPorts  []ServicePort
 }
 
 type ReadinessProbe struct {
@@ -154,6 +158,7 @@ type Sidecar struct {
 
 // values for struct template
 type Service struct {
+	Name              string
 	Type              corev1.ServiceType
 	Ports             []ServicePort
 	CustomLabels      map[string]string
