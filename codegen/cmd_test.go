@@ -50,20 +50,11 @@ var _ = Describe("Cmd", func() {
 					{
 						Name: "gloo-mgmt-server",
 						Service: Service{
-							Type: "LoadBalancer",
 							Ports: []ServicePort{{
 								Name:        "grpc",
 								DefaultPort: 9900,
 							}},
 						},
-						ExtraServices: []Service{{
-							Name: "gloo-mesh-mgmt-server-stats",
-							Type: "ClusterIP",
-							Ports: []ServicePort{{
-								Name:        "stats",
-								DefaultPort: 9091,
-							}},
-						}},
 						ClusterRbac: []rbacv1.PolicyRule{{
 							Verbs:     []string{"*"},
 							APIGroups: []string{"coordination.k8s.io"},
@@ -102,10 +93,6 @@ var _ = Describe("Cmd", func() {
 											Repository: "gloo-mesh-agent",
 											Tag:        "0.0.1",
 										},
-										ContainerPorts: []ServicePort{{
-											Name:        "stats",
-											DefaultPort: 9093,
-										}},
 									},
 									Service: Service{
 										Ports: []ServicePort{{
@@ -123,6 +110,10 @@ var _ = Describe("Cmd", func() {
 									Repository: "gloo-mesh-mgmt-server",
 									Tag:        "0.0.1",
 								},
+								ContainerPorts: []ContainerPort{{
+									Name: "stats",
+									Port: "{{ $Values.glooMgmtServer.statsPort }}",
+								}},
 								VolumeMounts: []v1.VolumeMount{{
 									Name:      "license-keys",
 									MountPath: "/etc/gloo-mesh/license-keys",
@@ -162,8 +153,7 @@ var _ = Describe("Cmd", func() {
 		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{ if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
 		Expect(deployment).To(ContainSubstring("name: agent-volume"))
 		Expect(deployment).To(ContainSubstring("{{ $glooAgent.ports.grpc }}"))
-		Expect(deployment).To(ContainSubstring("name: gloo-mesh-mgmt-server-stats"))
-		Expect(deployment).To(ContainSubstring("containerPort: 9093"))
+		Expect(deployment).To(ContainSubstring("{{ $Values.glooMgmtServer.statsPort }}"))
 	})
 	It("generates controller code and manifests for a proto file", func() {
 		cmd := &Command{

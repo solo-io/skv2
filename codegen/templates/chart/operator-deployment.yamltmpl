@@ -9,12 +9,13 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 
 [[/* custom values defined in codegen model */]]
 [[- $containers := containerConfigs $operator -]]
-[[- $services := serviceList $operator -]]
 [[- $volumes := $operator.Deployment.Volumes -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
 [[- $customDeploymentAnnotations := $operator.Deployment.CustomDeploymentAnnotations -]]
+[[- $customServiceLabels := $operator.Service.CustomLabels -]]
+[[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]] }}
 ---
@@ -103,11 +104,11 @@ spec:
 [[- end ]]
 [[- if $container.ContainerPorts ]]
         ports:
-[[ range $port := $container.ContainerPorts ]]
+        [[- range $port := $container.ContainerPorts ]]
         - name: [[ $port.Name ]]
-          containerPort: [[ $port.DefaultPort ]]
-[[- end ]]
-[[- end ]]
+          containerPort: [[ $port.Port ]]
+        [[- end ]]
+[[- end ]]        
 {{- if [[ $containerVar ]].env }}
         env:
 {{ toYaml [[ $containerVar ]].env | indent 10 }}
@@ -221,8 +222,7 @@ metadata:
 
 
 {{- define "[[ $operator.Name ]].serviceSpec"}}
-[[ range $service := $services ]]
-[[- if gt (len $service.Ports) 0 ]]
+[[ if gt (len $operator.Service.Ports) 0 ]]
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]]}}
@@ -231,15 +231,15 @@ kind: Service
 metadata:
   labels:
     app: [[ $operator.Name ]]
-    [[- range $key, $value := $service.CustomLabels ]]
+    [[- range $key, $value := $customServiceLabels ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
   annotations:
     app.kubernetes.io/name: [[ $operator.Name ]]
-    [[- range $key, $value := $service.CustomAnnotations ]]
+    [[- range $key, $value := $customServiceAnnotations ]]
     [[ $key ]]: [[ $value ]]
     [[- end ]]
-  name: [[ $service.Name | default $operator.Name ]]
+  name: [[ $operator.Name ]]
 [[- if $operator.NamespaceFromValuePath ]]
   namespace: [[ printf "{{ %s | default $.Release.Namespace }}" $operator.NamespaceFromValuePath ]]
 [[- else ]]
@@ -250,11 +250,10 @@ spec:
     app: [[ $operator.Name ]]
   type: {{ $[[ $operatorVar ]].serviceType }}
   ports:
-  [[- range $port := $service.Ports ]]
+  [[- range $port := $operator.Service.Ports ]]
   - name: [[ lower $port.Name ]]
     port: {{ index $[[ $operatorVar ]] "ports" "[[ $port.Name ]]" }}
   [[- end ]]
-[[ end ]]
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
 

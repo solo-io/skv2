@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: >
-      Allow users to configure additional services for a operator.

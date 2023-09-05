@@ -133,7 +133,6 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		"containerConfigs": containerConfigs,
 		"toListItem":       toListItem,
 		"opVar":            opVar,
-		"serviceList":      serviceList,
 
 		"render_outer_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
 			return len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
@@ -153,10 +152,6 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	}
 
 	return f
-}
-
-func serviceList(op model.Operator) []model.Service {
-	return append([]model.Service{op.Service}, op.ExtraServices...)
 }
 
 func toListItem(item interface{}) []interface{} {
