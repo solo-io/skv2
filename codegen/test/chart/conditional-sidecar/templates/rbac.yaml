@@ -6,6 +6,7 @@
 {{- $glooMgmtServer := $.Values.glooMgmtServer }}
 {{ if $glooMgmtServer.enabled }}
 
+
 ---
 
 kind: ClusterRole
@@ -29,6 +30,7 @@ rules:
   verbs:
   - '*'
 {{- end }}
+
 ---
 
 kind: ClusterRoleBinding

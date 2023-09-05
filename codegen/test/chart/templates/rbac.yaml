@@ -6,6 +6,7 @@
 {{- $painter := $.Values.painter }}
 {{ if $painter.enabled }}
 
+
 ---
 
 kind: ClusterRole
@@ -17,6 +18,7 @@ metadata:
 rules:
 - verbs:
   - GET
+
 ---
 
 kind: ClusterRoleBinding
@@ -34,14 +36,6 @@ roleRef:
   name: painter-{{ default .Release.Namespace $painter.namespace }}
   apiGroup: rbac.authorization.k8s.io
 
-{{- $clusterScoped := true }}
-{{- if $painter.watchNamespaces }}
-  {{- if len $painter.watchNamespaces }}
-    {{- $clusterScoped = false }}
-  {{- end }}
-{{- end }}
-
-{{- if $clusterScoped }}
 ---
 
 kind: ClusterRole
@@ -51,6 +45,7 @@ metadata:
   labels:
     app: painter
 rules:
+{{- if not $.Values.painter.secrets.namespaces }}
 - apiGroups:
   - ""
   resources:
@@ -59,6 +54,7 @@ rules:
   - GET
   - LIST
   - WATCH
+{{- end }}
 
 ---
 
@@ -76,10 +72,10 @@ roleRef:
   kind: ClusterRole
   name: painter
   apiGroup: rbac.authorization.k8s.io
+{{- if $.Values.painter.secrets.namespaces }}
+  {{- $namespaces := (append $enabledFromValuePath (default .Release.Namespace $painter.namespace) | mustUniq) }}
+  {{- range $ns := $namespaces }}
 
-{{- else }}
-{{- $namespaces := (append $painter.watchNamespaces (default .Release.Namespace $painter.namespace) | mustUniq) }}
-{{- range $ns := $namespaces }}
 ---
 
 kind: Role
@@ -117,6 +113,6 @@ roleRef:
   name: painter
   apiGroup: rbac.authorization.k8s.io
 
-{{- end }}
+  {{- end }}
 {{- end }}
 {{- end }}

@@ -17,6 +17,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen"
+	"github.com/solo-io/skv2/codegen/model"
 	. "github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 	"github.com/solo-io/skv2/codegen/util"
@@ -1874,6 +1875,7 @@ roleRef:
 	)
 
 	It("can configure cluster-scoped and namespace-scoped RBAC", func() {
+		var secretsEnabledPath model.EnabledFromValuePath = "$.Values.painter.secrets.namespaces"
 		cmd := &Command{
 			RenderProtos: false,
 			Chart: &Chart{
@@ -1886,11 +1888,13 @@ roleRef:
 								Verbs: []string{"GET"},
 							},
 						},
-						NamespaceRbac: []rbacv1.PolicyRule{
-							{
-								Verbs:     []string{"GET", "LIST", "WATCH"},
-								APIGroups: []string{""},
-								Resources: []string{"secrets"},
+						NamespaceRbac: map[model.EnabledFromValuePath][]rbacv1.PolicyRule{
+							secretsEnabledPath: {
+								rbacv1.PolicyRule{
+									Verbs:     []string{"GET", "LIST", "WATCH"},
+									APIGroups: []string{""},
+									Resources: []string{"secrets"},
+								},
 							},
 						},
 					},
@@ -1907,7 +1911,6 @@ roleRef:
 					},
 				},
 			},
-
 			ManifestRoot: "codegen/test/chart",
 		}
 
@@ -1918,7 +1921,7 @@ roleRef:
 
 		rbac, err := os.ReadFile(absPath)
 		Expect(err).NotTo(HaveOccurred(), "failed to read rbac.yaml")
-		clusterRoleTmpl1 := `
+		clusterRole1Tmpl := `
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -1928,7 +1931,7 @@ metadata:
 rules:
 - verbs:
   - GET`
-		clusterRoleBindingTmpl1 := `
+		clusterRoleBinding1Tmpl := `
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -1943,7 +1946,7 @@ roleRef:
   kind: ClusterRole
   name: painter-{{ default .Release.Namespace $painter.namespace }}
   apiGroup: rbac.authorization.k8s.io`
-		clusterRoleTmpl2 := `
+		clusterRole2Tmpl := `
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -1951,6 +1954,7 @@ metadata:
   labels:
     app: painter
 rules:
+{{- if not $.Values.painter.secrets.namespaces }}
 - apiGroups:
   - ""
   resources:
@@ -1958,8 +1962,9 @@ rules:
   verbs:
   - GET
   - LIST
-  - WATCH`
-		clusterRoleBindingTmpl2 := `
+  - WATCH
+{{- end }}`
+		clusterRoleBinding2Tmpl := `
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -1975,6 +1980,12 @@ roleRef:
   name: painter
   apiGroup: rbac.authorization.k8s.io`
 		roleTmpl := `
+{{- if $.Values.painter.secrets.namespaces }}
+  {{- $namespaces := (append $enabledFromValuePath (default .Release.Namespace $painter.namespace) | mustUniq) }}
+  {{- range $ns := $namespaces }}
+
+---
+
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -2006,11 +2017,14 @@ subjects:
 roleRef:
   kind: Role
   name: painter
-  apiGroup: rbac.authorization.k8s.io`
-		Expect(rbac).To(ContainSubstring(clusterRoleTmpl1))
-		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl1))
-		Expect(rbac).To(ContainSubstring(clusterRoleTmpl2))
-		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl2))
+  apiGroup: rbac.authorization.k8s.io
+
+  {{- end }}
+{{- end }}`
+		Expect(string(rbac)).To(ContainSubstring(clusterRole1Tmpl))
+		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding1Tmpl))
+		Expect(string(rbac)).To(ContainSubstring(clusterRole2Tmpl))
+		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding2Tmpl))
 		Expect(string(rbac)).To(ContainSubstring(roleTmpl))
 		Expect(string(rbac)).To(ContainSubstring(roleBindingTmpl))
 	})
