@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink:   https://github.com/solo-io/gloo-mesh-enterprise/issues/10521
+    description: >
+      Add the ability to toggle between generating a ClusterRole/Binding or Role/Binding 
+      through a Helm flag called watchNamespaces for namespace-scoped rbac policies.
+    resolvesIssue: false
