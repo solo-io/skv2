@@ -135,8 +135,8 @@ type Container struct {
 }
 
 type ContainerPort struct {
-	Name string `json:"name,omitempty"`
-	Port string `json:"port,omitempty"`
+	Name string
+	Port string
 }
 
 type ReadinessProbe struct {
