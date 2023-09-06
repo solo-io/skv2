@@ -131,6 +131,12 @@ type Container struct {
 	Env             []corev1.EnvVar
 	Resources       *corev1.ResourceRequirements
 	SecurityContext *corev1.SecurityContext
+	ContainerPorts  []ContainerPort
+}
+
+type ContainerPort struct {
+	Name string
+	Port string
 }
 
 type ReadinessProbe struct {
