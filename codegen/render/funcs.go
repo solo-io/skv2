@@ -162,7 +162,6 @@ type containerConfig struct {
 	model.Container
 	model.Service
 	ClusterRbac     []rbacv1.PolicyRule
-	NamespaceRbac   []rbacv1.PolicyRule
 	Volumes         []corev1.Volume
 	Name            string
 	ValuesVar       string
@@ -181,7 +180,6 @@ func containerConfigs(op model.Operator) []containerConfig {
 		config := containerConfig{
 			EnableStatement: sidecar.EnableStatement, // Change this to base name of operator e.g: $.Values.glooAgent.X
 			ClusterRbac:     sidecar.ClusterRbac,
-			NamespaceRbac:   sidecar.NamespaceRbac,
 			Volumes:         sidecar.Volumes,
 			Service:         sidecar.Service,
 			Container:       sidecar.Container,

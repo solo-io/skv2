@@ -73,7 +73,7 @@ roleRef:
   name: painter
   apiGroup: rbac.authorization.k8s.io
 {{- if $.Values.painter.secrets.namespaces }}
-  {{- $namespaces := (append $enabledFromValuePath (default .Release.Namespace $painter.namespace) | mustUniq) }}
+  {{- $namespaces := (append $.Values.painter.secrets.namespaces (default .Release.Namespace $painter.namespace) | mustUniq) }}
   {{- range $ns := $namespaces }}
 
 ---

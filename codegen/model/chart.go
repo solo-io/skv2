@@ -63,9 +63,6 @@ type JsonSchema struct {
 	CustomTypeMapper func(reflect.Type, map[string]interface{}) interface{}
 }
 
-// the Helm value path that enables rbac policies, e.g. `common.rbac.secrets.namespaces`
-type EnabledFromValuePath string
-
 type Operator struct {
 	Name string
 
@@ -82,7 +79,8 @@ type Operator struct {
 	ClusterRbac []rbacv1.PolicyRule
 
 	// these populate the generated Role for the operator
-	NamespaceRbac map[EnabledFromValuePath][]rbacv1.PolicyRule
+	// key should be the k8s resource name (lower-case, plural version)
+	NamespaceRbac map[string][]rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
 	Service Service
