@@ -17,7 +17,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen"
-	"github.com/solo-io/skv2/codegen/model"
 	. "github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 	"github.com/solo-io/skv2/codegen/util"
@@ -1875,7 +1874,6 @@ roleRef:
 	)
 
 	It("can configure cluster-scoped and namespace-scoped RBAC", func() {
-		var secretsEnabledPath model.EnabledFromValuePath = "$.Values.painter.secrets.namespaces"
 		cmd := &Command{
 			RenderProtos: false,
 			Chart: &Chart{
@@ -1888,8 +1886,8 @@ roleRef:
 								Verbs: []string{"GET"},
 							},
 						},
-						NamespaceRbac: map[model.EnabledFromValuePath][]rbacv1.PolicyRule{
-							secretsEnabledPath: {
+						NamespaceRbac: map[string][]rbacv1.PolicyRule{
+							"secrets": {
 								rbacv1.PolicyRule{
 									Verbs:     []string{"GET", "LIST", "WATCH"},
 									APIGroups: []string{""},
@@ -1954,7 +1952,7 @@ metadata:
   labels:
     app: painter
 rules:
-{{- if not $.Values.painter.secrets.namespaces }}
+{{- if not (get $painterNamespacedResources secrets) }}
 - apiGroups:
   - ""
   resources:
@@ -1980,12 +1978,6 @@ roleRef:
   name: painter
   apiGroup: rbac.authorization.k8s.io`
 		roleTmpl := `
-{{- if $.Values.painter.secrets.namespaces }}
-  {{- $namespaces := (append $enabledFromValuePath (default .Release.Namespace $painter.namespace) | mustUniq) }}
-  {{- range $ns := $namespaces }}
-
----
-
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -1994,6 +1986,7 @@ metadata:
   labels:
     app: painter
 rules:
+{{- if (has secrets $resources) }}
 - apiGroups:
   - ""
   resources:
@@ -2001,7 +1994,8 @@ rules:
   verbs:
   - GET
   - LIST
-  - WATCH`
+  - WATCH
+{{- end }}`
 		roleBindingTmpl := `
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -2017,10 +2011,7 @@ subjects:
 roleRef:
   kind: Role
   name: painter
-  apiGroup: rbac.authorization.k8s.io
-
-  {{- end }}
-{{- end }}`
+  apiGroup: rbac.authorization.k8s.io`
 		Expect(string(rbac)).To(ContainSubstring(clusterRole1Tmpl))
 		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding1Tmpl))
 		Expect(string(rbac)).To(ContainSubstring(clusterRole2Tmpl))
