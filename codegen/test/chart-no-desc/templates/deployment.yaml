@@ -45,7 +45,7 @@ spec:
         image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
         imagePullPolicy: {{ $painterImage.pullPolicy }}
         args:
-        - foo        
+        - foo
 {{- if $painter.env }}
         env:
 {{ toYaml $painter.env | indent 10 }}
@@ -100,7 +100,7 @@ spec:
         imagePullPolicy: {{ $paletteImage.pullPolicy }}
         args:
         - bar
-        - baz        
+        - baz
 {{- if $palette.env }}
         env:
 {{ toYaml $palette.env | indent 10 }}

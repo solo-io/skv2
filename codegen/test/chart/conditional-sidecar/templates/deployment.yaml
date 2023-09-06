@@ -50,7 +50,7 @@ spec:
         imagePullPolicy: {{ $glooMgmtServerImage.pullPolicy }}
         ports:
         - name: stats
-          containerPort: {{ $Values.glooMgmtServer.statsPort }}        
+          containerPort: {{ $Values.glooMgmtServer.statsPort }}
 {{- if $glooMgmtServer.env }}
         env:
 {{ toYaml $glooMgmtServer.env | indent 10 }}
@@ -100,7 +100,7 @@ spec:
 {{- $glooAgentImage := $glooAgent.image }}
       - name: gloo-agent
         image: {{ $glooAgentImage.registry }}/{{ $glooAgentImage.repository }}:{{ $glooAgentImage.tag }}
-        imagePullPolicy: {{ $glooAgentImage.pullPolicy }}        
+        imagePullPolicy: {{ $glooAgentImage.pullPolicy }}
 {{- if $glooAgent.env }}
         env:
 {{ toYaml $glooAgent.env | indent 10 }}
@@ -268,7 +268,7 @@ spec:
 {{- $glooAgentImage := $glooAgent.image }}
       - name: gloo-agent
         image: {{ $glooAgentImage.registry }}/{{ $glooAgentImage.repository }}:{{ $glooAgentImage.tag }}
-        imagePullPolicy: {{ $glooAgentImage.pullPolicy }}        
+        imagePullPolicy: {{ $glooAgentImage.pullPolicy }}
 {{- if $glooAgent.env }}
         env:
 {{ toYaml $glooAgent.env | indent 10 }}

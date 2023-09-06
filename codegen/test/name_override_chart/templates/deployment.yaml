@@ -37,7 +37,7 @@ spec:
         image: {{ $painterOriginalNameImage.registry }}/{{ $painterOriginalNameImage.repository }}:{{ $painterOriginalNameImage.tag }}
         imagePullPolicy: {{ $painterOriginalNameImage.pullPolicy }}
         args:
-        - foo        
+        - foo
 {{- if $painterOriginalName.env }}
         env:
 {{ toYaml $painterOriginalName.env | indent 10 }}

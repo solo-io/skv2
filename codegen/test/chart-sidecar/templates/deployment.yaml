@@ -35,7 +35,7 @@ spec:
 {{- $painterImage := $painter.image }}
       - name: painter
         image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
-        imagePullPolicy: {{ $painterImage.pullPolicy }}        
+        imagePullPolicy: {{ $painterImage.pullPolicy }}
 {{- if $painter.env }}
         env:
 {{ toYaml $painter.env | indent 10 }}
@@ -80,7 +80,7 @@ spec:
 {{- $fooBarImage := $fooBar.image }}
       - name: foo-bar
         image: {{ $fooBarImage.registry }}/{{ $fooBarImage.repository }}:{{ $fooBarImage.tag }}
-        imagePullPolicy: {{ $fooBarImage.pullPolicy }}        
+        imagePullPolicy: {{ $fooBarImage.pullPolicy }}
 {{- if $fooBar.env }}
         env:
 {{ toYaml $fooBar.env | indent 10 }}
