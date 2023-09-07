@@ -77,18 +77,28 @@ roleRef:
 
 [[ if $operator.NamespaceRbac ]]
 [[- /* 
-We need the following maps:
-  1. namespace -> list of resources
-  2. resources to be namespace restricted
+We need the following variables:
+  1. map of namespace -> list of resources
+  2. list of resources to be namespace restricted
+  3. list of namespaced resources that the operator supports
 */ -]]
 {{- $[[ $operatorVar ]]NsToResources := dict }}
-{{- $[[ $operatorVar ]]NamespacedResources := dict }}
+{{- $[[ $operatorVar ]]NamespacedResources := list }}
+{{- $[[ $operatorVar ]]SupportedResources := list }}
+[[- range $resource, $_ := $operator.NamespaceRbac ]]
+{{- $[[ $operatorVar ]]SupportedResources = append $[[ $operatorVar ]]SupportedResources [[ quote $resource ]] }}
+[[- end ]]
+
 {{- range $entry := $[[ $operatorVar ]].namespacedRbac }}
   {{- range $ns := $entry.namespaces }}
     {{- set $[[ $operatorVar ]]NsToResources $ns (concat $entry.resources (get $[[ $operatorVar ]]NsToResources $ns | default list) | mustUniq) }}
   {{- end }}
   {{- range $resource := $entry.resources }}
-    {{- $_ := set $[[ $operatorVar ]]NamespacedResources $resource true }}
+    {{- if (has $resource $[[ $operatorVar ]]SupportedResources) }}
+      {{- $[[ $operatorVar ]]NamespacedResources = (append $[[ $operatorVar ]]NamespacedResources $resource | mustUniq) }}
+    {{- else }}
+      {{- fail (cat "invalid resource name" (quote $resource) "provided to namespacedRbac field. must be one of the following:" ($[[ $operatorVar ]]SupportedResources | join ", ")) }}
+    {{- end }}
   {{- end }}
 {{- end }}
 
@@ -103,7 +113,7 @@ metadata:
     app: [[ $operator.Name ]]
 rules:
 [[- range $resource, $policies := $operator.NamespaceRbac ]]
-{{- if not (get $[[ $operatorVar ]]NamespacedResources [[ $resource ]]) }}
+{{- if not (has [[ quote $resource ]] $[[ $operatorVar ]]NamespacedResources) }}
 [[- range $policy := $policies ]]
 [[ toYaml (toListItem $policy) ]]
 [[- end ]]
@@ -131,7 +141,8 @@ roleRef:
   name: [[ $operator.Name ]]
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
-  {{- range $ns, $resources := $[[ $operatorVar ]]NsToResources }}
+
+{{- range $ns, $resources := $[[ $operatorVar ]]NsToResources }}
 
 ---
 
@@ -144,7 +155,7 @@ metadata:
     app: [[ $operator.Name ]]
 rules:
 [[- range $resource, $policies := $operator.NamespaceRbac ]]
-{{- if (has [[ $resource ]] $resources) }}
+{{- if (has [[ quote $resource ]] $resources) }}
 [[- range $policy := $policies ]]
 [[ toYaml (toListItem $policy) ]]
 [[- end ]]

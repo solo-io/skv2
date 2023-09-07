@@ -37,13 +37,20 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 {{- $painterNsToResources := dict }}
-{{- $painterNamespacedResources := dict }}
+{{- $painterNamespacedResources := list }}
+{{- $painterSupportedResources := list }}
+{{- $painterSupportedResources = append $painterSupportedResources "secrets" }}
+
 {{- range $entry := $painter.namespacedRbac }}
   {{- range $ns := $entry.namespaces }}
     {{- set $painterNsToResources $ns (concat $entry.resources (get $painterNsToResources $ns | default list) | mustUniq) }}
   {{- end }}
   {{- range $resource := $entry.resources }}
-    {{- $_ := set $painterNamespacedResources $resource true }}
+    {{- if (has $resource $painterSupportedResources) }}
+      {{- $painterNamespacedResources = (append $painterNamespacedResources $resource | mustUniq) }}
+    {{- else }}
+      {{- fail (cat "invalid resource name" (quote $resource) "provided to namespacedRbac field. must be one of the following:" ($painterSupportedResources | join ", ")) }}
+    {{- end }}
   {{- end }}
 {{- end }}
 
@@ -57,7 +64,7 @@ metadata:
   labels:
     app: painter
 rules:
-{{- if not (get $painterNamespacedResources secrets) }}
+{{- if not (has "secrets" $painterNamespacedResources) }}
 - apiGroups:
   - ""
   resources:
@@ -85,7 +92,8 @@ roleRef:
   name: painter
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
-  {{- range $ns, $resources := $painterNsToResources }}
+
+{{- range $ns, $resources := $painterNsToResources }}
 
 ---
 
@@ -97,7 +105,7 @@ metadata:
   labels:
     app: painter
 rules:
-{{- if (has secrets $resources) }}
+{{- if (has "secrets" $resources) }}
 - apiGroups:
   - ""
   resources:

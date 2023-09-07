@@ -1957,7 +1957,7 @@ metadata:
   labels:
     app: painter
 rules:
-{{- if not (get $painterNamespacedResources secrets) }}
+{{- if not (has "secrets" $painterNamespacedResources) }}
 - apiGroups:
   - ""
   resources:
@@ -1991,7 +1991,7 @@ metadata:
   labels:
     app: painter
 rules:
-{{- if (has secrets $resources) }}
+{{- if (has "secrets" $resources) }}
 - apiGroups:
   - ""
   resources:
