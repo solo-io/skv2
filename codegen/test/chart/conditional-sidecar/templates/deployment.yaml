@@ -231,7 +231,7 @@ spec:
   type: {{ $glooAgent.serviceType }}
   ports:
   - name: grpc
-    port: {{ $glooAgent.ports.grpc }}
+    port: {{ index $glooAgent "ports" "grpc" }}
 {{- end }}
 
 
