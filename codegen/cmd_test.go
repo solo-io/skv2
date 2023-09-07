@@ -1879,6 +1879,115 @@ roleRef:
 		Entry("port name with hyphen", "foo-bar"),
 	)
 
+	DescribeTable("rendering conditional sidecars with service ports",
+		func(portName string) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+								Sidecars: []Sidecar{
+									{
+										Name:            "sidecar-painter",
+										EnableStatement: "true",
+										Container: Container{
+											Image: Image{
+												Tag:        "v0.0.0",
+												Repository: "painter",
+												Registry:   "quay.io/solo-io",
+												PullPolicy: "IfNotPresent",
+											},
+										},
+										Service: Service{
+											Ports: []ServicePort{
+												{
+													Name:        portName,
+													DefaultPort: 1337,
+												},
+											},
+										},
+									},
+								},
+							},
+							Service: Service{
+								Ports: []ServicePort{{
+									Name:        portName,
+									DefaultPort: 9900,
+								}},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-sidecar-svcport",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			// alternatively could be custom values file; if this needs to expanded upon consider moving out of code
+			helmValues := map[string]interface{}{
+				"painter": map[string]interface{}{
+					"sidecars": map[string]interface{}{
+						"sidecarPainter": map[string]interface{}{
+							"ports": map[string]interface{}{
+								portName: 1337,
+							},
+						},
+					},
+				},
+			}
+
+			renderedManifests := helmTemplate("codegen/test/chart-sidecar-svcport", helmValues)
+
+			var renderedSvc *v1.Service
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "sidecar-painter" || obj.GetKind() != "Service" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedSvc = &v1.Service{}
+				err = json.Unmarshal(bytes, renderedSvc)
+				Expect(err).NotTo(HaveOccurred())
+				break
+			}
+			Expect(renderedSvc).NotTo(BeNil())
+			Expect(renderedSvc.Spec.Ports[0].Name).To(Equal(portName))
+			Expect(renderedSvc.Spec.Ports[0].Port).To(Equal(int32(1337)))
+		},
+		Entry("sidecar service port name without hyphen", "foo"),
+		Entry("sidecar service port name with hyphen", "foo-bar"),
+	)
+
 	It("can configure cluster-scoped and namespace-scoped RBAC", func() {
 		cmd := &Command{
 			RenderProtos: false,
