@@ -48,6 +48,9 @@ spec:
       - name: gloo-mgmt-server
         image: {{ $glooMgmtServerImage.registry }}/{{ $glooMgmtServerImage.repository }}:{{ $glooMgmtServerImage.tag }}
         imagePullPolicy: {{ $glooMgmtServerImage.pullPolicy }}
+        ports:
+        - name: stats
+          containerPort: {{ $Values.glooMgmtServer.statsPort }}
 {{- if $glooMgmtServer.env }}
         env:
 {{ toYaml $glooMgmtServer.env | indent 10 }}

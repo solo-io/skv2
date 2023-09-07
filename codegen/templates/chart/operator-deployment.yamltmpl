@@ -115,6 +115,13 @@ spec:
         args:
 [[ toYaml $container.Args | indent 8 ]]
 [[- end ]]
+[[- if $container.ContainerPorts ]]
+        ports:
+        [[- range $port := $container.ContainerPorts ]]
+        - name: [[ $port.Name ]]
+          containerPort: [[ $port.Port ]]
+        [[- end ]]
+[[- end ]]
 {{- if [[ $containerVar ]].env }}
         env:
 {{ toYaml [[ $containerVar ]].env | indent 10 }}

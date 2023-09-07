@@ -109,6 +109,10 @@ var _ = Describe("Cmd", func() {
 									Repository: "gloo-mesh-mgmt-server",
 									Tag:        "0.0.1",
 								},
+								ContainerPorts: []ContainerPort{{
+									Name: "stats",
+									Port: "{{ $Values.glooMgmtServer.statsPort }}",
+								}},
 								VolumeMounts: []v1.VolumeMount{{
 									Name:      "license-keys",
 									MountPath: "/etc/gloo-mesh/license-keys",
@@ -148,6 +152,7 @@ var _ = Describe("Cmd", func() {
 		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{ if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
 		Expect(deployment).To(ContainSubstring("name: agent-volume"))
 		Expect(deployment).To(ContainSubstring("{{ $glooAgent.ports.grpc }}"))
+		Expect(deployment).To(ContainSubstring("{{ $Values.glooMgmtServer.statsPort }}"))
 	})
 	It("generates controller code and manifests for a proto file", func() {
 		cmd := &Command{
