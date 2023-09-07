@@ -152,7 +152,7 @@ var _ = Describe("Cmd", func() {
 		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{ if %s }}", agentConditional)))
 		Expect(deployment).To(ContainSubstring(fmt.Sprintf("{{ if %s }}", "and ($.Values.glooAgent.enabled) (not $.Values.glooAgent.runAsSidecar)")))
 		Expect(deployment).To(ContainSubstring("name: agent-volume"))
-		Expect(deployment).To(ContainSubstring("{{ $glooAgent.ports.grpc }}"))
+		Expect(deployment).To(ContainSubstring(`{{ index $glooAgent "ports" "grpc" }}`))
 		Expect(deployment).To(ContainSubstring("{{ $Values.glooMgmtServer.statsPort }}"))
 	})
 	It("generates controller code and manifests for a proto file", func() {
