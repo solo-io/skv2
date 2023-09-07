@@ -18,19 +18,6 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]] }}
-
-[[- /*
-Creates a dict of resource names to a list of namespaces.
-This is used for container args that accept a list of namespaces for a particular resource.
-*/ -]]
-[[- if $operator.NamespaceRbac ]]
-{{- $[[ $operatorVar ]]ResourceToNamespaces := dict }}
-{{- range $entry := $[[ $operatorVar ]].namespacedRbac }}
-  {{- range $resource := $entry.resources }}
-    {{- $_ := set $[[ $operatorVar ]]ResourceToNamespaces $resource (concat $entry.namespaces (get $[[ $operatorVar ]]ResourceToNamespaces $resource | default list) | mustUniq) }}
-  {{- end }}
-{{- end }}
-[[- end ]]
 ---
 [[- $operatorEnabledCondition := printf "\n{{ if $%s.enabled }}\n" $operatorVar ]]
 [[- if (gt (len $operator.CustomEnableCondition) 0) ]]
@@ -41,6 +28,19 @@ This is used for container args that accept a list of namespaces for a particula
 [[- $workloadKind := "Deployment" ]]
 [[- if $operator.Deployment.UseDaemonSet ]]
 [[- $workloadKind = "DaemonSet" ]]
+[[- end ]]
+
+[[- /*
+  Creates a dict of resource names to a list of namespaces.
+  This is used for container args that accept a list of namespaces for a particular resource.
+*/ -]]
+[[- if $operator.NamespaceRbac ]]
+{{- $[[ $operatorVar ]]ResourceToNamespaces := dict }}
+{{- range $entry := [[ (opVar $operator) ]].namespacedRbac }}
+  {{- range $resource := $entry.resources }}
+    {{- $_ := set $[[ $operatorVar ]]ResourceToNamespaces $resource (concat $entry.namespaces (get $[[ $operatorVar ]]ResourceToNamespaces $resource | default list) | mustUniq) }}
+  {{- end }}
+{{- end }}
 [[- end ]]
 
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
