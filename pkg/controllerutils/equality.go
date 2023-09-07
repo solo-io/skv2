@@ -8,6 +8,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+func MetaEqual(obj1, obj2 runtime.Object) bool {
+	if meta1, hasMeta := obj1.(metav1.Object); hasMeta {
+		if !ObjectMetasEqual(meta1, obj2.(metav1.Object)) {
+			return false
+		}
+	}
+
+	return true
+}
+
 // returns true if "relevant" parts of obj1 and obj2 have equal:
 // - labels,
 // - annotations,
