@@ -1953,7 +1953,7 @@ roleRef:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
   labels:
     app: painter
 rules:
@@ -1971,7 +1971,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
   labels:
     app: painter
 subjects:
@@ -1980,7 +1980,7 @@ subjects:
   namespace: {{ default .Release.Namespace $painter.namespace }}
 roleRef:
   kind: ClusterRole
-  name: painter
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
   apiGroup: rbac.authorization.k8s.io`
 		roleTmpl := `
 kind: Role

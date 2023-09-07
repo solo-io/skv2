@@ -3,15 +3,15 @@
 
 
 {{- $painter := $.Values.painter }}
+---
+
+{{- define "painter.deploymentSpec" }}
 {{- $painterResourceToNamespaces := dict }}
-{{- range $entry := $painter.namespacedRbac }}
+{{- range $entry := $.Values.painter.namespacedRbac }}
   {{- range $resource := $entry.resources }}
     {{- $_ := set $painterResourceToNamespaces $resource (concat $entry.namespaces (get $painterResourceToNamespaces $resource | default list) | mustUniq) }}
   {{- end }}
 {{- end }}
----
-
-{{- define "painter.deploymentSpec" }}
 
 # Deployment manifest for painter
 
