@@ -2,13 +2,11 @@ package controllerutils
 
 import (
 	"context"
-	"encoding/json"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -80,23 +78,10 @@ func upsert(
 		return controllerutil.OperationResultNone, nil
 	}
 
-	if !MetaEqual(existing, obj) {
-		data, err := json.Marshal(obj)
-		if err != nil {
-			return controllerutil.OperationResultNone, err
-		}
-
-		patch := client.RawPatch(types.ApplyPatchType, data)
-
-		if err := c.Patch(ctx, existing, patch); err != nil {
-			return controllerutil.OperationResultNone, err
-		}
-
-		return controllerutil.OperationResultUpdated, nil
-	}
-
 	if err := c.Update(ctx, obj); err != nil {
-		return controllerutil.OperationResultNone, err
+		if err := c.Patch(ctx, existing, client.MergeFrom(obj)); err != nil {
+			return controllerutil.OperationResultNone, err
+		}
 	}
 	return controllerutil.OperationResultUpdated, nil
 }
