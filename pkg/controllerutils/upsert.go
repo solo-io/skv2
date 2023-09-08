@@ -2,6 +2,7 @@ package controllerutils
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -79,6 +80,7 @@ func upsert(
 	}
 
 	if err := c.Update(ctx, obj); err != nil {
+		fmt.Println("Error updating object", err)
 		if err := c.Patch(ctx, existing, client.MergeFrom(obj)); err != nil {
 			return controllerutil.OperationResultNone, err
 		}
