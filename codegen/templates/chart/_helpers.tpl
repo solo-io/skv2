@@ -64,7 +64,7 @@ version, which merges two named templates.
     {{- $_ := set $resourcesToNamespaces $resource (concat $entry.namespaces (get $resourcesToNamespaces $resource | default list) | mustUniq) }}
   {{- end }}
 {{- end }}
-{{- get $resourcesToNamespaces  .Resource | join "," | quote }}
+{{- get $resourcesToNamespaces  .Resource | join "," }}
 {{- end }}
     [[- end ]]
 [[- end ]]
