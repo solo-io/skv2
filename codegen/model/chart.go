@@ -79,7 +79,8 @@ type Operator struct {
 	ClusterRbac []rbacv1.PolicyRule
 
 	// these populate the generated Role for the operator
-	NamespaceRbac []rbacv1.PolicyRule
+	// key should be the k8s resource name (lower-case, plural version)
+	NamespaceRbac map[string][]rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
 	Service Service
@@ -151,7 +152,8 @@ type ReadinessProbe struct {
 type Sidecar struct {
 	Container
 	Service
-	Rbac            []rbacv1.PolicyRule
+	ClusterRbac     []rbacv1.PolicyRule
+	NamespaceRbac   map[string][]rbacv1.PolicyRule
 	Volumes         []corev1.Volume
 	Name            string
 	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"` // Optional: if specified, the operator resources will be abled based on the condition specified in the enable statement.

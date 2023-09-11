@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -82,7 +81,7 @@ var _ = Describe("Cmd", func() {
 											},
 										},
 									},
-									Rbac: []rbacv1.PolicyRule{{
+									ClusterRbac: []rbacv1.PolicyRule{{
 										Verbs:     []string{"*"},
 										APIGroups: []string{"apiextensions.k8s.io"},
 										Resources: []string{"customresourcedefinitions"},
@@ -1621,7 +1620,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			bytes, err := ioutil.ReadFile(crdFilePath)
+			bytes, err := os.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(bytes)).To(ContainSubstring("description: OpenAPI gen test for recursive fields"))
 		})
@@ -1633,7 +1632,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			bytes, err := ioutil.ReadFile(crdFilePath)
+			bytes, err := os.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
 			paintCrdYaml := ""
 			for _, crd := range strings.Split(string(bytes), "---") {
@@ -1663,7 +1662,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			bytes, err := ioutil.ReadFile(crdFilePath)
+			bytes, err := os.ReadFile(crdFilePath)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(bytes)).NotTo(ContainSubstring("description:"))
 		})
@@ -2001,11 +2000,13 @@ roleRef:
 								Verbs: []string{"GET"},
 							},
 						},
-						NamespaceRbac: []rbacv1.PolicyRule{
-							{
-								Verbs:     []string{"GET", "LIST", "WATCH"},
-								APIGroups: []string{""},
-								Resources: []string{"secrets"},
+						NamespaceRbac: map[string][]rbacv1.PolicyRule{
+							"secrets": {
+								rbacv1.PolicyRule{
+									Verbs:     []string{"GET", "LIST", "WATCH"},
+									APIGroups: []string{""},
+									Resources: []string{"secrets"},
+								},
 							},
 						},
 					},
@@ -2022,7 +2023,6 @@ roleRef:
 					},
 				},
 			},
-
 			ManifestRoot: "codegen/test/chart",
 		}
 
@@ -2033,15 +2033,40 @@ roleRef:
 
 		rbac, err := os.ReadFile(absPath)
 		Expect(err).NotTo(HaveOccurred(), "failed to read rbac.yaml")
-		roleTmpl := `
-kind: Role
+		clusterRole1Tmpl := `
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
   labels:
     app: painter
 rules:
+- verbs:
+  - GET`
+		clusterRoleBinding1Tmpl := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ default .Release.Namespace $painter.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter-{{ default .Release.Namespace $painter.namespace }}
+  apiGroup: rbac.authorization.k8s.io`
+		clusterRole2Tmpl := `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
+  labels:
+    app: painter
+rules:
+{{- if not (has "secrets" $painterNamespacedResources) }}
 - apiGroups:
   - ""
   resources:
@@ -2049,52 +2074,64 @@ rules:
   verbs:
   - GET
   - LIST
-  - WATCH`
+  - WATCH
+{{- end }}`
+		clusterRoleBinding2Tmpl := `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: {{ default .Release.Namespace $painter.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
+  apiGroup: rbac.authorization.k8s.io`
+		roleTmpl := `
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter
+  namespace: {{ $ns }}
+  labels:
+    app: painter
+rules:
+{{- if (has "secrets" $resources) }}
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - GET
+  - LIST
+  - WATCH
+{{- end }}`
 		roleBindingTmpl := `
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  namespace: {{ $ns }}
   labels:
     app: painter
 subjects:
 - kind: ServiceAccount
   name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
+  namespace: {{ default $.Release.Namespace $painter.namespace }}
 roleRef:
   kind: Role
   name: painter
   apiGroup: rbac.authorization.k8s.io`
-		clusterRoleTmpl := `
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
-  labels:
-    app: painter
-rules:
-- verbs:
-  - GET`
-		clusterRoleBindingTmpl := `
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
-  labels:
-    app: painter
-subjects:
-- kind: ServiceAccount
-  name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
-roleRef:
-  kind: ClusterRole
-  name: painter-{{ default .Release.Namespace $.Values.painter.namespace }}
-  apiGroup: rbac.authorization.k8s.io`
-		Expect(rbac).To(ContainSubstring(roleTmpl))
-		Expect(rbac).To(ContainSubstring(roleBindingTmpl))
-		Expect(rbac).To(ContainSubstring(clusterRoleTmpl))
-		Expect(rbac).To(ContainSubstring(clusterRoleBindingTmpl))
+		Expect(string(rbac)).To(ContainSubstring(clusterRole1Tmpl))
+		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding1Tmpl))
+		Expect(string(rbac)).To(ContainSubstring(clusterRole2Tmpl))
+		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding2Tmpl))
+		Expect(string(rbac)).To(ContainSubstring(roleTmpl))
+		Expect(string(rbac)).To(ContainSubstring(roleBindingTmpl))
 	})
 })
 
@@ -2102,7 +2139,7 @@ func helmTemplate(path string, values interface{}) []byte {
 	raw, err := yaml.Marshal(values)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
-	helmValuesFile, err := ioutil.TempFile("", "-helm-values-skv2-test")
+	helmValuesFile, err := os.CreateTemp("", "-helm-values-skv2-test")
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 	_, err = helmValuesFile.Write(raw)
@@ -2123,7 +2160,7 @@ func helmTemplate(path string, values interface{}) []byte {
 }
 
 func helmValuesFromFile(path string) map[string]interface{} {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	Expect(err).NotTo(HaveOccurred())
 
 	out := make(map[string]interface{})

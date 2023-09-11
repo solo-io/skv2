@@ -1,8 +1,8 @@
-[[/*
+[[- /*
 This template contains the core components for the Operator deployment.
 Expressions evaluating Helm Values use "{{" and "}}"
 Expressions evaluating SKv2 Config use "[[" and "]]"
-*/]]
+*/ -]]
 
 [[- range $operator := $.Operators -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
@@ -29,7 +29,6 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- if $operator.Deployment.UseDaemonSet ]]
 [[- $workloadKind = "DaemonSet" ]]
 [[- end ]]
-
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 
 apiVersion: apps/v1

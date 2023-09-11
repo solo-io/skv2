@@ -6,7 +6,6 @@
 ---
 
 {{- define "gloo-mgmt-server.deploymentSpec" }}
-
 # Deployment manifest for gloo-mgmt-server
 
 apiVersion: apps/v1
@@ -239,7 +238,6 @@ spec:
 ---
 
 {{- define "gloo-agent.deploymentSpec" }}
-
 # Deployment manifest for gloo-agent
 
 apiVersion: apps/v1
