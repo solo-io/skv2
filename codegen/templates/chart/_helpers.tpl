@@ -53,3 +53,18 @@ version, which merges two named templates.
 {{- toYaml $merged -}} {{/* render source with overrides as YAML */}}
 {{- end -}}
 {{- end -}}
+
+[[- range $operator := $.Operators ]]
+    [[- if $operator.NamespaceRbac ]]
+
+{{- define "[[ (lower_camel $operator.Name) ]].namespacesForResource" }}
+{{- $resourcesToNamespaces := dict }}
+{{- range $entry := [[ (opVar $operator) ]].namespacedRbac }}
+  {{- range $resource := $entry.resources }}
+    {{- $_ := set $resourcesToNamespaces $resource (concat $entry.namespaces (get $resourcesToNamespaces $resource | default list) | mustUniq) }}
+  {{- end }}
+{{- end }}
+{{- get $resourcesToNamespaces  .Resource | join "," | quote }}
+{{- end }}
+    [[- end ]]
+[[- end ]]

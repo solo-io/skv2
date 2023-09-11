@@ -29,20 +29,6 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- if $operator.Deployment.UseDaemonSet ]]
 [[- $workloadKind = "DaemonSet" ]]
 [[- end ]]
-
-[[- /*
-  Creates a dict of resource names to a list of namespaces.
-  This is used for container args that accept a list of namespaces for a particular resource.
-*/ -]]
-[[- if $operator.NamespaceRbac ]]
-{{- $[[ $operatorVar ]]ResourceToNamespaces := dict }}
-{{- range $entry := [[ (opVar $operator) ]].namespacedRbac }}
-  {{- range $resource := $entry.resources }}
-    {{- $_ := set $[[ $operatorVar ]]ResourceToNamespaces $resource (concat $entry.namespaces (get $[[ $operatorVar ]]ResourceToNamespaces $resource | default list) | mustUniq) }}
-  {{- end }}
-{{- end }}
-[[- end ]]
-
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 
 apiVersion: apps/v1
@@ -107,18 +93,6 @@ spec:
 [[- $containerVar := printf "$%s" $containerName ]]
 [[- $imageVar := printf "$%s%s" $containerName "Image" ]]
 {{- [[ $containerVar ]] := [[ $container.ValuesVar ]] }}
-[[- /*
-  Creates a dict of resource names to a list of namespaces.
-  This is used for container args that accept a list of namespaces for a particular resource.
-*/ -]]
-[[- if $container.NamespaceRbac ]]
-{{- [[ $containerVar ]]ResourceToNamespaces := dict }}
-{{- range $entry := [[ $containerVar ]].namespacedRbac }}
-  {{- range $resource := $entry.resources }}
-    {{- $_ := set [[ $containerVar ]]ResourceToNamespaces $resource (concat $entry.namespaces (get [[ $containerVar ]]ResourceToNamespaces $resource | default list) | mustUniq) }}
-  {{- end }}
-{{- end }}
-[[- end ]]
 {{- [[ $imageVar ]] := [[ $containerVar ]].image }}
       - name: [[ $container.Name ]]
         image: {{ [[ $imageVar ]].registry }}/{{ [[ $imageVar ]].repository }}:{{ [[ $imageVar ]].tag }}
