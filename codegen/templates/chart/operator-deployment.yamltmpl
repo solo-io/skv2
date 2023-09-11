@@ -322,7 +322,7 @@ spec:
   ports:
   [[- range $port := $container.Service.Ports ]]
   - name: [[ lower $port.Name ]]
-    port: {{ [[ $containerVar ]].ports.[[ $port.Name ]] }}
+    port: {{ index [[ $containerVar ]] "ports" "[[ $port.Name ]]" }}
   [[- end ]]
 {{- end }}
 [[- end ]]
