@@ -111,6 +111,7 @@ func mapStringEqual(map1, map2 map[string]string) bool {
 		return false
 	}
 
+	// map2 contains all keys in map1
 	for key1, val1 := range map1 {
 		val2, ok := map2[key1]
 		if !ok {
@@ -120,6 +121,18 @@ func mapStringEqual(map1, map2 map[string]string) bool {
 			return false
 		}
 	}
+
+	// map1 contains all keys in map2
+	for key1, val1 := range map2 {
+		val2, ok := map1[key1]
+		if !ok {
+			return false
+		}
+		if val1 != val2 {
+			return false
+		}
+	}
+
 	return true
 }
 
