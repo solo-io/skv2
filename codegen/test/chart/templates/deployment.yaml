@@ -6,13 +6,6 @@
 ---
 
 {{- define "painter.deploymentSpec" }}
-{{- $painterResourceToNamespaces := dict }}
-{{- range $entry := $.Values.painter.namespacedRbac }}
-  {{- range $resource := $entry.resources }}
-    {{- $_ := set $painterResourceToNamespaces $resource (concat $entry.namespaces (get $painterResourceToNamespaces $resource | default list) | mustUniq) }}
-  {{- end }}
-{{- end }}
-
 # Deployment manifest for painter
 
 apiVersion: apps/v1

@@ -6,7 +6,6 @@
 ---
 
 {{- define "painter-original-name.deploymentSpec" }}
-
 # Deployment manifest for painter-original-name
 
 apiVersion: apps/v1

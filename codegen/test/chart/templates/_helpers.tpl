@@ -52,3 +52,13 @@ version, which merges two named templates.
 {{- toYaml $merged -}} {{/* render source with overrides as YAML */}}
 {{- end -}}
 {{- end -}}
+
+{{- define "painter.namespacesForResource" }}
+{{- $resourcesToNamespaces := dict }}
+{{- range $entry := $.Values.painter.namespacedRbac }}
+  {{- range $resource := $entry.resources }}
+    {{- $_ := set $resourcesToNamespaces $resource (concat $entry.namespaces (get $resourcesToNamespaces $resource | default list) | mustUniq) }}
+  {{- end }}
+{{- end }}
+{{- get $resourcesToNamespaces  .Resource | join "," | quote }}
+{{- end }}
