@@ -107,6 +107,18 @@ spec:
 [[- $containerVar := printf "$%s" $containerName ]]
 [[- $imageVar := printf "$%s%s" $containerName "Image" ]]
 {{- [[ $containerVar ]] := [[ $container.ValuesVar ]] }}
+[[- /*
+  Creates a dict of resource names to a list of namespaces.
+  This is used for container args that accept a list of namespaces for a particular resource.
+*/ -]]
+[[- if $container.NamespaceRbac ]]
+{{- [[ $containerVar ]]ResourceToNamespaces := dict }}
+{{- range $entry := [[ $containerVar ]].namespacedRbac }}
+  {{- range $resource := $entry.resources }}
+    {{- $_ := set [[ $containerVar ]]ResourceToNamespaces $resource (concat $entry.namespaces (get [[ $containerVar ]]ResourceToNamespaces $resource | default list) | mustUniq) }}
+  {{- end }}
+{{- end }}
+[[- end ]]
 {{- [[ $imageVar ]] := [[ $containerVar ]].image }}
       - name: [[ $container.Name ]]
         image: {{ [[ $imageVar ]].registry }}/{{ [[ $imageVar ]].repository }}:{{ [[ $imageVar ]].tag }}

@@ -153,7 +153,7 @@ type Sidecar struct {
 	Container
 	Service
 	ClusterRbac     []rbacv1.PolicyRule
-	NamespaceRbac   []rbacv1.PolicyRule
+	NamespaceRbac   map[string][]rbacv1.PolicyRule
 	Volumes         []corev1.Volume
 	Name            string
 	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"` // Optional: if specified, the operator resources will be abled based on the condition specified in the enable statement.
