@@ -75,7 +75,11 @@ type Operator struct {
 	Deployment Deployment
 
 	// these populate the generated ClusterRole for the operator
-	Rbac []rbacv1.PolicyRule
+	ClusterRbac []rbacv1.PolicyRule
+
+	// these populate the generated Role for the operator
+	// key should be the k8s resource name (lower-case, plural version)
+	NamespaceRbac map[string][]rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
 	Service Service
@@ -135,7 +139,13 @@ type ReadinessProbe struct {
 // sidecars require a container config and a unique name
 type Sidecar struct {
 	Container
-	Name string
+	Service
+	ClusterRbac     []rbacv1.PolicyRule
+	NamespaceRbac   map[string][]rbacv1.PolicyRule
+	Volumes         []v1.Volume
+	Name            string
+	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"` // Optional: if specified, the operator resources will be abled based on the condition specified in the enable statement.
+	ValuesPath      string `json:"valuesPath,omitempty" yaml:"valuesPath,omitempty"`           // Override for values path in generated yaml.
 }
 
 // values for struct template

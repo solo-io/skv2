@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 	"google.golang.org/protobuf/types/known/structpb"
 	v1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -129,8 +130,8 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"containerConfigs": containerConfigs,
-
-		"opVar": opVar,
+		"toListItem":       toListItem,
+		"opVar":            opVar,
 	}
 
 	for k, v := range skv2Funcs {
@@ -144,10 +145,19 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	return f
 }
 
+func toListItem(item interface{}) []interface{} {
+	return []interface{}{item}
+}
+
 type containerConfig struct {
 	model.Container
-	Name      string
-	ValuesVar string
+	model.Service
+	ClusterRbac     []rbacv1.PolicyRule
+	NamespaceRbac   map[string][]rbacv1.PolicyRule
+	Volumes         []v1.Volume
+	Name            string
+	ValuesVar       string
+	EnableStatement string
 }
 
 func containerConfigs(op model.Operator) []containerConfig {
@@ -159,11 +169,22 @@ func containerConfigs(op model.Operator) []containerConfig {
 	}}
 
 	for _, sidecar := range op.Deployment.Sidecars {
-		configs = append(configs, containerConfig{
-			Container: sidecar.Container,
-			Name:      sidecar.Name,
-			ValuesVar: valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
-		})
+		config := containerConfig{
+			EnableStatement: sidecar.EnableStatement, // Change this to base name of operator e.g: $.Values.glooAgent.X
+			ClusterRbac:     sidecar.ClusterRbac,
+			NamespaceRbac:   sidecar.NamespaceRbac,
+			Volumes:         sidecar.Volumes,
+			Service:         sidecar.Service,
+			Container:       sidecar.Container,
+			Name:            sidecar.Name,
+			ValuesVar:       valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
+		}
+
+		if sidecar.ValuesPath != "" {
+			config.ValuesVar = sidecar.ValuesPath
+		}
+
+		configs = append(configs, config)
 	}
 
 	return configs

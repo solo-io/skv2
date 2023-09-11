@@ -67,11 +67,12 @@ var _ multicluster.Interface = &clusterWatcher{}
 
 // NewClusterWatcher returns a *clusterWatcher, which watches for changes to kubeconfig secrets
 // (which contain kubeconfigs for remote clusters).
-// - When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
-// - Provided manager.Options are applied to all managers started by the clusterWatcher.
-// - RetryOptions specify how to retry manager creation if it fails. Any fields not explicitly provided
-//   in the retry options will take on the default values.
-// - If watchNamespaces is not empty, only secrets in the given namespaces will be watched. If empty, secrets in
+//   - When ctx is cancelled, all cluster managers started by the clusterWatcher are stopped.
+//   - Provided manager.Options are applied to all managers started by the clusterWatcher.
+//   - RetryOptions specify how to retry manager creation if it fails. Any fields not explicitly provided
+//     in the retry options will take on the default values.
+//   - If watchNamespaces is not empty, only secrets in the given namespaces will be watched. If empty, secrets in
+//
 // all namespaces will be watched.
 func NewClusterWatcher(ctx context.Context,
 	managerOptions manager.Options,
