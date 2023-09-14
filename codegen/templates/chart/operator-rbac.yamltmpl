@@ -31,17 +31,6 @@ metadata:
     app: [[ $operator.Name ]]
 rules:
 [[ toYaml $operator.ClusterRbac ]]
-[[- range $container := containerConfigs $operator -]]
-[[- if and ($container.ClusterRbac) (gt (len $container.EnableStatement) 0) ]]
-[[ printf "{{ if %s }}" $container.EnableStatement ]]
-[[- end ]]
-[[- range $rule := $container.ClusterRbac ]]
-[[ toYaml (toListItem $rule) ]]
-[[- end ]]
-[[- if and ($container.ClusterRbac) (gt (len $container.EnableStatement) 0) ]]
-{{- end }}
-[[- end ]]
-[[- end ]]
 
 ---
 

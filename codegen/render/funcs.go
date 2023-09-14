@@ -15,7 +15,6 @@ import (
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 	"google.golang.org/protobuf/types/known/structpb"
 	v1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -151,13 +150,8 @@ func toListItem(item interface{}) []interface{} {
 
 type containerConfig struct {
 	model.Container
-	model.Service
-	ClusterRbac     []rbacv1.PolicyRule
-	NamespaceRbac   map[string][]rbacv1.PolicyRule
-	Volumes         []v1.Volume
-	Name            string
-	ValuesVar       string
-	EnableStatement string
+	Name      string
+	ValuesVar string
 }
 
 func containerConfigs(op model.Operator) []containerConfig {
@@ -169,22 +163,11 @@ func containerConfigs(op model.Operator) []containerConfig {
 	}}
 
 	for _, sidecar := range op.Deployment.Sidecars {
-		config := containerConfig{
-			EnableStatement: sidecar.EnableStatement, // Change this to base name of operator e.g: $.Values.glooAgent.X
-			ClusterRbac:     sidecar.ClusterRbac,
-			NamespaceRbac:   sidecar.NamespaceRbac,
-			Volumes:         sidecar.Volumes,
-			Service:         sidecar.Service,
-			Container:       sidecar.Container,
-			Name:            sidecar.Name,
-			ValuesVar:       valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
-		}
-
-		if sidecar.ValuesPath != "" {
-			config.ValuesVar = sidecar.ValuesPath
-		}
-
-		configs = append(configs, config)
+		configs = append(configs, containerConfig{
+			Container: sidecar.Container,
+			Name:      sidecar.Name,
+			ValuesVar: valuesVar + ".sidecars." + strcase.ToLowerCamel(sidecar.Name),
+		})
 	}
 
 	return configs

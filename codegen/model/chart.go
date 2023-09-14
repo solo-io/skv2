@@ -139,13 +139,7 @@ type ReadinessProbe struct {
 // sidecars require a container config and a unique name
 type Sidecar struct {
 	Container
-	Service
-	ClusterRbac     []rbacv1.PolicyRule
-	NamespaceRbac   map[string][]rbacv1.PolicyRule
-	Volumes         []v1.Volume
-	Name            string
-	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"` // Optional: if specified, the operator resources will be abled based on the condition specified in the enable statement.
-	ValuesPath      string `json:"valuesPath,omitempty" yaml:"valuesPath,omitempty"`           // Override for values path in generated yaml.
+	Name string
 }
 
 // values for struct template
