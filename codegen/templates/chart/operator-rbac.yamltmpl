@@ -181,7 +181,7 @@ subjects:
 [[- end ]]
 roleRef:
   kind: Role
-  name: [[ $operator.Name ]]
+  name: [[ $operator.Name ]]-{{ $.Release.Name }}-{{ $.Release.Namespace }}
   apiGroup: rbac.authorization.k8s.io
 
   {{- end }}[[/* range $ns, $resources := $[[ $operatorVar ]]NsToResources */]]
