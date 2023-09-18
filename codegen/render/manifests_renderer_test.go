@@ -84,8 +84,15 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renderse manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
+			opts := render.ManifestRenderedOptions{
+				AppName:                 "appName",
+				ManifestDir:             "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				DisabledApiFlagName:     "disabledApi",
+			}
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				opts,
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -132,8 +139,15 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renders manifests with template and spec hash", func() {
 
 			// get api-level code gen options from descriptors
+			opts := render.ManifestRenderedOptions{
+				AppName:                 "appName",
+				ManifestDir:             "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				DisabledApiFlagName:     "disabledApi",
+			}
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				opts,
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -141,7 +155,7 @@ var _ = Describe("ManifestsRenderer", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only alpha versioned CRDs contain logic to conditionally render templates
-			Expect(outFiles[1].Content).To(HavePrefix("\n{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}"))
+			Expect(outFiles[1].Content).To(HavePrefix("\n{{- if or (has \"things.test.io/kind\" $.Values.disabledApi) (has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi) }}"))
 			Expect(outFiles[1].Content).To(HaveSuffix("{{- end  }}\n---\n"))
 			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
 			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": 80c06d3e2484e4c8"))
@@ -181,8 +195,15 @@ var _ = Describe("ManifestsRenderer", func() {
 		})
 		It("Renders manifests without template", func() {
 			// get api-level code gen options from descriptors
+			opts := render.ManifestRenderedOptions{
+				AppName:                 "appName",
+				ManifestDir:             "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				DisabledApiFlagName:     "disabledApi",
+			}
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				opts,
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -267,8 +288,15 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renderse manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
+			opts := render.ManifestRenderedOptions{
+				AppName:                 "appName",
+				ManifestDir:             "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				DisabledApiFlagName:     "disabledApi",
+			}
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				opts,
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -355,8 +383,15 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renderse manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
+			opts := render.ManifestRenderedOptions{
+				AppName:                 "appName",
+				ManifestDir:             "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				DisabledApiFlagName:     "disabledApi",
+			}
 			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
+				opts,
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -400,8 +435,13 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 
+			opts := render.ManifestRenderedOptions{
+				AppName:     "appName",
+				ManifestDir: "manifestDir",
+				ProtoDir:    "protoDir",
+			}
 			_, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "",
+				opts,
 				nil,
 				model.GroupOptions{},
 				grps,
@@ -435,8 +475,13 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 
+			opts := render.ManifestRenderedOptions{
+				AppName:     "appName",
+				ManifestDir: "manifestDir",
+				ProtoDir:    "protoDir",
+			}
 			_, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "",
+				opts,
 				nil,
 				model.GroupOptions{},
 				grps,

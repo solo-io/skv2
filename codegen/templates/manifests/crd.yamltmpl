@@ -1,6 +1,6 @@
 [[- range $crd := .Crds -]]
 [[- if render_outer_conditional_crd_template $crd (index $crd.Spec.Versions 0).Name $.ShouldSkip ]]
-{{- if has "[[ $crd.GetName ]]/[[ (index $crd.Spec.Versions 0).Name ]]" $.Values.[[ $.EnabledAlphaApiFlagName ]] }}
+{{- if or (has "[[ $crd.Spec.Group ]]/[[ $crd.Spec.Names.Kind ]]" $.Values.[[ $.DisabledApiFlagName ]]) (has "[[ $crd.GetName ]]/[[ (index $crd.Spec.Versions 0).Name ]]" $.Values.[[ $.EnabledAlphaApiFlagName ]]) }}
 [[- end ]]
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition

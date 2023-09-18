@@ -29,40 +29,52 @@ import (
 // this gets turned into a k8s manifest file
 type MakeResourceFunc func(groups []*Group) ([]metav1.Object, error)
 
-// renders kubernetes from templates
-type ManifestsRenderer struct {
-	templateRenderer
-	AppName       string // used for labeling
-	ResourceFuncs map[OutFile]MakeResourceFunc
-	ManifestDir   string
-	ProtoDir      string
+type ManifestRenderedOptions struct {
+	AppName     string // used for labeling
+	ManifestDir string
+	ProtoDir    string
 	// the name of the flag to pass the list of enabled alpha-level crds
 	// used in codegen/templates/manifests/crd.yamltmpl
 	EnabledAlphaApiFlagName string
+	// the name of the flag to pass the list of disabled APIs
+	// used in codegen/templates/manifests/crd.yamltmpl
+	DisabledApiFlagName string
+}
+
+func (o ManifestRenderedOptions) Default() ManifestRenderedOptions {
+	if o.DisabledApiFlagName == "" {
+		o.DisabledApiFlagName = "disabledApi"
+	}
+	return o
+}
+
+// renders kubernetes from templates
+type manifestsRenderer struct {
+	templateRenderer
+	ResourceFuncs map[OutFile]MakeResourceFunc
+	ManifestRenderedOptions
 }
 
 type templateArgs struct {
 	Crds                    []apiextv1.CustomResourceDefinition
 	ShouldSkip              map[string]bool
 	EnabledAlphaApiFlagName string
+	DisabledApiFlagName     string
 }
 
 func RenderManifests(
-	appName, manifestDir, protoDir, enabledAlphaApiFlagName string,
+	opts ManifestRenderedOptions,
 	protoOpts protoutil.Options,
 	groupOptions model.GroupOptions,
 	grps []*Group,
 ) ([]OutFile, error) {
-	defaultManifestsRenderer := ManifestsRenderer{
-		AppName:                 appName,
-		ManifestDir:             manifestDir,
-		ProtoDir:                protoDir,
-		EnabledAlphaApiFlagName: enabledAlphaApiFlagName,
+	defaultmanifestsRenderer := manifestsRenderer{
+		ManifestRenderedOptions: opts.Default(),
 	}
-	return defaultManifestsRenderer.RenderManifests(grps, protoOpts, groupOptions)
+	return defaultmanifestsRenderer.RenderManifests(grps, protoOpts, groupOptions)
 }
 
-func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
+func (r manifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
 	grpsByGroupName := make(map[string][]*Group)
 	shouldRenderGroups := make(map[string]bool)
 	shouldSkipCRDManifest := make(map[string]bool)
@@ -257,7 +269,7 @@ func SetVersionForObject(obj metav1.Object, version string) {
 }
 
 // TODO (dmitri-d): this can be removed once we migrate to use platform charts exclusively
-func (r ManifestsRenderer) renderCRDManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
+func (r manifestsRenderer) renderCRDManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
 	outFile := OutFile{
 		Path: r.ManifestDir + "/crds/" + groupName + "_" + "crds.yaml",
 	}
@@ -275,7 +287,7 @@ func (r ManifestsRenderer) renderCRDManifest(appName, groupName string, objs []a
 	return outFile, nil
 }
 
-func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
+func (r manifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	objs []apiextv1.CustomResourceDefinition,
 	grandfatheredGroups map[string]bool) (OutFile, error) {
 
@@ -301,7 +313,12 @@ func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 
 	files, err := defaultManifestRenderer.renderCoreTemplates(
 		templatesToRender,
-		templateArgs{Crds: objs, ShouldSkip: grandfatheredGroups, EnabledAlphaApiFlagName: r.EnabledAlphaApiFlagName})
+		templateArgs{
+			Crds:                    objs,
+			ShouldSkip:              grandfatheredGroups,
+			EnabledAlphaApiFlagName: r.EnabledAlphaApiFlagName,
+			DisabledApiFlagName:     r.DisabledApiFlagName,
+		})
 	if err != nil {
 		return OutFile{}, err
 	}
@@ -310,7 +327,7 @@ func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	return files[0], nil
 }
 
-func (r ManifestsRenderer) canRenderCRDTemplate(objs []apiextv1.CustomResourceDefinition, grandfatheredGroups map[string]bool) error {
+func (r manifestsRenderer) canRenderCRDTemplate(objs []apiextv1.CustomResourceDefinition, grandfatheredGroups map[string]bool) error {
 	for _, obj := range objs {
 		for _, v := range obj.Spec.Versions {
 			if strings.Contains(v.Name, "alpha") && !grandfatheredGroups[obj.Spec.Group+"/"+v.Name] && r.EnabledAlphaApiFlagName == "" {
@@ -321,7 +338,7 @@ func (r ManifestsRenderer) canRenderCRDTemplate(objs []apiextv1.CustomResourceDe
 	return nil
 }
 
-func (r ManifestsRenderer) createCrds(appName string, groups []*Group) ([]apiextv1.CustomResourceDefinition, error) {
+func (r manifestsRenderer) createCrds(appName string, groups []*Group) ([]apiextv1.CustomResourceDefinition, error) {
 	objs, err := kuberesource.CustomResourceDefinitions(groups)
 	if err != nil {
 		return nil, err

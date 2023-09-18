@@ -110,6 +110,10 @@ type Command struct {
 	// the name of the flag to pass the list of enabled alpha-level crds
 	// used in codegen/templates/manifests/crd.yamltmpl
 	EnabledAlphaApiFlagName string
+
+	// the name of the flag to pass the list of disabled APIs
+	// used in codegen/templates/manifests/crd.yamltmpl
+	DisabledApiFlagName string
 }
 
 // function to execute skv2 code gen from another repository
@@ -273,7 +277,15 @@ func (c Command) generateGroups(
 		}
 	}
 
-	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, c.EnabledAlphaApiFlagName, protoOpts, groupOptions, grps)
+	renderOpts := render.ManifestRenderedOptions{
+		AppName:                 c.AppName,
+		ManifestDir:             c.ManifestRoot,
+		ProtoDir:                c.ProtoDir,
+		EnabledAlphaApiFlagName: c.EnabledAlphaApiFlagName,
+		DisabledApiFlagName:     c.DisabledApiFlagName,
+	}
+
+	manifests, err := render.RenderManifests(renderOpts, protoOpts, groupOptions, grps)
 	if err != nil {
 		return err
 	}
