@@ -2095,7 +2095,7 @@ roleRef:
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter
+  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}
   namespace: {{ $ns }}
   labels:
     app: painter
@@ -2114,7 +2114,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter
+  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}
   namespace: {{ $ns }}
   labels:
     app: painter
@@ -2124,7 +2124,7 @@ subjects:
   namespace: {{ default $.Release.Namespace $painter.namespace }}
 roleRef:
   kind: Role
-  name: painter
+  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}
   apiGroup: rbac.authorization.k8s.io`
 		Expect(string(rbac)).To(ContainSubstring(clusterRole1Tmpl))
 		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding1Tmpl))
