@@ -108,7 +108,7 @@ We need the following variables:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: [[ $operator.Name ]]-{{ .Release.Name }}-{{ .Release.Namespace }}
+  name: [[ $operator.Name ]]-{{ .Release.Name }}-{{ .Release.Namespace }}-namespaced
   labels:
     app: [[ $operator.Name ]]
 rules:
@@ -125,7 +125,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: [[ $operator.Name ]]-{{ .Release.Name }}-{{ .Release.Namespace }}
+  name: [[ $operator.Name ]]-{{ .Release.Name }}-{{ .Release.Namespace }}-namespaced
   labels:
     app: [[ $operator.Name ]]
 subjects:
@@ -138,7 +138,7 @@ subjects:
 [[- end ]]
 roleRef:
   kind: ClusterRole
-  name: [[ $operator.Name ]]-{{ .Release.Name }}-{{ .Release.Namespace }}
+  name: [[ $operator.Name ]]-{{ .Release.Name }}-{{ .Release.Namespace }}-namespaced
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
 
@@ -149,7 +149,7 @@ roleRef:
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: [[ $operator.Name ]]
+  name: [[ $operator.Name ]]-{{ $.Release.Name }}-{{ $.Release.Namespace }}-namespaced
   namespace: {{ $ns }}
   labels:
     app: [[ $operator.Name ]]
@@ -167,7 +167,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: [[ $operator.Name ]]
+  name: [[ $operator.Name ]]-{{ $.Release.Name }}-{{ $.Release.Namespace }}-namespaced
   namespace: {{ $ns }}
   labels:
     app: [[ $operator.Name ]]
@@ -181,7 +181,7 @@ subjects:
 [[- end ]]
 roleRef:
   kind: Role
-  name: [[ $operator.Name ]]
+  name: [[ $operator.Name ]]-{{ $.Release.Name }}-{{ $.Release.Namespace }}-namespaced
   apiGroup: rbac.authorization.k8s.io
 
   {{- end }}[[/* range $ns, $resources := $[[ $operatorVar ]]NsToResources */]]
