@@ -1,6 +1,0 @@
-changelog:
-  - type: FIX
-    issueLink:   https://github.com/solo-io/gloo-mesh-enterprise/issues/10521
-    description: >
-      Adds helm release information to k8s resources that use namespace-scoped rbac policies so we support multiple installations of a helm chart.
-    resolvesIssue: false
