@@ -3,7 +3,7 @@
 
 # Rbac manifests for painter
 
-{{- $painter := $.Values.painter}}
+{{- $painter := $.Values.painter }}
 {{- if and $painter.enabled $.Values.$painter.enabled.enabled }}
 ---
 
