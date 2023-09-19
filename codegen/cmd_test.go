@@ -1555,7 +1555,7 @@ roleRef:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}-namespaced
   labels:
     app: painter
 rules:
@@ -1573,7 +1573,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}-namespaced
   labels:
     app: painter
 subjects:
@@ -1582,13 +1582,13 @@ subjects:
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}
+  name: painter-{{ .Release.Name }}-{{ .Release.Namespace }}-namespaced
   apiGroup: rbac.authorization.k8s.io`
 		roleTmpl := `
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}
+  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}-namespaced
   namespace: {{ $ns }}
   labels:
     app: painter
@@ -1607,7 +1607,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}
+  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}-namespaced
   namespace: {{ $ns }}
   labels:
     app: painter
@@ -1617,7 +1617,7 @@ subjects:
   namespace: {{ $.Release.Namespace }}
 roleRef:
   kind: Role
-  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}
+  name: painter-{{ $.Release.Name }}-{{ $.Release.Namespace }}-namespaced
   apiGroup: rbac.authorization.k8s.io`
 		Expect(string(rbac)).To(ContainSubstring(clusterRole1Tmpl))
 		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding1Tmpl))
