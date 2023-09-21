@@ -129,8 +129,8 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		},
 
 		"containerConfigs": containerConfigs,
-
-		"opVar": opVar,
+		"toListItem":       toListItem,
+		"opVar":            opVar,
 	}
 
 	for k, v := range skv2Funcs {
@@ -142,6 +142,10 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	}
 
 	return f
+}
+
+func toListItem(item interface{}) []interface{} {
+	return []interface{}{item}
 }
 
 type containerConfig struct {

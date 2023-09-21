@@ -6,8 +6,13 @@ painter:
   env: null
   extraEnvs: {}
   floatingUserId: false
-  image: {}
-  ports: {}
+  image:
+    pullPolicy: IfNotPresent
+    registry: quay.io/solo-io
+    repository: painter
+    tag: v0.0.0
+  ports:
+    foo-bar: 9900
   runAsUser: 10101
   serviceOverrides: null
   serviceType: ""

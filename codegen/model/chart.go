@@ -75,7 +75,11 @@ type Operator struct {
 	Deployment Deployment
 
 	// these populate the generated ClusterRole for the operator
-	Rbac []rbacv1.PolicyRule
+	ClusterRbac []rbacv1.PolicyRule
+
+	// these populate the generated Role for the operator
+	// key should be the k8s resource name (lower-case, plural version)
+	NamespaceRbac map[string][]rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
 	Service Service
