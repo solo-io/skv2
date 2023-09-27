@@ -1,6 +1,6 @@
 module github.com/solo-io/skv2
 
-go 1.18
+go 1.21
 
 require (
 	github.com/BurntSushi/toml v0.3.1
