@@ -56,10 +56,11 @@ We need the following variables:
   1. map of namespace -> list of resources
   2. list of resources to be namespace restricted
   3. list of namespaced resources that the operator supports
+Prefixed with '#' to avoid printing variable values in yaml, per https://github.com/solo-io/gloo-mesh-enterprise/issues/12164
 */ -]]
-{{- $[[ $operatorVar ]]NsToResources := dict }}
-{{- $[[ $operatorVar ]]NamespacedResources := list }}
-{{- $[[ $operatorVar ]]SupportedResources := list }}
+#{{- $[[ $operatorVar ]]NsToResources := dict }}
+#{{- $[[ $operatorVar ]]NamespacedResources := list }}
+#{{- $[[ $operatorVar ]]SupportedResources := list }}
 [[- range $resource, $_ := $operator.NamespaceRbac ]]
 {{- $[[ $operatorVar ]]SupportedResources = append $[[ $operatorVar ]]SupportedResources [[ quote $resource ]] }}
 [[- end ]]
