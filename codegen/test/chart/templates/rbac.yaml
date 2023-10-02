@@ -36,9 +36,9 @@ roleRef:
   name: painter-{{ default .Release.Namespace $painter.namespace }}
   apiGroup: rbac.authorization.k8s.io
 
-{{- $painterNsToResources := dict }}
-{{- $painterNamespacedResources := list }}
-{{- $painterSupportedResources := list }}
+#{{- $painterNsToResources := dict }}
+#{{- $painterNamespacedResources := list }}
+#{{- $painterSupportedResources := list }}
 {{- $painterSupportedResources = append $painterSupportedResources "secrets" }}
 
 {{- range $entry := $painter.namespacedRbac }}
