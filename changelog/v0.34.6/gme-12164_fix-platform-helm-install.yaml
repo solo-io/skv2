@@ -1,0 +1,5 @@
+changelog:
+- type: FIX
+  issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/12164
+  resolvesIssue: false
+  description: Prefix some lines declaring new vars with '#' in helm templates to avoid printing variable values in yaml. See issue description for more context. 
