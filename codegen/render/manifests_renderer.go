@@ -42,7 +42,7 @@ type ManifestsRenderer struct {
 }
 
 type templateArgs struct {
-	Crds                    []apiextv1.CustomResourceDefinition
+	Crds                    []kuberesource.GlooCustomResourceDefinition
 	ShouldSkip              map[string]bool
 	EnabledAlphaApiFlagName string
 }
@@ -257,7 +257,7 @@ func SetVersionForObject(obj metav1.Object, version string) {
 }
 
 // TODO (dmitri-d): this can be removed once we migrate to use platform charts exclusively
-func (r ManifestsRenderer) renderCRDManifest(appName, groupName string, objs []apiextv1.CustomResourceDefinition) (OutFile, error) {
+func (r ManifestsRenderer) renderCRDManifest(appName, groupName string, objs []kuberesource.GlooCustomResourceDefinition) (OutFile, error) {
 	outFile := OutFile{
 		Path: r.ManifestDir + "/crds/" + groupName + "_" + "crds.yaml",
 	}
@@ -276,7 +276,7 @@ func (r ManifestsRenderer) renderCRDManifest(appName, groupName string, objs []a
 }
 
 func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
-	objs []apiextv1.CustomResourceDefinition,
+	objs []kuberesource.GlooCustomResourceDefinition,
 	grandfatheredGroups map[string]bool) (OutFile, error) {
 
 	renderer := DefaultTemplateRenderer
@@ -310,7 +310,7 @@ func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	return files[0], nil
 }
 
-func (r ManifestsRenderer) canRenderCRDTemplate(objs []apiextv1.CustomResourceDefinition, grandfatheredGroups map[string]bool) error {
+func (r ManifestsRenderer) canRenderCRDTemplate(objs []kuberesource.GlooCustomResourceDefinition, grandfatheredGroups map[string]bool) error {
 	for _, obj := range objs {
 		for _, v := range obj.Spec.Versions {
 			if strings.Contains(v.Name, "alpha") && !grandfatheredGroups[obj.Spec.Group+"/"+v.Name] && r.EnabledAlphaApiFlagName == "" {
@@ -321,7 +321,7 @@ func (r ManifestsRenderer) canRenderCRDTemplate(objs []apiextv1.CustomResourceDe
 	return nil
 }
 
-func (r ManifestsRenderer) createCrds(appName string, groups []*Group) ([]apiextv1.CustomResourceDefinition, error) {
+func (r ManifestsRenderer) createCrds(appName string, groups []*Group) ([]kuberesource.GlooCustomResourceDefinition, error) {
 	objs, err := kuberesource.CustomResourceDefinitions(groups)
 	if err != nil {
 		return nil, err

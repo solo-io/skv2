@@ -194,6 +194,11 @@ type Resource struct {
 	// Set to false by default
 	// See https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/custom-resource-definition-v1/#CustomResourceDefinitionSpec
 	Deprecated bool
+
+	// Optional: if specified, this crd resource definition will be wrapped in the given conditional
+	//
+	// E.g: `and (.Values.customValueA) (.Values.customValueB)`
+	CustomEnableCondition string
 }
 
 type Field struct {

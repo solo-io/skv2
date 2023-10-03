@@ -1,4 +1,7 @@
 [[- range $crd := .Crds -]]
+[[- if (gt (len $crd.CustomEnableCondition) 0) ]]
+[[ printf "{{- if %s }}" $crd.CustomEnableCondition ]]
+[[- end ]]
 [[- if render_outer_conditional_crd_template $crd (index $crd.Spec.Versions 0).Name $.ShouldSkip ]]
 {{- if has "[[ $crd.GetName ]]/[[ (index $crd.Spec.Versions 0).Name ]]" $.Values.[[ $.EnabledAlphaApiFlagName ]] }}
 [[- end ]]
@@ -27,4 +30,7 @@ spec:
 {{- end  }}
 [[- end ]]
 ---
+[[- if (gt (len $crd.CustomEnableCondition) 0) ]]
+[[ print "{{- end }}" ]]
+[[- end ]]
 [[ end ]]

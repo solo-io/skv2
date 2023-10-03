@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/505
+    description: >
+      Adds support for conditional CRDs. This allows users to specify a condition that must be true for the CRD to be installed.
