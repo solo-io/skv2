@@ -196,7 +196,7 @@ func uniqueGoImportPathsForGroup(grp Group) []string {
 		}
 	}
 	var result []string
-	for k, _ := range resultMap {
+	for k := range resultMap {
 		if k != "" {
 			result = append(result, k)
 		}

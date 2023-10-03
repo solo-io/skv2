@@ -161,35 +161,22 @@ var _ = Describe("Cmd", func() {
 					Group:   "things.test.io",
 					Version: "v1",
 				},
-				Module: "github.com/solo-io/skv2",
-				Resources: []Resource{
-					{
-						Kind:                  "Paint",
-						Spec:                  Field{Type: Type{Name: "PaintSpec"}},
-						Status:                &Field{Type: Type{Name: "PaintStatus"}},
-						Stored:                true,
-						CustomEnableCondition: "$.Values.installValue",
-					},
-					{
-						Kind:          "ClusterResource",
-						Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
-						ClusterScoped: true,
-						Stored:        true,
-					},
-				},
-				RenderManifests:         true,
-				RenderValidationSchemas: true,
-				ApiRoot:                 "codegen/test/api",
-				PointerSlices:           true,
+				Resources: []Resource{{
+					Kind:   "Paint",
+					Spec:   Field{Type: Type{Name: "PaintSpec"}},
+					Status: &Field{Type: Type{Name: "PaintStatus"}},
+					// Stored:                true,
+					CustomEnableCondition: "$.Values.installValue",
+				}},
+				RenderManifests: true,
 			}},
+			SkipCrdsManifest: true, // Use templates folder to install crds conditionally
 			Chart: &Chart{
 				Values: map[string]interface{}{
 					"installValue": true,
 				},
 			},
-			AnyVendorConfig: skv2Imports,
-			RenderProtos:    true,
-			ManifestRoot:    "codegen/test/chart/conditional-crds",
+			ManifestRoot: "codegen/test/chart/conditional-crds",
 		}
 		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
 

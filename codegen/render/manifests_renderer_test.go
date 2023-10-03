@@ -84,12 +84,13 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renderse manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
@@ -132,12 +133,13 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renders manifests with template and spec hash", func() {
 
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only alpha versioned CRDs contain logic to conditionally render templates
@@ -181,12 +183,13 @@ var _ = Describe("ManifestsRenderer", func() {
 		})
 		It("Renders manifests without template", func() {
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only alpha versioned CRDs contain logic to conditionally render templates
@@ -267,12 +270,13 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renderse manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only v3alpha1 version of the CRDs is conditionally rendered, v2 and v1alpha1 have no conditions surrounding them
@@ -355,12 +359,13 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renderse manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only v3alpha1 version of the CRDs is conditionally rendered, v2 and v1alpha1 have no conditions surrounding them
@@ -400,12 +405,12 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 
-			_, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			_, err := render.RenderManifests(render.RenderOptions{
+				AppName:      "appName",
+				ManifestRoot: "manifestDir",
+				ProtoDir:     "protoDir",
+				Groups:       grps,
+			})
 			Expect(err).ToNot(BeNil())
 			Expect(err).To(Equal(fmt.Errorf("error rendering CRD template for kind kind: 'EnabledAlphaApiFlagName' is not defined")))
 		})
@@ -435,12 +440,12 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 
-			_, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			_, err := render.RenderManifests(render.RenderOptions{
+				AppName:      "appName",
+				ManifestRoot: "manifestDir",
+				ProtoDir:     "protoDir",
+				Groups:       grps,
+			})
 			Expect(err).To(BeNil())
 		})
 	})

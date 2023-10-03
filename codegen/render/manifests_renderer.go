@@ -39,6 +39,9 @@ type ManifestsRenderer struct {
 	// the name of the flag to pass the list of enabled alpha-level crds
 	// used in codegen/templates/manifests/crd.yamltmpl
 	EnabledAlphaApiFlagName string
+
+	// Optional: If true, skip rendering the CRD manifest
+	skipCrdsManifest bool
 }
 
 type templateArgs struct {
@@ -47,19 +50,26 @@ type templateArgs struct {
 	EnabledAlphaApiFlagName string
 }
 
-func RenderManifests(
-	appName, manifestDir, protoDir, enabledAlphaApiFlagName string,
-	protoOpts protoutil.Options,
-	groupOptions model.GroupOptions,
-	grps []*Group,
-) ([]OutFile, error) {
+type RenderOptions struct {
+	AppName                 string
+	ManifestRoot            string
+	ProtoDir                string
+	EnabledAlphaApiFlagName string
+	ProtoOpts               protoutil.Options
+	Groups                  []*Group
+	GroupOptions            model.GroupOptions
+	SkipCrdsManifest        bool
+}
+
+func RenderManifests(opts RenderOptions) ([]OutFile, error) {
 	defaultManifestsRenderer := ManifestsRenderer{
-		AppName:                 appName,
-		ManifestDir:             manifestDir,
-		ProtoDir:                protoDir,
-		EnabledAlphaApiFlagName: enabledAlphaApiFlagName,
+		AppName:                 opts.AppName,
+		ManifestDir:             opts.ManifestRoot,
+		ProtoDir:                opts.ProtoDir,
+		EnabledAlphaApiFlagName: opts.EnabledAlphaApiFlagName,
+		skipCrdsManifest:        opts.SkipCrdsManifest,
 	}
-	return defaultManifestsRenderer.RenderManifests(grps, protoOpts, groupOptions)
+	return defaultManifestsRenderer.RenderManifests(opts.Groups, opts.ProtoOpts, opts.GroupOptions)
 }
 
 func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Options, groupOptions model.GroupOptions) ([]OutFile, error) {
@@ -100,13 +110,16 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 		if err != nil {
 			return nil, err
 		}
-		out, err := r.renderCRDManifest(r.AppName, groupName, crds)
-		if err != nil {
-			return nil, err
-		}
-		renderedFiles = append(renderedFiles, out)
 
-		out, err = r.renderTemplatedCRDManifest(r.AppName, groupName, crds, grandfatheredGroups)
+		if !r.skipCrdsManifest {
+			out, err := r.renderCRDManifest(r.AppName, groupName, crds)
+			if err != nil {
+				return nil, err
+			}
+			renderedFiles = append(renderedFiles, out)
+		}
+
+		out, err := r.renderTemplatedCRDManifest(r.AppName, groupName, crds, grandfatheredGroups)
 		if err != nil {
 			return nil, err
 		}
