@@ -180,7 +180,7 @@ type GlooCustomResourceDefinition struct {
 	// Optional: if specified from the resource, this crd definition will be wrapped in the given conditional
 	//
 	// E.g: `and (.Values.customValueA) (.Values.customValueB)`
-	CustomEnableCondition string
+	CustomEnableCondition string `json:"-" yaml:"-"`
 }
 
 func CustomResourceDefinition(

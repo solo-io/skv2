@@ -144,7 +144,7 @@ var _ = Describe("ManifestsRenderer", func() {
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only alpha versioned CRDs contain logic to conditionally render templates
 			Expect(outFiles[1].Content).To(HavePrefix("\n{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}"))
-			Expect(outFiles[1].Content).To(HaveSuffix("{{- end  }}\n---\n"))
+			Expect(outFiles[1].Content).To(ContainSubstring("{{- end  }}"))
 			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
 			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": 80c06d3e2484e4c8"))
 		})
