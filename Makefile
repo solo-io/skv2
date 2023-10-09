@@ -62,6 +62,9 @@ generated-code: install-tools update-licenses
 	$(DEPSGOBIN)/goimports -w .
 	go mod tidy
 
+generate-changelog:
+	@ci/changelog.sh
+
 #----------------------------------------------------------------------------------
 # Test
 #----------------------------------------------------------------------------------
@@ -79,6 +82,9 @@ run-tests:
 		-randomizeSuites \
 		-keepGoing
 	$(DEPSGOBIN)/goimports -w .
+
+run-test:
+	PATH=$(DEPSGOBIN):$$PATH ginkgo $(GINKGO_FLAGS) $(TEST_PKG)
 
 #----------------------------------------------------------------------------------
 # Third Party License Management

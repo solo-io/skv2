@@ -110,6 +110,9 @@ type Command struct {
 	// the name of the flag to pass the list of enabled alpha-level crds
 	// used in codegen/templates/manifests/crd.yamltmpl
 	EnabledAlphaApiFlagName string
+
+	// Optional: If true, skip rendering the CRD manifest
+	SkipCrdsManifest bool
 }
 
 // function to execute skv2 code gen from another repository
@@ -272,8 +275,18 @@ func (c Command) generateGroups(
 			return err
 		}
 	}
+	renderOpts := render.RenderOptions{
+		AppName:                 c.AppName,
+		ManifestRoot:            c.ManifestRoot,
+		ProtoDir:                c.ProtoDir,
+		EnabledAlphaApiFlagName: c.EnabledAlphaApiFlagName,
+		ProtoOpts:               protoOpts,
+		Groups:                  grps,
+		GroupOptions:            groupOptions,
+		SkipCrdsManifest:        c.SkipCrdsManifest,
+	}
 
-	manifests, err := render.RenderManifests(c.AppName, c.ManifestRoot, c.ProtoDir, c.EnabledAlphaApiFlagName, protoOpts, groupOptions, grps)
+	manifests, err := render.RenderManifests(renderOpts)
 	if err != nil {
 		return err
 	}

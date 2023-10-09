@@ -154,6 +154,38 @@ var _ = Describe("Cmd", func() {
 		Expect(deployment).To(ContainSubstring(`{{ index $glooAgent "ports" "grpc" }}`))
 		Expect(deployment).To(ContainSubstring("{{ $Values.glooMgmtServer.statsPort }}"))
 	})
+	It("generates conditional crds", func() {
+		cmd := &Command{
+			Groups: []Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v1",
+				},
+				Resources: []Resource{{
+					Kind:   "Paint",
+					Spec:   Field{Type: Type{Name: "PaintSpec"}},
+					Status: &Field{Type: Type{Name: "PaintStatus"}},
+					// Stored:                true,
+					CustomEnableCondition: "$.Values.installValue",
+				}},
+				RenderManifests: true,
+			}},
+			SkipCrdsManifest: true, // Use templates folder to install crds conditionally
+			Chart: &Chart{
+				Values: map[string]interface{}{
+					"installValue": true,
+				},
+			},
+			ManifestRoot: "codegen/test/chart/conditional-crds",
+		}
+		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+
+		crdFilePath := filepath.Join(util.GetModuleRoot(), cmd.ManifestRoot, "/templates/things.test.io_crds.yaml")
+
+		bytes, err := os.ReadFile(crdFilePath)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(string(bytes)).To(ContainSubstring("{{- if $.Values.installValue }}"))
+	})
 	It("generates controller code and manifests for a proto file", func() {
 		cmd := &Command{
 			Groups: []Group{
