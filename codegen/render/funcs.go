@@ -33,6 +33,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+const (
+	internalCRDGroupName = "internal.gloo.solo.io"
+)
+
 func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	f := sprig.TxtFuncMap()
 
@@ -135,11 +139,11 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		"opVar":            opVar,
 
 		"render_outer_conditional_crd_template": func(crd kuberesource.GlooCustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
-			return len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
+			return len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !strings.Contains(crd.Spec.Group, internalCRDGroupName) && !skips[crd.Spec.Group+"/"+currentVersion]
 		},
 
 		"render_inner_conditional_crd_template": func(crd kuberesource.GlooCustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
-			return len(crd.Spec.Versions) > 1 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
+			return len(crd.Spec.Versions) > 1 && strings.Contains(currentVersion, "alpha") && !strings.Contains(crd.Spec.Group, internalCRDGroupName) && !skips[crd.Spec.Group+"/"+currentVersion]
 		},
 	}
 
@@ -572,7 +576,6 @@ func mergeNodes(nodes ...goyaml.Node) goyaml.Node {
 	}
 	if mergedNode.IsZero() {
 		panic("all nodes were found to be IsZero, cannot continue")
-
 	}
 	return mergedNode
 }
@@ -964,7 +967,6 @@ func mergeJsonSchema(
 	target *jsonschema.Schema,
 	src *jsonschema.Schema,
 ) {
-
 	if target.Required == nil {
 		target.Required = []string{}
 	}

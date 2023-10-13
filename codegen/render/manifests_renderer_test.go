@@ -16,7 +16,6 @@ import (
 )
 
 var _ = Describe("ManifestsRenderer", func() {
-
 	It("should set version without patch", func() {
 		m := new(metav1.ObjectMeta)
 		render.SetVersionForObject(m, "1.0.0-patch1")
@@ -56,33 +55,32 @@ var _ = Describe("ManifestsRenderer", func() {
 	})
 
 	Describe("Generate non-alpha versioned CRD", func() {
-		var (
-			grps []*model.Group
-		)
+		var grps []*model.Group
 
 		BeforeEach(func() {
-			grps = []*model.Group{{
-				RenderManifests: true,
-				AddChartVersion: "1.0.0",
-				Resources: []model.Resource{
-					{
-						Kind: "kind",
-						Spec: model.Field{
-							Type: model.Type{
-								Name:    "test",
-								Message: &v1.AcrylicType{},
+			grps = []*model.Group{
+				{
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
 							},
+							Stored: true,
 						},
-						Stored: true,
 					},
-				}},
+				},
 			}
 			for i := range grps {
 				grps[i].Init()
 			}
 		})
 		It("Renderse manifests with chart and spec hash", func() {
-
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(render.RenderOptions{
 				AppName:                 "appName",
@@ -100,38 +98,86 @@ var _ = Describe("ManifestsRenderer", func() {
 		})
 	})
 
-	Describe("Generate alpha versioned CRD", func() {
-		var (
-			grps []*model.Group
-		)
+	Describe("Generate internal alpha versioned CRD", func() {
+		var grps []*model.Group
 
 		BeforeEach(func() {
-			grps = []*model.Group{{
-				GroupVersion: schema.GroupVersion{
-					Group:   "things.test.io",
-					Version: "v1alpha1",
-				},
-				RenderManifests: true,
-				AddChartVersion: "1.0.0",
-				Resources: []model.Resource{
-					{
-						Kind: "kind",
-						Spec: model.Field{
-							Type: model.Type{
-								Name:    "test",
-								Message: &v1.AcrylicType{},
-							},
-						},
-						Stored: true,
+			grps = []*model.Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "internal.gloo.solo.io",
+						Version: "v1alpha1",
 					},
-				}},
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					},
+				},
 			}
 			for i := range grps {
 				grps[i].Init()
 			}
 		})
 		It("Renders manifests with template and spec hash", func() {
+			// get api-level code gen options from descriptors
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
+			// only alpha versioned CRDs contain logic to conditionally render templates
+			Expect(outFiles[1].Content).ToNot(HavePrefix("\n{{- if has \"kinds.internal.gloo.solo.io/v1alpha1\" $.Values.enabledExperimentalApi }}"))
+			Expect(outFiles[1].Content).ToNot(ContainSubstring("{{- end  }}"))
+			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
+			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": d5e5a028e2438b48"))
+		})
+	})
 
+	Describe("Generate alpha versioned CRD", func() {
+		var grps []*model.Group
+
+		BeforeEach(func() {
+			grps = []*model.Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1alpha1",
+					},
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					},
+				},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+		})
+		It("Renders manifests with template and spec hash", func() {
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(render.RenderOptions{
 				AppName:                 "appName",
@@ -151,31 +197,31 @@ var _ = Describe("ManifestsRenderer", func() {
 	})
 
 	Describe("Skip template for grandfathered alpha versioned CRD", func() {
-		var (
-			grps []*model.Group
-		)
+		var grps []*model.Group
 
 		BeforeEach(func() {
-			grps = []*model.Group{{
-				GroupVersion: schema.GroupVersion{
-					Group:   "things.test.io",
-					Version: "v1alpha1",
-				},
-				RenderManifests:           true,
-				AddChartVersion:           "1.0.0",
-				SkipConditionalCRDLoading: true,
-				Resources: []model.Resource{
-					{
-						Kind: "kind",
-						Spec: model.Field{
-							Type: model.Type{
-								Name:    "test",
-								Message: &v1.AcrylicType{},
-							},
-						},
-						Stored: true,
+			grps = []*model.Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1alpha1",
 					},
-				}},
+					RenderManifests:           true,
+					AddChartVersion:           "1.0.0",
+					SkipConditionalCRDLoading: true,
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: true,
+						},
+					},
+				},
 			}
 			for i := range grps {
 				grps[i].Init()
@@ -199,30 +245,30 @@ var _ = Describe("ManifestsRenderer", func() {
 	})
 
 	Describe("Generate combined alpha, grandfathered alpha, and non-alpha versioned CRD", func() {
-		var (
-			grps []*model.Group
-		)
+		var grps []*model.Group
 
 		BeforeEach(func() {
-			grps = []*model.Group{{
-				GroupVersion: schema.GroupVersion{
-					Group:   "things.test.io",
-					Version: "v3alpha1",
-				},
-				RenderManifests: true,
-				AddChartVersion: "1.0.0",
-				Resources: []model.Resource{
-					{
-						Kind: "kind",
-						Spec: model.Field{
-							Type: model.Type{
-								Name:    "test",
-								Message: &v1.AcrylicType{},
-							},
-						},
-						Stored: false,
+			grps = []*model.Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v3alpha1",
 					},
-				}},
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: false,
+						},
+					},
+				},
 				{
 					GroupVersion: schema.GroupVersion{
 						Group:   "things.test.io",
@@ -241,7 +287,8 @@ var _ = Describe("ManifestsRenderer", func() {
 							},
 							Stored: true,
 						},
-					}},
+					},
+				},
 				{
 					GroupVersion: schema.GroupVersion{
 						Group:   "things.test.io",
@@ -261,14 +308,14 @@ var _ = Describe("ManifestsRenderer", func() {
 							},
 							Stored: true,
 						},
-					}},
+					},
+				},
 			}
 			for i := range grps {
 				grps[i].Init()
 			}
 		})
 		It("Renderse manifests with chart and spec hash", func() {
-
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(render.RenderOptions{
 				AppName:                 "appName",
@@ -288,30 +335,30 @@ var _ = Describe("ManifestsRenderer", func() {
 	})
 
 	Describe("Generate combined alpha, grandfathered alpha, and non-alpha versioned CRD", func() {
-		var (
-			grps []*model.Group
-		)
+		var grps []*model.Group
 
 		BeforeEach(func() {
-			grps = []*model.Group{{
-				GroupVersion: schema.GroupVersion{
-					Group:   "things.test.io",
-					Version: "v3alpha1",
-				},
-				RenderManifests: true,
-				AddChartVersion: "1.0.0",
-				Resources: []model.Resource{
-					{
-						Kind: "kind",
-						Spec: model.Field{
-							Type: model.Type{
-								Name:    "test",
-								Message: &v1.AcrylicType{},
-							},
-						},
-						Stored: false,
+			grps = []*model.Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v3alpha1",
 					},
-				}},
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: false,
+						},
+					},
+				},
 				{
 					GroupVersion: schema.GroupVersion{
 						Group:   "things.test.io",
@@ -330,7 +377,8 @@ var _ = Describe("ManifestsRenderer", func() {
 							},
 							Stored: true,
 						},
-					}},
+					},
+				},
 				{
 					GroupVersion: schema.GroupVersion{
 						Group:   "things.test.io",
@@ -350,14 +398,14 @@ var _ = Describe("ManifestsRenderer", func() {
 							},
 							Stored: true,
 						},
-					}},
+					},
+				},
 			}
 			for i := range grps {
 				grps[i].Init()
 			}
 		})
 		It("Renderse manifests with chart and spec hash", func() {
-
 			// get api-level code gen options from descriptors
 			outFiles, err := render.RenderManifests(render.RenderOptions{
 				AppName:                 "appName",
@@ -381,25 +429,27 @@ var _ = Describe("ManifestsRenderer", func() {
 
 	Describe("Render CRD template when 'EnabledAlphaApiFlagName' isn't set", func() {
 		It("and resource contains an alpha version that should not be skipped", func() {
-			grps := []*model.Group{{
-				GroupVersion: schema.GroupVersion{
-					Group:   "things.test.io",
-					Version: "v3alpha1",
-				},
-				RenderManifests: true,
-				AddChartVersion: "1.0.0",
-				Resources: []model.Resource{
-					{
-						Kind: "kind",
-						Spec: model.Field{
-							Type: model.Type{
-								Name:    "test",
-								Message: &v1.AcrylicType{},
-							},
-						},
-						Stored: false,
+			grps := []*model.Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v3alpha1",
 					},
-				}},
+					RenderManifests: true,
+					AddChartVersion: "1.0.0",
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: false,
+						},
+					},
+				},
 			}
 			for i := range grps {
 				grps[i].Init()
@@ -415,26 +465,28 @@ var _ = Describe("ManifestsRenderer", func() {
 			Expect(err).To(Equal(fmt.Errorf("error rendering CRD template for kind kind: 'EnabledAlphaApiFlagName' is not defined")))
 		})
 		It("and resource contains an alpha version that should be skipped", func() {
-			grps := []*model.Group{{
-				GroupVersion: schema.GroupVersion{
-					Group:   "things.test.io",
-					Version: "v3alpha1",
-				},
-				RenderManifests:           true,
-				AddChartVersion:           "1.0.0",
-				SkipConditionalCRDLoading: true,
-				Resources: []model.Resource{
-					{
-						Kind: "kind",
-						Spec: model.Field{
-							Type: model.Type{
-								Name:    "test",
-								Message: &v1.AcrylicType{},
-							},
-						},
-						Stored: false,
+			grps := []*model.Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v3alpha1",
 					},
-				}},
+					RenderManifests:           true,
+					AddChartVersion:           "1.0.0",
+					SkipConditionalCRDLoading: true,
+					Resources: []model.Resource{
+						{
+							Kind: "kind",
+							Spec: model.Field{
+								Type: model.Type{
+									Name:    "test",
+									Message: &v1.AcrylicType{},
+								},
+							},
+							Stored: false,
+						},
+					},
+				},
 			}
 			for i := range grps {
 				grps[i].Init()

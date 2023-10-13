@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: |
+      Don't conditionally enable internal CRDs. Internal CRDs are an implementation detail that should not be exposed to end users to toggle.
+    skipCI: false
