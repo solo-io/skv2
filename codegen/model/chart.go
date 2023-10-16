@@ -133,6 +133,21 @@ type Container struct {
 	Resources       *corev1.ResourceRequirements
 	SecurityContext *corev1.SecurityContext
 	ContainerPorts  []ContainerPort
+
+	// TemplateEnvVars renders environment variables that can use templated Helm values.
+	// At least 1 environment variable must be set via Env to use this.
+	TemplateEnvVars []TemplateEnvVar
+}
+
+// TemplateEnvVar corresponds to an environment variable that can use templated Helm values
+type TemplateEnvVar struct {
+	// Name of the environment variable
+	// E.g. FOO_BAR
+	Name string
+
+	// Helm value
+	// E.g. {{ .Values.foo.bar }}
+	Value string
 }
 
 type ContainerPort struct {

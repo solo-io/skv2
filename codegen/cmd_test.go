@@ -1835,6 +1835,129 @@ roleRef:
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
 
+	DescribeTable("rendering feature gate env vars",
+		func(featureGatesVals map[string]string, envs []v1.EnvVar, featureEnvs []TemplateEnvVar, expectedEnvVars []v1.EnvVar) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+									Env:             envs,
+									TemplateEnvVars: featureEnvs,
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-featureenv",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			painterValues := map[string]interface{}{}
+			// featureGates := map[string]interface{}{"Foo": true}
+			helmValues := map[string]interface{}{"painter": painterValues, "featureGates": featureGatesVals}
+
+			renderedManifests := helmTemplate("codegen/test/chart-featureenv", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedEnvVars := renderedDeployment.Spec.Template.Spec.Containers[0].Env
+			Expect(renderedEnvVars).To(ConsistOf(expectedEnvVars))
+		},
+
+		Entry("when neither Env nor TemplateEnvVar is specified",
+			map[string]string{"Foo": "true"},
+			nil,
+			nil,
+			nil),
+		Entry("when Env is not specified and TemplateEnvVar is specified",
+			map[string]string{"Foo": "true"},
+			nil,
+			[]TemplateEnvVar{
+				{
+					Name:  "FEATURE_ENABLE_FOO",
+					Value: "{{ $.Values.featureGates.Foo | quote }}",
+				},
+			},
+			nil),
+		Entry("when Env and TemplateEnvVar are specified, true value",
+			map[string]string{"Foo": "true"},
+			[]v1.EnvVar{
+				{
+					Name:  "FOO",
+					Value: "bar",
+				},
+			},
+			[]TemplateEnvVar{
+				{
+					Name:  "FEATURE_ENABLE_FOO",
+					Value: "{{ $.Values.featureGates.Foo | quote }}",
+				},
+			},
+			[]v1.EnvVar{
+				{Name: "FOO", Value: "bar"},
+				{Name: "FEATURE_ENABLE_FOO", Value: "true"},
+			}),
+		Entry("when Env and TemplateEnvVar are specified, false value",
+			map[string]string{"Foo": "false"},
+			[]v1.EnvVar{
+				{
+					Name:  "FOO",
+					Value: "bar",
+				},
+			},
+			[]TemplateEnvVar{
+				{
+					Name:  "FEATURE_ENABLE_FOO",
+					Value: "{{ $.Values.featureGates.Foo | quote }}",
+				},
+			},
+			[]v1.EnvVar{
+				{Name: "FOO", Value: "bar"},
+				{Name: "FEATURE_ENABLE_FOO", Value: "false"},
+			}),
+	)
+
 	DescribeTable("rendering service ports",
 		func(portName string) {
 			cmd := &Command{
