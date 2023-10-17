@@ -111,6 +111,10 @@ spec:
 {{- if [[ $containerVar ]].env }}
         env:
 {{ toYaml [[ $containerVar ]].env | indent 10 }}
+[[- range $f := $container.TemplateEnvVars ]]
+          - name: [[ $f.Name ]]
+            value: [[ $f.Value ]]
+[[- end ]]
 {{- else if [[ $containerVar ]].extraEnvs }}
         env:
 {{- end }}
