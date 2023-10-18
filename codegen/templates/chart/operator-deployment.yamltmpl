@@ -10,6 +10,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[/* custom values defined in codegen model */]]
 [[- $containers := containerConfigs $operator -]]
 [[- $volumes := $operator.Deployment.Volumes -]]
+[[- $conditionalVolumes := $operator.Deployment.ConditionalVolumes -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
@@ -74,6 +75,13 @@ spec:
 [[- if $volumes ]]
       volumes:
 [[ toYaml $volumes | indent 6 ]]
+[[- else if $conditionalVolumes ]]
+      volumes:
+[[- end ]]
+[[- range $v := $conditionalVolumes ]]
+{{- if [[ $v.Condition ]] }}
+[[ toYaml (toListItem $v.Volume) | indent 6 ]]
+{{- end }}
 [[- end ]]
 [[- range $container := $containers -]]
 [[- if and (gt (len $container.EnableStatement) 0) ($container.Volumes) ]]
@@ -125,6 +133,13 @@ spec:
 [[- if $container.VolumeMounts ]]
         volumeMounts:
 [[ toYaml $container.VolumeMounts | indent 8 ]]
+[[- else if $container.ConditionalVolumeMounts ]]
+        volumeMounts:
+[[- end ]]
+[[- range $v := $container.ConditionalVolumeMounts ]]
+{{- if [[ $v.Condition ]] }}
+[[ toYaml (toListItem $v.VolumeMount) | indent 8 ]]
+{{- end }}
 [[- end ]]
         resources:
 {{- if [[ $containerVar ]].resources }}

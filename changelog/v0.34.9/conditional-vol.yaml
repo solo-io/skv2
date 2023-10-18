@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/11921
+    resolvesIssue: false
+    description: |
+      Adds support for conditional volumes and mounts.
+    skipCI: false

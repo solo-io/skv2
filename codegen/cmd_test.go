@@ -17,6 +17,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/skv2/codegen"
+	"github.com/solo-io/skv2/codegen/model"
 	. "github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 	"github.com/solo-io/skv2/codegen/util"
@@ -1835,128 +1836,468 @@ roleRef:
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
 
-	DescribeTable("rendering feature gate env vars",
-		func(featureGatesVals map[string]string, envs []v1.EnvVar, featureEnvs []TemplateEnvVar, expectedEnvVars []v1.EnvVar) {
-			cmd := &Command{
-				Chart: &Chart{
-					Operators: []Operator{
-						{
-							Name: "painter",
-							Deployment: Deployment{
-								Container: Container{
-									Image: Image{
-										Tag:        "v0.0.0",
-										Repository: "painter",
-										Registry:   "quay.io/solo-io",
-										PullPolicy: "IfNotPresent",
+	Describe("rendering feature gate env vars", func() {
+		var tmpDir string
+
+		BeforeEach(func() {
+			tmpDir = "codegen/test/chart-featureenv"
+		})
+
+		AfterEach(func() {
+			Expect(os.RemoveAll(tmpDir)).NotTo(HaveOccurred())
+		})
+
+		DescribeTable("validation",
+			func(featureGatesVals map[string]string, envs []v1.EnvVar, featureEnvs []TemplateEnvVar, expectedEnvVars []v1.EnvVar) {
+				cmd := &Command{
+					Chart: &Chart{
+						Operators: []Operator{
+							{
+								Name: "painter",
+								Deployment: Deployment{
+									Container: Container{
+										Image: Image{
+											Tag:        "v0.0.0",
+											Repository: "painter",
+											Registry:   "quay.io/solo-io",
+											PullPolicy: "IfNotPresent",
+										},
+										Env:             envs,
+										TemplateEnvVars: featureEnvs,
 									},
-									Env:             envs,
-									TemplateEnvVars: featureEnvs,
 								},
+							},
+						},
+
+						Values: nil,
+						Data: Data{
+							ApiVersion:  "v1",
+							Description: "",
+							Name:        "Painting Operator",
+							Version:     "v0.0.1",
+							Home:        "https://docs.solo.io/skv2/latest",
+							Sources: []string{
+								"https://github.com/solo-io/skv2",
 							},
 						},
 					},
 
-					Values: nil,
-					Data: Data{
-						ApiVersion:  "v1",
-						Description: "",
-						Name:        "Painting Operator",
-						Version:     "v0.0.1",
-						Home:        "https://docs.solo.io/skv2/latest",
-						Sources: []string{
-							"https://github.com/solo-io/skv2",
+					ManifestRoot: tmpDir,
+				}
+
+				err := cmd.Execute()
+				Expect(err).NotTo(HaveOccurred())
+
+				painterValues := map[string]interface{}{}
+				// featureGates := map[string]interface{}{"Foo": true}
+				helmValues := map[string]interface{}{"painter": painterValues, "featureGates": featureGatesVals}
+
+				renderedManifests := helmTemplate(tmpDir, helmValues)
+
+				var renderedDeployment *appsv1.Deployment
+				decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+				for {
+					obj := &unstructured.Unstructured{}
+					err := decoder.Decode(obj)
+					if err != nil {
+						break
+					}
+					if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+						continue
+					}
+
+					bytes, err := obj.MarshalJSON()
+					Expect(err).NotTo(HaveOccurred())
+					renderedDeployment = &appsv1.Deployment{}
+					err = json.Unmarshal(bytes, renderedDeployment)
+					Expect(err).NotTo(HaveOccurred())
+				}
+				Expect(renderedDeployment).NotTo(BeNil())
+				renderedEnvVars := renderedDeployment.Spec.Template.Spec.Containers[0].Env
+				Expect(renderedEnvVars).To(ConsistOf(expectedEnvVars))
+			},
+
+			Entry("when neither Env nor TemplateEnvVar is specified",
+				map[string]string{"Foo": "true"},
+				nil,
+				nil,
+				nil),
+			Entry("when Env is not specified and TemplateEnvVar is specified",
+				map[string]string{"Foo": "true"},
+				nil,
+				[]TemplateEnvVar{
+					{
+						Name:  "FEATURE_ENABLE_FOO",
+						Value: "{{ $.Values.featureGates.Foo | quote }}",
+					},
+				},
+				nil),
+			Entry("when Env and TemplateEnvVar are specified, true value",
+				map[string]string{"Foo": "true"},
+				[]v1.EnvVar{
+					{
+						Name:  "FOO",
+						Value: "bar",
+					},
+				},
+				[]TemplateEnvVar{
+					{
+						Name:  "FEATURE_ENABLE_FOO",
+						Value: "{{ $.Values.featureGates.Foo | quote }}",
+					},
+				},
+				[]v1.EnvVar{
+					{Name: "FOO", Value: "bar"},
+					{Name: "FEATURE_ENABLE_FOO", Value: "true"},
+				}),
+			Entry("when Env and TemplateEnvVar are specified, false value",
+				map[string]string{"Foo": "false"},
+				[]v1.EnvVar{
+					{
+						Name:  "FOO",
+						Value: "bar",
+					},
+				},
+				[]TemplateEnvVar{
+					{
+						Name:  "FEATURE_ENABLE_FOO",
+						Value: "{{ $.Values.featureGates.Foo | quote }}",
+					},
+				},
+				[]v1.EnvVar{
+					{Name: "FOO", Value: "bar"},
+					{Name: "FEATURE_ENABLE_FOO", Value: "false"},
+				}),
+		)
+	})
+
+	Describe("rendering conditional volumes", func() {
+		var tmpDir string
+
+		BeforeEach(func() {
+			tmpDir = "codegen/test/chart-volumes"
+		})
+
+		AfterEach(func() {
+			Expect(os.RemoveAll(tmpDir)).NotTo(HaveOccurred())
+		})
+
+		DescribeTable("validation",
+			func(values map[string]string, defaultVolumes []v1.Volume, conditionalVolumes []model.ConditionalVolume, expected []v1.Volume) {
+				cmd := &Command{
+					Chart: &Chart{
+						Operators: []Operator{
+							{
+								Name: "painter",
+								Deployment: Deployment{
+									Container: Container{
+										Image: Image{
+											Tag:        "v0.0.0",
+											Repository: "painter",
+											Registry:   "quay.io/solo-io",
+											PullPolicy: "IfNotPresent",
+										},
+									},
+									Volumes:            defaultVolumes,
+									ConditionalVolumes: conditionalVolumes,
+								},
+							},
+						},
+
+						Values: nil,
+						Data: Data{
+							ApiVersion:  "v1",
+							Description: "",
+							Name:        "Painting Operator",
+							Version:     "v0.0.1",
+							Home:        "https://docs.solo.io/skv2/latest",
+							Sources: []string{
+								"https://github.com/solo-io/skv2",
+							},
+						},
+					},
+
+					ManifestRoot: tmpDir,
+				}
+
+				err := cmd.Execute()
+				Expect(err).NotTo(HaveOccurred())
+
+				// featureGates := map[string]interface{}{"Foo": true}
+				helmValues := map[string]interface{}{"painter": values}
+
+				renderedManifests := helmTemplate(tmpDir, helmValues)
+
+				var renderedDeployment *appsv1.Deployment
+				decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+				for {
+					obj := &unstructured.Unstructured{}
+					err := decoder.Decode(obj)
+					if err != nil {
+						break
+					}
+					if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+						continue
+					}
+
+					bytes, err := obj.MarshalJSON()
+					Expect(err).NotTo(HaveOccurred())
+					renderedDeployment = &appsv1.Deployment{}
+					err = json.Unmarshal(bytes, renderedDeployment)
+					Expect(err).NotTo(HaveOccurred())
+					break
+				}
+				Expect(renderedDeployment).NotTo(BeNil())
+				Expect(renderedDeployment.Spec.Template.Spec.Volumes).To(ConsistOf(expected))
+			},
+
+			Entry("no volumes or conditional volumes",
+				map[string]string{},
+				nil,
+				nil,
+				nil,
+			),
+			Entry("with default volume",
+				map[string]string{},
+				[]v1.Volume{
+					{
+						Name: "vol-1",
+					},
+				},
+				nil,
+				[]v1.Volume{
+					{
+						Name: "vol-1",
+					},
+				},
+			),
+			Entry("with conditional volume when condition is true",
+				map[string]string{
+					"condition": "true",
+				},
+				nil,
+				[]model.ConditionalVolume{
+					{
+						Condition: "$.Values.painter.condition",
+						Volume: v1.Volume{
+							Name: "vol-1",
 						},
 					},
 				},
+				[]v1.Volume{
+					{
+						Name: "vol-1",
+					},
+				},
+			),
+			Entry("with conditional volume when condition is false",
+				map[string]string{
+					"condition": "true",
+				},
+				nil,
+				[]model.ConditionalVolume{
+					{
+						Condition: "$.Values.painter.invalidCondition",
+						Volume: v1.Volume{
+							Name: "vol-1",
+						},
+					},
+				},
+				nil,
+			),
+			Entry("with default and conditional volume when condition is true",
+				map[string]string{
+					"condition": "true",
+				},
+				[]v1.Volume{
+					{
+						Name: "vol-1",
+					},
+				},
+				[]model.ConditionalVolume{
+					{
+						Condition: "$.Values.painter.condition",
+						Volume: v1.Volume{
+							Name: "vol-2",
+						},
+					},
+				},
+				[]v1.Volume{
+					{
+						Name: "vol-1",
+					},
+					{
+						Name: "vol-2",
+					},
+				},
+			),
+		)
+	})
 
-				ManifestRoot: "codegen/test/chart-featureenv",
-			}
+	Describe("rendering conditional volumeMounts", func() {
+		var tmpDir string
 
-			err := cmd.Execute()
-			Expect(err).NotTo(HaveOccurred())
+		BeforeEach(func() {
+			tmpDir = "codegen/test/chart-volumeMounts"
+		})
 
-			painterValues := map[string]interface{}{}
-			// featureGates := map[string]interface{}{"Foo": true}
-			helmValues := map[string]interface{}{"painter": painterValues, "featureGates": featureGatesVals}
+		AfterEach(func() {
+			Expect(os.RemoveAll(tmpDir)).NotTo(HaveOccurred())
+		})
 
-			renderedManifests := helmTemplate("codegen/test/chart-featureenv", helmValues)
+		DescribeTable("validation",
+			func(values map[string]string, defaultMounts []v1.VolumeMount, conditionalMounts []model.ConditionalVolumeMount, expected []v1.VolumeMount) {
+				cmd := &Command{
+					Chart: &Chart{
+						Operators: []Operator{
+							{
+								Name: "painter",
+								Deployment: Deployment{
+									Container: Container{
+										Image: Image{
+											Tag:        "v0.0.0",
+											Repository: "painter",
+											Registry:   "quay.io/solo-io",
+											PullPolicy: "IfNotPresent",
+										},
+										VolumeMounts:            defaultMounts,
+										ConditionalVolumeMounts: conditionalMounts,
+									},
+								},
+							},
+						},
 
-			var renderedDeployment *appsv1.Deployment
-			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
-			for {
-				obj := &unstructured.Unstructured{}
-				err := decoder.Decode(obj)
-				if err != nil {
+						Values: nil,
+						Data: Data{
+							ApiVersion:  "v1",
+							Description: "",
+							Name:        "Painting Operator",
+							Version:     "v0.0.1",
+							Home:        "https://docs.solo.io/skv2/latest",
+							Sources: []string{
+								"https://github.com/solo-io/skv2",
+							},
+						},
+					},
+
+					ManifestRoot: tmpDir,
+				}
+
+				err := cmd.Execute()
+				Expect(err).NotTo(HaveOccurred())
+
+				// featureGates := map[string]interface{}{"Foo": true}
+				helmValues := map[string]interface{}{"painter": values}
+
+				renderedManifests := helmTemplate(tmpDir, helmValues)
+
+				var renderedDeployment *appsv1.Deployment
+				decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+				for {
+					obj := &unstructured.Unstructured{}
+					err := decoder.Decode(obj)
+					if err != nil {
+						break
+					}
+					if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+						continue
+					}
+
+					bytes, err := obj.MarshalJSON()
+					Expect(err).NotTo(HaveOccurred())
+					renderedDeployment = &appsv1.Deployment{}
+					err = json.Unmarshal(bytes, renderedDeployment)
+					Expect(err).NotTo(HaveOccurred())
 					break
 				}
-				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
-					continue
-				}
+				Expect(renderedDeployment).NotTo(BeNil())
+				containers := renderedDeployment.Spec.Template.Spec.Containers
+				Expect(containers).To(HaveLen(1))
+				Expect(containers[0].VolumeMounts).To(ConsistOf(expected))
+			},
 
-				bytes, err := obj.MarshalJSON()
-				Expect(err).NotTo(HaveOccurred())
-				renderedDeployment = &appsv1.Deployment{}
-				err = json.Unmarshal(bytes, renderedDeployment)
-				Expect(err).NotTo(HaveOccurred())
-			}
-			Expect(renderedDeployment).NotTo(BeNil())
-			renderedEnvVars := renderedDeployment.Spec.Template.Spec.Containers[0].Env
-			Expect(renderedEnvVars).To(ConsistOf(expectedEnvVars))
-		},
-
-		Entry("when neither Env nor TemplateEnvVar is specified",
-			map[string]string{"Foo": "true"},
-			nil,
-			nil,
-			nil),
-		Entry("when Env is not specified and TemplateEnvVar is specified",
-			map[string]string{"Foo": "true"},
-			nil,
-			[]TemplateEnvVar{
-				{
-					Name:  "FEATURE_ENABLE_FOO",
-					Value: "{{ $.Values.featureGates.Foo | quote }}",
+			Entry("no volumes or conditional mounts",
+				map[string]string{},
+				nil,
+				nil,
+				nil,
+			),
+			Entry("with default volume mount",
+				map[string]string{},
+				[]v1.VolumeMount{
+					{
+						Name: "vol-1",
+					},
 				},
-			},
-			nil),
-		Entry("when Env and TemplateEnvVar are specified, true value",
-			map[string]string{"Foo": "true"},
-			[]v1.EnvVar{
-				{
-					Name:  "FOO",
-					Value: "bar",
+				nil,
+				[]v1.VolumeMount{
+					{
+						Name: "vol-1",
+					},
 				},
-			},
-			[]TemplateEnvVar{
-				{
-					Name:  "FEATURE_ENABLE_FOO",
-					Value: "{{ $.Values.featureGates.Foo | quote }}",
+			),
+			Entry("with conditional volume mount when condition is true",
+				map[string]string{
+					"condition": "true",
 				},
-			},
-			[]v1.EnvVar{
-				{Name: "FOO", Value: "bar"},
-				{Name: "FEATURE_ENABLE_FOO", Value: "true"},
-			}),
-		Entry("when Env and TemplateEnvVar are specified, false value",
-			map[string]string{"Foo": "false"},
-			[]v1.EnvVar{
-				{
-					Name:  "FOO",
-					Value: "bar",
+				nil,
+				[]model.ConditionalVolumeMount{
+					{
+						Condition: "$.Values.painter.condition",
+						VolumeMount: v1.VolumeMount{
+							Name: "vol-1",
+						},
+					},
 				},
-			},
-			[]TemplateEnvVar{
-				{
-					Name:  "FEATURE_ENABLE_FOO",
-					Value: "{{ $.Values.featureGates.Foo | quote }}",
+				[]v1.VolumeMount{
+					{
+						Name: "vol-1",
+					},
 				},
-			},
-			[]v1.EnvVar{
-				{Name: "FOO", Value: "bar"},
-				{Name: "FEATURE_ENABLE_FOO", Value: "false"},
-			}),
-	)
+			),
+			Entry("with conditional volume mount when condition is false",
+				map[string]string{
+					"condition": "true",
+				},
+				nil,
+				[]model.ConditionalVolumeMount{
+					{
+						Condition: "$.Values.painter.invalidCondition",
+						VolumeMount: v1.VolumeMount{
+							Name: "vol-1",
+						},
+					},
+				},
+				nil,
+			),
+			Entry("with default and conditional volume mounts when condition is true",
+				map[string]string{
+					"condition": "true",
+				},
+				[]v1.VolumeMount{
+					{
+						Name: "vol-1",
+					},
+				},
+				[]model.ConditionalVolumeMount{
+					{
+						Condition: "$.Values.painter.condition",
+						VolumeMount: v1.VolumeMount{
+							Name: "vol-2",
+						},
+					},
+				},
+				[]v1.VolumeMount{
+					{
+						Name: "vol-1",
+					},
+					{
+						Name: "vol-2",
+					},
+				},
+			),
+		)
+	})
 
 	DescribeTable("rendering service ports",
 		func(portName string) {
