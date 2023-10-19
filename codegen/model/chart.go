@@ -114,19 +114,26 @@ type Deployment struct {
 	Container
 	Sidecars                    []Sidecar
 	Volumes                     []corev1.Volume
+	ConditionalVolumes          []ConditionalVolume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
 	CustomDeploymentAnnotations map[string]string
 }
 
+type ConditionalVolume struct {
+	Condition string
+	Volume    corev1.Volume
+}
+
 // values for a container
 type Container struct {
 	// not configurable via helm values
-	Args           []string
-	VolumeMounts   []corev1.VolumeMount
-	ReadinessProbe *ReadinessProbe
-	LivenessProbe  *corev1.Probe
+	Args                    []string
+	VolumeMounts            []corev1.VolumeMount
+	ConditionalVolumeMounts []ConditionalVolumeMount
+	ReadinessProbe          *ReadinessProbe
+	LivenessProbe           *corev1.Probe
 
 	Image           Image
 	Env             []corev1.EnvVar
@@ -137,6 +144,11 @@ type Container struct {
 	// TemplateEnvVars renders environment variables that can use templated Helm values.
 	// At least 1 environment variable must be set via Env to use this.
 	TemplateEnvVars []TemplateEnvVar
+}
+
+type ConditionalVolumeMount struct {
+	Condition   string
+	VolumeMount corev1.VolumeMount
 }
 
 // TemplateEnvVar corresponds to an environment variable that can use templated Helm values
