@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/12370
+    resolvesIssue: false
+    description: |
+      Add support for conditional template environment variables.
+    skipCI: false

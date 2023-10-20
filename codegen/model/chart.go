@@ -153,6 +153,10 @@ type ConditionalVolumeMount struct {
 
 // TemplateEnvVar corresponds to an environment variable that can use templated Helm values
 type TemplateEnvVar struct {
+	// Condition for this environment variable to be rendered
+	// E.g. `and (.Values.operator.customValueA) (.Values.operator.customValueB)`
+	Condition string
+
 	// Name of the environment variable
 	// E.g. FOO_BAR
 	Name string
