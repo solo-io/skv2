@@ -1836,7 +1836,7 @@ roleRef:
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
 
-	Describe("rendering feature gate env vars", func() {
+	Describe("rendering template env vars", func() {
 		var tmpDir string
 
 		BeforeEach(func() {
@@ -1967,6 +1967,43 @@ roleRef:
 				[]v1.EnvVar{
 					{Name: "FOO", Value: "bar"},
 					{Name: "FEATURE_ENABLE_FOO", Value: "false"},
+				}),
+			Entry("when Env and Conditional TemplateEnvVar are specified, and condition is true",
+				map[string]string{"Foo": "false"},
+				[]v1.EnvVar{
+					{
+						Name:  "FOO",
+						Value: "bar",
+					},
+				},
+				[]TemplateEnvVar{
+					{
+						Condition: "$.Values.featureGates.Foo",
+						Name:      "FEATURE_ENABLE_FOO",
+						Value:     "{{ $.Values.featureGates.Foo | quote }}",
+					},
+				},
+				[]v1.EnvVar{
+					{Name: "FOO", Value: "bar"},
+					{Name: "FEATURE_ENABLE_FOO", Value: "false"},
+				}),
+			Entry("when Env and Conditional TemplateEnvVar are specified, and condition is false",
+				map[string]string{"Foo": "false"},
+				[]v1.EnvVar{
+					{
+						Name:  "FOO",
+						Value: "bar",
+					},
+				},
+				[]TemplateEnvVar{
+					{
+						Condition: "$.Values.featureGates.InvalidCondition",
+						Name:      "FEATURE_ENABLE_FOO",
+						Value:     "{{ $.Values.featureGates.Foo | quote }}",
+					},
+				},
+				[]v1.EnvVar{
+					{Name: "FOO", Value: "bar"},
 				}),
 		)
 	})

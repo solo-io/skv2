@@ -120,8 +120,14 @@ spec:
         env:
 {{ toYaml [[ $containerVar ]].env | indent 10 }}
 [[- range $f := $container.TemplateEnvVars ]]
+[[- if $f.Condition ]]
+{{- if [[ $f.Condition ]] }}
+[[- end]]
           - name: [[ $f.Name ]]
             value: [[ $f.Value ]]
+[[- if $f.Condition ]]
+{{- end }}
+[[- end]]
 [[- end ]]
 {{- else if [[ $containerVar ]].extraEnvs }}
         env:
