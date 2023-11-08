@@ -79,8 +79,16 @@ spec:
     spec:
       serviceAccountName: [[ $operator.Name ]]
 [[- if $volumes ]]
+[[- if $operator.VolumeAndMountFromValuePath ]]
+[[- $volumeAndMountValuePath := printf "%s" $operator.VolumeAndMountFromValuePath ]]
+{{- if [[ $volumeAndMountValuePath ]] }}
       volumes:
 [[ toYaml $volumes | indent 6 ]]
+{{- end }}
+[[- else ]]
+      volumes:
+[[ toYaml $volumes | indent 6 ]]
+[[- end ]]
 [[- end ]]
       containers:
 [[- range $container := containerConfigs $operator ]]
@@ -107,8 +115,16 @@ spec:
 {{- $item | toYaml | nindent 12 }}
 {{- end }}
 [[- if $container.VolumeMounts ]]
+[[- if $operator.VolumeAndMountFromValuePath ]]
+[[- $volumeAndMountValuePath := printf "%s" $operator.VolumeAndMountFromValuePath ]]
+{{- if [[ $volumeAndMountValuePath ]] }}
         volumeMounts:
 [[ toYaml $container.VolumeMounts | indent 8 ]]
+{{- end }}
+[[- else ]]
+        volumeMounts:
+[[ toYaml $container.VolumeMounts | indent 8 ]]
+[[- end ]]
 [[- end ]]
         resources:
 {{- if [[ $containerVar ]].resources }}

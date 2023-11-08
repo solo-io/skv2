@@ -1379,6 +1379,209 @@ roleRef:
 		Expect(renderedManifests).To(ContainSubstring(expectedClusterRoleBinding))
 	})
 
+	Context("renders volumes and mounts correctly", func() {
+		cmd := &Command{
+			Groups: []Group{
+				{
+					GroupVersion: schema.GroupVersion{
+						Group:   "things.test.io",
+						Version: "v1",
+					},
+					Module: "github.com/solo-io/skv2",
+					Resources: []Resource{
+						{
+							Kind:   "Paint",
+							Spec:   Field{Type: Type{Name: "PaintSpec"}},
+							Status: &Field{Type: Type{Name: "PaintStatus"}},
+						},
+						{
+							Kind:          "ClusterResource",
+							Spec:          Field{Type: Type{Name: "ClusterResourceSpec"}},
+							ClusterScoped: true,
+						},
+					},
+					RenderManifests:  true,
+					RenderTypes:      true,
+					RenderClients:    true,
+					RenderController: true,
+					MockgenDirective: true,
+					ApiRoot:          "codegen/test/api",
+					CustomTemplates:  contrib.AllGroupCustomTemplates,
+				},
+			},
+			AnyVendorConfig: skv2Imports,
+			RenderProtos:    true,
+
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name: "painter",
+						Rbac: []rbacv1.PolicyRule{
+							{
+								Verbs: []string{"GET"},
+							},
+						},
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								Args: []string{"foo"},
+								VolumeMounts: []v1.VolumeMount{
+									{
+										Name:      "portal-redis-certs",
+										ReadOnly:  true,
+										MountPath: "/etc/redis-certs",
+									},
+								},
+							},
+							Volumes: []v1.Volume{
+								{
+									Name: "portal-redis-certs",
+									VolumeSource: v1.VolumeSource{
+										Secret: &v1.SecretVolumeSource{
+											SecretName: "portal-redis-certs",
+										},
+									},
+								},
+							},
+						},
+						VolumeAndMountFromValuePath: "$.Values.painter.apiKeyStorage.enabled",
+					},
+				},
+				Values: nil,
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+			ManifestRoot: "codegen/test/chart",
+		}
+
+		It("conditionally renders container volume and volume mounts if value path for conditionally rendering volumes is provided", func() {
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			// Test that the deployment, SA, and CR templates are rendered correctly
+			deployment, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
+			Expect(err).NotTo(HaveOccurred())
+
+			expectedDeploymentVolumeTmpl := `
+{{- if $.Values.painter.apiKeyStorage.enabled }}
+      volumes:
+      - name: portal-redis-certs
+        secret:
+          secretName: portal-redis-certs
+{{- end }}`
+
+			expectedDeploymentVolumeMountTmpl := `
+{{- if $.Values.painter.apiKeyStorage.enabled }}
+        volumeMounts:
+        - mountPath: /etc/redis-certs
+          name: portal-redis-certs
+          readOnly: true
+{{- end }}`
+
+			Expect(string(deployment)).To(ContainSubstring(expectedDeploymentVolumeMountTmpl))
+			Expect(string(deployment)).To(ContainSubstring(expectedDeploymentVolumeTmpl))
+
+			// Test that the deployment is rendered with the volume and volume mounts when the helm values are provided and set to true
+			helmValues := map[string]interface{}{
+				"painter": map[string]interface{}{
+					"apiKeyStorage": map[string]interface{}{
+						"enabled": true,
+					},
+				},
+			}
+
+			expectedDeployment := `
+      volumes:
+      - name: portal-redis-certs
+        secret:
+          secretName: portal-redis-certs
+      containers:
+      - name: painter
+        image: quay.io/solo-io/painter:v0.0.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - foo
+        volumeMounts:
+        - mountPath: /etc/redis-certs
+          name: portal-redis-certs
+          readOnly: true`
+
+			renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+			Expect(renderedManifests).To(ContainSubstring(expectedDeployment))
+
+			// Test that the deployment is rendered without the volume and volume mounts when the helm values are not provided
+			renderedManifests = helmTemplate("codegen/test/chart", map[string]interface{}{
+				"painter": map[string]interface{}{
+					"apiKeyStorage": map[string]interface{}{
+						"enabled": false,
+					},
+				},
+			})
+			Expect(renderedManifests).To(Not(ContainSubstring(expectedDeployment)))
+		})
+
+		It("renders volumes and mounts normally if value path for conditionally rendering volumes is not provided", func() {
+			cmd.Chart.Operators[0].VolumeAndMountFromValuePath = ""
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			// Test that the deployment, SA, and CR templates are rendered correctly
+			deployment, err := os.ReadFile("codegen/test/chart/templates/deployment.yaml")
+			Expect(err).NotTo(HaveOccurred())
+
+			expectedDeploymentVolumeTmpl := `
+      serviceAccountName: painter
+      volumes:
+      - name: portal-redis-certs
+        secret:
+          secretName: portal-redis-certs`
+
+			expectedDeploymentVolumeMountTmpl := `
+        volumeMounts:
+        - mountPath: /etc/redis-certs
+          name: portal-redis-certs
+          readOnly: true
+        resources:`
+
+			Expect(string(deployment)).To(ContainSubstring(expectedDeploymentVolumeTmpl))
+			Expect(string(deployment)).To(ContainSubstring(expectedDeploymentVolumeMountTmpl))
+
+			expectedDeployment := `
+      volumes:
+      - name: portal-redis-certs
+        secret:
+          secretName: portal-redis-certs
+      containers:
+      - name: painter
+        image: quay.io/solo-io/painter:v0.0.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - foo
+        volumeMounts:
+        - mountPath: /etc/redis-certs
+          name: portal-redis-certs
+          readOnly: true`
+
+			// Test that the deployment is rendered with the volume and volume mounts when the helm values for conditionally
+			// rendering the volue and volume mounts are not provided
+			renderedManifests := helmTemplate("codegen/test/chart", map[string]interface{}{})
+			Expect(renderedManifests).To(ContainSubstring(expectedDeployment))
+		})
+	})
+
 	Context("generates CRD with validation schema for a proto file", func() {
 		var cmd *Command
 

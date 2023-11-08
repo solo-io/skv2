@@ -92,6 +92,10 @@ type Operator struct {
 	// (Optional) If this operator should be applied to a namespace
 	// specified in a common value (e.g. "$Values.common.addonNamespace") specify the full value path here
 	NamespaceFromValuePath string
+
+	// (Optional) If this operator should conditionally render the container volumes & mounts specified from a value path
+	// that resolves to a boolean value, specify the full value path Ie: $.Values.gloo-deployment.volumes.enabled
+	VolumeAndMountFromValuePath string
 }
 
 func (o Operator) FormattedName() string {
