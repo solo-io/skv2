@@ -111,7 +111,8 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 			return nil, err
 		}
 
-		if !r.skipCrdsManifest {
+		// only render crd manifest if neither the options nor the group has the skip flag set to true
+		if !r.skipCrdsManifest && !shouldSkipCRDManifest[groupName] {
 			out, err := r.renderCRDManifest(r.AppName, groupName, crds)
 			if err != nil {
 				return nil, err
@@ -119,11 +120,13 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 			renderedFiles = append(renderedFiles, out)
 		}
 
-		out, err := r.renderTemplatedCRDManifest(r.AppName, groupName, crds, grandfatheredGroups)
-		if err != nil {
-			return nil, err
+		if !shouldSkipTemplatedCRDManifest[groupName] {
+			out, err := r.renderTemplatedCRDManifest(r.AppName, groupName, crds, grandfatheredGroups)
+			if err != nil {
+				return nil, err
+			}
+			renderedFiles = append(renderedFiles, out)
 		}
-		renderedFiles = append(renderedFiles, out)
 	}
 
 	return renderedFiles, nil
