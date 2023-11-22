@@ -13,19 +13,19 @@ type AppendingErrHandler struct {
 	errs error
 }
 
-func (a AppendingErrHandler) HandleWriteError(resource ezkube.Object, err error) {
+func (a *AppendingErrHandler) HandleWriteError(resource ezkube.Object, err error) {
 	a.errs = multierror.Append(a.errs, eris.Wrapf(err, "writing resource %v failed", sets.Key(resource)))
 }
 
-func (a AppendingErrHandler) HandleDeleteError(resource ezkube.Object, err error) {
+func (a *AppendingErrHandler) HandleDeleteError(resource ezkube.Object, err error) {
 	a.errs = multierror.Append(a.errs, eris.Wrapf(err, "deleting resource %v failed", sets.Key(resource)))
 }
 
-func (a AppendingErrHandler) HandleListError(err error) {
+func (a *AppendingErrHandler) HandleListError(err error) {
 	a.errs = multierror.Append(a.errs, eris.Wrapf(err, "listing failed"))
 }
 
 // returns the errors collected by the handler
-func (a AppendingErrHandler) Errors() error {
+func (a *AppendingErrHandler) Errors() error {
 	return a.errs
 }
