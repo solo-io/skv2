@@ -35,7 +35,7 @@ func (a *AppendingErrHandler) HandleListError(err error) {
 	a.errs = multierror.Append(a.errs, ListError(err))
 }
 
-// returns the errors collected by the handler
+// Errors returns the errors collected by the handler
 func (a *AppendingErrHandler) Errors() error {
 	return a.errs
 }
