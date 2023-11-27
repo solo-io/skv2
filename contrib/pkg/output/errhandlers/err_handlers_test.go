@@ -69,24 +69,24 @@ func addDeleteError(handler output.ErrorHandler, resource ezkube.Object) {
 type errorExpectation func(err error, resource ezkube.Object)
 
 func expectListError(err error, resource ezkube.Object) {
-	Expect(err).To(HaveOccurred())
-	Expect(err).To(And(
+	ExpectWithOffset(1, err).To(HaveOccurred())
+	ExpectWithOffset(1, err).To(And(
 		MatchError(ListError(err)),
 		Not(MatchError(ResourceWriteError(resource, err))),
 		Not(MatchError(ResourceDeleteError(resource, err))),
 	))
 }
 func expectWriteError(err error, resource ezkube.Object) {
-	Expect(err).To(HaveOccurred())
-	Expect(err).To(And(
+	ExpectWithOffset(1, err).To(HaveOccurred())
+	ExpectWithOffset(1, err).To(And(
 		MatchError(ResourceWriteError(resource, err)),
 		Not(MatchError(ListError(err))),
 		Not(MatchError(ResourceDeleteError(resource, err))),
 	))
 }
 func expectDeleteError(err error, resource ezkube.Object) {
-	Expect(err).To(HaveOccurred())
-	Expect(err).To(And(
+	ExpectWithOffset(1, err).To(HaveOccurred())
+	ExpectWithOffset(1, err).To(And(
 		MatchError(ResourceDeleteError(resource, err)),
 		Not(MatchError(ListError(err))),
 		Not(MatchError(ResourceWriteError(resource, err))),
