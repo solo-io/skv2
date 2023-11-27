@@ -16,7 +16,7 @@ func ResourceDeleteError(resource ezkube.Object, err error) error {
 	return eris.Wrapf(err, "deleting resource %v failed", sets.Key(resource))
 }
 func ListError(err error) error {
-	return eris.Wrapf(err, "listing failed")
+	return eris.Wrapf(err, "listing resources failed")
 }
 
 type AppendingErrHandler struct {

@@ -56,13 +56,13 @@ var _ = Describe("Error Handlers", func() {
 type errorMutation func(handler output.ErrorHandler, resource ezkube.Object)
 
 func addListError(handler output.ErrorHandler, _ ezkube.Object) {
-	handler.HandleListError(errors.New(""))
+	handler.HandleListError(errors.New("listing resources failed"))
 }
 func addWriteError(handler output.ErrorHandler, resource ezkube.Object) {
-	handler.HandleWriteError(resource, errors.New(""))
+	handler.HandleWriteError(resource, errors.New("writing resource failed"))
 }
 func addDeleteError(handler output.ErrorHandler, resource ezkube.Object) {
-	handler.HandleDeleteError(resource, errors.New(""))
+	handler.HandleDeleteError(resource, errors.New("deleting resource failed"))
 }
 
 // errorExpectation is a function that expects a specific error to occur
