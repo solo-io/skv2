@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/517
+    description: Fix issue where the AppendErrHandler was not appending errors to the original object.
+  - type: BREAKING_CHANGE
+    issueLink: https://github.com/solo-io/skv2/issues/517
+    description: Usages of AppendErrHandler will now need to pass it by reference (&).
