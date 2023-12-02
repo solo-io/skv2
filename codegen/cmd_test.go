@@ -2520,6 +2520,79 @@ roleRef:
 		Entry("sidecar service port name with hyphen", "foo-bar"),
 	)
 
+	It("allows fields from other packages", func() {
+		cmd := &Command{
+			Chart: &Chart{
+				Operators: []Operator{
+					{
+						Name: "painter",
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+								ReadinessProbe: &ReadinessProbe{
+									Path:                "/",
+									Port:                "8080",
+									Scheme:              "HTTPS",
+									PeriodSeconds:       10,
+									InitialDelaySeconds: 5,
+								},
+							},
+						},
+					},
+				},
+
+				Values: nil,
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+			},
+
+			ManifestRoot: "codegen/test/chart-readiness",
+		}
+
+		err := cmd.Execute()
+		Expect(err).NotTo(HaveOccurred())
+
+		helmValues := map[string]interface{}{}
+
+		renderedManifests := helmTemplate("codegen/test/chart-readiness", helmValues)
+
+		var renderedDeployment *appsv1.Deployment
+		decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+		for {
+			obj := &unstructured.Unstructured{}
+			err := decoder.Decode(obj)
+			if err != nil {
+				break
+			}
+			if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+				continue
+			}
+
+			bytes, err := obj.MarshalJSON()
+			Expect(err).NotTo(HaveOccurred())
+			renderedDeployment = &appsv1.Deployment{}
+			err = json.Unmarshal(bytes, renderedDeployment)
+			Expect(err).NotTo(HaveOccurred())
+		}
+		Expect(renderedDeployment).NotTo(BeNil())
+		renderedReadinessProbe := renderedDeployment.Spec.Template.Spec.Containers[0].ReadinessProbe.HTTPGet
+		Expect(string(renderedReadinessProbe.Scheme)).To(Equal("HTTPS"))
+		Expect(int(renderedReadinessProbe.Port.IntVal)).To(Equal(8080))
+	})
+
 	It("can configure cluster-scoped and namespace-scoped RBAC", func() {
 		cmd := &Command{
 			RenderProtos: false,
