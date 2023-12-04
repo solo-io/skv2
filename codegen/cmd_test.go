@@ -2520,7 +2520,7 @@ roleRef:
 		Entry("sidecar service port name with hyphen", "foo-bar"),
 	)
 
-	It("allows fields from other packages", func() {
+	It("render readiness probe when scheme is specified", func() {
 		cmd := &Command{
 			Chart: &Chart{
 				Operators: []Operator{
