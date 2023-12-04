@@ -17,7 +17,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 // RetryOptions specify how to retry when a manager fails to be created or started.
@@ -174,9 +173,7 @@ func (c *clusterWatcher) removeCluster(clusterName string) {
 func (c *clusterWatcher) managerOptionsWithDefaults() manager.Options {
 	managerOptions := c.managerOptions
 	managerOptions.HealthProbeBindAddress = "0"
-	managerOptions.Metrics = server.Options{
-		BindAddress: "0",
-	}
+	managerOptions.Metrics.BindAddress = "0"
 	return managerOptions
 }
 
