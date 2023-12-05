@@ -27,6 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -121,7 +122,11 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 
 		Describe("clientset", func() {
 			It("works", func() {
-				cw := watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns}, watch.RetryOptions{}, nil)
+				cw := watch.NewClusterWatcher(ctx, manager.Options{
+					Cache: cache.Options{
+						DefaultNamespaces: map[string]cache.Config{ns: cache.Config{}},
+					},
+				}, watch.RetryOptions{}, nil)
 				err := cw.Run(masterManager)
 				Expect(err).NotTo(HaveOccurred())
 				mcClientset := multicluster.NewClient(cw)
@@ -188,7 +193,11 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			}
 
 			BeforeEach(func() {
-				cw = watch.NewClusterWatcher(ctx, manager.Options{Namespace: ns}, watch.RetryOptions{}, nil)
+				cw = watch.NewClusterWatcher(ctx, manager.Options{
+					Cache: cache.Options{
+						DefaultNamespaces: map[string]cache.Config{ns: cache.Config{}},
+					},
+				}, watch.RetryOptions{}, nil)
 			})
 
 			It("works when a loop is registered before the watcher is started", func() {
