@@ -22,10 +22,12 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	// required import to enable kube client-go auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -157,8 +159,10 @@ func StartMulti(
 		clusterWatcher = watch.NewClusterWatcher(
 			ctx,
 			manager.Options{
-				Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
-				Scheme:    mgr.GetScheme(),
+				Cache: cache.Options{
+					DefaultNamespaces: map[string]cache.Config{"": cache.Config{}}, // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
+				},
+				Scheme: mgr.GetScheme(),
 			},
 			watch.RetryOptions{},
 			nil,
@@ -232,8 +236,14 @@ func makeMasterManager(opts Options, schemes runtime.SchemeBuilder) (manager.Man
 
 	mgr, err := manager.New(
 		cfg, manager.Options{
-			Namespace:          opts.MasterNamespace, // TODO (ilackarms): support configuring multiple watch namespaces on master cluster
-			MetricsBindAddress: "0",                  // serve metrics using custom stats server
+			// TODO (ilackarms): support configuring multiple watch namespaces on master cluster
+			Cache: cache.Options{
+				DefaultNamespaces: map[string]cache.Config{opts.MasterNamespace: cache.Config{}},
+			},
+			// serve metrics using custom stats server
+			Metrics: server.Options{
+				BindAddress: "0",
+			},
 		},
 	)
 	if err != nil {

@@ -9,9 +9,11 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 var (
@@ -32,9 +34,13 @@ func MustConfig(context string) *rest.Config {
 func MustManager(ctx context.Context, ns string) manager.Manager {
 	cfg := MustConfig("")
 	return ManagerWithOpts(ctx, cfg, manager.Options{
-		Namespace: ns,
+		Cache: cache.Options{
+			DefaultNamespaces: map[string]cache.Config{ns: cache.Config{}},
+		},
 		// Disable metrics and health probe to allow tests to run in parallel.
-		MetricsBindAddress:     "0",
+		Metrics: server.Options{
+			BindAddress: "0",
+		},
 		HealthProbeBindAddress: "0",
 	})
 }
