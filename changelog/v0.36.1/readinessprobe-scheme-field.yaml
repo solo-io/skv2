@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/521
+    resolvesIssue: false
+    description: |
+      Support scheme field for readiness probes. By default it is HTTP and an optional field.
+    skipCI: false
