@@ -189,6 +189,9 @@ spec:
           httpGet:
             path: [[ $container.ReadinessProbe.Path ]]
             port: [[ $container.ReadinessProbe.Port ]]
+            [[- if $container.ReadinessProbe.Scheme ]]
+            scheme: [[ $container.ReadinessProbe.Scheme ]]
+            [[- end ]]
         [[- end ]]
         [[- if $container.ReadinessProbe.InitialDelaySeconds ]]
           initialDelaySeconds: [[ $container.ReadinessProbe.InitialDelaySeconds ]]
