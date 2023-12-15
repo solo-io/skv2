@@ -183,6 +183,9 @@ func selectResources(groups map[string][]model.Group, resourcesToSelect map[sche
 			}
 
 			for _, resource := range group.Resources {
+				if resource.CodegenOnly {
+					continue
+				}
 				if !isResourceSelected(resource.Kind) {
 					continue
 				}

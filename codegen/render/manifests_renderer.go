@@ -204,6 +204,9 @@ func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[stri
 	defaultProtoPkg := grp.Group
 	defaultGoPkg := util.GoPackage(grp)
 	for _, res := range grp.Resources {
+		if res.CodegenOnly {
+			continue
+		}
 		unstructuredSpecFields, err := opts.GetUnstructuredFields(
 			ifDefined(res.Spec.Type.ProtoPackage, defaultProtoPkg),
 			res.Spec.Type.Name,

@@ -194,6 +194,9 @@ type Resource struct {
 	// Set to false by default
 	// See https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/custom-resource-definition-v1/#CustomResourceDefinitionSpec
 	Deprecated bool
+
+	// If the resouce is designated as codegen-only, it will not be rendered in the CRD manifest or included in snapshot generation.
+	CodegenOnly bool
 }
 
 type Field struct {
