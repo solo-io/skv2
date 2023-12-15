@@ -169,7 +169,7 @@ type Resource struct {
 	Status *Field
 
 	// Whether or not the resource is cluster-scoped.
-	// This is important when rendering the CustomResourceDefinition manifest.
+	// This is important when rendering the CustomResourceDefinition manifest and RBAC policies.
 	ClusterScoped bool
 
 	// Set the short name of the resource
@@ -194,6 +194,11 @@ type Resource struct {
 	// Set to false by default
 	// See https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/custom-resource-definition-v1/#CustomResourceDefinitionSpec
 	Deprecated bool
+
+	// Optional: if specified, this crd resource definition will be wrapped in the given conditional
+	//
+	// E.g: `and (.Values.customValueA) (.Values.customValueB)`
+	CustomEnableCondition string
 
 	// If the resouce is designated as codegen-only, it will not be rendered in the CRD manifest or included in snapshot generation.
 	CodegenOnly bool

@@ -55,6 +55,156 @@ var _ = Describe("ManifestsRenderer", func() {
 		Expect(obj).To(Equal(expectedObj))
 	})
 
+	Describe("should respect skip manifest flags", func() {
+		It("skips crd manifest if options.SkipCrdsManifest is true", func() {
+			grps := []*model.Group{{
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:          "appName",
+				ManifestRoot:     "manifestDir",
+				ProtoDir:         "protoDir",
+				Groups:           grps,
+				SkipCrdsManifest: true,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(1)) // should only contain template manifest
+			Expect(outFiles[0].Path).To(Equal("manifestDir/templates/things.test.io_crds.yaml"))
+		})
+
+		It("skips crd manifest if group.SkipCRDManifest is true", func() {
+			grps := []*model.Group{{
+				SkipCRDManifest: true,
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:      "appName",
+				ManifestRoot: "manifestDir",
+				ProtoDir:     "protoDir",
+				Groups:       grps,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(1)) // should only contain template manifest
+			Expect(outFiles[0].Path).To(Equal("manifestDir/templates/things.test.io_crds.yaml"))
+		})
+
+		It("skips templated crd manifest if group.SkipTemplatedCRDManifest is true", func() {
+			grps := []*model.Group{{
+				SkipTemplatedCRDManifest: true,
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:      "appName",
+				ManifestRoot: "manifestDir",
+				ProtoDir:     "protoDir",
+				Groups:       grps,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(1)) // should only contain crd manifest
+			Expect(outFiles[0].Path).To(Equal("manifestDir/crds/things.test.io_crds.yaml"))
+		})
+
+		It("skips both manifests if both skip flags are true", func() {
+			grps := []*model.Group{{
+				SkipCRDManifest:          true,
+				SkipTemplatedCRDManifest: true,
+				GroupVersion: schema.GroupVersion{
+					Group:   "things.test.io",
+					Version: "v1",
+				},
+				RenderManifests: true,
+				AddChartVersion: "1.0.0",
+				Resources: []model.Resource{
+					{
+						Kind: "kind",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:    "test",
+								Message: &v1.AcrylicType{},
+							},
+						},
+						Stored: false,
+					},
+				}},
+			}
+			for i := range grps {
+				grps[i].Init()
+			}
+
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:      "appName",
+				ManifestRoot: "manifestDir",
+				ProtoDir:     "protoDir",
+				Groups:       grps,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(outFiles).To(HaveLen(0))
+		})
+	})
+
 	Describe("Generate non-alpha versioned CRD", func() {
 		var (
 			grps []*model.Group
@@ -81,15 +231,16 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 		})
-		It("Renderse manifests with chart and spec hash", func() {
+		It("Renders manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
@@ -132,17 +283,18 @@ var _ = Describe("ManifestsRenderer", func() {
 		It("Renders manifests with template and spec hash", func() {
 
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only alpha versioned CRDs contain logic to conditionally render templates
 			Expect(outFiles[1].Content).To(HavePrefix("\n{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}"))
-			Expect(outFiles[1].Content).To(HaveSuffix("{{- end  }}\n---\n"))
+			Expect(outFiles[1].Content).To(ContainSubstring("{{- end  }}"))
 			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
 			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": 80c06d3e2484e4c8"))
 		})
@@ -181,12 +333,13 @@ var _ = Describe("ManifestsRenderer", func() {
 		})
 		It("Renders manifests without template", func() {
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only alpha versioned CRDs contain logic to conditionally render templates
@@ -264,15 +417,16 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 		})
-		It("Renderse manifests with chart and spec hash", func() {
+		It("Renders manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only v3alpha1 version of the CRDs is conditionally rendered, v2 and v1alpha1 have no conditions surrounding them
@@ -352,15 +506,16 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 		})
-		It("Renderse manifests with chart and spec hash", func() {
+		It("Renders manifests with chart and spec hash", func() {
 
 			// get api-level code gen options from descriptors
-			outFiles, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "enabledExperimentalApi",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			outFiles, err := render.RenderManifests(render.RenderOptions{
+				AppName:                 "appName",
+				ManifestRoot:            "manifestDir",
+				ProtoDir:                "protoDir",
+				EnabledAlphaApiFlagName: "enabledExperimentalApi",
+				Groups:                  grps,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			// only v3alpha1 version of the CRDs is conditionally rendered, v2 and v1alpha1 have no conditions surrounding them
@@ -400,12 +555,12 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 
-			_, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			_, err := render.RenderManifests(render.RenderOptions{
+				AppName:      "appName",
+				ManifestRoot: "manifestDir",
+				ProtoDir:     "protoDir",
+				Groups:       grps,
+			})
 			Expect(err).ToNot(BeNil())
 			Expect(err).To(Equal(fmt.Errorf("error rendering CRD template for kind kind: 'EnabledAlphaApiFlagName' is not defined")))
 		})
@@ -435,12 +590,12 @@ var _ = Describe("ManifestsRenderer", func() {
 				grps[i].Init()
 			}
 
-			_, err := render.RenderManifests(
-				"appName", "manifestDir", "protoDir", "",
-				nil,
-				model.GroupOptions{},
-				grps,
-			)
+			_, err := render.RenderManifests(render.RenderOptions{
+				AppName:      "appName",
+				ManifestRoot: "manifestDir",
+				ProtoDir:     "protoDir",
+				Groups:       grps,
+			})
 			Expect(err).To(BeNil())
 		})
 	})

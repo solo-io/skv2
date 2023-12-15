@@ -6,7 +6,6 @@
 ---
 
 {{- define "painter.deploymentSpec" }}
-
 # Deployment manifest for painter
 
 apiVersion: apps/v1
@@ -32,9 +31,6 @@ spec:
         pod: labels
       annotations:
         app.kubernetes.io/name: painter
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
         pod: annotations
     spec:
       serviceAccountName: painter

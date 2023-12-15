@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/12370
+    resolvesIssue: false
+    description: |
+      Render feature flag environment variables for containers.
+    skipCI: false

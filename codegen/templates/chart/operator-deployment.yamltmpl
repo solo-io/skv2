@@ -1,8 +1,8 @@
-[[/*
+[[- /*
 This template contains the core components for the Operator deployment.
 Expressions evaluating Helm Values use "{{" and "}}"
 Expressions evaluating SKv2 Config use "[[" and "]]"
-*/]]
+*/ -]]
 
 [[- range $operator := $.Operators -]]
 [[- $operatorVar := (lower_camel $operator.Name) -]]
@@ -10,6 +10,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[/* custom values defined in codegen model */]]
 [[- $containers := containerConfigs $operator -]]
 [[- $volumes := $operator.Deployment.Volumes -]]
+[[- $conditionalVolumes := $operator.Deployment.ConditionalVolumes -]]
 [[- $customPodLabels := $operator.Deployment.CustomPodLabels -]]
 [[- $customPodAnnotations := $operator.Deployment.CustomPodAnnotations -]]
 [[- $customDeploymentLabels := $operator.Deployment.CustomDeploymentLabels -]]
@@ -29,7 +30,6 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- if $operator.Deployment.UseDaemonSet ]]
 [[- $workloadKind = "DaemonSet" ]]
 [[- end ]]
-
 # [[ $workloadKind ]] manifest for [[ $operator.Name ]]
 
 apiVersion: apps/v1
@@ -67,9 +67,6 @@ spec:
         [[- end ]]
       annotations:
         app.kubernetes.io/name: [[ $operator.Name ]]
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
         [[- range $key, $value := $customPodAnnotations ]]
         [[ $key ]]: [[ $value ]]
         [[- end ]]
@@ -78,6 +75,13 @@ spec:
 [[- if $volumes ]]
       volumes:
 [[ toYaml $volumes | indent 6 ]]
+[[- else if $conditionalVolumes ]]
+      volumes:
+[[- end ]]
+[[- range $v := $conditionalVolumes ]]
+{{- if [[ $v.Condition ]] }}
+[[ toYaml (toListItem $v.Volume) | indent 6 ]]
+{{- end }}
 [[- end ]]
 [[- range $container := $containers -]]
 [[- if and (gt (len $container.EnableStatement) 0) ($container.Volumes) ]]
@@ -105,9 +109,26 @@ spec:
         args:
 [[ toYaml $container.Args | indent 8 ]]
 [[- end ]]
+[[- if $container.ContainerPorts ]]
+        ports:
+        [[- range $port := $container.ContainerPorts ]]
+        - name: [[ $port.Name ]]
+          containerPort: [[ $port.Port ]]
+        [[- end ]]
+[[- end ]]
 {{- if [[ $containerVar ]].env }}
         env:
 {{ toYaml [[ $containerVar ]].env | indent 10 }}
+[[- range $f := $container.TemplateEnvVars ]]
+[[- if $f.Condition ]]
+{{- if [[ $f.Condition ]] }}
+[[- end]]
+          - name: [[ $f.Name ]]
+            value: [[ $f.Value ]]
+[[- if $f.Condition ]]
+{{- end }}
+[[- end]]
+[[- end ]]
 {{- else if [[ $containerVar ]].extraEnvs }}
         env:
 {{- end }}
@@ -118,6 +139,13 @@ spec:
 [[- if $container.VolumeMounts ]]
         volumeMounts:
 [[ toYaml $container.VolumeMounts | indent 8 ]]
+[[- else if $container.ConditionalVolumeMounts ]]
+        volumeMounts:
+[[- end ]]
+[[- range $v := $container.ConditionalVolumeMounts ]]
+{{- if [[ $v.Condition ]] }}
+[[ toYaml (toListItem $v.VolumeMount) | indent 8 ]]
+{{- end }}
 [[- end ]]
         resources:
 {{- if [[ $containerVar ]].resources }}
@@ -161,6 +189,9 @@ spec:
           httpGet:
             path: [[ $container.ReadinessProbe.Path ]]
             port: [[ $container.ReadinessProbe.Port ]]
+            [[- if $container.ReadinessProbe.Scheme ]]
+            scheme: [[ $container.ReadinessProbe.Scheme ]]
+            [[- end ]]
         [[- end ]]
         [[- if $container.ReadinessProbe.InitialDelaySeconds ]]
           initialDelaySeconds: [[ $container.ReadinessProbe.InitialDelaySeconds ]]
@@ -248,7 +279,7 @@ spec:
   ports:
   [[- range $port := $operator.Service.Ports ]]
   - name: [[ lower $port.Name ]]
-    port: {{ $[[ $operatorVar ]].ports.[[ $port.Name ]] }}
+    port: {{ index $[[ $operatorVar ]] "ports" "[[ $port.Name ]]" }}
   [[- end ]]
 [[ end ]]
 {{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
@@ -293,7 +324,7 @@ spec:
   ports:
   [[- range $port := $container.Service.Ports ]]
   - name: [[ lower $port.Name ]]
-    port: {{ [[ $containerVar ]].ports.[[ $port.Name ]] }}
+    port: {{ index [[ $containerVar ]] "ports" "[[ $port.Name ]]" }}
   [[- end ]]
 {{- end }}
 [[- end ]]

@@ -3261,6 +3261,16 @@
                                           }
                                         ]
                                       },
+                                      "restartPolicy": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "volumeMounts": {
                                         "anyOf": [
                                           {
@@ -4498,6 +4508,16 @@
                                               "type": "object"
                                             },
                                             "type": "array"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "restartPolicy": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
                                           },
                                           {
                                             "type": "null"
@@ -5746,6 +5766,9 @@
                                             "type": "null"
                                           }
                                         ]
+                                      },
+                                      "restartPolicy": {
+                                        "type": "string"
                                       },
                                       "volumeMounts": {
                                         "anyOf": [

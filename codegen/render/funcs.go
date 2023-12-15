@@ -11,12 +11,12 @@ import (
 	"text/template"
 
 	"github.com/invopop/jsonschema"
+	"github.com/solo-io/skv2/codegen/kuberesource"
 	"github.com/solo-io/skv2/codegen/model/values"
 	"github.com/solo-io/skv2/codegen/util/stringutils"
 	"google.golang.org/protobuf/types/known/structpb"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -134,11 +134,11 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		"toListItem":       toListItem,
 		"opVar":            opVar,
 
-		"render_outer_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
+		"render_outer_conditional_crd_template": func(crd kuberesource.GlooCustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
 			return len(crd.Spec.Versions) < 2 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
 		},
 
-		"render_inner_conditional_crd_template": func(crd apiextv1.CustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
+		"render_inner_conditional_crd_template": func(crd kuberesource.GlooCustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
 			return len(crd.Spec.Versions) > 1 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
 		},
 	}
@@ -161,7 +161,8 @@ func toListItem(item interface{}) []interface{} {
 type containerConfig struct {
 	model.Container
 	model.Service
-	Rbac            []rbacv1.PolicyRule
+	ClusterRbac     []rbacv1.PolicyRule
+	NamespaceRbac   map[string][]rbacv1.PolicyRule
 	Volumes         []corev1.Volume
 	Name            string
 	ValuesVar       string
@@ -179,7 +180,8 @@ func containerConfigs(op model.Operator) []containerConfig {
 	for _, sidecar := range op.Deployment.Sidecars {
 		config := containerConfig{
 			EnableStatement: sidecar.EnableStatement, // Change this to base name of operator e.g: $.Values.glooAgent.X
-			Rbac:            sidecar.Rbac,
+			ClusterRbac:     sidecar.ClusterRbac,
+			NamespaceRbac:   sidecar.NamespaceRbac,
 			Volumes:         sidecar.Volumes,
 			Service:         sidecar.Service,
 			Container:       sidecar.Container,

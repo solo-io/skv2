@@ -22,7 +22,7 @@ import (
 // Create CRDs for a group
 func CustomResourceDefinitions(
 	groups []*model.Group,
-) (objects []apiextv1.CustomResourceDefinition, err error) {
+) (objects []GlooCustomResourceDefinition, err error) {
 	resourcesByKind := make(map[string][]model.Resource)
 	skipHashByKind := make(map[string]bool)
 	for _, group := range groups {
@@ -177,11 +177,20 @@ func validateCRDResources(resources []model.Resource) error {
 	return nil
 }
 
+type GlooCustomResourceDefinition struct {
+	*apiextv1.CustomResourceDefinition
+
+	// Optional: if specified from the resource, this crd definition will be wrapped in the given conditional
+	//
+	// E.g: `and (.Values.customValueA) (.Values.customValueB)`
+	CustomEnableCondition string `json:"-" yaml:"-"`
+}
+
 func CustomResourceDefinition(
 	resources []model.Resource,
 	validationSchemas map[string]*apiextv1.CustomResourceValidation,
 	withoutSpecHash bool,
-) (*apiextv1.CustomResourceDefinition, error) {
+) (*GlooCustomResourceDefinition, error) {
 
 	err := validateCRDResources(resources)
 	if err != nil {
@@ -192,6 +201,7 @@ func CustomResourceDefinition(
 	kind := resources[0].Kind
 	kindLowerPlural := strings.ToLower(stringutils.Pluralize(kind))
 	kindLower := strings.ToLower(kind)
+	customEnableCondition := resources[0].CustomEnableCondition
 
 	scope := apiextv1.NamespaceScoped
 	if resources[0].ClusterScoped {
@@ -255,5 +265,5 @@ func CustomResourceDefinition(
 		// Setting PreserveUnknownFields to false ensures that objects with unknown fields are rejected.
 		crd.Spec.PreserveUnknownFields = false
 	}
-	return crd, nil
+	return &GlooCustomResourceDefinition{CustomResourceDefinition: crd, CustomEnableCondition: customEnableCondition}, nil
 }

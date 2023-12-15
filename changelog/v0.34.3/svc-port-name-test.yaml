@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Add test for conditional sidecars with service ports 

@@ -6,7 +6,6 @@
 ---
 
 {{- define "painter-original-name.deploymentSpec" }}
-
 # Deployment manifest for painter-original-name
 
 apiVersion: apps/v1
@@ -28,9 +27,6 @@ spec:
         app: painter-original-name
       annotations:
         app.kubernetes.io/name: painter-original-name
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
     spec:
       serviceAccountName: painter-original-name
       containers:

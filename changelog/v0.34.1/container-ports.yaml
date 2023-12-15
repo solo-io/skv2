@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/495
+    description: >
+      Allow users to configure container ports for the `container` and `sidecar`.

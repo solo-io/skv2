@@ -79,7 +79,8 @@ type Operator struct {
 	ClusterRbac []rbacv1.PolicyRule
 
 	// these populate the generated Role for the operator
-	NamespaceRbac []rbacv1.PolicyRule
+	// key should be the k8s resource name (lower-case, plural version)
+	NamespaceRbac map[string][]rbacv1.PolicyRule
 
 	// if at least one port is defined, create a Service for it
 	Service Service
@@ -113,30 +114,68 @@ type Deployment struct {
 	Container
 	Sidecars                    []Sidecar
 	Volumes                     []corev1.Volume
+	ConditionalVolumes          []ConditionalVolume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
 	CustomDeploymentAnnotations map[string]string
 }
 
+type ConditionalVolume struct {
+	Condition string
+	Volume    corev1.Volume
+}
+
 // values for a container
 type Container struct {
 	// not configurable via helm values
-	Args           []string
-	VolumeMounts   []corev1.VolumeMount
-	ReadinessProbe *ReadinessProbe
-	LivenessProbe  *corev1.Probe
+	Args                    []string
+	VolumeMounts            []corev1.VolumeMount
+	ConditionalVolumeMounts []ConditionalVolumeMount
+	ReadinessProbe          *ReadinessProbe
+	LivenessProbe           *corev1.Probe
 
 	Image           Image
 	Env             []corev1.EnvVar
 	Resources       *corev1.ResourceRequirements
 	SecurityContext *corev1.SecurityContext
+	ContainerPorts  []ContainerPort
+
+	// TemplateEnvVars renders environment variables that can use templated Helm values.
+	// At least 1 environment variable must be set via Env to use this.
+	TemplateEnvVars []TemplateEnvVar
+}
+
+type ConditionalVolumeMount struct {
+	Condition   string
+	VolumeMount corev1.VolumeMount
+}
+
+// TemplateEnvVar corresponds to an environment variable that can use templated Helm values
+type TemplateEnvVar struct {
+	// Condition for this environment variable to be rendered
+	// E.g. `and (.Values.operator.customValueA) (.Values.operator.customValueB)`
+	Condition string
+
+	// Name of the environment variable
+	// E.g. FOO_BAR
+	Name string
+
+	// Helm value
+	// E.g. {{ .Values.foo.bar }}
+	Value string
+}
+
+type ContainerPort struct {
+	Name string
+	Port string
 }
 
 type ReadinessProbe struct {
 	Exec                []string // optional: if specified, the readiness probe will be an exec probe with the specified commands
 	Path                string   // Path to access on the HTTP server. Either specify Path and Port for httpGet probes, or specify Exec
 	Port                string
+	Scheme              string // optional scheme: HTTP or HTTPS ((kasunt): imo better to keep it as a non-enum field)
 	PeriodSeconds       int
 	InitialDelaySeconds int
 }
@@ -145,7 +184,8 @@ type ReadinessProbe struct {
 type Sidecar struct {
 	Container
 	Service
-	Rbac            []rbacv1.PolicyRule
+	ClusterRbac     []rbacv1.PolicyRule
+	NamespaceRbac   map[string][]rbacv1.PolicyRule
 	Volumes         []corev1.Volume
 	Name            string
 	EnableStatement string `json:"enableStatement,omitempty" yaml:"enableStatement,omitempty"` // Optional: if specified, the operator resources will be abled based on the condition specified in the enable statement.
