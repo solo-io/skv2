@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Bump time before declaring a deadlock when processing proto imports to 15s instead of 5s. 
+      Backport of https://github.com/solo-io/skv2/commit/38333ccb2e5e779973ad94354ec499932749fed0
