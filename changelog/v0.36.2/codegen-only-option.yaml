@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/526
+    description: |
+      Adds an option which enables adding new API resources without publishing them to helm charts and snapshots.

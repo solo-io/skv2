@@ -199,6 +199,9 @@ type Resource struct {
 	//
 	// E.g: `and (.Values.customValueA) (.Values.customValueB)`
 	CustomEnableCondition string
+
+	// If the resouce is designated as codegen-only, it will not be rendered in the CRD manifest or included in snapshot generation.
+	CodegenOnly bool
 }
 
 type Field struct {

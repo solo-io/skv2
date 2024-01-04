@@ -27,6 +27,9 @@ func CustomResourceDefinitions(
 	skipHashByKind := make(map[string]bool)
 	for _, group := range groups {
 		for i, resource := range group.Resources {
+			if resource.CodegenOnly {
+				continue
+			}
 			resourcesByKind[resource.Kind] = append(resourcesByKind[resource.Kind], group.Resources[i])
 			skipHashByKind[resource.Kind] = skipHashByKind[resource.Kind] || resource.Group.SkipSpecHash
 		}
