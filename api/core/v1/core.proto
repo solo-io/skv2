@@ -162,3 +162,22 @@ message ObjectSelector {
     }
 }
 
+// TargetRef identifies Gateway API objects to apply a direct policy to.
+// This is a copy of the upstream K8s Gateway API `targetRef` API.
+// Note that we are only using the upstream `PolicyTargetReferenceWithSectionName` type as currently our policies will distinguish between sections.
+// See the following for more information:
+// * https://gateway-api.sigs.k8s.io/geps/gep-713/
+// * https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io%2fv1alpha2.PolicyTargetReferenceWithSectionName
+// * https://github.com/kubernetes-sigs/gateway-api/blob/444631bfe06f3bcca5d0eadf1857eac1d369421d/apis/v1alpha2/policy_types.go#L58-L83
+message TargetRefWithSectionName {
+  string group = 1;
+  string kind = 2;
+  string name = 3;
+
+  // Optional, if unspecified, the local namespace of the policy is inferred.
+  google.protobuf.StringValue namespace = 4;
+
+  // Name of the section within the targeted resource to attach to. For `Gateway` resources, this refers to a `Listener` name.
+  // Optional, if unspecified, the entire object referenced is selected.
+  google.protobuf.StringValue section_name = 5;
+}
