@@ -213,6 +213,35 @@ func (m *ObjectSelector) Clone() proto.Message {
 }
 
 // Clone function
+func (m *TargetRefWithSectionName) Clone() proto.Message {
+	var target *TargetRefWithSectionName
+	if m == nil {
+		return target
+	}
+	target = &TargetRefWithSectionName{}
+
+	target.Group = m.GetGroup()
+
+	target.Kind = m.GetKind()
+
+	target.Name = m.GetName()
+
+	if h, ok := interface{}(m.GetNamespace()).(clone.Cloner); ok {
+		target.Namespace = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+	} else {
+		target.Namespace = proto.Clone(m.GetNamespace()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+	}
+
+	if h, ok := interface{}(m.GetSectionName()).(clone.Cloner); ok {
+		target.SectionName = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+	} else {
+		target.SectionName = proto.Clone(m.GetSectionName()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+	}
+
+	return target
+}
+
+// Clone function
 func (m *ObjectSelector_Expression) Clone() proto.Message {
 	var target *ObjectSelector_Expression
 	if m == nil {

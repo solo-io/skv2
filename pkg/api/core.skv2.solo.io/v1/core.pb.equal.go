@@ -362,6 +362,62 @@ func (m *ObjectSelector) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *TargetRefWithSectionName) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TargetRefWithSectionName)
+	if !ok {
+		that2, ok := that.(TargetRefWithSectionName)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetGroup(), target.GetGroup()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetKind(), target.GetKind()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetNamespace()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetNamespace()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetNamespace(), target.GetNamespace()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetSectionName()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSectionName()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetSectionName(), target.GetSectionName()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *ObjectSelector_Expression) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
