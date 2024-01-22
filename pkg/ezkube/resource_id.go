@@ -133,6 +133,7 @@ func KeyWithSeparator(id ResourceId, separator string) string {
 	if id == nil {
 		return "<unknown>"
 	}
+	b.Grow(len(id.GetName()) + len(id.GetNamespace()) + len(separator) * 2)
 	b.WriteString(id.GetName())
 	b.WriteString(separator)
 	b.WriteString(id.GetNamespace())
