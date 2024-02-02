@@ -2,7 +2,6 @@
 
 painter:
   deploymentOverrides: null
-  enabled: true
   env:
     - name: FOO
       value: BAR

@@ -325,7 +325,6 @@ var _ = Describe("toYAMLWithComments", func() {
 
 		baseValues := map[string]interface{}{
 			"operatorName": values.UserValues{
-				Enabled: true,
 				UserContainerValues: values.UserContainerValues{
 					Env: []v1.EnvVar{{
 						Name: "POD_NAMESPACE",
@@ -347,7 +346,6 @@ var _ = Describe("toYAMLWithComments", func() {
 
 		customValues := map[string]interface{}{
 			"operatorName": values.UserValues{
-				Enabled: false,
 				UserContainerValues: values.UserContainerValues{
 					Env: []v1.EnvVar{{
 						Name: "OTHER_VAR",

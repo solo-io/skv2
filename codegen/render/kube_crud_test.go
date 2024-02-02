@@ -121,7 +121,7 @@ var _ = Describe("Generated Code", func() {
 		))
 		err := applyFile("things.test.io_crds.yaml")
 
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "failed to apply crds")
 		ns = randutils.RandString(4)
 		kube = kubehelp.MustKubeClient()
 		err = kubeutils.CreateNamespacesInParallel(ctx, kube, ns)
