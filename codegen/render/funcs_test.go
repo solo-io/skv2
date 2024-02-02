@@ -367,7 +367,6 @@ var _ = Describe("toYAMLWithComments", func() {
 		mergedNode := render.MergeNodes(render.ToNode(baseValues, config), render.ToNode(customValues, config))
 
 		fmt.Println(render.FromNode(mergedNode))
-		Expect(render.FromNode(mergedNode)).To(ContainSubstring("enabled: false"))
 		Expect(render.FromNode(mergedNode)).To(ContainSubstring("floatingUserId: true"))
 		Expect(render.FromNode(mergedNode)).To(ContainSubstring("https: 80"))
 		Expect(render.FromNode(mergedNode)).To(ContainSubstring("OTHER_VAR"))
@@ -393,7 +392,6 @@ var _ = Describe("toJSONSchema", func() {
 			Operators: []values.UserOperatorValues{
 				{
 					Name:         "operator1",
-					Values:       values.UserValues{},
 					CustomValues: &Type2{Field2a: "hello2"},
 				},
 				{
@@ -428,7 +426,6 @@ var _ = Describe("toJSONSchema", func() {
 
 		checkHasStandardValuesFields := func(valueProperties map[string]map[string]interface{}) {
 			Expect(valueProperties["image"]["type"]).To(Equal("object"))
-			Expect(valueProperties["enabled"]["type"]).To(Equal("boolean"))
 			Expect(valueProperties["runAsUser"]["type"]).To(Equal("integer"))
 		}
 
