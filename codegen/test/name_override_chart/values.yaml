@@ -4,8 +4,6 @@ overrideName:
   # Arbitrary overrides for the component's [deployment
   # template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/).
   deploymentOverrides: null
-  # Enable creation of the deployment/service.
-  enabled: true
   # Environment variables for the container. For more info, see the [Kubernetes
   # documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core).
   env: null

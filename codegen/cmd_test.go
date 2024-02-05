@@ -390,8 +390,6 @@ var _ = Describe("Cmd", func() {
 		painterNode := node.Content[0].Content[1]
 		enabledMapField := painterNode.Content[0]
 		Expect(enabledMapField.HeadComment).To(Equal("# Arbitrary overrides for the component's [deployment\n# template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)."))
-		envMapField := painterNode.Content[2]
-		Expect(envMapField.HeadComment).To(Equal("# Enable creation of the deployment/service."))
 	})
 
 	It("generates from templates using a name override", func() {
@@ -667,13 +665,13 @@ var _ = Describe("Cmd", func() {
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			painterValues := map[string]interface{}{"floatingUserId": floatingUserId}
+			painterValues := map[string]interface{}{"enabled": true, "floatingUserId": floatingUserId}
 			if runAsUser > 0 {
 				painterValues["runAsUser"] = runAsUser
 			}
 			helmValues := map[string]interface{}{"painter": painterValues}
 
-			renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+			renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
 
 			var renderedDeployment *appsv1.Deployment
 			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
@@ -746,12 +744,12 @@ var _ = Describe("Cmd", func() {
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			helmValues := map[string]interface{}{}
+			helmValues := map[string]interface{}{"painter": map[string]any{"enabled": true}}
 			if omitSecurityContext {
-				helmValues["painter"] = map[string]interface{}{"securityContext": false}
+				helmValues["painter"].(map[string]any)["securityContext"] = false
 			}
 
-			renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+			renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
 
 			var renderedDeployment *appsv1.Deployment
 			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
@@ -927,7 +925,7 @@ var _ = Describe("Cmd", func() {
 				"enabled": false,
 			},
 		}
-		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+		renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
 
 		var (
 			renderedService    *v1.Service
@@ -1100,6 +1098,7 @@ var _ = Describe("Cmd", func() {
 
 		helmValues := map[string]interface{}{
 			"painter": map[string]interface{}{
+				"enabled": true,
 				"serviceOverrides": marshalMap(&v1.Service{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
@@ -1147,7 +1146,7 @@ var _ = Describe("Cmd", func() {
 			},
 		}
 
-		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+		renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
 
 		var (
 			renderedService    *v1.Service
@@ -1308,17 +1307,17 @@ var _ = Describe("Cmd", func() {
 			"test2":   {Enabled: false},
 		}
 
-		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+		renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
 		Expect(renderedManifests).NotTo(ContainSubstring(expectedSA))
 		Expect(renderedManifests).NotTo(ContainSubstring(expectedCR))
 
 		helmValues["test1"].Enabled = true
-		renderedManifests = helmTemplate("codegen/test/chart", helmValues)
+		renderedManifests = helmTemplate("./codegen/test/chart", helmValues)
 		Expect(renderedManifests).NotTo(ContainSubstring(expectedSA))
 		Expect(renderedManifests).NotTo(ContainSubstring(expectedCR))
 
 		helmValues["test2"].Enabled = true
-		renderedManifests = helmTemplate("codegen/test/chart", helmValues)
+		renderedManifests = helmTemplate("./codegen/test/chart", helmValues)
 		Expect(string(renderedManifests)).To(ContainSubstring(expectedSA))
 		Expect(renderedManifests).To(ContainSubstring(expectedCR))
 	})
@@ -1465,6 +1464,9 @@ roleRef:
 			"common": map[string]interface{}{
 				"namespace": "test-namespace",
 			},
+			"painter": map[string]any{
+				"enabled": true,
+			},
 		}
 
 		expectedDeployment := `
@@ -1507,7 +1509,7 @@ roleRef:
   name: painter-test-namespace
   apiGroup: rbac.authorization.k8s.io`
 
-		renderedManifests := helmTemplate("codegen/test/chart", helmValues)
+		renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
 		Expect(renderedManifests).To(ContainSubstring(expectedSA))
 		Expect(renderedManifests).To(ContainSubstring(expectedDeployment))
 		Expect(renderedManifests).To(ContainSubstring(expectedClusterRole))
@@ -1800,7 +1802,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			painterValues := map[string]interface{}{"extraEnvs": extraEnvs}
+			painterValues := map[string]interface{}{"enabled": true, "extraEnvs": extraEnvs}
 			helmValues := map[string]interface{}{"painter": painterValues}
 
 			renderedManifests := helmTemplate("codegen/test/chart-envvars", helmValues)
@@ -1888,7 +1890,7 @@ roleRef:
 				err := cmd.Execute()
 				Expect(err).NotTo(HaveOccurred())
 
-				painterValues := map[string]interface{}{}
+				painterValues := map[string]interface{}{"enabled": true}
 				// featureGates := map[string]interface{}{"Foo": true}
 				helmValues := map[string]interface{}{"painter": painterValues, "featureGates": featureGatesVals}
 
@@ -2020,7 +2022,7 @@ roleRef:
 		})
 
 		DescribeTable("validation",
-			func(values map[string]string, defaultVolumes []v1.Volume, conditionalVolumes []model.ConditionalVolume, expected []v1.Volume) {
+			func(values map[string]any, defaultVolumes []v1.Volume, conditionalVolumes []model.ConditionalVolume, expected []v1.Volume) {
 				cmd := &Command{
 					Chart: &Chart{
 						Operators: []Operator{
@@ -2089,13 +2091,13 @@ roleRef:
 			},
 
 			Entry("no volumes or conditional volumes",
-				map[string]string{},
+				map[string]any{"enabled": true},
 				nil,
 				nil,
 				nil,
 			),
 			Entry("with default volume",
-				map[string]string{},
+				map[string]any{"enabled": true},
 				[]v1.Volume{
 					{
 						Name: "vol-1",
@@ -2109,7 +2111,8 @@ roleRef:
 				},
 			),
 			Entry("with conditional volume when condition is true",
-				map[string]string{
+				map[string]any{
+					"enabled":   true,
 					"condition": "true",
 				},
 				nil,
@@ -2128,7 +2131,8 @@ roleRef:
 				},
 			),
 			Entry("with conditional volume when condition is false",
-				map[string]string{
+				map[string]any{
+					"enabled":   true,
 					"condition": "true",
 				},
 				nil,
@@ -2143,7 +2147,8 @@ roleRef:
 				nil,
 			),
 			Entry("with default and conditional volume when condition is true",
-				map[string]string{
+				map[string]any{
+					"enabled":   true,
 					"condition": "true",
 				},
 				[]v1.Volume{
@@ -2183,7 +2188,7 @@ roleRef:
 		})
 
 		DescribeTable("validation",
-			func(values map[string]string, defaultMounts []v1.VolumeMount, conditionalMounts []model.ConditionalVolumeMount, expected []v1.VolumeMount) {
+			func(values map[string]any, defaultMounts []v1.VolumeMount, conditionalMounts []model.ConditionalVolumeMount, expected []v1.VolumeMount) {
 				cmd := &Command{
 					Chart: &Chart{
 						Operators: []Operator{
@@ -2254,13 +2259,13 @@ roleRef:
 			},
 
 			Entry("no volumes or conditional mounts",
-				map[string]string{},
+				map[string]any{"enabled": true},
 				nil,
 				nil,
 				nil,
 			),
 			Entry("with default volume mount",
-				map[string]string{},
+				map[string]any{"enabled": true},
 				[]v1.VolumeMount{
 					{
 						Name: "vol-1",
@@ -2274,7 +2279,8 @@ roleRef:
 				},
 			),
 			Entry("with conditional volume mount when condition is true",
-				map[string]string{
+				map[string]any{
+					"enabled":   true,
 					"condition": "true",
 				},
 				nil,
@@ -2293,7 +2299,8 @@ roleRef:
 				},
 			),
 			Entry("with conditional volume mount when condition is false",
-				map[string]string{
+				map[string]any{
+					"enabled":   true,
 					"condition": "true",
 				},
 				nil,
@@ -2308,7 +2315,8 @@ roleRef:
 				nil,
 			),
 			Entry("with default and conditional volume mounts when condition is true",
-				map[string]string{
+				map[string]any{
+					"enabled":   true,
 					"condition": "true",
 				},
 				[]v1.VolumeMount{
@@ -2381,7 +2389,11 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			helmValues := map[string]interface{}{}
+			helmValues := map[string]interface{}{
+				"painter": map[string]any{
+					"enabled": true,
+				},
+			}
 
 			renderedManifests := helmTemplate("codegen/test/chart-svcport", helmValues)
 
@@ -2565,7 +2577,11 @@ roleRef:
 		err := cmd.Execute()
 		Expect(err).NotTo(HaveOccurred())
 
-		helmValues := map[string]interface{}{}
+		helmValues := map[string]interface{}{
+			"painter": map[string]any{
+				"enabled": true,
+			},
+		}
 
 		renderedManifests := helmTemplate("codegen/test/chart-readiness", helmValues)
 
@@ -2743,25 +2759,32 @@ roleRef:
 
 func helmTemplate(path string, values interface{}) []byte {
 	raw, err := yaml.Marshal(values)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+	ExpectWithOffset(0, err).NotTo(HaveOccurred())
 
 	helmValuesFile, err := os.CreateTemp("", "-helm-values-skv2-test")
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+	ExpectWithOffset(0, err).NotTo(HaveOccurred())
 
 	_, err = helmValuesFile.Write(raw)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+	ExpectWithOffset(0, err).NotTo(HaveOccurred())
 
 	err = helmValuesFile.Close()
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+	ExpectWithOffset(0, err).NotTo(HaveOccurred())
 
 	defer os.RemoveAll(helmValuesFile.Name())
 
-	out, err := exec.Command("helm", "template",
+	cc := exec.Command("helm", "template",
 		path,
 		"--values", helmValuesFile.Name(),
-	).CombinedOutput()
+	)
+	out, err := cc.CombinedOutput()
+	defer func(e error) {
+		if e == nil {
+			return
+		}
+		fmt.Printf("[Cameron]: failed to run %s\n", cc.String())
+	}(err)
 
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), string(out))
+	ExpectWithOffset(0, err).NotTo(HaveOccurred(), string(out))
 	return out
 }
 

@@ -2,7 +2,6 @@
 
 glooAgent:
   deploymentOverrides: null
-  enabled: true
   env: null
   extraEnvs: {}
   floatingUserId: false
@@ -14,7 +13,6 @@ glooAgent:
   sidecars: {}
 glooMgmtServer:
   deploymentOverrides: null
-  enabled: true
   env: null
   extraEnvs: {}
   floatingUserId: false

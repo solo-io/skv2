@@ -8936,9 +8936,6 @@
             }
           ]
         },
-        "enabled": {
-          "type": "boolean"
-        },
         "customField2_renamed": {
           "type": "number"
         }
