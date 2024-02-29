@@ -6,10 +6,11 @@ package mock_v1beta1
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1beta1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/certificates.k8s.io/v1beta1"
 	v1beta10 "k8s.io/api/certificates/v1beta1"
-	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 

@@ -5,6 +5,8 @@
 package mock_discovery
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	openapi_v2 "github.com/google/gnostic-models/openapiv2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,7 +14,6 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	openapi "k8s.io/client-go/openapi"
 	rest "k8s.io/client-go/rest"
-	reflect "reflect"
 )
 
 // MockDiscoveryInterface is a mock of DiscoveryInterface interface

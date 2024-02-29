@@ -4,7 +4,7 @@
 package v1
 
 import (
-    . "k8s.io/api/rbac/v1"
+	. "k8s.io/api/rbac/v1"
 )
 
 // RoleSlice represents a slice of *Role

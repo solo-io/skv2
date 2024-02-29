@@ -2,13 +2,11 @@
 
 package v1
 
-
-
 import (
-    apiextensions_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/apiextensions.k8s.io/v1"
+	apiextensions_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/apiextensions.k8s.io/v1"
 
-    "k8s.io/client-go/rest"
-    "sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -21,28 +19,28 @@ import (
 
 // Provider for CustomResourceDefinitionClient from Clientset
 func CustomResourceDefinitionClientFromClientsetProvider(clients apiextensions_k8s_io_v1.Clientset) apiextensions_k8s_io_v1.CustomResourceDefinitionClient {
-    return clients.CustomResourceDefinitions()
+	return clients.CustomResourceDefinitions()
 }
 
 // Provider for CustomResourceDefinition Client from Client
 func CustomResourceDefinitionClientProvider(client client.Client) apiextensions_k8s_io_v1.CustomResourceDefinitionClient {
-    return apiextensions_k8s_io_v1.NewCustomResourceDefinitionClient(client)
+	return apiextensions_k8s_io_v1.NewCustomResourceDefinitionClient(client)
 }
 
 type CustomResourceDefinitionClientFactory func(client client.Client) apiextensions_k8s_io_v1.CustomResourceDefinitionClient
 
 func CustomResourceDefinitionClientFactoryProvider() CustomResourceDefinitionClientFactory {
-    return CustomResourceDefinitionClientProvider
+	return CustomResourceDefinitionClientProvider
 }
 
 type CustomResourceDefinitionClientFromConfigFactory func(cfg *rest.Config) (apiextensions_k8s_io_v1.CustomResourceDefinitionClient, error)
 
 func CustomResourceDefinitionClientFromConfigFactoryProvider() CustomResourceDefinitionClientFromConfigFactory {
-    return func(cfg *rest.Config) (apiextensions_k8s_io_v1.CustomResourceDefinitionClient, error) {
-        clients, err := apiextensions_k8s_io_v1.NewClientsetFromConfig(cfg)
-        if err != nil {
-            return nil, err
-        }
-        return clients.CustomResourceDefinitions(), nil
-    }
+	return func(cfg *rest.Config) (apiextensions_k8s_io_v1.CustomResourceDefinitionClient, error) {
+		clients, err := apiextensions_k8s_io_v1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.CustomResourceDefinitions(), nil
+	}
 }

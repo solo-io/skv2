@@ -2,13 +2,11 @@
 
 package v1
 
-
-
 import (
-    rbac_authorization_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1"
+	rbac_authorization_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1"
 
-    "k8s.io/client-go/rest"
-    "sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -21,112 +19,112 @@ import (
 
 // Provider for RoleClient from Clientset
 func RoleClientFromClientsetProvider(clients rbac_authorization_k8s_io_v1.Clientset) rbac_authorization_k8s_io_v1.RoleClient {
-    return clients.Roles()
+	return clients.Roles()
 }
 
 // Provider for Role Client from Client
 func RoleClientProvider(client client.Client) rbac_authorization_k8s_io_v1.RoleClient {
-    return rbac_authorization_k8s_io_v1.NewRoleClient(client)
+	return rbac_authorization_k8s_io_v1.NewRoleClient(client)
 }
 
 type RoleClientFactory func(client client.Client) rbac_authorization_k8s_io_v1.RoleClient
 
 func RoleClientFactoryProvider() RoleClientFactory {
-    return RoleClientProvider
+	return RoleClientProvider
 }
 
 type RoleClientFromConfigFactory func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.RoleClient, error)
 
 func RoleClientFromConfigFactoryProvider() RoleClientFromConfigFactory {
-    return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.RoleClient, error) {
-        clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
-        if err != nil {
-            return nil, err
-        }
-        return clients.Roles(), nil
-    }
+	return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.RoleClient, error) {
+		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.Roles(), nil
+	}
 }
 
 // Provider for RoleBindingClient from Clientset
 func RoleBindingClientFromClientsetProvider(clients rbac_authorization_k8s_io_v1.Clientset) rbac_authorization_k8s_io_v1.RoleBindingClient {
-    return clients.RoleBindings()
+	return clients.RoleBindings()
 }
 
 // Provider for RoleBinding Client from Client
 func RoleBindingClientProvider(client client.Client) rbac_authorization_k8s_io_v1.RoleBindingClient {
-    return rbac_authorization_k8s_io_v1.NewRoleBindingClient(client)
+	return rbac_authorization_k8s_io_v1.NewRoleBindingClient(client)
 }
 
 type RoleBindingClientFactory func(client client.Client) rbac_authorization_k8s_io_v1.RoleBindingClient
 
 func RoleBindingClientFactoryProvider() RoleBindingClientFactory {
-    return RoleBindingClientProvider
+	return RoleBindingClientProvider
 }
 
 type RoleBindingClientFromConfigFactory func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.RoleBindingClient, error)
 
 func RoleBindingClientFromConfigFactoryProvider() RoleBindingClientFromConfigFactory {
-    return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.RoleBindingClient, error) {
-        clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
-        if err != nil {
-            return nil, err
-        }
-        return clients.RoleBindings(), nil
-    }
+	return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.RoleBindingClient, error) {
+		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.RoleBindings(), nil
+	}
 }
 
 // Provider for ClusterRoleClient from Clientset
 func ClusterRoleClientFromClientsetProvider(clients rbac_authorization_k8s_io_v1.Clientset) rbac_authorization_k8s_io_v1.ClusterRoleClient {
-    return clients.ClusterRoles()
+	return clients.ClusterRoles()
 }
 
 // Provider for ClusterRole Client from Client
 func ClusterRoleClientProvider(client client.Client) rbac_authorization_k8s_io_v1.ClusterRoleClient {
-    return rbac_authorization_k8s_io_v1.NewClusterRoleClient(client)
+	return rbac_authorization_k8s_io_v1.NewClusterRoleClient(client)
 }
 
 type ClusterRoleClientFactory func(client client.Client) rbac_authorization_k8s_io_v1.ClusterRoleClient
 
 func ClusterRoleClientFactoryProvider() ClusterRoleClientFactory {
-    return ClusterRoleClientProvider
+	return ClusterRoleClientProvider
 }
 
 type ClusterRoleClientFromConfigFactory func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.ClusterRoleClient, error)
 
 func ClusterRoleClientFromConfigFactoryProvider() ClusterRoleClientFromConfigFactory {
-    return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.ClusterRoleClient, error) {
-        clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
-        if err != nil {
-            return nil, err
-        }
-        return clients.ClusterRoles(), nil
-    }
+	return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.ClusterRoleClient, error) {
+		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.ClusterRoles(), nil
+	}
 }
 
 // Provider for ClusterRoleBindingClient from Clientset
 func ClusterRoleBindingClientFromClientsetProvider(clients rbac_authorization_k8s_io_v1.Clientset) rbac_authorization_k8s_io_v1.ClusterRoleBindingClient {
-    return clients.ClusterRoleBindings()
+	return clients.ClusterRoleBindings()
 }
 
 // Provider for ClusterRoleBinding Client from Client
 func ClusterRoleBindingClientProvider(client client.Client) rbac_authorization_k8s_io_v1.ClusterRoleBindingClient {
-    return rbac_authorization_k8s_io_v1.NewClusterRoleBindingClient(client)
+	return rbac_authorization_k8s_io_v1.NewClusterRoleBindingClient(client)
 }
 
 type ClusterRoleBindingClientFactory func(client client.Client) rbac_authorization_k8s_io_v1.ClusterRoleBindingClient
 
 func ClusterRoleBindingClientFactoryProvider() ClusterRoleBindingClientFactory {
-    return ClusterRoleBindingClientProvider
+	return ClusterRoleBindingClientProvider
 }
 
 type ClusterRoleBindingClientFromConfigFactory func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.ClusterRoleBindingClient, error)
 
 func ClusterRoleBindingClientFromConfigFactoryProvider() ClusterRoleBindingClientFromConfigFactory {
-    return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.ClusterRoleBindingClient, error) {
-        clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
-        if err != nil {
-            return nil, err
-        }
-        return clients.ClusterRoleBindings(), nil
-    }
+	return func(cfg *rest.Config) (rbac_authorization_k8s_io_v1.ClusterRoleBindingClient, error) {
+		clients, err := rbac_authorization_k8s_io_v1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.ClusterRoleBindings(), nil
+	}
 }

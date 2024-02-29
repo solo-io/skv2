@@ -5,13 +5,14 @@
 package mock_v1beta1sets
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1beta1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/apiextensions.k8s.io/v1beta1/sets"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
-	reflect "reflect"
 )
 
 // MockCustomResourceDefinitionSet is a mock of CustomResourceDefinitionSet interface
