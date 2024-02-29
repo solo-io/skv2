@@ -88,8 +88,8 @@ func (r *Resources) Clone() ResourceSet {
 	return new
 }
 
-func (r *Resources) Keys() sets.Set[string] {
-	keys := sets.New[string]()
+func (r *Resources) Keys() sets.String {
+	keys := sets.NewString()
 	for _, e := range *r {
 		key := Key(e)
 		keys.Insert(key)

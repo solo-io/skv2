@@ -26,7 +26,7 @@ func TypedKey(id ezkube.ResourceId) string {
 }
 
 type ResourceSet interface {
-	Keys() sets.Set[string]
+	Keys() sets.String
 	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	Map() map[string]ezkube.ResourceId
@@ -64,7 +64,7 @@ func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
 	return &threadSafeResourceSet{set: newResources(resources...)}
 }
 
-func (t *threadSafeResourceSet) Keys() sets.Set[string] {
+func (t *threadSafeResourceSet) Keys() sets.String {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.Keys()
