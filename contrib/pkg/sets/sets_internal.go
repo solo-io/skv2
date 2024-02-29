@@ -11,7 +11,7 @@ import (
 type Resources []ezkube.ResourceId
 
 func newResources(resources ...ezkube.ResourceId) *Resources {
-	m := make(Resources, 0, len(resources))
+	m := make(Resources, len(resources))
 	for idx, resource := range resources {
 		if resource == nil {
 			continue
