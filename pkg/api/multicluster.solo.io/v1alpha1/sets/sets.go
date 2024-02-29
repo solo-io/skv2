@@ -17,7 +17,7 @@ import (
 
 type KubernetesClusterSet interface {
 	// Get the set stored keys
-    Keys() sets.Set[uint64]
+    Keys() sets.String
     // List of resources stored in the set. Pass an optional filter function to filter on the list.
     // The filter function should return false to keep the resource, true to drop it.
     List(filterResource ... func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
@@ -25,7 +25,7 @@ type KubernetesClusterSet interface {
     // The filter function should return false to keep the resource, true to drop it.
     UnsortedList(filterResource ... func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
     // Return the Set as a map of key to resource.
-    Map() map[uint64]*multicluster_solo_io_v1alpha1.KubernetesCluster
+    Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster
     // Insert a resource into the set.
     Insert(kubernetesCluster ...*multicluster_solo_io_v1alpha1.KubernetesCluster)
     // Compare the equality of the keys in two sets (not the resources themselves)
@@ -76,9 +76,9 @@ func NewKubernetesClusterSetFromList(kubernetesClusterList *multicluster_solo_io
     return &kubernetesClusterSet{set: makeGenericKubernetesClusterSet(list)}
 }
 
-func (s *kubernetesClusterSet) Keys() sets.Set[uint64] {
+func (s *kubernetesClusterSet) Keys() sets.String {
 	if s == nil {
-		return sets.Set[uint64]{}
+		return sets.String{}
     }
     return s.Generic().Keys()
 }
@@ -122,12 +122,12 @@ func (s *kubernetesClusterSet) UnsortedList(filterResource ... func(*multicluste
     return kubernetesClusterList
 }
 
-func (s *kubernetesClusterSet) Map() map[uint64]*multicluster_solo_io_v1alpha1.KubernetesCluster {
+func (s *kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster {
     if s == nil {
         return nil
     }
 
-    newMap := map[uint64]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
+    newMap := map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
     for k, v := range s.Generic().Map() {
         newMap[k] = v.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
     }
@@ -173,7 +173,7 @@ func (s *kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesCluster
     if s == nil {
         return set
     }
-    return &kubernetesClusterMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+    return NewKubernetesClusterSet(append(s.List(), set.List()...)...)
 }
 
 func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
@@ -236,177 +236,5 @@ func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
 	if s == nil {
 		return nil
 	}
-	return &kubernetesClusterMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
-}
-
-type kubernetesClusterMergedSet struct {
-    sets []sksets.ResourceSet
-}
-
-func NewKubernetesClusterMergedSet(kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster) KubernetesClusterSet {
-    return &kubernetesClusterMergedSet{sets: []sksets.ResourceSet{makeGenericKubernetesClusterSet(kubernetesClusterList)}}
-}
-
-func NewKubernetesClusterMergedSetFromList(kubernetesClusterList *multicluster_solo_io_v1alpha1.KubernetesClusterList) KubernetesClusterSet {
-    list := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(kubernetesClusterList.Items))
-    for idx := range kubernetesClusterList.Items {
-        list = append(list, &kubernetesClusterList.Items[idx])
-    }
-    return &kubernetesClusterMergedSet{sets: []sksets.ResourceSet{makeGenericKubernetesClusterSet(list)}}
-}
-
-func (s *kubernetesClusterMergedSet) Keys() sets.Set[uint64] {
-	if s == nil {
-		return sets.Set[uint64]{}
-    }
-    toRet := sets.Set[uint64]{}
-	for _ , set := range s.sets {
-		toRet = toRet.Union(set.Keys())
-	}
-	return toRet
-}
-
-func (s *kubernetesClusterMergedSet) List(filterResource ... func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-        })
-    }
-   kubernetesClusterList := []*multicluster_solo_io_v1alpha1.KubernetesCluster{}
-	for _, set := range s.sets {
-		for _, obj := range set.List(genericFilters...) {
-			kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-		}
-	}
-    return kubernetesClusterList
-}
-
-func (s *kubernetesClusterMergedSet) UnsortedList(filterResource ... func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-        })
-    }
-
-    kubernetesClusterList := []*multicluster_solo_io_v1alpha1.KubernetesCluster{}
-	for _, set := range s.sets {
-		for _, obj := range set.UnsortedList(genericFilters...) {
-			kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-		}
-	}
-    return kubernetesClusterList
-}
-
-func (s *kubernetesClusterMergedSet) Map() map[uint64]*multicluster_solo_io_v1alpha1.KubernetesCluster {
-    if s == nil {
-        return nil
-    }
-
-    newMap := map[uint64]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
-    for _, set := range s.sets {
-		for k, v := range set.Map() {
-            newMap[k] = v.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-        }
-    }
-    return newMap
-}
-
-func (s *kubernetesClusterMergedSet) Insert(
-        kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
-) {
-    if s == nil {
-    }
-    if len(s.sets) == 0 {
-        s.sets = append(s.sets, makeGenericKubernetesClusterSet(kubernetesClusterList))
-    }
-    for _, obj := range kubernetesClusterList {
-        s.sets[0].Insert(obj)
-    }
-}
-
-func (s *kubernetesClusterMergedSet) Has(kubernetesCluster ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    for _, set := range s.sets {
-		if set.Has(kubernetesCluster) {
-			return true
-		}
-	}
-    return false
-}
-
-func (s *kubernetesClusterMergedSet) Equal(
-        kubernetesClusterSet KubernetesClusterSet,
-) bool {
-    panic("unimplemented")
-}
-
-func (s *kubernetesClusterMergedSet) Delete(KubernetesCluster ezkube.ResourceId) {
-    panic("unimplemented")
-}
-
-func (s *kubernetesClusterMergedSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
-    return &kubernetesClusterMergedSet{sets: append(s.sets, set.Generic())}
-}
-
-func (s *kubernetesClusterMergedSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
-    panic("unimplemented")
-}
-
-func (s *kubernetesClusterMergedSet) Intersection(set KubernetesClusterSet) KubernetesClusterSet {
-    panic("unimplemented")
-}
-
-func (s *kubernetesClusterMergedSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find KubernetesCluster %v", sksets.Key(id))
-    }
-
-    var err error
-	for _, set := range s.sets {
-		var obj ezkube.ResourceId
-		obj, err = set.Find(&multicluster_solo_io_v1alpha1.KubernetesCluster{}, id)
-		if err == nil {
-			return obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster), nil
-		}
-	}
-
-    return nil, err
-}
-
-func (s *kubernetesClusterMergedSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    totalLen := 0
-	for _, set := range s.sets {
-		totalLen += set.Length()
-	}
-    return totalLen
-}
-
-func (s *kubernetesClusterMergedSet) Generic() sksets.ResourceSet {
-    panic("unimplemented")
-}
-
-func (s *kubernetesClusterMergedSet) Delta(newSet KubernetesClusterSet) sksets.ResourceDelta {
-    panic("unimplemented")
-}
-
-func (s *kubernetesClusterMergedSet) Clone() KubernetesClusterSet {
-	if s == nil {
-		return nil
-	}
-	return &kubernetesClusterMergedSet{sets: s.sets[:]}
+	return &kubernetesClusterSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

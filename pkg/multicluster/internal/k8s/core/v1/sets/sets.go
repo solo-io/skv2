@@ -17,7 +17,7 @@ import (
 
 type SecretSet interface {
 	// Get the set stored keys
-    Keys() sets.Set[uint64]
+    Keys() sets.String
     // List of resources stored in the set. Pass an optional filter function to filter on the list.
     // The filter function should return false to keep the resource, true to drop it.
     List(filterResource ... func(*v1.Secret) bool) []*v1.Secret
@@ -25,7 +25,7 @@ type SecretSet interface {
     // The filter function should return false to keep the resource, true to drop it.
     UnsortedList(filterResource ... func(*v1.Secret) bool) []*v1.Secret
     // Return the Set as a map of key to resource.
-    Map() map[uint64]*v1.Secret
+    Map() map[string]*v1.Secret
     // Insert a resource into the set.
     Insert(secret ...*v1.Secret)
     // Compare the equality of the keys in two sets (not the resources themselves)
@@ -76,9 +76,9 @@ func NewSecretSetFromList(secretList *v1.SecretList) SecretSet {
     return &secretSet{set: makeGenericSecretSet(list)}
 }
 
-func (s *secretSet) Keys() sets.Set[uint64] {
+func (s *secretSet) Keys() sets.String {
 	if s == nil {
-		return sets.Set[uint64]{}
+		return sets.String{}
     }
     return s.Generic().Keys()
 }
@@ -122,12 +122,12 @@ func (s *secretSet) UnsortedList(filterResource ... func(*v1.Secret) bool) []*v1
     return secretList
 }
 
-func (s *secretSet) Map() map[uint64]*v1.Secret {
+func (s *secretSet) Map() map[string]*v1.Secret {
     if s == nil {
         return nil
     }
 
-    newMap := map[uint64]*v1.Secret{}
+    newMap := map[string]*v1.Secret{}
     for k, v := range s.Generic().Map() {
         newMap[k] = v.(*v1.Secret)
     }
@@ -173,7 +173,7 @@ func (s *secretSet) Union(set SecretSet) SecretSet {
     if s == nil {
         return set
     }
-    return &secretMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+    return NewSecretSet(append(s.List(), set.List()...)...)
 }
 
 func (s *secretSet) Difference(set SecretSet) SecretSet {
@@ -236,184 +236,12 @@ func (s *secretSet) Clone() SecretSet {
 	if s == nil {
 		return nil
 	}
-	return &secretMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
-}
-
-type secretMergedSet struct {
-    sets []sksets.ResourceSet
-}
-
-func NewSecretMergedSet(secretList ...*v1.Secret) SecretSet {
-    return &secretMergedSet{sets: []sksets.ResourceSet{makeGenericSecretSet(secretList)}}
-}
-
-func NewSecretMergedSetFromList(secretList *v1.SecretList) SecretSet {
-    list := make([]*v1.Secret, 0, len(secretList.Items))
-    for idx := range secretList.Items {
-        list = append(list, &secretList.Items[idx])
-    }
-    return &secretMergedSet{sets: []sksets.ResourceSet{makeGenericSecretSet(list)}}
-}
-
-func (s *secretMergedSet) Keys() sets.Set[uint64] {
-	if s == nil {
-		return sets.Set[uint64]{}
-    }
-    toRet := sets.Set[uint64]{}
-	for _ , set := range s.sets {
-		toRet = toRet.Union(set.Keys())
-	}
-	return toRet
-}
-
-func (s *secretMergedSet) List(filterResource ... func(*v1.Secret) bool) []*v1.Secret {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*v1.Secret))
-        })
-    }
-   secretList := []*v1.Secret{}
-	for _, set := range s.sets {
-		for _, obj := range set.List(genericFilters...) {
-			secretList = append(secretList, obj.(*v1.Secret))
-		}
-	}
-    return secretList
-}
-
-func (s *secretMergedSet) UnsortedList(filterResource ... func(*v1.Secret) bool) []*v1.Secret {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*v1.Secret))
-        })
-    }
-
-    secretList := []*v1.Secret{}
-	for _, set := range s.sets {
-		for _, obj := range set.UnsortedList(genericFilters...) {
-			secretList = append(secretList, obj.(*v1.Secret))
-		}
-	}
-    return secretList
-}
-
-func (s *secretMergedSet) Map() map[uint64]*v1.Secret {
-    if s == nil {
-        return nil
-    }
-
-    newMap := map[uint64]*v1.Secret{}
-    for _, set := range s.sets {
-		for k, v := range set.Map() {
-            newMap[k] = v.(*v1.Secret)
-        }
-    }
-    return newMap
-}
-
-func (s *secretMergedSet) Insert(
-        secretList ...*v1.Secret,
-) {
-    if s == nil {
-    }
-    if len(s.sets) == 0 {
-        s.sets = append(s.sets, makeGenericSecretSet(secretList))
-    }
-    for _, obj := range secretList {
-        s.sets[0].Insert(obj)
-    }
-}
-
-func (s *secretMergedSet) Has(secret ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    for _, set := range s.sets {
-		if set.Has(secret) {
-			return true
-		}
-	}
-    return false
-}
-
-func (s *secretMergedSet) Equal(
-        secretSet SecretSet,
-) bool {
-    panic("unimplemented")
-}
-
-func (s *secretMergedSet) Delete(Secret ezkube.ResourceId) {
-    panic("unimplemented")
-}
-
-func (s *secretMergedSet) Union(set SecretSet) SecretSet {
-    return &secretMergedSet{sets: append(s.sets, set.Generic())}
-}
-
-func (s *secretMergedSet) Difference(set SecretSet) SecretSet {
-    panic("unimplemented")
-}
-
-func (s *secretMergedSet) Intersection(set SecretSet) SecretSet {
-    panic("unimplemented")
-}
-
-func (s *secretMergedSet) Find(id ezkube.ResourceId) (*v1.Secret, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find Secret %v", sksets.Key(id))
-    }
-
-    var err error
-	for _, set := range s.sets {
-		var obj ezkube.ResourceId
-		obj, err = set.Find(&v1.Secret{}, id)
-		if err == nil {
-			return obj.(*v1.Secret), nil
-		}
-	}
-
-    return nil, err
-}
-
-func (s *secretMergedSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    totalLen := 0
-	for _, set := range s.sets {
-		totalLen += set.Length()
-	}
-    return totalLen
-}
-
-func (s *secretMergedSet) Generic() sksets.ResourceSet {
-    panic("unimplemented")
-}
-
-func (s *secretMergedSet) Delta(newSet SecretSet) sksets.ResourceDelta {
-    panic("unimplemented")
-}
-
-func (s *secretMergedSet) Clone() SecretSet {
-	if s == nil {
-		return nil
-	}
-	return &secretMergedSet{sets: s.sets[:]}
+	return &secretSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
 
 type ServiceAccountSet interface {
 	// Get the set stored keys
-    Keys() sets.Set[uint64]
+    Keys() sets.String
     // List of resources stored in the set. Pass an optional filter function to filter on the list.
     // The filter function should return false to keep the resource, true to drop it.
     List(filterResource ... func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
@@ -421,7 +249,7 @@ type ServiceAccountSet interface {
     // The filter function should return false to keep the resource, true to drop it.
     UnsortedList(filterResource ... func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
     // Return the Set as a map of key to resource.
-    Map() map[uint64]*v1.ServiceAccount
+    Map() map[string]*v1.ServiceAccount
     // Insert a resource into the set.
     Insert(serviceAccount ...*v1.ServiceAccount)
     // Compare the equality of the keys in two sets (not the resources themselves)
@@ -472,9 +300,9 @@ func NewServiceAccountSetFromList(serviceAccountList *v1.ServiceAccountList) Ser
     return &serviceAccountSet{set: makeGenericServiceAccountSet(list)}
 }
 
-func (s *serviceAccountSet) Keys() sets.Set[uint64] {
+func (s *serviceAccountSet) Keys() sets.String {
 	if s == nil {
-		return sets.Set[uint64]{}
+		return sets.String{}
     }
     return s.Generic().Keys()
 }
@@ -518,12 +346,12 @@ func (s *serviceAccountSet) UnsortedList(filterResource ... func(*v1.ServiceAcco
     return serviceAccountList
 }
 
-func (s *serviceAccountSet) Map() map[uint64]*v1.ServiceAccount {
+func (s *serviceAccountSet) Map() map[string]*v1.ServiceAccount {
     if s == nil {
         return nil
     }
 
-    newMap := map[uint64]*v1.ServiceAccount{}
+    newMap := map[string]*v1.ServiceAccount{}
     for k, v := range s.Generic().Map() {
         newMap[k] = v.(*v1.ServiceAccount)
     }
@@ -569,7 +397,7 @@ func (s *serviceAccountSet) Union(set ServiceAccountSet) ServiceAccountSet {
     if s == nil {
         return set
     }
-    return &serviceAccountMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+    return NewServiceAccountSet(append(s.List(), set.List()...)...)
 }
 
 func (s *serviceAccountSet) Difference(set ServiceAccountSet) ServiceAccountSet {
@@ -632,184 +460,12 @@ func (s *serviceAccountSet) Clone() ServiceAccountSet {
 	if s == nil {
 		return nil
 	}
-	return &serviceAccountMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
-}
-
-type serviceAccountMergedSet struct {
-    sets []sksets.ResourceSet
-}
-
-func NewServiceAccountMergedSet(serviceAccountList ...*v1.ServiceAccount) ServiceAccountSet {
-    return &serviceAccountMergedSet{sets: []sksets.ResourceSet{makeGenericServiceAccountSet(serviceAccountList)}}
-}
-
-func NewServiceAccountMergedSetFromList(serviceAccountList *v1.ServiceAccountList) ServiceAccountSet {
-    list := make([]*v1.ServiceAccount, 0, len(serviceAccountList.Items))
-    for idx := range serviceAccountList.Items {
-        list = append(list, &serviceAccountList.Items[idx])
-    }
-    return &serviceAccountMergedSet{sets: []sksets.ResourceSet{makeGenericServiceAccountSet(list)}}
-}
-
-func (s *serviceAccountMergedSet) Keys() sets.Set[uint64] {
-	if s == nil {
-		return sets.Set[uint64]{}
-    }
-    toRet := sets.Set[uint64]{}
-	for _ , set := range s.sets {
-		toRet = toRet.Union(set.Keys())
-	}
-	return toRet
-}
-
-func (s *serviceAccountMergedSet) List(filterResource ... func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*v1.ServiceAccount))
-        })
-    }
-   serviceAccountList := []*v1.ServiceAccount{}
-	for _, set := range s.sets {
-		for _, obj := range set.List(genericFilters...) {
-			serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
-		}
-	}
-    return serviceAccountList
-}
-
-func (s *serviceAccountMergedSet) UnsortedList(filterResource ... func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*v1.ServiceAccount))
-        })
-    }
-
-    serviceAccountList := []*v1.ServiceAccount{}
-	for _, set := range s.sets {
-		for _, obj := range set.UnsortedList(genericFilters...) {
-			serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
-		}
-	}
-    return serviceAccountList
-}
-
-func (s *serviceAccountMergedSet) Map() map[uint64]*v1.ServiceAccount {
-    if s == nil {
-        return nil
-    }
-
-    newMap := map[uint64]*v1.ServiceAccount{}
-    for _, set := range s.sets {
-		for k, v := range set.Map() {
-            newMap[k] = v.(*v1.ServiceAccount)
-        }
-    }
-    return newMap
-}
-
-func (s *serviceAccountMergedSet) Insert(
-        serviceAccountList ...*v1.ServiceAccount,
-) {
-    if s == nil {
-    }
-    if len(s.sets) == 0 {
-        s.sets = append(s.sets, makeGenericServiceAccountSet(serviceAccountList))
-    }
-    for _, obj := range serviceAccountList {
-        s.sets[0].Insert(obj)
-    }
-}
-
-func (s *serviceAccountMergedSet) Has(serviceAccount ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    for _, set := range s.sets {
-		if set.Has(serviceAccount) {
-			return true
-		}
-	}
-    return false
-}
-
-func (s *serviceAccountMergedSet) Equal(
-        serviceAccountSet ServiceAccountSet,
-) bool {
-    panic("unimplemented")
-}
-
-func (s *serviceAccountMergedSet) Delete(ServiceAccount ezkube.ResourceId) {
-    panic("unimplemented")
-}
-
-func (s *serviceAccountMergedSet) Union(set ServiceAccountSet) ServiceAccountSet {
-    return &serviceAccountMergedSet{sets: append(s.sets, set.Generic())}
-}
-
-func (s *serviceAccountMergedSet) Difference(set ServiceAccountSet) ServiceAccountSet {
-    panic("unimplemented")
-}
-
-func (s *serviceAccountMergedSet) Intersection(set ServiceAccountSet) ServiceAccountSet {
-    panic("unimplemented")
-}
-
-func (s *serviceAccountMergedSet) Find(id ezkube.ResourceId) (*v1.ServiceAccount, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find ServiceAccount %v", sksets.Key(id))
-    }
-
-    var err error
-	for _, set := range s.sets {
-		var obj ezkube.ResourceId
-		obj, err = set.Find(&v1.ServiceAccount{}, id)
-		if err == nil {
-			return obj.(*v1.ServiceAccount), nil
-		}
-	}
-
-    return nil, err
-}
-
-func (s *serviceAccountMergedSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    totalLen := 0
-	for _, set := range s.sets {
-		totalLen += set.Length()
-	}
-    return totalLen
-}
-
-func (s *serviceAccountMergedSet) Generic() sksets.ResourceSet {
-    panic("unimplemented")
-}
-
-func (s *serviceAccountMergedSet) Delta(newSet ServiceAccountSet) sksets.ResourceDelta {
-    panic("unimplemented")
-}
-
-func (s *serviceAccountMergedSet) Clone() ServiceAccountSet {
-	if s == nil {
-		return nil
-	}
-	return &serviceAccountMergedSet{sets: s.sets[:]}
+	return &serviceAccountSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
 
 type NamespaceSet interface {
 	// Get the set stored keys
-    Keys() sets.Set[uint64]
+    Keys() sets.String
     // List of resources stored in the set. Pass an optional filter function to filter on the list.
     // The filter function should return false to keep the resource, true to drop it.
     List(filterResource ... func(*v1.Namespace) bool) []*v1.Namespace
@@ -817,7 +473,7 @@ type NamespaceSet interface {
     // The filter function should return false to keep the resource, true to drop it.
     UnsortedList(filterResource ... func(*v1.Namespace) bool) []*v1.Namespace
     // Return the Set as a map of key to resource.
-    Map() map[uint64]*v1.Namespace
+    Map() map[string]*v1.Namespace
     // Insert a resource into the set.
     Insert(namespace ...*v1.Namespace)
     // Compare the equality of the keys in two sets (not the resources themselves)
@@ -868,9 +524,9 @@ func NewNamespaceSetFromList(namespaceList *v1.NamespaceList) NamespaceSet {
     return &namespaceSet{set: makeGenericNamespaceSet(list)}
 }
 
-func (s *namespaceSet) Keys() sets.Set[uint64] {
+func (s *namespaceSet) Keys() sets.String {
 	if s == nil {
-		return sets.Set[uint64]{}
+		return sets.String{}
     }
     return s.Generic().Keys()
 }
@@ -914,12 +570,12 @@ func (s *namespaceSet) UnsortedList(filterResource ... func(*v1.Namespace) bool)
     return namespaceList
 }
 
-func (s *namespaceSet) Map() map[uint64]*v1.Namespace {
+func (s *namespaceSet) Map() map[string]*v1.Namespace {
     if s == nil {
         return nil
     }
 
-    newMap := map[uint64]*v1.Namespace{}
+    newMap := map[string]*v1.Namespace{}
     for k, v := range s.Generic().Map() {
         newMap[k] = v.(*v1.Namespace)
     }
@@ -965,7 +621,7 @@ func (s *namespaceSet) Union(set NamespaceSet) NamespaceSet {
     if s == nil {
         return set
     }
-    return &namespaceMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+    return NewNamespaceSet(append(s.List(), set.List()...)...)
 }
 
 func (s *namespaceSet) Difference(set NamespaceSet) NamespaceSet {
@@ -1028,177 +684,5 @@ func (s *namespaceSet) Clone() NamespaceSet {
 	if s == nil {
 		return nil
 	}
-	return &namespaceMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
-}
-
-type namespaceMergedSet struct {
-    sets []sksets.ResourceSet
-}
-
-func NewNamespaceMergedSet(namespaceList ...*v1.Namespace) NamespaceSet {
-    return &namespaceMergedSet{sets: []sksets.ResourceSet{makeGenericNamespaceSet(namespaceList)}}
-}
-
-func NewNamespaceMergedSetFromList(namespaceList *v1.NamespaceList) NamespaceSet {
-    list := make([]*v1.Namespace, 0, len(namespaceList.Items))
-    for idx := range namespaceList.Items {
-        list = append(list, &namespaceList.Items[idx])
-    }
-    return &namespaceMergedSet{sets: []sksets.ResourceSet{makeGenericNamespaceSet(list)}}
-}
-
-func (s *namespaceMergedSet) Keys() sets.Set[uint64] {
-	if s == nil {
-		return sets.Set[uint64]{}
-    }
-    toRet := sets.Set[uint64]{}
-	for _ , set := range s.sets {
-		toRet = toRet.Union(set.Keys())
-	}
-	return toRet
-}
-
-func (s *namespaceMergedSet) List(filterResource ... func(*v1.Namespace) bool) []*v1.Namespace {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*v1.Namespace))
-        })
-    }
-   namespaceList := []*v1.Namespace{}
-	for _, set := range s.sets {
-		for _, obj := range set.List(genericFilters...) {
-			namespaceList = append(namespaceList, obj.(*v1.Namespace))
-		}
-	}
-    return namespaceList
-}
-
-func (s *namespaceMergedSet) UnsortedList(filterResource ... func(*v1.Namespace) bool) []*v1.Namespace {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*v1.Namespace))
-        })
-    }
-
-    namespaceList := []*v1.Namespace{}
-	for _, set := range s.sets {
-		for _, obj := range set.UnsortedList(genericFilters...) {
-			namespaceList = append(namespaceList, obj.(*v1.Namespace))
-		}
-	}
-    return namespaceList
-}
-
-func (s *namespaceMergedSet) Map() map[uint64]*v1.Namespace {
-    if s == nil {
-        return nil
-    }
-
-    newMap := map[uint64]*v1.Namespace{}
-    for _, set := range s.sets {
-		for k, v := range set.Map() {
-            newMap[k] = v.(*v1.Namespace)
-        }
-    }
-    return newMap
-}
-
-func (s *namespaceMergedSet) Insert(
-        namespaceList ...*v1.Namespace,
-) {
-    if s == nil {
-    }
-    if len(s.sets) == 0 {
-        s.sets = append(s.sets, makeGenericNamespaceSet(namespaceList))
-    }
-    for _, obj := range namespaceList {
-        s.sets[0].Insert(obj)
-    }
-}
-
-func (s *namespaceMergedSet) Has(namespace ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    for _, set := range s.sets {
-		if set.Has(namespace) {
-			return true
-		}
-	}
-    return false
-}
-
-func (s *namespaceMergedSet) Equal(
-        namespaceSet NamespaceSet,
-) bool {
-    panic("unimplemented")
-}
-
-func (s *namespaceMergedSet) Delete(Namespace ezkube.ResourceId) {
-    panic("unimplemented")
-}
-
-func (s *namespaceMergedSet) Union(set NamespaceSet) NamespaceSet {
-    return &namespaceMergedSet{sets: append(s.sets, set.Generic())}
-}
-
-func (s *namespaceMergedSet) Difference(set NamespaceSet) NamespaceSet {
-    panic("unimplemented")
-}
-
-func (s *namespaceMergedSet) Intersection(set NamespaceSet) NamespaceSet {
-    panic("unimplemented")
-}
-
-func (s *namespaceMergedSet) Find(id ezkube.ResourceId) (*v1.Namespace, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find Namespace %v", sksets.Key(id))
-    }
-
-    var err error
-	for _, set := range s.sets {
-		var obj ezkube.ResourceId
-		obj, err = set.Find(&v1.Namespace{}, id)
-		if err == nil {
-			return obj.(*v1.Namespace), nil
-		}
-	}
-
-    return nil, err
-}
-
-func (s *namespaceMergedSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    totalLen := 0
-	for _, set := range s.sets {
-		totalLen += set.Length()
-	}
-    return totalLen
-}
-
-func (s *namespaceMergedSet) Generic() sksets.ResourceSet {
-    panic("unimplemented")
-}
-
-func (s *namespaceMergedSet) Delta(newSet NamespaceSet) sksets.ResourceDelta {
-    panic("unimplemented")
-}
-
-func (s *namespaceMergedSet) Clone() NamespaceSet {
-	if s == nil {
-		return nil
-	}
-	return &namespaceMergedSet{sets: s.sets[:]}
+	return &namespaceSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

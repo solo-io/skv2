@@ -17,7 +17,7 @@ import (
 
 type ValidatingWebhookConfigurationSet interface {
 	// Get the set stored keys
-    Keys() sets.Set[uint64]
+    Keys() sets.String
     // List of resources stored in the set. Pass an optional filter function to filter on the list.
     // The filter function should return false to keep the resource, true to drop it.
     List(filterResource ... func(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool) []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
@@ -25,7 +25,7 @@ type ValidatingWebhookConfigurationSet interface {
     // The filter function should return false to keep the resource, true to drop it.
     UnsortedList(filterResource ... func(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool) []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
     // Return the Set as a map of key to resource.
-    Map() map[uint64]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
+    Map() map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration
     // Insert a resource into the set.
     Insert(validatingWebhookConfiguration ...*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
     // Compare the equality of the keys in two sets (not the resources themselves)
@@ -76,9 +76,9 @@ func NewValidatingWebhookConfigurationSetFromList(validatingWebhookConfiguration
     return &validatingWebhookConfigurationSet{set: makeGenericValidatingWebhookConfigurationSet(list)}
 }
 
-func (s *validatingWebhookConfigurationSet) Keys() sets.Set[uint64] {
+func (s *validatingWebhookConfigurationSet) Keys() sets.String {
 	if s == nil {
-		return sets.Set[uint64]{}
+		return sets.String{}
     }
     return s.Generic().Keys()
 }
@@ -122,12 +122,12 @@ func (s *validatingWebhookConfigurationSet) UnsortedList(filterResource ... func
     return validatingWebhookConfigurationList
 }
 
-func (s *validatingWebhookConfigurationSet) Map() map[uint64]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
+func (s *validatingWebhookConfigurationSet) Map() map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
     if s == nil {
         return nil
     }
 
-    newMap := map[uint64]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
+    newMap := map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
     for k, v := range s.Generic().Map() {
         newMap[k] = v.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
     }
@@ -173,7 +173,7 @@ func (s *validatingWebhookConfigurationSet) Union(set ValidatingWebhookConfigura
     if s == nil {
         return set
     }
-    return &validatingWebhookConfigurationMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+    return NewValidatingWebhookConfigurationSet(append(s.List(), set.List()...)...)
 }
 
 func (s *validatingWebhookConfigurationSet) Difference(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
@@ -236,177 +236,5 @@ func (s *validatingWebhookConfigurationSet) Clone() ValidatingWebhookConfigurati
 	if s == nil {
 		return nil
 	}
-	return &validatingWebhookConfigurationMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
-}
-
-type validatingWebhookConfigurationMergedSet struct {
-    sets []sksets.ResourceSet
-}
-
-func NewValidatingWebhookConfigurationMergedSet(validatingWebhookConfigurationList ...*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) ValidatingWebhookConfigurationSet {
-    return &validatingWebhookConfigurationMergedSet{sets: []sksets.ResourceSet{makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList)}}
-}
-
-func NewValidatingWebhookConfigurationMergedSetFromList(validatingWebhookConfigurationList *admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationList) ValidatingWebhookConfigurationSet {
-    list := make([]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, 0, len(validatingWebhookConfigurationList.Items))
-    for idx := range validatingWebhookConfigurationList.Items {
-        list = append(list, &validatingWebhookConfigurationList.Items[idx])
-    }
-    return &validatingWebhookConfigurationMergedSet{sets: []sksets.ResourceSet{makeGenericValidatingWebhookConfigurationSet(list)}}
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Keys() sets.Set[uint64] {
-	if s == nil {
-		return sets.Set[uint64]{}
-    }
-    toRet := sets.Set[uint64]{}
-	for _ , set := range s.sets {
-		toRet = toRet.Union(set.Keys())
-	}
-	return toRet
-}
-
-func (s *validatingWebhookConfigurationMergedSet) List(filterResource ... func(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool) []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
-        })
-    }
-   validatingWebhookConfigurationList := []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
-	for _, set := range s.sets {
-		for _, obj := range set.List(genericFilters...) {
-			validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
-		}
-	}
-    return validatingWebhookConfigurationList
-}
-
-func (s *validatingWebhookConfigurationMergedSet) UnsortedList(filterResource ... func(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) bool) []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
-        })
-    }
-
-    validatingWebhookConfigurationList := []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
-	for _, set := range s.sets {
-		for _, obj := range set.UnsortedList(genericFilters...) {
-			validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
-		}
-	}
-    return validatingWebhookConfigurationList
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Map() map[uint64]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration {
-    if s == nil {
-        return nil
-    }
-
-    newMap := map[uint64]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
-    for _, set := range s.sets {
-		for k, v := range set.Map() {
-            newMap[k] = v.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
-        }
-    }
-    return newMap
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Insert(
-        validatingWebhookConfigurationList ...*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration,
-) {
-    if s == nil {
-    }
-    if len(s.sets) == 0 {
-        s.sets = append(s.sets, makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList))
-    }
-    for _, obj := range validatingWebhookConfigurationList {
-        s.sets[0].Insert(obj)
-    }
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Has(validatingWebhookConfiguration ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    for _, set := range s.sets {
-		if set.Has(validatingWebhookConfiguration) {
-			return true
-		}
-	}
-    return false
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Equal(
-        validatingWebhookConfigurationSet ValidatingWebhookConfigurationSet,
-) bool {
-    panic("unimplemented")
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Delete(ValidatingWebhookConfiguration ezkube.ResourceId) {
-    panic("unimplemented")
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Union(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
-    return &validatingWebhookConfigurationMergedSet{sets: append(s.sets, set.Generic())}
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Difference(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
-    panic("unimplemented")
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Intersection(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
-    panic("unimplemented")
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Find(id ezkube.ResourceId) (*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find ValidatingWebhookConfiguration %v", sksets.Key(id))
-    }
-
-    var err error
-	for _, set := range s.sets {
-		var obj ezkube.ResourceId
-		obj, err = set.Find(&admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}, id)
-		if err == nil {
-			return obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration), nil
-		}
-	}
-
-    return nil, err
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    totalLen := 0
-	for _, set := range s.sets {
-		totalLen += set.Length()
-	}
-    return totalLen
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Generic() sksets.ResourceSet {
-    panic("unimplemented")
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Delta(newSet ValidatingWebhookConfigurationSet) sksets.ResourceDelta {
-    panic("unimplemented")
-}
-
-func (s *validatingWebhookConfigurationMergedSet) Clone() ValidatingWebhookConfigurationSet {
-	if s == nil {
-		return nil
-	}
-	return &validatingWebhookConfigurationMergedSet{sets: s.sets[:]}
+	return &validatingWebhookConfigurationSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

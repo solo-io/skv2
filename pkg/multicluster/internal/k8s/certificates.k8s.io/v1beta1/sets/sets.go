@@ -17,7 +17,7 @@ import (
 
 type CertificateSigningRequestSet interface {
 	// Get the set stored keys
-    Keys() sets.Set[uint64]
+    Keys() sets.String
     // List of resources stored in the set. Pass an optional filter function to filter on the list.
     // The filter function should return false to keep the resource, true to drop it.
     List(filterResource ... func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest
@@ -25,7 +25,7 @@ type CertificateSigningRequestSet interface {
     // The filter function should return false to keep the resource, true to drop it.
     UnsortedList(filterResource ... func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest
     // Return the Set as a map of key to resource.
-    Map() map[uint64]*certificates_k8s_io_v1beta1.CertificateSigningRequest
+    Map() map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest
     // Insert a resource into the set.
     Insert(certificateSigningRequest ...*certificates_k8s_io_v1beta1.CertificateSigningRequest)
     // Compare the equality of the keys in two sets (not the resources themselves)
@@ -76,9 +76,9 @@ func NewCertificateSigningRequestSetFromList(certificateSigningRequestList *cert
     return &certificateSigningRequestSet{set: makeGenericCertificateSigningRequestSet(list)}
 }
 
-func (s *certificateSigningRequestSet) Keys() sets.Set[uint64] {
+func (s *certificateSigningRequestSet) Keys() sets.String {
 	if s == nil {
-		return sets.Set[uint64]{}
+		return sets.String{}
     }
     return s.Generic().Keys()
 }
@@ -122,12 +122,12 @@ func (s *certificateSigningRequestSet) UnsortedList(filterResource ... func(*cer
     return certificateSigningRequestList
 }
 
-func (s *certificateSigningRequestSet) Map() map[uint64]*certificates_k8s_io_v1beta1.CertificateSigningRequest {
+func (s *certificateSigningRequestSet) Map() map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest {
     if s == nil {
         return nil
     }
 
-    newMap := map[uint64]*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
+    newMap := map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
     for k, v := range s.Generic().Map() {
         newMap[k] = v.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
     }
@@ -173,7 +173,7 @@ func (s *certificateSigningRequestSet) Union(set CertificateSigningRequestSet) C
     if s == nil {
         return set
     }
-    return &certificateSigningRequestMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+    return NewCertificateSigningRequestSet(append(s.List(), set.List()...)...)
 }
 
 func (s *certificateSigningRequestSet) Difference(set CertificateSigningRequestSet) CertificateSigningRequestSet {
@@ -236,177 +236,5 @@ func (s *certificateSigningRequestSet) Clone() CertificateSigningRequestSet {
 	if s == nil {
 		return nil
 	}
-	return &certificateSigningRequestMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
-}
-
-type certificateSigningRequestMergedSet struct {
-    sets []sksets.ResourceSet
-}
-
-func NewCertificateSigningRequestMergedSet(certificateSigningRequestList ...*certificates_k8s_io_v1beta1.CertificateSigningRequest) CertificateSigningRequestSet {
-    return &certificateSigningRequestMergedSet{sets: []sksets.ResourceSet{makeGenericCertificateSigningRequestSet(certificateSigningRequestList)}}
-}
-
-func NewCertificateSigningRequestMergedSetFromList(certificateSigningRequestList *certificates_k8s_io_v1beta1.CertificateSigningRequestList) CertificateSigningRequestSet {
-    list := make([]*certificates_k8s_io_v1beta1.CertificateSigningRequest, 0, len(certificateSigningRequestList.Items))
-    for idx := range certificateSigningRequestList.Items {
-        list = append(list, &certificateSigningRequestList.Items[idx])
-    }
-    return &certificateSigningRequestMergedSet{sets: []sksets.ResourceSet{makeGenericCertificateSigningRequestSet(list)}}
-}
-
-func (s *certificateSigningRequestMergedSet) Keys() sets.Set[uint64] {
-	if s == nil {
-		return sets.Set[uint64]{}
-    }
-    toRet := sets.Set[uint64]{}
-	for _ , set := range s.sets {
-		toRet = toRet.Union(set.Keys())
-	}
-	return toRet
-}
-
-func (s *certificateSigningRequestMergedSet) List(filterResource ... func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
-        })
-    }
-   certificateSigningRequestList := []*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
-	for _, set := range s.sets {
-		for _, obj := range set.List(genericFilters...) {
-			certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
-		}
-	}
-    return certificateSigningRequestList
-}
-
-func (s *certificateSigningRequestMergedSet) UnsortedList(filterResource ... func(*certificates_k8s_io_v1beta1.CertificateSigningRequest) bool) []*certificates_k8s_io_v1beta1.CertificateSigningRequest {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
-        })
-    }
-
-    certificateSigningRequestList := []*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
-	for _, set := range s.sets {
-		for _, obj := range set.UnsortedList(genericFilters...) {
-			certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
-		}
-	}
-    return certificateSigningRequestList
-}
-
-func (s *certificateSigningRequestMergedSet) Map() map[uint64]*certificates_k8s_io_v1beta1.CertificateSigningRequest {
-    if s == nil {
-        return nil
-    }
-
-    newMap := map[uint64]*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
-    for _, set := range s.sets {
-		for k, v := range set.Map() {
-            newMap[k] = v.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
-        }
-    }
-    return newMap
-}
-
-func (s *certificateSigningRequestMergedSet) Insert(
-        certificateSigningRequestList ...*certificates_k8s_io_v1beta1.CertificateSigningRequest,
-) {
-    if s == nil {
-    }
-    if len(s.sets) == 0 {
-        s.sets = append(s.sets, makeGenericCertificateSigningRequestSet(certificateSigningRequestList))
-    }
-    for _, obj := range certificateSigningRequestList {
-        s.sets[0].Insert(obj)
-    }
-}
-
-func (s *certificateSigningRequestMergedSet) Has(certificateSigningRequest ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    for _, set := range s.sets {
-		if set.Has(certificateSigningRequest) {
-			return true
-		}
-	}
-    return false
-}
-
-func (s *certificateSigningRequestMergedSet) Equal(
-        certificateSigningRequestSet CertificateSigningRequestSet,
-) bool {
-    panic("unimplemented")
-}
-
-func (s *certificateSigningRequestMergedSet) Delete(CertificateSigningRequest ezkube.ResourceId) {
-    panic("unimplemented")
-}
-
-func (s *certificateSigningRequestMergedSet) Union(set CertificateSigningRequestSet) CertificateSigningRequestSet {
-    return &certificateSigningRequestMergedSet{sets: append(s.sets, set.Generic())}
-}
-
-func (s *certificateSigningRequestMergedSet) Difference(set CertificateSigningRequestSet) CertificateSigningRequestSet {
-    panic("unimplemented")
-}
-
-func (s *certificateSigningRequestMergedSet) Intersection(set CertificateSigningRequestSet) CertificateSigningRequestSet {
-    panic("unimplemented")
-}
-
-func (s *certificateSigningRequestMergedSet) Find(id ezkube.ResourceId) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find CertificateSigningRequest %v", sksets.Key(id))
-    }
-
-    var err error
-	for _, set := range s.sets {
-		var obj ezkube.ResourceId
-		obj, err = set.Find(&certificates_k8s_io_v1beta1.CertificateSigningRequest{}, id)
-		if err == nil {
-			return obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest), nil
-		}
-	}
-
-    return nil, err
-}
-
-func (s *certificateSigningRequestMergedSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    totalLen := 0
-	for _, set := range s.sets {
-		totalLen += set.Length()
-	}
-    return totalLen
-}
-
-func (s *certificateSigningRequestMergedSet) Generic() sksets.ResourceSet {
-    panic("unimplemented")
-}
-
-func (s *certificateSigningRequestMergedSet) Delta(newSet CertificateSigningRequestSet) sksets.ResourceDelta {
-    panic("unimplemented")
-}
-
-func (s *certificateSigningRequestMergedSet) Clone() CertificateSigningRequestSet {
-	if s == nil {
-		return nil
-	}
-	return &certificateSigningRequestMergedSet{sets: s.sets[:]}
+	return &certificateSigningRequestSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
