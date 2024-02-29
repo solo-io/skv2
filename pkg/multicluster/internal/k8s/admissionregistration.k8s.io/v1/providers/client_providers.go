@@ -2,11 +2,13 @@
 
 package v1
 
-import (
-	admissionregistration_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/admissionregistration.k8s.io/v1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    admissionregistration_k8s_io_v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/admissionregistration.k8s.io/v1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,28 +21,28 @@ import (
 
 // Provider for ValidatingWebhookConfigurationClient from Clientset
 func ValidatingWebhookConfigurationClientFromClientsetProvider(clients admissionregistration_k8s_io_v1.Clientset) admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient {
-	return clients.ValidatingWebhookConfigurations()
+    return clients.ValidatingWebhookConfigurations()
 }
 
 // Provider for ValidatingWebhookConfiguration Client from Client
 func ValidatingWebhookConfigurationClientProvider(client client.Client) admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient {
-	return admissionregistration_k8s_io_v1.NewValidatingWebhookConfigurationClient(client)
+    return admissionregistration_k8s_io_v1.NewValidatingWebhookConfigurationClient(client)
 }
 
 type ValidatingWebhookConfigurationClientFactory func(client client.Client) admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient
 
 func ValidatingWebhookConfigurationClientFactoryProvider() ValidatingWebhookConfigurationClientFactory {
-	return ValidatingWebhookConfigurationClientProvider
+    return ValidatingWebhookConfigurationClientProvider
 }
 
 type ValidatingWebhookConfigurationClientFromConfigFactory func(cfg *rest.Config) (admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient, error)
 
 func ValidatingWebhookConfigurationClientFromConfigFactoryProvider() ValidatingWebhookConfigurationClientFromConfigFactory {
-	return func(cfg *rest.Config) (admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient, error) {
-		clients, err := admissionregistration_k8s_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.ValidatingWebhookConfigurations(), nil
-	}
+    return func(cfg *rest.Config) (admissionregistration_k8s_io_v1.ValidatingWebhookConfigurationClient, error) {
+        clients, err := admissionregistration_k8s_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.ValidatingWebhookConfigurations(), nil
+    }
 }

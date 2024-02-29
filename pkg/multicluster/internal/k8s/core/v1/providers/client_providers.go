@@ -2,11 +2,13 @@
 
 package v1
 
-import (
-	v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    v1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/core/v1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,84 +21,84 @@ import (
 
 // Provider for SecretClient from Clientset
 func SecretClientFromClientsetProvider(clients v1.Clientset) v1.SecretClient {
-	return clients.Secrets()
+    return clients.Secrets()
 }
 
 // Provider for Secret Client from Client
 func SecretClientProvider(client client.Client) v1.SecretClient {
-	return v1.NewSecretClient(client)
+    return v1.NewSecretClient(client)
 }
 
 type SecretClientFactory func(client client.Client) v1.SecretClient
 
 func SecretClientFactoryProvider() SecretClientFactory {
-	return SecretClientProvider
+    return SecretClientProvider
 }
 
 type SecretClientFromConfigFactory func(cfg *rest.Config) (v1.SecretClient, error)
 
 func SecretClientFromConfigFactoryProvider() SecretClientFromConfigFactory {
-	return func(cfg *rest.Config) (v1.SecretClient, error) {
-		clients, err := v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.Secrets(), nil
-	}
+    return func(cfg *rest.Config) (v1.SecretClient, error) {
+        clients, err := v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.Secrets(), nil
+    }
 }
 
 // Provider for ServiceAccountClient from Clientset
 func ServiceAccountClientFromClientsetProvider(clients v1.Clientset) v1.ServiceAccountClient {
-	return clients.ServiceAccounts()
+    return clients.ServiceAccounts()
 }
 
 // Provider for ServiceAccount Client from Client
 func ServiceAccountClientProvider(client client.Client) v1.ServiceAccountClient {
-	return v1.NewServiceAccountClient(client)
+    return v1.NewServiceAccountClient(client)
 }
 
 type ServiceAccountClientFactory func(client client.Client) v1.ServiceAccountClient
 
 func ServiceAccountClientFactoryProvider() ServiceAccountClientFactory {
-	return ServiceAccountClientProvider
+    return ServiceAccountClientProvider
 }
 
 type ServiceAccountClientFromConfigFactory func(cfg *rest.Config) (v1.ServiceAccountClient, error)
 
 func ServiceAccountClientFromConfigFactoryProvider() ServiceAccountClientFromConfigFactory {
-	return func(cfg *rest.Config) (v1.ServiceAccountClient, error) {
-		clients, err := v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.ServiceAccounts(), nil
-	}
+    return func(cfg *rest.Config) (v1.ServiceAccountClient, error) {
+        clients, err := v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.ServiceAccounts(), nil
+    }
 }
 
 // Provider for NamespaceClient from Clientset
 func NamespaceClientFromClientsetProvider(clients v1.Clientset) v1.NamespaceClient {
-	return clients.Namespaces()
+    return clients.Namespaces()
 }
 
 // Provider for Namespace Client from Client
 func NamespaceClientProvider(client client.Client) v1.NamespaceClient {
-	return v1.NewNamespaceClient(client)
+    return v1.NewNamespaceClient(client)
 }
 
 type NamespaceClientFactory func(client client.Client) v1.NamespaceClient
 
 func NamespaceClientFactoryProvider() NamespaceClientFactory {
-	return NamespaceClientProvider
+    return NamespaceClientProvider
 }
 
 type NamespaceClientFromConfigFactory func(cfg *rest.Config) (v1.NamespaceClient, error)
 
 func NamespaceClientFromConfigFactoryProvider() NamespaceClientFromConfigFactory {
-	return func(cfg *rest.Config) (v1.NamespaceClient, error) {
-		clients, err := v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.Namespaces(), nil
-	}
+    return func(cfg *rest.Config) (v1.NamespaceClient, error) {
+        clients, err := v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.Namespaces(), nil
+    }
 }
