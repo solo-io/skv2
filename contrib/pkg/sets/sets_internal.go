@@ -88,8 +88,8 @@ func (r *Resources) Clone() ResourceSet {
 	return new
 }
 
-func (r *Resources) Keys() sets.Set[uint64] {
-	keys := sets.New[uint64]()
+func (r *Resources) Keys() sets.Set[string] {
+	keys := sets.New[string]()
 	for _, e := range *r {
 		key := Key(e)
 		keys.Insert(key)
@@ -132,8 +132,8 @@ func (r *Resources) UnsortedList(filterResource ...func(ezkube.ResourceId) bool)
 	return resources
 }
 
-func (r *Resources) Map() map[uint64]ezkube.ResourceId {
-	res := make(map[uint64]ezkube.ResourceId)
+func (r *Resources) Map() map[string]ezkube.ResourceId {
+	res := make(map[string]ezkube.ResourceId)
 	for _, resource := range *r {
 		if resource == nil {
 			continue

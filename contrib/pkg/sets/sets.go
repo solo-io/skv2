@@ -16,8 +16,8 @@ var NotFoundErr = func(resourceType ezkube.ResourceId, id ezkube.ResourceId) err
 const defaultSeparator = "."
 
 // k8s resources are uniquely identified by their name and namespace
-func Key(id ezkube.ResourceId) uint64 {
-	return ezkube.HashedKeyWithSeparator(id, defaultSeparator)
+func Key(id ezkube.ResourceId) string {
+	return ezkube.KeyWithSeparator(id, defaultSeparator)
 }
 
 // typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
@@ -26,10 +26,10 @@ func TypedKey(id ezkube.ResourceId) string {
 }
 
 type ResourceSet interface {
-	Keys() sets.Set[uint64]
+	Keys() sets.Set[string]
 	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
-	Map() map[uint64]ezkube.ResourceId
+	Map() map[string]ezkube.ResourceId
 	Set() *Resources
 	Insert(resource ...ezkube.ResourceId)
 	Equal(set ResourceSet) bool
@@ -64,7 +64,7 @@ func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
 	return &threadSafeResourceSet{set: newResources(resources...)}
 }
 
-func (t *threadSafeResourceSet) Keys() sets.Set[uint64] {
+func (t *threadSafeResourceSet) Keys() sets.Set[string] {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.Keys()
@@ -88,7 +88,7 @@ func (t *threadSafeResourceSet) UnsortedList(filterResource ...func(ezkube.Resou
 	return t.set.UnsortedList(filterResource...)
 }
 
-func (t *threadSafeResourceSet) Map() map[uint64]ezkube.ResourceId {
+func (t *threadSafeResourceSet) Map() map[string]ezkube.ResourceId {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.Map()
