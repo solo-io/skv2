@@ -110,8 +110,8 @@ func (t *threadSafeResourceSet) Has(resource ezkube.ResourceId) bool {
 
 // Has returns true if and only if item is contained in the set.
 func (s Resources) Has(item ezkube.ResourceId) bool {
-	for e := s.l.Front(); e != nil; e = e.Next() {
-		if e.Value.(ezkube.ResourceId) == item {
+	for _, e := range s {
+		if e == item {
 			return true
 		}
 	}
