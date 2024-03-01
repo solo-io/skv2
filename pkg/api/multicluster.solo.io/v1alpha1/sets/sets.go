@@ -89,7 +89,7 @@ func (s *kubernetesClusterSet) List(filterResource ...func(*multicluster_solo_io
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+			return !filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 		})
 	}
 
@@ -109,7 +109,7 @@ func (s *kubernetesClusterSet) UnsortedList(filterResource ...func(*multicluster
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+			return !filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 		})
 	}
 
@@ -271,7 +271,7 @@ func (s *kubernetesClusterMergedSet) List(filterResource ...func(*multicluster_s
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+			return !filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 		})
 	}
 	kubernetesClusterList := []*multicluster_solo_io_v1alpha1.KubernetesCluster{}
@@ -291,7 +291,7 @@ func (s *kubernetesClusterMergedSet) UnsortedList(filterResource ...func(*multic
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+			return !filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 		})
 	}
 

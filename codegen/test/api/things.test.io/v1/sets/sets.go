@@ -271,7 +271,7 @@ func (s *paintMergedSet) List(filterResource ...func(*things_test_io_v1.Paint) b
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*things_test_io_v1.Paint))
+			return !filter(obj.(*things_test_io_v1.Paint))
 		})
 	}
 	paintList := []*things_test_io_v1.Paint{}
@@ -291,7 +291,7 @@ func (s *paintMergedSet) UnsortedList(filterResource ...func(*things_test_io_v1.
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*things_test_io_v1.Paint))
+			return !filter(obj.(*things_test_io_v1.Paint))
 		})
 	}
 

@@ -89,7 +89,7 @@ func (s *validatingWebhookConfigurationSet) List(filterResource ...func(*admissi
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
+			return !filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		})
 	}
 
@@ -109,7 +109,7 @@ func (s *validatingWebhookConfigurationSet) UnsortedList(filterResource ...func(
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
+			return !filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		})
 	}
 
@@ -271,7 +271,7 @@ func (s *validatingWebhookConfigurationMergedSet) List(filterResource ...func(*a
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
+			return !filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		})
 	}
 	validatingWebhookConfigurationList := []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
@@ -291,7 +291,7 @@ func (s *validatingWebhookConfigurationMergedSet) UnsortedList(filterResource ..
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
+			return !filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		})
 	}
 

@@ -89,7 +89,7 @@ func (s *certificateSigningRequestSet) List(filterResource ...func(*certificates
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
+			return !filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		})
 	}
 
@@ -109,7 +109,7 @@ func (s *certificateSigningRequestSet) UnsortedList(filterResource ...func(*cert
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
+			return !filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		})
 	}
 
@@ -271,7 +271,7 @@ func (s *certificateSigningRequestMergedSet) List(filterResource ...func(*certif
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
+			return !filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		})
 	}
 	certificateSigningRequestList := []*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
@@ -291,7 +291,7 @@ func (s *certificateSigningRequestMergedSet) UnsortedList(filterResource ...func
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
+			return !filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		})
 	}
 

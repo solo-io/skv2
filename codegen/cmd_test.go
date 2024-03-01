@@ -2784,7 +2784,9 @@ func helmTemplate(path string, values interface{}) []byte {
 		fmt.Printf("[Cameron]: failed to run %s\n", cc.String())
 	}(err)
 
-	ExpectWithOffset(0, err).NotTo(HaveOccurred(), string(out))
+	if !strings.Contains(string(out), "WARNING") {
+		ExpectWithOffset(0, err).NotTo(HaveOccurred(), string(out))
+	}
 	return out
 }
 

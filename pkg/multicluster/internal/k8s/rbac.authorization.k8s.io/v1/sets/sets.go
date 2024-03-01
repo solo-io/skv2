@@ -89,7 +89,7 @@ func (s *roleSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.Role
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.Role))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.Role))
 		})
 	}
 
@@ -109,7 +109,7 @@ func (s *roleSet) UnsortedList(filterResource ...func(*rbac_authorization_k8s_io
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.Role))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.Role))
 		})
 	}
 
@@ -271,7 +271,7 @@ func (s *roleMergedSet) List(filterResource ...func(*rbac_authorization_k8s_io_v
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.Role))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.Role))
 		})
 	}
 	roleList := []*rbac_authorization_k8s_io_v1.Role{}
@@ -291,7 +291,7 @@ func (s *roleMergedSet) UnsortedList(filterResource ...func(*rbac_authorization_
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.Role))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.Role))
 		})
 	}
 
@@ -484,7 +484,7 @@ func (s *roleBindingSet) List(filterResource ...func(*rbac_authorization_k8s_io_
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 		})
 	}
 
@@ -504,7 +504,7 @@ func (s *roleBindingSet) UnsortedList(filterResource ...func(*rbac_authorization
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 		})
 	}
 
@@ -666,7 +666,7 @@ func (s *roleBindingMergedSet) List(filterResource ...func(*rbac_authorization_k
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 		})
 	}
 	roleBindingList := []*rbac_authorization_k8s_io_v1.RoleBinding{}
@@ -686,7 +686,7 @@ func (s *roleBindingMergedSet) UnsortedList(filterResource ...func(*rbac_authori
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 		})
 	}
 
@@ -879,7 +879,7 @@ func (s *clusterRoleSet) List(filterResource ...func(*rbac_authorization_k8s_io_
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 		})
 	}
 
@@ -899,7 +899,7 @@ func (s *clusterRoleSet) UnsortedList(filterResource ...func(*rbac_authorization
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 		})
 	}
 
@@ -1061,7 +1061,7 @@ func (s *clusterRoleMergedSet) List(filterResource ...func(*rbac_authorization_k
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 		})
 	}
 	clusterRoleList := []*rbac_authorization_k8s_io_v1.ClusterRole{}
@@ -1081,7 +1081,7 @@ func (s *clusterRoleMergedSet) UnsortedList(filterResource ...func(*rbac_authori
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 		})
 	}
 
@@ -1274,7 +1274,7 @@ func (s *clusterRoleBindingSet) List(filterResource ...func(*rbac_authorization_
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 		})
 	}
 
@@ -1294,7 +1294,7 @@ func (s *clusterRoleBindingSet) UnsortedList(filterResource ...func(*rbac_author
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 		})
 	}
 
@@ -1456,7 +1456,7 @@ func (s *clusterRoleBindingMergedSet) List(filterResource ...func(*rbac_authoriz
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 		})
 	}
 	clusterRoleBindingList := []*rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
@@ -1476,7 +1476,7 @@ func (s *clusterRoleBindingMergedSet) UnsortedList(filterResource ...func(*rbac_
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
+			return !filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 		})
 	}
 

@@ -89,7 +89,7 @@ func (s *secretSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Secret))
+			return !filter(obj.(*v1.Secret))
 		})
 	}
 
@@ -109,7 +109,7 @@ func (s *secretSet) UnsortedList(filterResource ...func(*v1.Secret) bool) []*v1.
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Secret))
+			return !filter(obj.(*v1.Secret))
 		})
 	}
 
@@ -271,7 +271,7 @@ func (s *secretMergedSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Se
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Secret))
+			return !filter(obj.(*v1.Secret))
 		})
 	}
 	secretList := []*v1.Secret{}
@@ -291,7 +291,7 @@ func (s *secretMergedSet) UnsortedList(filterResource ...func(*v1.Secret) bool) 
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Secret))
+			return !filter(obj.(*v1.Secret))
 		})
 	}
 
@@ -484,7 +484,7 @@ func (s *serviceAccountSet) List(filterResource ...func(*v1.ServiceAccount) bool
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.ServiceAccount))
+			return !filter(obj.(*v1.ServiceAccount))
 		})
 	}
 
@@ -504,7 +504,7 @@ func (s *serviceAccountSet) UnsortedList(filterResource ...func(*v1.ServiceAccou
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.ServiceAccount))
+			return !filter(obj.(*v1.ServiceAccount))
 		})
 	}
 
@@ -666,7 +666,7 @@ func (s *serviceAccountMergedSet) List(filterResource ...func(*v1.ServiceAccount
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.ServiceAccount))
+			return !filter(obj.(*v1.ServiceAccount))
 		})
 	}
 	serviceAccountList := []*v1.ServiceAccount{}
@@ -686,7 +686,7 @@ func (s *serviceAccountMergedSet) UnsortedList(filterResource ...func(*v1.Servic
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.ServiceAccount))
+			return !filter(obj.(*v1.ServiceAccount))
 		})
 	}
 
@@ -879,7 +879,7 @@ func (s *namespaceSet) List(filterResource ...func(*v1.Namespace) bool) []*v1.Na
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Namespace))
+			return !filter(obj.(*v1.Namespace))
 		})
 	}
 
@@ -899,7 +899,7 @@ func (s *namespaceSet) UnsortedList(filterResource ...func(*v1.Namespace) bool) 
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Namespace))
+			return !filter(obj.(*v1.Namespace))
 		})
 	}
 
@@ -1061,7 +1061,7 @@ func (s *namespaceMergedSet) List(filterResource ...func(*v1.Namespace) bool) []
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Namespace))
+			return !filter(obj.(*v1.Namespace))
 		})
 	}
 	namespaceList := []*v1.Namespace{}
@@ -1081,7 +1081,7 @@ func (s *namespaceMergedSet) UnsortedList(filterResource ...func(*v1.Namespace) 
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Namespace))
+			return !filter(obj.(*v1.Namespace))
 		})
 	}
 

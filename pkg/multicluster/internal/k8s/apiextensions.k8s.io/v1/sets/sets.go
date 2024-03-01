@@ -89,7 +89,7 @@ func (s *customResourceDefinitionSet) List(filterResource ...func(*apiextensions
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+			return !filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		})
 	}
 
@@ -109,7 +109,7 @@ func (s *customResourceDefinitionSet) UnsortedList(filterResource ...func(*apiex
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+			return !filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		})
 	}
 
@@ -271,7 +271,7 @@ func (s *customResourceDefinitionMergedSet) List(filterResource ...func(*apiexte
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+			return !filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		})
 	}
 	customResourceDefinitionList := []*apiextensions_k8s_io_v1.CustomResourceDefinition{}
@@ -291,7 +291,7 @@ func (s *customResourceDefinitionMergedSet) UnsortedList(filterResource ...func(
 	for _, filter := range filterResource {
 		filter := filter
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+			return !filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		})
 	}
 
