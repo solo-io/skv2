@@ -8,31 +8,33 @@ import (
 )
 
 // sets.Resources is a set of strings, implemented via map[string]struct{} for minimal memory consumption.
-type Resources []ezkube.ResourceId
+type Resources struct {
+	l []ezkube.ResourceId
+	// map of hash to index
+	m map[uint64]uint64
+}
 
 func newResources(resources ...ezkube.ResourceId) *Resources {
-	m := make(Resources, len(resources))
+	m := &Resources{
+		l: make([]ezkube.ResourceId, 0, len(resources)),
+		m: make(map[uint64]uint64, len(resources)),
+	}
 	for idx, resource := range resources {
 		if resource == nil {
 			continue
 		}
-		m[idx] = resource
+		m.l[idx] = resource
+		m.m[Hash(resource)] = uint64(idx)
 	}
-	return &m
+	return m
 }
 
 func (r *Resources) Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error) {
-	key := Key(id)
-	for _, i := range *r {
-		if i == nil {
-			continue
-		}
-		if key == Key(i) {
-			return i, nil
-		}
+	key := Hash(id)
+	if idx, ok := r.m[key]; ok {
+		return r.l[idx], nil
 	}
 	return nil, NotFoundErr(resourceType, id)
-
 }
 
 func (r *Resources) Length() int {
@@ -90,7 +92,7 @@ func (r *Resources) Clone() ResourceSet {
 
 func (r *Resources) Keys() sets.String {
 	keys := sets.NewString()
-	for _, e := range *r {
+	for _, e := range r.l {
 		key := Key(e)
 		keys.Insert(key)
 	}
@@ -100,7 +102,7 @@ func (r *Resources) Keys() sets.String {
 func (r *Resources) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
 	// sort.Sort(res)
 	var resources []ezkube.ResourceId
-	for _, e := range *r {
+	for _, e := range r.l {
 		var filtered bool
 		for _, filter := range filterResource {
 			if filter(e) {
@@ -117,7 +119,7 @@ func (r *Resources) List(filterResource ...func(ezkube.ResourceId) bool) []ezkub
 
 func (r *Resources) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
 	var resources []ezkube.ResourceId
-	for _, e := range *r {
+	for _, e := range r.l {
 		var filtered bool
 		for _, filter := range filterResource {
 			if filter(e) {
@@ -134,7 +136,7 @@ func (r *Resources) UnsortedList(filterResource ...func(ezkube.ResourceId) bool)
 
 func (r *Resources) Map() map[string]ezkube.ResourceId {
 	res := make(map[string]ezkube.ResourceId)
-	for _, resource := range *r {
+	for _, resource := range r.l {
 		if resource == nil {
 			continue
 		}
@@ -152,16 +154,19 @@ func (r *Resources) Insert(resources ...ezkube.ResourceId) {
 		if resource == nil {
 			continue
 		}
-		*r = append(*r, resource)
+		r.l = append(r.l, resource)
+		hash := Hash(resource)
+		r.m[hash] = uint64(len(r.l) - 1)
 	}
 }
 
 // Delete removes all items from the set.
 func (s *Resources) Delete(items ...ezkube.ResourceId) *Resources {
 	for _, item := range items {
-		for idx, e := range *s {
+		for idx, e := range s.l {
 			if Key(e) == Key(item) {
-				*s = append((*s)[:idx], (*s)[idx+1:]...)
+				s.l = append((s.l)[:idx], (s.l)[idx+1:]...)
+				delete(s.m, Hash(item))
 			}
 		}
 	}
@@ -246,7 +251,7 @@ func (s1 *Resources) Intersection(s2 *Resources) *Resources {
 
 // IsSuperset returns true if and only if s1 is a superset of s2.
 func (s1 *Resources) IsSuperset(s2 *Resources) bool {
-	for _, item := range *s1 {
+	for _, item := range s1.l {
 		if !s1.Has(item) {
 			return false
 		}
@@ -278,7 +283,7 @@ func (s *Resources) PopAny() (ezkube.ResourceId, bool) {
 
 // Len returns the size of the set.
 func (s *Resources) Len() int {
-	return len(*s)
+	return len(s.l)
 }
 
 func lessString(lhs, rhs string) bool {

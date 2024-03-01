@@ -20,6 +20,10 @@ func Key(id ezkube.ResourceId) string {
 	return ezkube.KeyWithSeparator(id, defaultSeparator)
 }
 
+func Hash(id ezkube.ResourceId) uint64 {
+	return ezkube.HashedKeyWithSeparator(id, defaultSeparator)
+}
+
 // typed keys are helpful for logging; currently unused in the Set implementation but placed here for convenience
 func TypedKey(id ezkube.ResourceId) string {
 	return fmt.Sprintf("%s.%T", Key(id), id)
@@ -110,12 +114,8 @@ func (t *threadSafeResourceSet) Has(resource ezkube.ResourceId) bool {
 
 // Has returns true if and only if item is contained in the set.
 func (s Resources) Has(item ezkube.ResourceId) bool {
-	for _, e := range s {
-		if e == item {
-			return true
-		}
-	}
-	return false
+	_, found := s.m[Hash(item)]
+	return found
 }
 
 func (t *threadSafeResourceSet) IsSuperset(
