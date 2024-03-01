@@ -171,7 +171,7 @@ func (s *roleSet) Union(set RoleSet) RoleSet {
 	if s == nil {
 		return set
 	}
-	return NewRoleSet(append(s.List(), set.List()...)...)
+	return &roleMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
 }
 
 func (s *roleSet) Difference(set RoleSet) RoleSet {
@@ -233,7 +233,179 @@ func (s *roleSet) Clone() RoleSet {
 	if s == nil {
 		return nil
 	}
-	return &roleSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &roleMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
+}
+
+type roleMergedSet struct {
+	sets []sksets.ResourceSet
+}
+
+func NewRoleMergedSet(roleList ...*rbac_authorization_k8s_io_v1.Role) RoleSet {
+	return &roleMergedSet{sets: []sksets.ResourceSet{makeGenericRoleSet(roleList)}}
+}
+
+func NewRoleMergedSetFromList(roleList *rbac_authorization_k8s_io_v1.RoleList) RoleSet {
+	list := make([]*rbac_authorization_k8s_io_v1.Role, 0, len(roleList.Items))
+	for idx := range roleList.Items {
+		list = append(list, &roleList.Items[idx])
+	}
+	return &roleMergedSet{sets: []sksets.ResourceSet{makeGenericRoleSet(list)}}
+}
+
+func (s *roleMergedSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	toRet := sets.String{}
+	for _, set := range s.sets {
+		toRet = toRet.Union(set.Keys())
+	}
+	return toRet
+}
+
+func (s *roleMergedSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.Role) bool) []*rbac_authorization_k8s_io_v1.Role {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_authorization_k8s_io_v1.Role))
+		})
+	}
+	roleList := []*rbac_authorization_k8s_io_v1.Role{}
+	for _, set := range s.sets {
+		for _, obj := range set.List(genericFilters...) {
+			roleList = append(roleList, obj.(*rbac_authorization_k8s_io_v1.Role))
+		}
+	}
+	return roleList
+}
+
+func (s *roleMergedSet) UnsortedList(filterResource ...func(*rbac_authorization_k8s_io_v1.Role) bool) []*rbac_authorization_k8s_io_v1.Role {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_authorization_k8s_io_v1.Role))
+		})
+	}
+
+	roleList := []*rbac_authorization_k8s_io_v1.Role{}
+	for _, set := range s.sets {
+		for _, obj := range set.UnsortedList(genericFilters...) {
+			roleList = append(roleList, obj.(*rbac_authorization_k8s_io_v1.Role))
+		}
+	}
+	return roleList
+}
+
+func (s *roleMergedSet) Map() map[string]*rbac_authorization_k8s_io_v1.Role {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*rbac_authorization_k8s_io_v1.Role{}
+	for _, set := range s.sets {
+		for k, v := range set.Map() {
+			newMap[k] = v.(*rbac_authorization_k8s_io_v1.Role)
+		}
+	}
+	return newMap
+}
+
+func (s *roleMergedSet) Insert(
+	roleList ...*rbac_authorization_k8s_io_v1.Role,
+) {
+	if s == nil {
+	}
+	if len(s.sets) == 0 {
+		s.sets = append(s.sets, makeGenericRoleSet(roleList))
+	}
+	for _, obj := range roleList {
+		s.sets[0].Insert(obj)
+	}
+}
+
+func (s *roleMergedSet) Has(role ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	for _, set := range s.sets {
+		if set.Has(role) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *roleMergedSet) Equal(
+	roleSet RoleSet,
+) bool {
+	panic("unimplemented")
+}
+
+func (s *roleMergedSet) Delete(Role ezkube.ResourceId) {
+	panic("unimplemented")
+}
+
+func (s *roleMergedSet) Union(set RoleSet) RoleSet {
+	return &roleMergedSet{sets: append(s.sets, set.Generic())}
+}
+
+func (s *roleMergedSet) Difference(set RoleSet) RoleSet {
+	panic("unimplemented")
+}
+
+func (s *roleMergedSet) Intersection(set RoleSet) RoleSet {
+	panic("unimplemented")
+}
+
+func (s *roleMergedSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.Role, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find Role %v", sksets.Key(id))
+	}
+
+	var err error
+	for _, set := range s.sets {
+		var obj ezkube.ResourceId
+		obj, err = set.Find(&rbac_authorization_k8s_io_v1.Role{}, id)
+		if err == nil {
+			return obj.(*rbac_authorization_k8s_io_v1.Role), nil
+		}
+	}
+
+	return nil, err
+}
+
+func (s *roleMergedSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	totalLen := 0
+	for _, set := range s.sets {
+		totalLen += set.Length()
+	}
+	return totalLen
+}
+
+func (s *roleMergedSet) Generic() sksets.ResourceSet {
+	panic("unimplemented")
+}
+
+func (s *roleMergedSet) Delta(newSet RoleSet) sksets.ResourceDelta {
+	panic("unimplemented")
+}
+
+func (s *roleMergedSet) Clone() RoleSet {
+	if s == nil {
+		return nil
+	}
+	return &roleMergedSet{sets: s.sets[:]}
 }
 
 type RoleBindingSet interface {
@@ -394,7 +566,7 @@ func (s *roleBindingSet) Union(set RoleBindingSet) RoleBindingSet {
 	if s == nil {
 		return set
 	}
-	return NewRoleBindingSet(append(s.List(), set.List()...)...)
+	return &roleBindingMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
 }
 
 func (s *roleBindingSet) Difference(set RoleBindingSet) RoleBindingSet {
@@ -456,7 +628,179 @@ func (s *roleBindingSet) Clone() RoleBindingSet {
 	if s == nil {
 		return nil
 	}
-	return &roleBindingSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &roleBindingMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
+}
+
+type roleBindingMergedSet struct {
+	sets []sksets.ResourceSet
+}
+
+func NewRoleBindingMergedSet(roleBindingList ...*rbac_authorization_k8s_io_v1.RoleBinding) RoleBindingSet {
+	return &roleBindingMergedSet{sets: []sksets.ResourceSet{makeGenericRoleBindingSet(roleBindingList)}}
+}
+
+func NewRoleBindingMergedSetFromList(roleBindingList *rbac_authorization_k8s_io_v1.RoleBindingList) RoleBindingSet {
+	list := make([]*rbac_authorization_k8s_io_v1.RoleBinding, 0, len(roleBindingList.Items))
+	for idx := range roleBindingList.Items {
+		list = append(list, &roleBindingList.Items[idx])
+	}
+	return &roleBindingMergedSet{sets: []sksets.ResourceSet{makeGenericRoleBindingSet(list)}}
+}
+
+func (s *roleBindingMergedSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	toRet := sets.String{}
+	for _, set := range s.sets {
+		toRet = toRet.Union(set.Keys())
+	}
+	return toRet
+}
+
+func (s *roleBindingMergedSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.RoleBinding) bool) []*rbac_authorization_k8s_io_v1.RoleBinding {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
+		})
+	}
+	roleBindingList := []*rbac_authorization_k8s_io_v1.RoleBinding{}
+	for _, set := range s.sets {
+		for _, obj := range set.List(genericFilters...) {
+			roleBindingList = append(roleBindingList, obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
+		}
+	}
+	return roleBindingList
+}
+
+func (s *roleBindingMergedSet) UnsortedList(filterResource ...func(*rbac_authorization_k8s_io_v1.RoleBinding) bool) []*rbac_authorization_k8s_io_v1.RoleBinding {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
+		})
+	}
+
+	roleBindingList := []*rbac_authorization_k8s_io_v1.RoleBinding{}
+	for _, set := range s.sets {
+		for _, obj := range set.UnsortedList(genericFilters...) {
+			roleBindingList = append(roleBindingList, obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
+		}
+	}
+	return roleBindingList
+}
+
+func (s *roleBindingMergedSet) Map() map[string]*rbac_authorization_k8s_io_v1.RoleBinding {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*rbac_authorization_k8s_io_v1.RoleBinding{}
+	for _, set := range s.sets {
+		for k, v := range set.Map() {
+			newMap[k] = v.(*rbac_authorization_k8s_io_v1.RoleBinding)
+		}
+	}
+	return newMap
+}
+
+func (s *roleBindingMergedSet) Insert(
+	roleBindingList ...*rbac_authorization_k8s_io_v1.RoleBinding,
+) {
+	if s == nil {
+	}
+	if len(s.sets) == 0 {
+		s.sets = append(s.sets, makeGenericRoleBindingSet(roleBindingList))
+	}
+	for _, obj := range roleBindingList {
+		s.sets[0].Insert(obj)
+	}
+}
+
+func (s *roleBindingMergedSet) Has(roleBinding ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	for _, set := range s.sets {
+		if set.Has(roleBinding) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *roleBindingMergedSet) Equal(
+	roleBindingSet RoleBindingSet,
+) bool {
+	panic("unimplemented")
+}
+
+func (s *roleBindingMergedSet) Delete(RoleBinding ezkube.ResourceId) {
+	panic("unimplemented")
+}
+
+func (s *roleBindingMergedSet) Union(set RoleBindingSet) RoleBindingSet {
+	return &roleBindingMergedSet{sets: append(s.sets, set.Generic())}
+}
+
+func (s *roleBindingMergedSet) Difference(set RoleBindingSet) RoleBindingSet {
+	panic("unimplemented")
+}
+
+func (s *roleBindingMergedSet) Intersection(set RoleBindingSet) RoleBindingSet {
+	panic("unimplemented")
+}
+
+func (s *roleBindingMergedSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.RoleBinding, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find RoleBinding %v", sksets.Key(id))
+	}
+
+	var err error
+	for _, set := range s.sets {
+		var obj ezkube.ResourceId
+		obj, err = set.Find(&rbac_authorization_k8s_io_v1.RoleBinding{}, id)
+		if err == nil {
+			return obj.(*rbac_authorization_k8s_io_v1.RoleBinding), nil
+		}
+	}
+
+	return nil, err
+}
+
+func (s *roleBindingMergedSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	totalLen := 0
+	for _, set := range s.sets {
+		totalLen += set.Length()
+	}
+	return totalLen
+}
+
+func (s *roleBindingMergedSet) Generic() sksets.ResourceSet {
+	panic("unimplemented")
+}
+
+func (s *roleBindingMergedSet) Delta(newSet RoleBindingSet) sksets.ResourceDelta {
+	panic("unimplemented")
+}
+
+func (s *roleBindingMergedSet) Clone() RoleBindingSet {
+	if s == nil {
+		return nil
+	}
+	return &roleBindingMergedSet{sets: s.sets[:]}
 }
 
 type ClusterRoleSet interface {
@@ -617,7 +961,7 @@ func (s *clusterRoleSet) Union(set ClusterRoleSet) ClusterRoleSet {
 	if s == nil {
 		return set
 	}
-	return NewClusterRoleSet(append(s.List(), set.List()...)...)
+	return &clusterRoleMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
 }
 
 func (s *clusterRoleSet) Difference(set ClusterRoleSet) ClusterRoleSet {
@@ -679,7 +1023,179 @@ func (s *clusterRoleSet) Clone() ClusterRoleSet {
 	if s == nil {
 		return nil
 	}
-	return &clusterRoleSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &clusterRoleMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
+}
+
+type clusterRoleMergedSet struct {
+	sets []sksets.ResourceSet
+}
+
+func NewClusterRoleMergedSet(clusterRoleList ...*rbac_authorization_k8s_io_v1.ClusterRole) ClusterRoleSet {
+	return &clusterRoleMergedSet{sets: []sksets.ResourceSet{makeGenericClusterRoleSet(clusterRoleList)}}
+}
+
+func NewClusterRoleMergedSetFromList(clusterRoleList *rbac_authorization_k8s_io_v1.ClusterRoleList) ClusterRoleSet {
+	list := make([]*rbac_authorization_k8s_io_v1.ClusterRole, 0, len(clusterRoleList.Items))
+	for idx := range clusterRoleList.Items {
+		list = append(list, &clusterRoleList.Items[idx])
+	}
+	return &clusterRoleMergedSet{sets: []sksets.ResourceSet{makeGenericClusterRoleSet(list)}}
+}
+
+func (s *clusterRoleMergedSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	toRet := sets.String{}
+	for _, set := range s.sets {
+		toRet = toRet.Union(set.Keys())
+	}
+	return toRet
+}
+
+func (s *clusterRoleMergedSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.ClusterRole) bool) []*rbac_authorization_k8s_io_v1.ClusterRole {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
+		})
+	}
+	clusterRoleList := []*rbac_authorization_k8s_io_v1.ClusterRole{}
+	for _, set := range s.sets {
+		for _, obj := range set.List(genericFilters...) {
+			clusterRoleList = append(clusterRoleList, obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
+		}
+	}
+	return clusterRoleList
+}
+
+func (s *clusterRoleMergedSet) UnsortedList(filterResource ...func(*rbac_authorization_k8s_io_v1.ClusterRole) bool) []*rbac_authorization_k8s_io_v1.ClusterRole {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
+		})
+	}
+
+	clusterRoleList := []*rbac_authorization_k8s_io_v1.ClusterRole{}
+	for _, set := range s.sets {
+		for _, obj := range set.UnsortedList(genericFilters...) {
+			clusterRoleList = append(clusterRoleList, obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
+		}
+	}
+	return clusterRoleList
+}
+
+func (s *clusterRoleMergedSet) Map() map[string]*rbac_authorization_k8s_io_v1.ClusterRole {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*rbac_authorization_k8s_io_v1.ClusterRole{}
+	for _, set := range s.sets {
+		for k, v := range set.Map() {
+			newMap[k] = v.(*rbac_authorization_k8s_io_v1.ClusterRole)
+		}
+	}
+	return newMap
+}
+
+func (s *clusterRoleMergedSet) Insert(
+	clusterRoleList ...*rbac_authorization_k8s_io_v1.ClusterRole,
+) {
+	if s == nil {
+	}
+	if len(s.sets) == 0 {
+		s.sets = append(s.sets, makeGenericClusterRoleSet(clusterRoleList))
+	}
+	for _, obj := range clusterRoleList {
+		s.sets[0].Insert(obj)
+	}
+}
+
+func (s *clusterRoleMergedSet) Has(clusterRole ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	for _, set := range s.sets {
+		if set.Has(clusterRole) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *clusterRoleMergedSet) Equal(
+	clusterRoleSet ClusterRoleSet,
+) bool {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleMergedSet) Delete(ClusterRole ezkube.ResourceId) {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleMergedSet) Union(set ClusterRoleSet) ClusterRoleSet {
+	return &clusterRoleMergedSet{sets: append(s.sets, set.Generic())}
+}
+
+func (s *clusterRoleMergedSet) Difference(set ClusterRoleSet) ClusterRoleSet {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleMergedSet) Intersection(set ClusterRoleSet) ClusterRoleSet {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleMergedSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.ClusterRole, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find ClusterRole %v", sksets.Key(id))
+	}
+
+	var err error
+	for _, set := range s.sets {
+		var obj ezkube.ResourceId
+		obj, err = set.Find(&rbac_authorization_k8s_io_v1.ClusterRole{}, id)
+		if err == nil {
+			return obj.(*rbac_authorization_k8s_io_v1.ClusterRole), nil
+		}
+	}
+
+	return nil, err
+}
+
+func (s *clusterRoleMergedSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	totalLen := 0
+	for _, set := range s.sets {
+		totalLen += set.Length()
+	}
+	return totalLen
+}
+
+func (s *clusterRoleMergedSet) Generic() sksets.ResourceSet {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleMergedSet) Delta(newSet ClusterRoleSet) sksets.ResourceDelta {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleMergedSet) Clone() ClusterRoleSet {
+	if s == nil {
+		return nil
+	}
+	return &clusterRoleMergedSet{sets: s.sets[:]}
 }
 
 type ClusterRoleBindingSet interface {
@@ -840,7 +1356,7 @@ func (s *clusterRoleBindingSet) Union(set ClusterRoleBindingSet) ClusterRoleBind
 	if s == nil {
 		return set
 	}
-	return NewClusterRoleBindingSet(append(s.List(), set.List()...)...)
+	return &clusterRoleBindingMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
 }
 
 func (s *clusterRoleBindingSet) Difference(set ClusterRoleBindingSet) ClusterRoleBindingSet {
@@ -902,5 +1418,177 @@ func (s *clusterRoleBindingSet) Clone() ClusterRoleBindingSet {
 	if s == nil {
 		return nil
 	}
-	return &clusterRoleBindingSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &clusterRoleBindingMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
+}
+
+type clusterRoleBindingMergedSet struct {
+	sets []sksets.ResourceSet
+}
+
+func NewClusterRoleBindingMergedSet(clusterRoleBindingList ...*rbac_authorization_k8s_io_v1.ClusterRoleBinding) ClusterRoleBindingSet {
+	return &clusterRoleBindingMergedSet{sets: []sksets.ResourceSet{makeGenericClusterRoleBindingSet(clusterRoleBindingList)}}
+}
+
+func NewClusterRoleBindingMergedSetFromList(clusterRoleBindingList *rbac_authorization_k8s_io_v1.ClusterRoleBindingList) ClusterRoleBindingSet {
+	list := make([]*rbac_authorization_k8s_io_v1.ClusterRoleBinding, 0, len(clusterRoleBindingList.Items))
+	for idx := range clusterRoleBindingList.Items {
+		list = append(list, &clusterRoleBindingList.Items[idx])
+	}
+	return &clusterRoleBindingMergedSet{sets: []sksets.ResourceSet{makeGenericClusterRoleBindingSet(list)}}
+}
+
+func (s *clusterRoleBindingMergedSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	toRet := sets.String{}
+	for _, set := range s.sets {
+		toRet = toRet.Union(set.Keys())
+	}
+	return toRet
+}
+
+func (s *clusterRoleBindingMergedSet) List(filterResource ...func(*rbac_authorization_k8s_io_v1.ClusterRoleBinding) bool) []*rbac_authorization_k8s_io_v1.ClusterRoleBinding {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
+		})
+	}
+	clusterRoleBindingList := []*rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
+	for _, set := range s.sets {
+		for _, obj := range set.List(genericFilters...) {
+			clusterRoleBindingList = append(clusterRoleBindingList, obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
+		}
+	}
+	return clusterRoleBindingList
+}
+
+func (s *clusterRoleBindingMergedSet) UnsortedList(filterResource ...func(*rbac_authorization_k8s_io_v1.ClusterRoleBinding) bool) []*rbac_authorization_k8s_io_v1.ClusterRoleBinding {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
+		})
+	}
+
+	clusterRoleBindingList := []*rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
+	for _, set := range s.sets {
+		for _, obj := range set.UnsortedList(genericFilters...) {
+			clusterRoleBindingList = append(clusterRoleBindingList, obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
+		}
+	}
+	return clusterRoleBindingList
+}
+
+func (s *clusterRoleBindingMergedSet) Map() map[string]*rbac_authorization_k8s_io_v1.ClusterRoleBinding {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
+	for _, set := range s.sets {
+		for k, v := range set.Map() {
+			newMap[k] = v.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding)
+		}
+	}
+	return newMap
+}
+
+func (s *clusterRoleBindingMergedSet) Insert(
+	clusterRoleBindingList ...*rbac_authorization_k8s_io_v1.ClusterRoleBinding,
+) {
+	if s == nil {
+	}
+	if len(s.sets) == 0 {
+		s.sets = append(s.sets, makeGenericClusterRoleBindingSet(clusterRoleBindingList))
+	}
+	for _, obj := range clusterRoleBindingList {
+		s.sets[0].Insert(obj)
+	}
+}
+
+func (s *clusterRoleBindingMergedSet) Has(clusterRoleBinding ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	for _, set := range s.sets {
+		if set.Has(clusterRoleBinding) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *clusterRoleBindingMergedSet) Equal(
+	clusterRoleBindingSet ClusterRoleBindingSet,
+) bool {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleBindingMergedSet) Delete(ClusterRoleBinding ezkube.ResourceId) {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleBindingMergedSet) Union(set ClusterRoleBindingSet) ClusterRoleBindingSet {
+	return &clusterRoleBindingMergedSet{sets: append(s.sets, set.Generic())}
+}
+
+func (s *clusterRoleBindingMergedSet) Difference(set ClusterRoleBindingSet) ClusterRoleBindingSet {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleBindingMergedSet) Intersection(set ClusterRoleBindingSet) ClusterRoleBindingSet {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleBindingMergedSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.ClusterRoleBinding, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find ClusterRoleBinding %v", sksets.Key(id))
+	}
+
+	var err error
+	for _, set := range s.sets {
+		var obj ezkube.ResourceId
+		obj, err = set.Find(&rbac_authorization_k8s_io_v1.ClusterRoleBinding{}, id)
+		if err == nil {
+			return obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding), nil
+		}
+	}
+
+	return nil, err
+}
+
+func (s *clusterRoleBindingMergedSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	totalLen := 0
+	for _, set := range s.sets {
+		totalLen += set.Length()
+	}
+	return totalLen
+}
+
+func (s *clusterRoleBindingMergedSet) Generic() sksets.ResourceSet {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleBindingMergedSet) Delta(newSet ClusterRoleBindingSet) sksets.ResourceDelta {
+	panic("unimplemented")
+}
+
+func (s *clusterRoleBindingMergedSet) Clone() ClusterRoleBindingSet {
+	if s == nil {
+		return nil
+	}
+	return &clusterRoleBindingMergedSet{sets: s.sets[:]}
 }
