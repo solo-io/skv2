@@ -5,12 +5,21 @@ import (
 	"testing"
 
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
 // Define a global variable to prevent compiler optimizations
 var result interface{}
 
-scale := 10000
+var scale = 10000
+
+func Benchmark(b *testing.B) {
+	b.Run("Resources_Insert", BenchmarkResources_Insert)
+	b.Run("Resources_Find", BenchmarkResources_Find)
+	b.Run("Resources_Delete", BenchmarkResources_Delete)
+	b.Run("Resources_List", BenchmarkResources_List)
+	b.Run("Resources_UnsortedList", BenchmarkResources_UnsortedList)
+}
 
 func BenchmarkResources_Insert(b *testing.B) {
 	var r *Resources
@@ -56,11 +65,10 @@ func BenchmarkResources_Delete(b *testing.B) {
 	result = r
 }
 
-
 func BenchmarkResources_List(b *testing.B) {
 	r := newResources()
-	for j := 0; j < scale ; j++ {
-		resource := &ezkube.GenericResourceId{Namespace: "namespace", Name: "name" + string(j)}
+	for j := 0; j < scale; j++ {
+		resource := &v1.ObjectRef{Namespace: "namespace", Name: "name" + fmt.Sprint(j)}
 		r.Insert(resource)
 	}
 
@@ -76,7 +84,7 @@ func BenchmarkResources_List(b *testing.B) {
 func BenchmarkResources_UnsortedList(b *testing.B) {
 	r := newResources()
 	for j := 0; j < scale; j++ {
-		resource := &ezkube.GenericResourceId{Namespace: "namespace", Name: "name" + string(j)}
+		resource := &v1.ObjectRef{Namespace: "namespace", Name: "name" + fmt.Sprint(j)}
 		r.Insert(resource)
 	}
 
@@ -88,3 +96,5 @@ func BenchmarkResources_UnsortedList(b *testing.B) {
 	// Store the result to prevent the compiler from optimizing the loop away.
 	result = res
 }
+
+
