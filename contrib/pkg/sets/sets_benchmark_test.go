@@ -97,4 +97,26 @@ func BenchmarkResources_UnsortedList(b *testing.B) {
 	result = res
 }
 
+// func BenchmarkResources_Delta(b *testing.B) {
+// 	// Define the scale for the number of resources in each set.
+// 	const scale = 1000
 
+// 	// Create and populate the original set with resources.
+// 	originalSet := newResources()
+// 	for i := 0; i < scale; i++ {
+// 		resource := &v1.ObjectRef{Namespace: "namespace", Name: "originalName" + fmt.Sprint(i)}
+// 		originalSet.Insert(resource)
+// 	}
+
+// 	// Create and populate a new set with some overlapping and some unique resources.
+// 	newSet := newResources()
+// 	for i := scale / 2; i < scale+(scale/2); i++ {
+// 		resource := &v1.ObjectRef{Namespace: "namespace", Name: "newName" + fmt.Sprint(i)}
+// 		newSet.Insert(resource)
+// 	}
+
+// 	b.ResetTimer() // Start timing the benchmark loop.
+// 	for i := 0; i < b.N; i++ {
+// 		_ = originalSet.Delta(newSet)
+// 	}
+// }
