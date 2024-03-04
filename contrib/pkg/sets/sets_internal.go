@@ -16,14 +16,18 @@ type Resources struct {
 
 func newResources(resources ...ezkube.ResourceId) *Resources {
 	m := &Resources{
-		l: make([]ezkube.ResourceId, 0, len(resources)),
+		l: []ezkube.ResourceId{},
 		m: make(map[uint64]uint64, len(resources)),
 	}
 	for idx, resource := range resources {
 		if resource == nil {
 			continue
 		}
-		m.l[idx] = resource
+		hash := Hash(resource)
+		if _, ok := m.m[hash]; ok {
+			continue
+		}
+		m.l = append(m.l, resource)
 		m.m[Hash(resource)] = uint64(idx)
 	}
 	return m
@@ -100,7 +104,6 @@ func (r *Resources) Keys() sets.String {
 }
 
 func (r *Resources) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
-	// sort.Sort(res)
 	var resources []ezkube.ResourceId
 	for _, e := range r.l {
 		var filtered bool
@@ -150,13 +153,21 @@ func (r *Resources) Set() *Resources {
 }
 
 func (r *Resources) Insert(resources ...ezkube.ResourceId) {
+	if r.m == nil {
+		r.m = make(map[uint64]uint64, len(resources))
+	}
 	for _, resource := range resources {
 		if resource == nil {
 			continue
 		}
-		r.l = append(r.l, resource)
 		hash := Hash(resource)
-		r.m[hash] = uint64(len(r.l) - 1)
+		if idx, ok := r.m[hash]; ok {
+			r.l[idx] = resource
+		} else {
+			r.l = append(r.l, resource)
+
+			r.m[hash] = uint64(len(r.l) - 1)
+		}
 	}
 }
 
@@ -221,7 +232,9 @@ func (s1 *Resources) Union(s2 *Resources) *Resources {
 		result.Insert(key)
 	}
 	for _, key := range s2.List() {
-		result.Insert(key)
+		if !s1.Has(key) {
+			result.Insert(key)
+		}
 	}
 	return result
 }
@@ -251,7 +264,7 @@ func (s1 *Resources) Intersection(s2 *Resources) *Resources {
 
 // IsSuperset returns true if and only if s1 is a superset of s2.
 func (s1 *Resources) IsSuperset(s2 *Resources) bool {
-	for _, item := range s1.l {
+	for _, item := range s2.l {
 		if !s1.Has(item) {
 			return false
 		}
