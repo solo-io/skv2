@@ -11,14 +11,14 @@ import (
 )
 
 func TestResourcesSet(t *testing.T) {
-	s := Resources{}
-	s2 := Resources{}
-	if len(s) != 0 {
-		t.Errorf("Expected len=0: %d", len(s))
+	s := &Resources{}
+	s2 := &Resources{}
+	if s.Len() != 0 {
+		t.Errorf("Expected len=0: %d", s.Len())
 	}
 	s.Insert(&v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "b"})
-	if len(s) != 2 {
-		t.Errorf("Expected len=2: %d", len(s))
+	if s.Len() != 2 {
+		t.Errorf("Expected len=2: %d", s.Len())
 	}
 	s.Insert(&v1.ObjectRef{Name: "c"})
 	if s.Has(&v1.ObjectRef{Name: "d"}) {
@@ -51,13 +51,13 @@ func TestResourcesSet(t *testing.T) {
 func TestResourcesSetDeleteMultiples(t *testing.T) {
 	s := Resources{}
 	s.Insert(&v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "b"}, &v1.ObjectRef{Name: "c"})
-	if len(s) != 3 {
-		t.Errorf("Expected len=3: %d", len(s))
+	if s.Len() != 3 {
+		t.Errorf("Expected len=3: %d", s.Len())
 	}
 
 	s.Delete(&v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "c"})
-	if len(s) != 1 {
-		t.Errorf("Expected len=1: %d", len(s))
+	if s.Len() != 1 {
+		t.Errorf("Expected len=1: %d", s.Len())
 	}
 	if s.Has(&v1.ObjectRef{Name: "a"}) {
 		t.Errorf("Unexpected contents: %#v", s)
@@ -73,8 +73,8 @@ func TestResourcesSetDeleteMultiples(t *testing.T) {
 
 func TestNewStringSet(t *testing.T) {
 	s := newResources(&v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "b"}, &v1.ObjectRef{Name: "c"})
-	if len(s) != 3 {
-		t.Errorf("Expected len=3: %d", len(s))
+	if s.Len() != 3 {
+		t.Errorf("Expected len=3: %d", s.Len())
 	}
 	if !s.Has(&v1.ObjectRef{Name: "a"}) || !s.Has(&v1.ObjectRef{Name: "b"}) || !s.Has(&v1.ObjectRef{Name: "c"}) {
 		t.Errorf("Unexpected contents: %#v", s)
@@ -89,10 +89,10 @@ func TestResourcesSetList(t *testing.T) {
 	)
 	list := s.List()
 	expected := []*v1.ObjectRef{
-		&v1.ObjectRef{Name: "a"},
-		&v1.ObjectRef{Name: "x"},
-		&v1.ObjectRef{Name: "y"},
 		&v1.ObjectRef{Name: "z"},
+		&v1.ObjectRef{Name: "y"},
+		&v1.ObjectRef{Name: "x"},
+		&v1.ObjectRef{Name: "a"},
 	}
 	for idx := range list {
 		if !proto.Equal(list[idx].(proto.Message), expected[idx]) {
@@ -111,14 +111,14 @@ func TestResourcesSetDifference(t *testing.T) {
 	)
 	c := a.Difference(b)
 	d := b.Difference(a)
-	if len(c) != 1 {
-		t.Errorf("Expected len=1: %d", len(c))
+	if c.Len() != 1 {
+		t.Errorf("Expected len=1: %d", c.Len())
 	}
 	if !c.Has(&v1.ObjectRef{Name: "3"}) {
 		t.Errorf("Unexpected contents: %#v", c.List())
 	}
-	if len(d) != 2 {
-		t.Errorf("Expected len=2: %d", len(d))
+	if d.Len() != 2 {
+		t.Errorf("Expected len=2: %d", d.Len())
 	}
 	if !d.Has(&v1.ObjectRef{Name: "4"}) || !d.Has(&v1.ObjectRef{Name: "5"}) {
 		t.Errorf("Unexpected contents: %#v", d.List())
@@ -193,9 +193,9 @@ func TestResourcesSetEquals(t *testing.T) {
 
 func TestResourcesUnion(t *testing.T) {
 	tests := []struct {
-		s1       Resources
-		s2       Resources
-		expected Resources
+		s1       *Resources
+		s2       *Resources
+		expected *Resources
 	}{
 		{
 			newResources(
@@ -270,9 +270,9 @@ func TestResourcesUnion(t *testing.T) {
 
 func TestResourcesIntersection(t *testing.T) {
 	tests := []struct {
-		s1       Resources
-		s2       Resources
-		expected Resources
+		s1       *Resources
+		s2       *Resources
+		expected *Resources
 	}{
 		{
 			newResources(

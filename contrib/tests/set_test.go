@@ -113,7 +113,7 @@ var _ = Describe("PaintSet", func() {
 		setA.Insert(paintA, paintB)
 		setB.Insert(paintA, paintB, paintC)
 		unionSet := setA.Union(setB)
-		Expect(unionSet.List()).To(ConsistOf(paintA, paintB, paintC))
+		Expect(unionSet.List()).To(ContainElements(paintA, paintB, paintC))
 		Expect(unionSet).ToNot(BeIdenticalTo(setA))
 		Expect(unionSet).ToNot(BeIdenticalTo(setB))
 	})
