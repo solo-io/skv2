@@ -213,12 +213,35 @@ func (m *ObjectSelector) Clone() proto.Message {
 }
 
 // Clone function
-func (m *TargetRefWithSectionName) Clone() proto.Message {
-	var target *TargetRefWithSectionName
+func (m *PolicyTargetReference) Clone() proto.Message {
+	var target *PolicyTargetReference
 	if m == nil {
 		return target
 	}
-	target = &TargetRefWithSectionName{}
+	target = &PolicyTargetReference{}
+
+	target.Group = m.GetGroup()
+
+	target.Kind = m.GetKind()
+
+	target.Name = m.GetName()
+
+	if h, ok := interface{}(m.GetNamespace()).(clone.Cloner); ok {
+		target.Namespace = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+	} else {
+		target.Namespace = proto.Clone(m.GetNamespace()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+	}
+
+	return target
+}
+
+// Clone function
+func (m *PolicyTargetReferenceWithSectionName) Clone() proto.Message {
+	var target *PolicyTargetReferenceWithSectionName
+	if m == nil {
+		return target
+	}
+	target = &PolicyTargetReferenceWithSectionName{}
 
 	target.Group = m.GetGroup()
 
