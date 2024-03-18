@@ -356,6 +356,9 @@ func (s *secretMergedSet) Delete(Secret ezkube.ResourceId) {
 }
 
 func (s *secretMergedSet) Union(set SecretSet) SecretSet {
+	if s == nil {
+		return set
+	}
 	return &secretMergedSet{sets: append(s.sets, set.Generic())}
 }
 
@@ -753,6 +756,9 @@ func (s *serviceAccountMergedSet) Delete(ServiceAccount ezkube.ResourceId) {
 }
 
 func (s *serviceAccountMergedSet) Union(set ServiceAccountSet) ServiceAccountSet {
+	if s == nil {
+		return set
+	}
 	return &serviceAccountMergedSet{sets: append(s.sets, set.Generic())}
 }
 
@@ -1150,6 +1156,9 @@ func (s *namespaceMergedSet) Delete(Namespace ezkube.ResourceId) {
 }
 
 func (s *namespaceMergedSet) Union(set NamespaceSet) NamespaceSet {
+	if s == nil {
+		return set
+	}
 	return &namespaceMergedSet{sets: append(s.sets, set.Generic())}
 }
 

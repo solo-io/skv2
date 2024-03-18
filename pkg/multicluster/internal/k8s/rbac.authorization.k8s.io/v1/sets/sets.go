@@ -356,6 +356,9 @@ func (s *roleMergedSet) Delete(Role ezkube.ResourceId) {
 }
 
 func (s *roleMergedSet) Union(set RoleSet) RoleSet {
+	if s == nil {
+		return set
+	}
 	return &roleMergedSet{sets: append(s.sets, set.Generic())}
 }
 
@@ -753,6 +756,9 @@ func (s *roleBindingMergedSet) Delete(RoleBinding ezkube.ResourceId) {
 }
 
 func (s *roleBindingMergedSet) Union(set RoleBindingSet) RoleBindingSet {
+	if s == nil {
+		return set
+	}
 	return &roleBindingMergedSet{sets: append(s.sets, set.Generic())}
 }
 
@@ -1150,6 +1156,9 @@ func (s *clusterRoleMergedSet) Delete(ClusterRole ezkube.ResourceId) {
 }
 
 func (s *clusterRoleMergedSet) Union(set ClusterRoleSet) ClusterRoleSet {
+	if s == nil {
+		return set
+	}
 	return &clusterRoleMergedSet{sets: append(s.sets, set.Generic())}
 }
 
@@ -1547,6 +1556,9 @@ func (s *clusterRoleBindingMergedSet) Delete(ClusterRoleBinding ezkube.ResourceI
 }
 
 func (s *clusterRoleBindingMergedSet) Union(set ClusterRoleBindingSet) ClusterRoleBindingSet {
+	if s == nil {
+		return set
+	}
 	return &clusterRoleBindingMergedSet{sets: append(s.sets, set.Generic())}
 }
 

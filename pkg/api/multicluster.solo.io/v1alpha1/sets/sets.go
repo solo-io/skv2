@@ -356,6 +356,9 @@ func (s *kubernetesClusterMergedSet) Delete(KubernetesCluster ezkube.ResourceId)
 }
 
 func (s *kubernetesClusterMergedSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
+	if s == nil {
+		return set
+	}
 	return &kubernetesClusterMergedSet{sets: append(s.sets, set.Generic())}
 }
 

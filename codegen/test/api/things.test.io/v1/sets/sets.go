@@ -356,6 +356,9 @@ func (s *paintMergedSet) Delete(Paint ezkube.ResourceId) {
 }
 
 func (s *paintMergedSet) Union(set PaintSet) PaintSet {
+	if s == nil {
+		return set
+	}
 	return &paintMergedSet{sets: append(s.sets, set.Generic())}
 }
 
@@ -753,6 +756,9 @@ func (s *clusterResourceMergedSet) Delete(ClusterResource ezkube.ResourceId) {
 }
 
 func (s *clusterResourceMergedSet) Union(set ClusterResourceSet) ClusterResourceSet {
+	if s == nil {
+		return set
+	}
 	return &clusterResourceMergedSet{sets: append(s.sets, set.Generic())}
 }
 

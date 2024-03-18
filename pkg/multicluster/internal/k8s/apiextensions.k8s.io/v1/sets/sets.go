@@ -356,6 +356,9 @@ func (s *customResourceDefinitionMergedSet) Delete(CustomResourceDefinition ezku
 }
 
 func (s *customResourceDefinitionMergedSet) Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
+	if s == nil {
+		return set
+	}
 	return &customResourceDefinitionMergedSet{sets: append(s.sets, set.Generic())}
 }
 

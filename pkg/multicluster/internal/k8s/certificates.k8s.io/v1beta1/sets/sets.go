@@ -356,6 +356,9 @@ func (s *certificateSigningRequestMergedSet) Delete(CertificateSigningRequest ez
 }
 
 func (s *certificateSigningRequestMergedSet) Union(set CertificateSigningRequestSet) CertificateSigningRequestSet {
+	if s == nil {
+		return set
+	}
 	return &certificateSigningRequestMergedSet{sets: append(s.sets, set.Generic())}
 }
 

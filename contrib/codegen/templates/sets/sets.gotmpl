@@ -367,6 +367,9 @@ func (s *{{ $kindLowerCamel }}MergedSet) Delete({{ $resource.Kind }} ezkube.Reso
 }
 
 func (s *{{ $kindLowerCamel }}MergedSet) Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
+    if s == nil {
+        return set
+    }
     return &{{ $kindLowerCamel }}MergedSet{sets: append(s.sets, set.Generic())}
 }
 

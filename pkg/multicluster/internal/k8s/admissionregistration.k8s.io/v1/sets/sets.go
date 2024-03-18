@@ -356,6 +356,9 @@ func (s *validatingWebhookConfigurationMergedSet) Delete(ValidatingWebhookConfig
 }
 
 func (s *validatingWebhookConfigurationMergedSet) Union(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
+	if s == nil {
+		return set
+	}
 	return &validatingWebhookConfigurationMergedSet{sets: append(s.sets, set.Generic())}
 }
 
