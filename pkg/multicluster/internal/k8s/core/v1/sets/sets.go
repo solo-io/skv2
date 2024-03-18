@@ -327,7 +327,17 @@ func (s *secretMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericSecretSet(secretList))
 	}
 	for _, obj := range secretList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 
@@ -727,7 +737,17 @@ func (s *serviceAccountMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericServiceAccountSet(serviceAccountList))
 	}
 	for _, obj := range serviceAccountList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 
@@ -1127,7 +1147,17 @@ func (s *namespaceMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericNamespaceSet(namespaceList))
 	}
 	for _, obj := range namespaceList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 

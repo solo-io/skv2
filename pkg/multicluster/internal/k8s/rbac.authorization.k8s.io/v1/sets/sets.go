@@ -327,7 +327,17 @@ func (s *roleMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericRoleSet(roleList))
 	}
 	for _, obj := range roleList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 
@@ -727,7 +737,17 @@ func (s *roleBindingMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericRoleBindingSet(roleBindingList))
 	}
 	for _, obj := range roleBindingList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 
@@ -1127,7 +1147,17 @@ func (s *clusterRoleMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericClusterRoleSet(clusterRoleList))
 	}
 	for _, obj := range clusterRoleList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 
@@ -1527,7 +1557,17 @@ func (s *clusterRoleBindingMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericClusterRoleBindingSet(clusterRoleBindingList))
 	}
 	for _, obj := range clusterRoleBindingList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 

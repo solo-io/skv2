@@ -327,7 +327,17 @@ func (s *paintMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericPaintSet(paintList))
 	}
 	for _, obj := range paintList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 
@@ -727,7 +737,17 @@ func (s *clusterResourceMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericClusterResourceSet(clusterResourceList))
 	}
 	for _, obj := range clusterResourceList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 

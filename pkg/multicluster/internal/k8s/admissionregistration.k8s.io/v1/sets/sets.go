@@ -327,7 +327,17 @@ func (s *validatingWebhookConfigurationMergedSet) Insert(
 		s.sets = append(s.sets, makeGenericValidatingWebhookConfigurationSet(validatingWebhookConfigurationList))
 	}
 	for _, obj := range validatingWebhookConfigurationList {
-		s.sets[0].Insert(obj)
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
 	}
 }
 
