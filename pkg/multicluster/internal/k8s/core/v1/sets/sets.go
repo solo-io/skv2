@@ -350,7 +350,9 @@ func (s *secretMergedSet) Equal(
 }
 
 func (s *secretMergedSet) Delete(Secret ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(Secret)
+	}
 }
 
 func (s *secretMergedSet) Union(set SecretSet) SecretSet {
@@ -745,7 +747,9 @@ func (s *serviceAccountMergedSet) Equal(
 }
 
 func (s *serviceAccountMergedSet) Delete(ServiceAccount ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(ServiceAccount)
+	}
 }
 
 func (s *serviceAccountMergedSet) Union(set ServiceAccountSet) ServiceAccountSet {
@@ -1140,7 +1144,9 @@ func (s *namespaceMergedSet) Equal(
 }
 
 func (s *namespaceMergedSet) Delete(Namespace ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(Namespace)
+	}
 }
 
 func (s *namespaceMergedSet) Union(set NamespaceSet) NamespaceSet {

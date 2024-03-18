@@ -350,7 +350,9 @@ func (s *certificateSigningRequestMergedSet) Equal(
 }
 
 func (s *certificateSigningRequestMergedSet) Delete(CertificateSigningRequest ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(CertificateSigningRequest)
+	}
 }
 
 func (s *certificateSigningRequestMergedSet) Union(set CertificateSigningRequestSet) CertificateSigningRequestSet {

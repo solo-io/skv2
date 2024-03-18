@@ -350,7 +350,9 @@ func (s *kubernetesClusterMergedSet) Equal(
 }
 
 func (s *kubernetesClusterMergedSet) Delete(KubernetesCluster ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(KubernetesCluster)
+	}
 }
 
 func (s *kubernetesClusterMergedSet) Union(set KubernetesClusterSet) KubernetesClusterSet {

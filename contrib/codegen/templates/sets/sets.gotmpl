@@ -361,7 +361,9 @@ func (s *{{ $kindLowerCamel }}MergedSet) Equal(
 }
 
 func (s *{{ $kindLowerCamel }}MergedSet) Delete({{ $resource.Kind }} ezkube.ResourceId) {
-    panic("unimplemented")
+    for _, set := range s.sets {
+        set.Delete({{ $resource.Kind }})
+    }    
 }
 
 func (s *{{ $kindLowerCamel }}MergedSet) Union(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {

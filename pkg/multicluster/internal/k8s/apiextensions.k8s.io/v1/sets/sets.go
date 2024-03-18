@@ -350,7 +350,9 @@ func (s *customResourceDefinitionMergedSet) Equal(
 }
 
 func (s *customResourceDefinitionMergedSet) Delete(CustomResourceDefinition ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(CustomResourceDefinition)
+	}
 }
 
 func (s *customResourceDefinitionMergedSet) Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {

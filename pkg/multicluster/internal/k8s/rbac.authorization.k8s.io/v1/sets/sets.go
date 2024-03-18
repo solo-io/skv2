@@ -350,7 +350,9 @@ func (s *roleMergedSet) Equal(
 }
 
 func (s *roleMergedSet) Delete(Role ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(Role)
+	}
 }
 
 func (s *roleMergedSet) Union(set RoleSet) RoleSet {
@@ -745,7 +747,9 @@ func (s *roleBindingMergedSet) Equal(
 }
 
 func (s *roleBindingMergedSet) Delete(RoleBinding ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(RoleBinding)
+	}
 }
 
 func (s *roleBindingMergedSet) Union(set RoleBindingSet) RoleBindingSet {
@@ -1140,7 +1144,9 @@ func (s *clusterRoleMergedSet) Equal(
 }
 
 func (s *clusterRoleMergedSet) Delete(ClusterRole ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(ClusterRole)
+	}
 }
 
 func (s *clusterRoleMergedSet) Union(set ClusterRoleSet) ClusterRoleSet {
@@ -1535,7 +1541,9 @@ func (s *clusterRoleBindingMergedSet) Equal(
 }
 
 func (s *clusterRoleBindingMergedSet) Delete(ClusterRoleBinding ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(ClusterRoleBinding)
+	}
 }
 
 func (s *clusterRoleBindingMergedSet) Union(set ClusterRoleBindingSet) ClusterRoleBindingSet {

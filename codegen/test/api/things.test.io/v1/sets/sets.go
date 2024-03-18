@@ -350,7 +350,9 @@ func (s *paintMergedSet) Equal(
 }
 
 func (s *paintMergedSet) Delete(Paint ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(Paint)
+	}
 }
 
 func (s *paintMergedSet) Union(set PaintSet) PaintSet {
@@ -745,7 +747,9 @@ func (s *clusterResourceMergedSet) Equal(
 }
 
 func (s *clusterResourceMergedSet) Delete(ClusterResource ezkube.ResourceId) {
-	panic("unimplemented")
+	for _, set := range s.sets {
+		set.Delete(ClusterResource)
+	}
 }
 
 func (s *clusterResourceMergedSet) Union(set ClusterResourceSet) ClusterResourceSet {
