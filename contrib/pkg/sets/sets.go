@@ -29,8 +29,7 @@ type ResourceSet interface {
 	Keys() sets.String
 	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
-	Map() map[string]ezkube.ResourceId
-	Set() *Resources
+	Map() Resources
 	Insert(resource ...ezkube.ResourceId)
 	Equal(set ResourceSet) bool
 	Has(resource ezkube.ResourceId) bool
@@ -57,7 +56,7 @@ type ResourceDelta struct {
 
 type threadSafeResourceSet struct {
 	lock sync.RWMutex
-	set  *Resources
+	set  Resources
 }
 
 func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
@@ -68,12 +67,6 @@ func (t *threadSafeResourceSet) Keys() sets.String {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.Keys()
-}
-
-func (t *threadSafeResourceSet) Set() *Resources {
-	t.lock.RLock()
-	defer t.lock.RUnlock()
-	return t.set
 }
 
 func (t *threadSafeResourceSet) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
@@ -88,7 +81,7 @@ func (t *threadSafeResourceSet) UnsortedList(filterResource ...func(ezkube.Resou
 	return t.set.UnsortedList(filterResource...)
 }
 
-func (t *threadSafeResourceSet) Map() map[string]ezkube.ResourceId {
+func (t *threadSafeResourceSet) Map() Resources {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.Map()
@@ -110,12 +103,8 @@ func (t *threadSafeResourceSet) Has(resource ezkube.ResourceId) bool {
 
 // Has returns true if and only if item is contained in the set.
 func (s Resources) Has(item ezkube.ResourceId) bool {
-	for _, e := range s {
-		if e == item {
-			return true
-		}
-	}
-	return false
+	_, contained := s[Key(item)]
+	return contained
 }
 
 func (t *threadSafeResourceSet) IsSuperset(
@@ -123,7 +112,7 @@ func (t *threadSafeResourceSet) IsSuperset(
 ) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set.IsSuperset(set.Set())
+	return t.set.IsSuperset(set.Map())
 }
 
 func (t *threadSafeResourceSet) Equal(
@@ -131,7 +120,7 @@ func (t *threadSafeResourceSet) Equal(
 ) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set.Equal(set.Set())
+	return t.set.Equal(set.Map())
 }
 
 func (t *threadSafeResourceSet) Delete(resource ezkube.ResourceId) {
@@ -143,19 +132,19 @@ func (t *threadSafeResourceSet) Delete(resource ezkube.ResourceId) {
 func (t *threadSafeResourceSet) Union(set ResourceSet) ResourceSet {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	return &threadSafeResourceSet{set: t.set.Union(set.Set())}
+	return &threadSafeResourceSet{set: t.set.Union(set.Map())}
 }
 
 func (t *threadSafeResourceSet) Difference(set ResourceSet) ResourceSet {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return &threadSafeResourceSet{set: t.set.Difference(set.Set())}
+	return &threadSafeResourceSet{set: t.set.Difference(set.Map())}
 }
 
 func (t *threadSafeResourceSet) Intersection(set ResourceSet) ResourceSet {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return &threadSafeResourceSet{set: t.set.Intersection(set.Set())}
+	return &threadSafeResourceSet{set: t.set.Intersection(set.Map())}
 }
 
 func (t *threadSafeResourceSet) Find(
