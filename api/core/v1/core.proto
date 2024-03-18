@@ -162,14 +162,28 @@ message ObjectSelector {
     }
 }
 
-// TargetRef identifies Gateway API objects to apply a direct policy to.
+// PolicyTargetReference identifies Gateway API objects to directly apply policy to.
 // This is a copy of the upstream K8s Gateway API `targetRef` API.
-// Note that we are only using the upstream `PolicyTargetReferenceWithSectionName` type as currently our policies will distinguish between sections.
+// See the following for more information:
+// * https://gateway-api.sigs.k8s.io/geps/gep-713/
+// * https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io%2fv1alpha2.PolicyTargetReference
+// * https://github.com/kubernetes-sigs/gateway-api/blob/b4f0307cc9269e73187300e72979e7e111ab74ab/apis/v1alpha2/policy_types.go#L34-L56
+message PolicyTargetReference {
+  string group = 1;
+  string kind = 2;
+  string name = 3;
+
+  // Optional, if unspecified, the local namespace of the policy is inferred.
+  google.protobuf.StringValue namespace = 4;
+}
+
+// PolicyTargetReferenceWithSectionName identifies Gateway API objects, and optionally a specific section of those objects, to directly apply policy to.
+// This is a copy of the upstream K8s Gateway API `targetRef` API.
 // See the following for more information:
 // * https://gateway-api.sigs.k8s.io/geps/gep-713/
 // * https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io%2fv1alpha2.PolicyTargetReferenceWithSectionName
-// * https://github.com/kubernetes-sigs/gateway-api/blob/444631bfe06f3bcca5d0eadf1857eac1d369421d/apis/v1alpha2/policy_types.go#L58-L83
-message TargetRefWithSectionName {
+// * https://github.com/kubernetes-sigs/gateway-api/blob/b4f0307cc9269e73187300e72979e7e111ab74ab/apis/v1alpha2/policy_types.go#L58-L83
+message PolicyTargetReferenceWithSectionName {
   string group = 1;
   string kind = 2;
   string name = 3;
