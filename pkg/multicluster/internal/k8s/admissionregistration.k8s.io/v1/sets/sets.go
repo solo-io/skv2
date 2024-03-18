@@ -275,8 +275,14 @@ func (s *validatingWebhookConfigurationMergedSet) List(filterResource ...func(*a
 		})
 	}
 	validatingWebhookConfigurationList := []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		}
 	}
@@ -294,10 +300,15 @@ func (s *validatingWebhookConfigurationMergedSet) UnsortedList(filterResource ..
 			return filter(obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		})
 	}
-
 	validatingWebhookConfigurationList := []*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			validatingWebhookConfigurationList = append(validatingWebhookConfigurationList, obj.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration))
 		}
 	}

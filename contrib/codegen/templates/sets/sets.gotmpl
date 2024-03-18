@@ -286,8 +286,14 @@ func (s *{{ $kindLowerCamel }}MergedSet) List(filterResource ... func(*{{ $impor
         })
     }
    {{ $kindLowerCamel }}List := []*{{ $import_prefix }}.{{ $resource.Kind }}{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+            if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			{{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
 		}
 	}
@@ -305,10 +311,15 @@ func (s *{{ $kindLowerCamel }}MergedSet) UnsortedList(filterResource ... func(*{
             return filter(obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
         })
     }
-
-    {{ $kindLowerCamel }}List := []*{{ $import_prefix }}.{{ $resource.Kind }}{}
-	for _, set := range s.sets {
+   {{ $kindLowerCamel }}List := []*{{ $import_prefix }}.{{ $resource.Kind }}{}
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+            if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			{{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
 		}
 	}

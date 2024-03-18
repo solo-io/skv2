@@ -275,8 +275,14 @@ func (s *kubernetesClusterMergedSet) List(filterResource ...func(*multicluster_s
 		})
 	}
 	kubernetesClusterList := []*multicluster_solo_io_v1alpha1.KubernetesCluster{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 		}
 	}
@@ -294,10 +300,15 @@ func (s *kubernetesClusterMergedSet) UnsortedList(filterResource ...func(*multic
 			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 		})
 	}
-
 	kubernetesClusterList := []*multicluster_solo_io_v1alpha1.KubernetesCluster{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 		}
 	}

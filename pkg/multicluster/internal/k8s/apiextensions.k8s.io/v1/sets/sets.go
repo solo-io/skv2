@@ -275,8 +275,14 @@ func (s *customResourceDefinitionMergedSet) List(filterResource ...func(*apiexte
 		})
 	}
 	customResourceDefinitionList := []*apiextensions_k8s_io_v1.CustomResourceDefinition{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		}
 	}
@@ -294,10 +300,15 @@ func (s *customResourceDefinitionMergedSet) UnsortedList(filterResource ...func(
 			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		})
 	}
-
 	customResourceDefinitionList := []*apiextensions_k8s_io_v1.CustomResourceDefinition{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 		}
 	}

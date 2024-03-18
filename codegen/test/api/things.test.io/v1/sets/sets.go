@@ -275,8 +275,14 @@ func (s *paintMergedSet) List(filterResource ...func(*things_test_io_v1.Paint) b
 		})
 	}
 	paintList := []*things_test_io_v1.Paint{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			paintList = append(paintList, obj.(*things_test_io_v1.Paint))
 		}
 	}
@@ -294,10 +300,15 @@ func (s *paintMergedSet) UnsortedList(filterResource ...func(*things_test_io_v1.
 			return filter(obj.(*things_test_io_v1.Paint))
 		})
 	}
-
 	paintList := []*things_test_io_v1.Paint{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			paintList = append(paintList, obj.(*things_test_io_v1.Paint))
 		}
 	}
@@ -685,8 +696,14 @@ func (s *clusterResourceMergedSet) List(filterResource ...func(*things_test_io_v
 		})
 	}
 	clusterResourceList := []*things_test_io_v1.ClusterResource{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
 		}
 	}
@@ -704,10 +721,15 @@ func (s *clusterResourceMergedSet) UnsortedList(filterResource ...func(*things_t
 			return filter(obj.(*things_test_io_v1.ClusterResource))
 		})
 	}
-
 	clusterResourceList := []*things_test_io_v1.ClusterResource{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
 		}
 	}

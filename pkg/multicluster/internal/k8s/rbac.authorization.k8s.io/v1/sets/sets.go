@@ -275,8 +275,14 @@ func (s *roleMergedSet) List(filterResource ...func(*rbac_authorization_k8s_io_v
 		})
 	}
 	roleList := []*rbac_authorization_k8s_io_v1.Role{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			roleList = append(roleList, obj.(*rbac_authorization_k8s_io_v1.Role))
 		}
 	}
@@ -294,10 +300,15 @@ func (s *roleMergedSet) UnsortedList(filterResource ...func(*rbac_authorization_
 			return filter(obj.(*rbac_authorization_k8s_io_v1.Role))
 		})
 	}
-
 	roleList := []*rbac_authorization_k8s_io_v1.Role{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			roleList = append(roleList, obj.(*rbac_authorization_k8s_io_v1.Role))
 		}
 	}
@@ -685,8 +696,14 @@ func (s *roleBindingMergedSet) List(filterResource ...func(*rbac_authorization_k
 		})
 	}
 	roleBindingList := []*rbac_authorization_k8s_io_v1.RoleBinding{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			roleBindingList = append(roleBindingList, obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 		}
 	}
@@ -704,10 +721,15 @@ func (s *roleBindingMergedSet) UnsortedList(filterResource ...func(*rbac_authori
 			return filter(obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 		})
 	}
-
 	roleBindingList := []*rbac_authorization_k8s_io_v1.RoleBinding{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			roleBindingList = append(roleBindingList, obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 		}
 	}
@@ -1095,8 +1117,14 @@ func (s *clusterRoleMergedSet) List(filterResource ...func(*rbac_authorization_k
 		})
 	}
 	clusterRoleList := []*rbac_authorization_k8s_io_v1.ClusterRole{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			clusterRoleList = append(clusterRoleList, obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 		}
 	}
@@ -1114,10 +1142,15 @@ func (s *clusterRoleMergedSet) UnsortedList(filterResource ...func(*rbac_authori
 			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 		})
 	}
-
 	clusterRoleList := []*rbac_authorization_k8s_io_v1.ClusterRole{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			clusterRoleList = append(clusterRoleList, obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 		}
 	}
@@ -1505,8 +1538,14 @@ func (s *clusterRoleBindingMergedSet) List(filterResource ...func(*rbac_authoriz
 		})
 	}
 	clusterRoleBindingList := []*rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			clusterRoleBindingList = append(clusterRoleBindingList, obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 		}
 	}
@@ -1524,10 +1563,15 @@ func (s *clusterRoleBindingMergedSet) UnsortedList(filterResource ...func(*rbac_
 			return filter(obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 		})
 	}
-
 	clusterRoleBindingList := []*rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			clusterRoleBindingList = append(clusterRoleBindingList, obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 		}
 	}

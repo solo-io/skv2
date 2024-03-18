@@ -275,8 +275,14 @@ func (s *secretMergedSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Se
 		})
 	}
 	secretList := []*v1.Secret{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			secretList = append(secretList, obj.(*v1.Secret))
 		}
 	}
@@ -294,10 +300,15 @@ func (s *secretMergedSet) UnsortedList(filterResource ...func(*v1.Secret) bool) 
 			return filter(obj.(*v1.Secret))
 		})
 	}
-
 	secretList := []*v1.Secret{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			secretList = append(secretList, obj.(*v1.Secret))
 		}
 	}
@@ -685,8 +696,14 @@ func (s *serviceAccountMergedSet) List(filterResource ...func(*v1.ServiceAccount
 		})
 	}
 	serviceAccountList := []*v1.ServiceAccount{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
 		}
 	}
@@ -704,10 +721,15 @@ func (s *serviceAccountMergedSet) UnsortedList(filterResource ...func(*v1.Servic
 			return filter(obj.(*v1.ServiceAccount))
 		})
 	}
-
 	serviceAccountList := []*v1.ServiceAccount{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
 		}
 	}
@@ -1095,8 +1117,14 @@ func (s *namespaceMergedSet) List(filterResource ...func(*v1.Namespace) bool) []
 		})
 	}
 	namespaceList := []*v1.Namespace{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			namespaceList = append(namespaceList, obj.(*v1.Namespace))
 		}
 	}
@@ -1114,10 +1142,15 @@ func (s *namespaceMergedSet) UnsortedList(filterResource ...func(*v1.Namespace) 
 			return filter(obj.(*v1.Namespace))
 		})
 	}
-
 	namespaceList := []*v1.Namespace{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			namespaceList = append(namespaceList, obj.(*v1.Namespace))
 		}
 	}

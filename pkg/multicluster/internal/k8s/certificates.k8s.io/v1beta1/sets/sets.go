@@ -275,8 +275,14 @@ func (s *certificateSigningRequestMergedSet) List(filterResource ...func(*certif
 		})
 	}
 	certificateSigningRequestList := []*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		}
 	}
@@ -294,10 +300,15 @@ func (s *certificateSigningRequestMergedSet) UnsortedList(filterResource ...func
 			return filter(obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		})
 	}
-
 	certificateSigningRequestList := []*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
-	for _, set := range s.sets {
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
 		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
 			certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 		}
 	}
