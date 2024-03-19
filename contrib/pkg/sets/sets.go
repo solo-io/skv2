@@ -59,8 +59,13 @@ type threadSafeResourceSet struct {
 	set  Resources
 }
 
-func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
-	return &threadSafeResourceSet{set: newResources(resources...)}
+func NewResourceSet(
+	sortFunc func(toInsert, existing ezkube.ResourceId) bool,
+	resources ...ezkube.ResourceId,
+) ResourceSet {
+	return &threadSafeResourceSet{
+		set: newResources(sortFunc, resources...),
+	}
 }
 
 func (t *threadSafeResourceSet) Keys() sets.String {
@@ -84,7 +89,7 @@ func (t *threadSafeResourceSet) UnsortedList(filterResource ...func(ezkube.Resou
 func (t *threadSafeResourceSet) Map() Resources {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set.Map()
+	return t.set
 }
 
 func (t *threadSafeResourceSet) Insert(
@@ -99,12 +104,6 @@ func (t *threadSafeResourceSet) Has(resource ezkube.ResourceId) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.Has(resource)
-}
-
-// Has returns true if and only if item is contained in the set.
-func (s Resources) Has(item ezkube.ResourceId) bool {
-	_, contained := s[Key(item)]
-	return contained
 }
 
 func (t *threadSafeResourceSet) IsSuperset(
@@ -159,7 +158,7 @@ func (t *threadSafeResourceSet) Find(
 func (t *threadSafeResourceSet) Length() int {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set.Len()
+	return t.set.Length()
 }
 
 // note that this function will currently panic if called for a ResourceSet containing non-runtime.Objects
