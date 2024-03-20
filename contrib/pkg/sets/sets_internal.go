@@ -144,58 +144,53 @@ func (r Resources) Map() map[string]ezkube.ResourceId {
 // If an item is already in the set, it is overwritten.
 // The set is sorted based on the sortFunc. If sortFunc is nil, the set will be unsorted.
 func (r Resources) Insert(resources ...ezkube.ResourceId) {
+	for _, objToInsert := range resources {
+		r.insert(objToInsert)
+	}
+}
+
+func (r Resources) insert(objToInsert ezkube.ResourceId) {
 	// index to start iterating set at to update sort order map
 	earliestIndex := -1
 
-	for _, objToInsert := range resources {
-		key := Key(objToInsert)
-		currentIndex, exists := r.sortIndex[key]
+	key := Key(objToInsert)
+	currentIndex, exists := r.sortIndex[key]
 
-		if r.sortFunc == nil {
-			if exists {
-				r.set[currentIndex] = objToInsert
-				continue
-			}
-			r.set = append(r.set, objToInsert)
-			r.sortIndex[key] = len(r.set) - 1
-			continue
-		}
-
-		insertIndex := sort.Search(len(r.set), func(i int) bool { return r.sortFunc(objToInsert, r.set[i]) })
-
-		// if the resource exists in the set, update the resource and determine if the sort order map needs to be updated
+	if r.sortFunc == nil {
 		if exists {
-			r.set[r.sortIndex[key]] = objToInsert
-			if insertIndex != currentIndex {
-				earliestIndex = insertIndex
-			}
-			continue
+			r.set[currentIndex] = objToInsert
+			return
 		}
+		r.set = append(r.set, objToInsert)
+		r.sortIndex[key] = len(r.set) - 1
+		return
+	}
 
-		// insert the resource at the determined index and update the sort order map
-		newSet := make([]ezkube.ResourceId, len(r.set)+1)
-		copy(newSet, r.set[:insertIndex])
-		newSet[insertIndex] = objToInsert
-		copy(newSet[insertIndex+1:], r.set[insertIndex:])
-		r.set = newSet
+	insertIndex := sort.Search(len(r.set), func(i int) bool { return r.sortFunc(objToInsert, r.set[i]) })
 
-		// update lowest index
-		if earliestIndex == -1 || insertIndex < earliestIndex {
+	// if the resource exists in the set, update the resource and determine if the sort order map needs to be updated
+	if exists {
+		r.set[r.sortIndex[key]] = objToInsert
+		if insertIndex != currentIndex {
 			earliestIndex = insertIndex
+			if earliestIndex == len(r.set) {
+				// decrement by 1 to avoid out of range
+				earliestIndex--
+			}
+
+			for i := earliestIndex; i < len(r.set[earliestIndex:]); i++ {
+				r.sortIndex[Key(r.set[i])] = i
+			}
 		}
+		return
 	}
 
-	// update the sort order map starting at the earliest, new resource inserted and the resources after it
-	if earliestIndex != -1 {
-		if earliestIndex == len(r.set) {
-			// decrement by 1 to avoid out of range
-			earliestIndex--
-		}
-
-		for i := earliestIndex; i < len(r.set[earliestIndex:]); i++ {
-			r.sortIndex[Key(r.set[i])] = i
-		}
-	}
+	// insert the resource at the determined index and update the sort order map
+	newSet := make([]ezkube.ResourceId, len(r.set)+1)
+	copy(newSet, r.set[:insertIndex])
+	newSet[insertIndex] = objToInsert
+	copy(newSet[insertIndex+1:], r.set[insertIndex:])
+	r.set = newSet
 }
 
 // Delete removes all items from the set.
