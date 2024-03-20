@@ -5,7 +5,6 @@ import (
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -14,17 +13,20 @@ type Resources struct {
 	// set is a list of unique entries sorted according to sortFunc
 	set []ezkube.ResourceId
 	// sortFunc is the function used to sort the set and returns true if toInsert should be inserted before existing.
-	// If nil, the set will be unsorted.
 	sortFunc func(toInsert, existing ezkube.ResourceId) bool
+	// equalityFunc is the function used to compare two resources for equality
+	equalityFunc func(a, b ezkube.ResourceId) bool
 }
 
 func newResources(
 	sortFunc func(toInsert, existing ezkube.ResourceId) bool,
+	equalityFunc func(a, b ezkube.ResourceId) bool,
 	resources ...ezkube.ResourceId,
 ) Resources {
 	r := Resources{
-		set:      append([]ezkube.ResourceId{}, resources...),
-		sortFunc: sortFunc,
+		set:          append([]ezkube.ResourceId{}, resources...),
+		sortFunc:     sortFunc,
+		equalityFunc: equalityFunc,
 	}
 	for _, resource := range resources {
 		if resource == nil {
@@ -37,7 +39,7 @@ func newResources(
 
 func (r Resources) Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error) {
 	i := sort.Search(len(r.set), func(i int) bool {
-		return r.set[i].GetNamespace() == id.GetNamespace() && r.set[i].GetName() == id.GetName()
+		return r.equalityFunc(r.set[i], id)
 	})
 	if i != len(r.set) {
 		return r.set[i], nil
@@ -50,7 +52,7 @@ func (r Resources) Length() int {
 }
 
 func (r Resources) Delta(newSet ResourceSet) ResourceDelta {
-	updated, removed := NewResourceSet(r.sortFunc), NewResourceSet(r.sortFunc)
+	updated, removed := NewResourceSet(r.sortFunc, r.equalityFunc), NewResourceSet(r.sortFunc, r.equalityFunc)
 
 	// find objects updated or removed
 	r.List(
@@ -87,7 +89,7 @@ func (r Resources) Delta(newSet ResourceSet) ResourceDelta {
 }
 
 func (r Resources) Clone() ResourceSet {
-	new := NewResourceSet(r.sortFunc, r.set...)
+	new := NewResourceSet(r.sortFunc, r.equalityFunc, r.set...)
 	r.List(
 		func(oldObj ezkube.ResourceId) bool {
 			copy := oldObj.(client.Object).DeepCopyObject().(client.Object)
@@ -138,10 +140,6 @@ func (r Resources) Map() map[string]ezkube.ResourceId {
 	return shallowCopy
 }
 
-func creationTimestampsEqual(obj1, obj2 ezkube.ResourceId) bool {
-	return obj1.(metav1.Object).GetCreationTimestamp().Time.Equal(obj2.(metav1.Object).GetCreationTimestamp().Time)
-}
-
 // Insert adds items to the set.
 // If an item is already in the set, it is overwritten.
 // The set is sorted based on the sortFunc. If sortFunc is nil, the set will be unsorted.
@@ -155,7 +153,7 @@ func (r Resources) insert(resource ezkube.ResourceId) {
 	insertIndex := sort.Search(len(r.set), func(i int) bool { return r.sortFunc(resource, r.set[i]) })
 
 	// if the resource is already in the set, replace it
-	if insertIndex < len(r.set) && creationTimestampsEqual(resource, r.set[insertIndex]) {
+	if insertIndex < len(r.set) && r.equalityFunc(resource, r.set[insertIndex]) {
 		r.set[insertIndex] = resource
 		return
 	}
@@ -174,20 +172,19 @@ func (r Resources) insert(resource ezkube.ResourceId) {
 
 // Delete removes all items from the set.
 func (r Resources) Delete(items ...ezkube.ResourceId) Resources {
-	// for _, item := range items {
-	// 	i := sort.Search(len(r.set), func(i int) bool {
-	// 		return r.set[i].GetNamespace() == item.GetNamespace() && r.set[i].GetName() == item.GetName()
-	// 	})
-	// 	if i == len(r.set) {
-	// 		continue
-	// 	}
-	// 	// delete the key from the index and the set
-	// 	delete(r.set, key)
-	// 	newSet := make([]ezkube.ResourceId, len(r.set)-1)
-	// 	copy(newSet, r.set[:index])
-	// 	copy(newSet[index:], r.set[index+1:])
-	// 	r.set = newSet
-	// }
+	for _, item := range items {
+		// find the item in the set
+		i := sort.Search(len(r.set), func(i int) bool { return r.equalityFunc(r.set[i], item) })
+		// if the item is not in the set, continue
+		if i == len(r.set) {
+			continue
+		}
+		// remove item the set
+		newSet := make([]ezkube.ResourceId, len(r.set)-1)
+		copy(newSet, r.set[:i])
+		copy(newSet[i:], r.set[i+1:])
+		r.set = newSet
+	}
 	return r
 }
 

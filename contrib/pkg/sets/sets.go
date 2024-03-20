@@ -61,10 +61,11 @@ type threadSafeResourceSet struct {
 
 func NewResourceSet(
 	sortFunc func(toInsert, existing ezkube.ResourceId) bool,
+	equalityFunc func(a, b ezkube.ResourceId) bool,
 	resources ...ezkube.ResourceId,
 ) ResourceSet {
 	return &threadSafeResourceSet{
-		set: newResources(sortFunc, resources...),
+		set: newResources(sortFunc, equalityFunc, resources...),
 	}
 }
 

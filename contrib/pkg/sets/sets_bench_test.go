@@ -44,14 +44,14 @@ func benchmarkResourcesSet(count int, b *testing.B) {
 	}
 
 	for n := 0; n < b.N; n++ {
-		s := sets.NewResourceSet(AscendingCreationTimestamp)
+		s := sets.NewResourceSet(ezkube.CreationTimestampAscending)
 		for _, resource := range resources {
 			s.Insert(resource)
 		}
 
 		l := s.List(filterResource)
 
-		SortByCreationTime(l) // only for map implementation
+		// SortByCreationTime(l) // only for map implementation
 
 		for _, r := range l {
 			r.GetName()
@@ -62,11 +62,6 @@ func benchmarkResourcesSet(count int, b *testing.B) {
 func filterResource(resource ezkube.ResourceId) bool {
 	i, _ := strconv.Atoi(strings.Split(resource.GetName(), "-")[1])
 	return i < 20001
-}
-
-// AscendingCreationTimestamp returns true if obj1 was created before obj2
-func AscendingCreationTimestamp(obj1, obj2 ezkube.ResourceId) bool {
-	return obj1.(client.Object).GetCreationTimestamp().Time.Before(obj2.(client.Object).GetCreationTimestamp().Time)
 }
 
 // SortByCreationTime accepts a slice of client.Object instances and sorts it by creation timestamp in ascending order.
