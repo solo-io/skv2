@@ -174,18 +174,14 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 	}
 }
 
-func ResourceIdsEqual(a, b ClusterResourceId) bool {
+func ResourceIdsEqual(a, b ResourceId) bool {
 	return a.GetName() == b.GetName() &&
-		a.GetNamespace() == b.GetNamespace() &&
-		GetClusterName(a) == GetClusterName(b)
+		a.GetNamespace() == b.GetNamespace()
 }
 
-func ResourceIdsAscending(a, b ClusterResourceId) bool {
+func ResourceIdsAscending(a, b ResourceId) bool {
 	if a.GetName() != b.GetName() {
 		return a.GetName() < b.GetName()
 	}
-	if a.GetNamespace() != b.GetNamespace() {
-		return a.GetNamespace() < b.GetNamespace()
-	}
-	return GetClusterName(a) < GetClusterName(b)
+	return a.GetNamespace() < b.GetNamespace()
 }
