@@ -13,6 +13,7 @@ import (
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/sets"
 	v1 "k8s.io/api/rbac/v1"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockRoleSet is a mock of RoleSet interface
@@ -271,6 +272,34 @@ func (mr *MockRoleSetMockRecorder) Clone() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRoleSet)(nil).Clone))
 }
 
+// GetSortFunc mocks base method
+func (m *MockRoleSet) GetSortFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockRoleSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockRoleSet)(nil).GetSortFunc))
+}
+
+// GetEqualityFunc mocks base method
+func (m *MockRoleSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEqualityFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetEqualityFunc indicates an expected call of GetEqualityFunc
+func (mr *MockRoleSetMockRecorder) GetEqualityFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockRoleSet)(nil).GetEqualityFunc))
+}
+
 // MockRoleBindingSet is a mock of RoleBindingSet interface
 type MockRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -525,6 +554,34 @@ func (m *MockRoleBindingSet) Clone() v1sets.RoleBindingSet {
 func (mr *MockRoleBindingSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRoleBindingSet)(nil).Clone))
+}
+
+// GetSortFunc mocks base method
+func (m *MockRoleBindingSet) GetSortFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockRoleBindingSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockRoleBindingSet)(nil).GetSortFunc))
+}
+
+// GetEqualityFunc mocks base method
+func (m *MockRoleBindingSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEqualityFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetEqualityFunc indicates an expected call of GetEqualityFunc
+func (mr *MockRoleBindingSetMockRecorder) GetEqualityFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockRoleBindingSet)(nil).GetEqualityFunc))
 }
 
 // MockClusterRoleSet is a mock of ClusterRoleSet interface
@@ -783,6 +840,34 @@ func (mr *MockClusterRoleSetMockRecorder) Clone() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClusterRoleSet)(nil).Clone))
 }
 
+// GetSortFunc mocks base method
+func (m *MockClusterRoleSet) GetSortFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockClusterRoleSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockClusterRoleSet)(nil).GetSortFunc))
+}
+
+// GetEqualityFunc mocks base method
+func (m *MockClusterRoleSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEqualityFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetEqualityFunc indicates an expected call of GetEqualityFunc
+func (mr *MockClusterRoleSetMockRecorder) GetEqualityFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockClusterRoleSet)(nil).GetEqualityFunc))
+}
+
 // MockClusterRoleBindingSet is a mock of ClusterRoleBindingSet interface
 type MockClusterRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -1037,4 +1122,32 @@ func (m *MockClusterRoleBindingSet) Clone() v1sets.ClusterRoleBindingSet {
 func (mr *MockClusterRoleBindingSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Clone))
+}
+
+// GetSortFunc mocks base method
+func (m *MockClusterRoleBindingSet) GetSortFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockClusterRoleBindingSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).GetSortFunc))
+}
+
+// GetEqualityFunc mocks base method
+func (m *MockClusterRoleBindingSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEqualityFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetEqualityFunc indicates an expected call of GetEqualityFunc
+func (mr *MockClusterRoleBindingSetMockRecorder) GetEqualityFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).GetEqualityFunc))
 }

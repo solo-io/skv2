@@ -1,14 +1,16 @@
 package ezkube
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func CreationTimestampsEqual(a, b ResourceId) bool {
-	return a.(metav1.Object).GetCreationTimestamp().Time.Equal(b.(metav1.Object).GetCreationTimestamp().Time)
+// CreationTimestampsEqual returns true if the creation timestamps of a and b are equal
+// inputs must be of type metav1.Object
+func CreationTimestampsEqual(a, b client.Object) bool {
+	return a.GetCreationTimestamp().Time.Equal(b.GetCreationTimestamp().Time)
 }
 
 // CreationTimestampAscending returns true if a was created before b (ascending order)
-func CreationTimestampAscending(a, b ResourceId) bool {
-	return a.(metav1.Object).GetCreationTimestamp().Time.Before(b.(metav1.Object).GetCreationTimestamp().Time)
+func CreationTimestampAscending(a, b client.Object) bool {
+	return a.GetCreationTimestamp().Time.Before(b.GetCreationTimestamp().Time)
 }

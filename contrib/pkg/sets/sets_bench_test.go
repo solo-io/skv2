@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
+	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+	v1sets "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -30,9 +30,9 @@ func BenchmarkResourcesSet50000(b *testing.B)  { benchmarkResourcesSet(50000, b)
 func BenchmarkResourcesSet100000(b *testing.B) { benchmarkResourcesSet(100000, b) }
 
 func benchmarkResourcesSet(count int, b *testing.B) {
-	resources := make([]ezkube.ResourceId, count)
+	resources := make([]*things_test_io_v1.Paint, count)
 	for i := 0; i < count; i++ {
-		resources[i] = &corev1.Secret{
+		resources[i] = &things_test_io_v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:              fmt.Sprintf("name-%d", i),
 				Namespace:         fmt.Sprintf("namespace-%d", i),
@@ -44,7 +44,7 @@ func benchmarkResourcesSet(count int, b *testing.B) {
 	}
 
 	for n := 0; n < b.N; n++ {
-		s := sets.NewResourceSet(ezkube.CreationTimestampAscending)
+		s := v1sets.NewPaintSet(ezkube.CreationTimestampAscending, ezkube.CreationTimestampsEqual)
 		for _, resource := range resources {
 			s.Insert(resource)
 		}
@@ -59,7 +59,7 @@ func benchmarkResourcesSet(count int, b *testing.B) {
 	}
 }
 
-func filterResource(resource ezkube.ResourceId) bool {
+func filterResource(resource *things_test_io_v1.Paint) bool {
 	i, _ := strconv.Atoi(strings.Split(resource.GetName(), "-")[1])
 	return i < 20001
 }

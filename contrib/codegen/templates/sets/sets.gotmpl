@@ -78,6 +78,7 @@ func makeGeneric{{ $resource.Kind }}Set(
 type {{ $kindLowerCamel }}Set struct {
     set sksets.ResourceSet
     sortFunc func(toInsert, existing client.Object) bool
+    equalityFunc func(a, b client.Object) bool
 }
 
 func New{{ $resource.Kind }}Set(
@@ -88,6 +89,7 @@ func New{{ $resource.Kind }}Set(
     return &{{ $kindLowerCamel }}Set{
         set: makeGeneric{{ $resource.Kind }}Set(sortFunc, equalityFunc, {{ $kindLowerCamel }}List),
         sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
     }
 }
 
@@ -105,7 +107,7 @@ func New{{ $resource.Kind }}SetFromList(
         {{- end }}
     }
     return &{{ $kindLowerCamel }}Set{
-        set: makeGeneric{{ $resource.Kind }}Set(sortFunc, list),
+        set: makeGeneric{{ $resource.Kind }}Set(sortFunc, equalityFunc, list),
         sortFunc: sortFunc,
         equalityFunc: equalityFunc,
     }

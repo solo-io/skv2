@@ -13,6 +13,7 @@ import (
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/admissionregistration.k8s.io/v1/sets"
 	v1 "k8s.io/api/admissionregistration/v1"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockValidatingWebhookConfigurationSet is a mock of ValidatingWebhookConfigurationSet interface
@@ -269,4 +270,32 @@ func (m *MockValidatingWebhookConfigurationSet) Clone() v1sets.ValidatingWebhook
 func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Clone))
+}
+
+// GetSortFunc mocks base method
+func (m *MockValidatingWebhookConfigurationSet) GetSortFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).GetSortFunc))
+}
+
+// GetEqualityFunc mocks base method
+func (m *MockValidatingWebhookConfigurationSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEqualityFunc")
+	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	return ret0
+}
+
+// GetEqualityFunc indicates an expected call of GetEqualityFunc
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) GetEqualityFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).GetEqualityFunc))
 }
