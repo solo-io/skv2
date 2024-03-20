@@ -173,3 +173,19 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 		return nil, eris.Errorf("could not convert key %s with separator %s into resource id; unexpected number of parts: %d", key, separator, len(parts))
 	}
 }
+
+func ResourceIdsEqual(a, b ClusterResourceId) bool {
+	return a.GetName() == b.GetName() &&
+		a.GetNamespace() == b.GetNamespace() &&
+		GetClusterName(a) == GetClusterName(b)
+}
+
+func ResourceIdsAscending(a, b ClusterResourceId) bool {
+	if a.GetName() != b.GetName() {
+		return a.GetName() < b.GetName()
+	}
+	if a.GetNamespace() != b.GetNamespace() {
+		return a.GetNamespace() < b.GetNamespace()
+	}
+	return GetClusterName(a) < GetClusterName(b)
+}

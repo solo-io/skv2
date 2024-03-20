@@ -5,7 +5,6 @@ import (
 )
 
 // CreationTimestampsEqual returns true if the creation timestamps of a and b are equal
-// inputs must be of type metav1.Object
 func CreationTimestampsEqual(a, b client.Object) bool {
 	return a.GetCreationTimestamp().Time.Equal(b.GetCreationTimestamp().Time)
 }
