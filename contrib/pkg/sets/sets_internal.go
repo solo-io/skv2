@@ -5,6 +5,7 @@ import (
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -15,8 +16,6 @@ type Resources struct {
 	// sortFunc is the function used to sort the set and returns true if toInsert should be inserted before existing.
 	// If nil, the set will be unsorted.
 	sortFunc func(toInsert, existing ezkube.ResourceId) bool
-	// sortIndex is a map of resource keys to their index position in the set
-	sortIndex map[string]int
 }
 
 func newResources(
@@ -24,9 +23,8 @@ func newResources(
 	resources ...ezkube.ResourceId,
 ) Resources {
 	r := Resources{
-		set:       append([]ezkube.ResourceId{}, resources...),
-		sortFunc:  sortFunc,
-		sortIndex: make(map[string]int, len(resources)),
+		set:      append([]ezkube.ResourceId{}, resources...),
+		sortFunc: sortFunc,
 	}
 	for _, resource := range resources {
 		if resource == nil {
@@ -38,13 +36,13 @@ func newResources(
 }
 
 func (r Resources) Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error) {
-	key := Key(id)
-	index, ok := r.sortIndex[key]
-	if !ok {
-		return nil, NotFoundErr(resourceType, id)
+	i := sort.Search(len(r.set), func(i int) bool {
+		return r.set[i].GetNamespace() == id.GetNamespace() && r.set[i].GetName() == id.GetName()
+	})
+	if i != len(r.set) {
+		return r.set[i], nil
 	}
-
-	return r.set[index], nil
+	return nil, NotFoundErr(resourceType, id)
 }
 
 func (r Resources) Length() int {
@@ -102,8 +100,8 @@ func (r Resources) Clone() ResourceSet {
 
 func (r Resources) Keys() sets.String {
 	keys := sets.NewString()
-	for key, _ := range r.sortIndex {
-		keys.Insert(key)
+	for _, key := range r.set {
+		keys.Insert(Key(key))
 	}
 	return keys
 }
@@ -133,11 +131,15 @@ func (r Resources) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) 
 }
 
 func (r Resources) Map() map[string]ezkube.ResourceId {
-	shallowCopy := make(map[string]ezkube.ResourceId, len(r.sortIndex))
-	for key, i := range r.sortIndex {
-		shallowCopy[key] = r.set[i]
+	shallowCopy := make(map[string]ezkube.ResourceId, len(r.set))
+	for _, obj := range r.set {
+		shallowCopy[Key(obj)] = obj
 	}
 	return shallowCopy
+}
+
+func creationTimestampsEqual(obj1, obj2 ezkube.ResourceId) bool {
+	return obj1.(metav1.Object).GetCreationTimestamp().Time.Equal(obj2.(metav1.Object).GetCreationTimestamp().Time)
 }
 
 // Insert adds items to the set.
@@ -149,65 +151,43 @@ func (r Resources) Insert(resources ...ezkube.ResourceId) {
 	}
 }
 
-func (r Resources) insert(objToInsert ezkube.ResourceId) {
-	// index to start iterating set at to update sort order map
-	earliestIndex := -1
+func (r Resources) insert(resource ezkube.ResourceId) {
+	insertIndex := sort.Search(len(r.set), func(i int) bool { return r.sortFunc(resource, r.set[i]) })
 
-	key := Key(objToInsert)
-	currentIndex, exists := r.sortIndex[key]
-
+	// if the resource is already in the set, replace it
+	if insertIndex < len(r.set) && creationTimestampsEqual(resource, r.set[insertIndex]) {
+		r.set[insertIndex] = resource
+		return
+	}
 	if r.sortFunc == nil {
-		if exists {
-			r.set[currentIndex] = objToInsert
-			return
-		}
-		r.set = append(r.set, objToInsert)
-		r.sortIndex[key] = len(r.set) - 1
+		r.set = append(r.set, resource)
 		return
 	}
 
-	insertIndex := sort.Search(len(r.set), func(i int) bool { return r.sortFunc(objToInsert, r.set[i]) })
-
-	// if the resource exists in the set, update the resource and determine if the sort order map needs to be updated
-	if exists {
-		r.set[r.sortIndex[key]] = objToInsert
-		if insertIndex != currentIndex {
-			earliestIndex = insertIndex
-			if earliestIndex == len(r.set) {
-				// decrement by 1 to avoid out of range
-				earliestIndex--
-			}
-
-			for i := earliestIndex; i < len(r.set[earliestIndex:]); i++ {
-				r.sortIndex[Key(r.set[i])] = i
-			}
-		}
-		return
-	}
-
-	// insert the resource at the determined index and update the sort order map
+	// insert the resource at the determined index
 	newSet := make([]ezkube.ResourceId, len(r.set)+1)
 	copy(newSet, r.set[:insertIndex])
-	newSet[insertIndex] = objToInsert
+	newSet[insertIndex] = resource
 	copy(newSet[insertIndex+1:], r.set[insertIndex:])
 	r.set = newSet
 }
 
 // Delete removes all items from the set.
 func (r Resources) Delete(items ...ezkube.ResourceId) Resources {
-	for _, item := range items {
-		key := Key(item)
-		index, exists := r.sortIndex[key]
-		if !exists {
-			continue
-		}
-		// delete the key from the index and the set
-		delete(r.sortIndex, key)
-		newSet := make([]ezkube.ResourceId, len(r.set)-1)
-		copy(newSet, r.set[:index])
-		copy(newSet[index:], r.set[index+1:])
-		r.set = newSet
-	}
+	// for _, item := range items {
+	// 	i := sort.Search(len(r.set), func(i int) bool {
+	// 		return r.set[i].GetNamespace() == item.GetNamespace() && r.set[i].GetName() == item.GetName()
+	// 	})
+	// 	if i == len(r.set) {
+	// 		continue
+	// 	}
+	// 	// delete the key from the index and the set
+	// 	delete(r.set, key)
+	// 	newSet := make([]ezkube.ResourceId, len(r.set)-1)
+	// 	copy(newSet, r.set[:index])
+	// 	copy(newSet[index:], r.set[index+1:])
+	// 	r.set = newSet
+	// }
 	return r
 }
 
@@ -289,8 +269,10 @@ func (r1 Resources) Intersection(r2 Resources) Resources {
 
 // Has returns true if and only if item is contained in the set.
 func (r Resources) Has(item ezkube.ResourceId) bool {
-	_, contained := r.sortIndex[Key(item)]
-	return contained
+	i := sort.Search(len(r.set), func(i int) bool {
+		return r.set[i].GetNamespace() == item.GetNamespace() && r.set[i].GetName() == item.GetName()
+	})
+	return i != len(r.set)
 }
 
 // IsSuperset returns true if and only if s1 is a superset of s2.
