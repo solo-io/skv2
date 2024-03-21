@@ -11,6 +11,7 @@ import (
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type CustomResourceDefinitionSet interface {
@@ -48,30 +49,62 @@ type CustomResourceDefinitionSet interface {
 	Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta
 	// Create a deep copy of the current CustomResourceDefinitionSet
 	Clone() CustomResourceDefinitionSet
+	// Get the sort function used by the set
+	GetSortFunc() func(toInsert, existing client.Object) bool
+	// Get the equality function used by the set
+	GetEqualityFunc() func(a, b client.Object) bool
 }
 
-func makeGenericCustomResourceDefinitionSet(customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition) sksets.ResourceSet {
+func makeGenericCustomResourceDefinitionSet(
+	sortFunc func(toInsert, existing client.Object) bool,
+	equalityFunc func(a, b client.Object) bool,
+	customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition,
+) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range customResourceDefinitionList {
 		genericResources = append(genericResources, obj)
 	}
-	return sksets.NewResourceSet(genericResources...)
+	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
+		return sortFunc(toInsert.(client.Object), existing.(client.Object))
+	}
+	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
+		return equalityFunc(a.(client.Object), b.(client.Object))
+	}
+	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
 
 type customResourceDefinitionSet struct {
-	set sksets.ResourceSet
+	set          sksets.ResourceSet
+	sortFunc     func(toInsert, existing client.Object) bool
+	equalityFunc func(a, b client.Object) bool
 }
 
-func NewCustomResourceDefinitionSet(customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition) CustomResourceDefinitionSet {
-	return &customResourceDefinitionSet{set: makeGenericCustomResourceDefinitionSet(customResourceDefinitionList)}
+func NewCustomResourceDefinitionSet(
+	sortFunc func(toInsert, existing client.Object) bool,
+	equalityFunc func(a, b client.Object) bool,
+	customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition,
+) CustomResourceDefinitionSet {
+	return &customResourceDefinitionSet{
+		set:          makeGenericCustomResourceDefinitionSet(sortFunc, equalityFunc, customResourceDefinitionList),
+		sortFunc:     sortFunc,
+		equalityFunc: equalityFunc,
+	}
 }
 
-func NewCustomResourceDefinitionSetFromList(customResourceDefinitionList *apiextensions_k8s_io_v1.CustomResourceDefinitionList) CustomResourceDefinitionSet {
+func NewCustomResourceDefinitionSetFromList(
+	sortFunc func(toInsert, existing client.Object) bool,
+	equalityFunc func(a, b client.Object) bool,
+	customResourceDefinitionList *apiextensions_k8s_io_v1.CustomResourceDefinitionList,
+) CustomResourceDefinitionSet {
 	list := make([]*apiextensions_k8s_io_v1.CustomResourceDefinition, 0, len(customResourceDefinitionList.Items))
 	for idx := range customResourceDefinitionList.Items {
 		list = append(list, &customResourceDefinitionList.Items[idx])
 	}
-	return &customResourceDefinitionSet{set: makeGenericCustomResourceDefinitionSet(list)}
+	return &customResourceDefinitionSet{
+		set:          makeGenericCustomResourceDefinitionSet(sortFunc, equalityFunc, list),
+		sortFunc:     sortFunc,
+		equalityFunc: equalityFunc,
+	}
 }
 
 func (s *customResourceDefinitionSet) Keys() sets.String {
@@ -126,7 +159,7 @@ func (s *customResourceDefinitionSet) Map() map[string]*apiextensions_k8s_io_v1.
 	}
 
 	newMap := map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition{}
-	for k, v := range s.Generic().Map() {
+	for k, v := range s.Generic().Map().Map() {
 		newMap[k] = v.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	}
 	return newMap
@@ -171,7 +204,7 @@ func (s *customResourceDefinitionSet) Union(set CustomResourceDefinitionSet) Cus
 	if s == nil {
 		return set
 	}
-	return NewCustomResourceDefinitionSet(append(s.List(), set.List()...)...)
+	return NewCustomResourceDefinitionSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
@@ -179,7 +212,11 @@ func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &customResourceDefinitionSet{set: newSet}
+	return &customResourceDefinitionSet{
+		set:          newSet,
+		sortFunc:     s.sortFunc,
+		equalityFunc: s.equalityFunc,
+	}
 }
 
 func (s *customResourceDefinitionSet) Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
@@ -191,7 +228,7 @@ func (s *customResourceDefinitionSet) Intersection(set CustomResourceDefinitionS
 	for _, obj := range newSet.List() {
 		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 	}
-	return NewCustomResourceDefinitionSet(customResourceDefinitionList...)
+	return NewCustomResourceDefinitionSet(s.sortFunc, s.equalityFunc, customResourceDefinitionList...)
 }
 
 func (s *customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1.CustomResourceDefinition, error) {
@@ -233,5 +270,25 @@ func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
 	if s == nil {
 		return nil
 	}
-	return &customResourceDefinitionSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
+		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
+	}
+	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
+		return s.equalityFunc(a.(client.Object), b.(client.Object))
+	}
+	return &customResourceDefinitionSet{
+		set: sksets.NewResourceSet(
+			genericSortFunc,
+			genericEqualityFunc,
+			s.Generic().Clone().List()...,
+		),
+	}
+}
+
+func (s *customResourceDefinitionSet) GetSortFunc() func(toInsert, existing client.Object) bool {
+	return s.sortFunc
+}
+
+func (s *customResourceDefinitionSet) GetEqualityFunc() func(a, b client.Object) bool {
+	return s.equalityFunc
 }
