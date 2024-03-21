@@ -37,7 +37,7 @@ func newResources(
 	return r
 }
 
-func (r Resources) Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error) {
+func (r *Resources) Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error) {
 	i := sort.Search(len(r.set), func(i int) bool {
 		return r.equalityFunc(r.set[i], id)
 	})
@@ -47,11 +47,11 @@ func (r Resources) Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, 
 	return nil, NotFoundErr(resourceType, id)
 }
 
-func (r Resources) Length() int {
+func (r *Resources) Length() int {
 	return len(r.set)
 }
 
-func (r Resources) Delta(newSet ResourceSet) ResourceDelta {
+func (r *Resources) Delta(newSet ResourceSet) ResourceDelta {
 	updated, removed := NewResourceSet(r.sortFunc, r.equalityFunc), NewResourceSet(r.sortFunc, r.equalityFunc)
 
 	// find objects updated or removed
@@ -88,7 +88,7 @@ func (r Resources) Delta(newSet ResourceSet) ResourceDelta {
 	}
 }
 
-func (r Resources) Clone() ResourceSet {
+func (r *Resources) Clone() ResourceSet {
 	new := NewResourceSet(r.sortFunc, r.equalityFunc, r.set...)
 	r.List(
 		func(oldObj ezkube.ResourceId) bool {
@@ -100,7 +100,7 @@ func (r Resources) Clone() ResourceSet {
 	return new
 }
 
-func (r Resources) Keys() sets.String {
+func (r *Resources) Keys() sets.String {
 	keys := sets.NewString()
 	for _, key := range r.set {
 		keys.Insert(Key(key))
@@ -108,7 +108,7 @@ func (r Resources) Keys() sets.String {
 	return keys
 }
 
-func (r Resources) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
+func (r *Resources) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
 	if len(filterResource) == 0 {
 		return r.set
 	}
@@ -128,11 +128,11 @@ func (r Resources) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube
 	return resources
 }
 
-func (r Resources) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
+func (r *Resources) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
 	return r.List(filterResource...)
 }
 
-func (r Resources) Map() map[string]ezkube.ResourceId {
+func (r *Resources) Map() map[string]ezkube.ResourceId {
 	shallowCopy := make(map[string]ezkube.ResourceId, len(r.set))
 	for _, obj := range r.set {
 		shallowCopy[Key(obj)] = obj
@@ -143,13 +143,13 @@ func (r Resources) Map() map[string]ezkube.ResourceId {
 // Insert adds items to the set.
 // If an item is already in the set, it is overwritten.
 // The set is sorted based on the sortFunc. If sortFunc is nil, the set will be unsorted.
-func (r Resources) Insert(resources ...ezkube.ResourceId) {
+func (r *Resources) Insert(resources ...ezkube.ResourceId) {
 	for _, objToInsert := range resources {
 		r.insert(objToInsert)
 	}
 }
 
-func (r Resources) insert(resource ezkube.ResourceId) {
+func (r *Resources) insert(resource ezkube.ResourceId) {
 	insertIndex := sort.Search(len(r.set), func(i int) bool { return r.sortFunc(resource, r.set[i]) })
 
 	// if the resource is already in the set, replace it
@@ -171,7 +171,7 @@ func (r Resources) insert(resource ezkube.ResourceId) {
 }
 
 // Delete removes all items from the set.
-func (r Resources) Delete(items ...ezkube.ResourceId) Resources {
+func (r *Resources) Delete(items ...ezkube.ResourceId) *Resources {
 	for _, item := range items {
 		// find the item in the set
 		i := sort.Search(len(r.set), func(i int) bool { return r.equalityFunc(r.set[i], item) })
@@ -189,7 +189,7 @@ func (r Resources) Delete(items ...ezkube.ResourceId) Resources {
 }
 
 // HasAll returns true if and only if all items are contained in the set.
-func (r Resources) HasAll(items ...ezkube.ResourceId) bool {
+func (r *Resources) HasAll(items ...ezkube.ResourceId) bool {
 	for _, item := range items {
 		if !r.Has(item) {
 			return false
@@ -199,7 +199,7 @@ func (r Resources) HasAll(items ...ezkube.ResourceId) bool {
 }
 
 // HasAny returns true if any items are contained in the set.
-func (r Resources) HasAny(items ...ezkube.ResourceId) bool {
+func (r *Resources) HasAny(items ...ezkube.ResourceId) bool {
 	for _, item := range items {
 		if r.Has(item) {
 			return true
@@ -214,7 +214,7 @@ func (r Resources) HasAny(items ...ezkube.ResourceId) bool {
 // s2 = {a1, a2, a4, a5}
 // s1.Difference(s2) = {a3}
 // s2.Difference(s1) = {a4, a5}
-func (r Resources) Difference(s2 Resources) Resources {
+func (r *Resources) Difference(s2 Resources) Resources {
 	result := Resources{}
 	for _, key := range r.set {
 		if !s2.Has(key) {
@@ -247,25 +247,11 @@ func (r1 Resources) Union(s2 Resources) Resources {
 // s2 = {a2, a3}
 // s1.Intersection(s2) = {a2}
 func (r1 Resources) Intersection(r2 Resources) Resources {
-	var walk, other Resources
-	result := Resources{}
-	if r1.Length() < r2.Length() {
-		walk = r1
-		other = r2
-	} else {
-		walk = r2
-		other = r1
-	}
-	for _, key := range walk.set {
-		if other.Has(key) {
-			result.Insert(key)
-		}
-	}
-	return result
+	panic("unimplemented")
 }
 
 // Has returns true if and only if item is contained in the set.
-func (r Resources) Has(item ezkube.ResourceId) bool {
+func (r *Resources) Has(item ezkube.ResourceId) bool {
 	i := sort.Search(len(r.set), func(i int) bool {
 		return r.set[i].GetNamespace() == item.GetNamespace() && r.set[i].GetName() == item.GetName()
 	})
@@ -290,7 +276,7 @@ func (r1 Resources) Equal(r2 Resources) bool {
 }
 
 // Returns a single element from the set.
-func (r Resources) PopAny() (ezkube.ResourceId, bool) {
+func (r *Resources) PopAny() (ezkube.ResourceId, bool) {
 	for _, key := range r.set {
 		r.Delete(key)
 		return key, true
