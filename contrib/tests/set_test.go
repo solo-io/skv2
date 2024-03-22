@@ -20,8 +20,8 @@ var _ = Describe("PaintSet", func() {
 	)
 
 	BeforeEach(func() {
-		setA = NewPaintSet(ezkube.CreationTimestampAscending, ezkube.CreationTimestampsEqual)
-		setB = NewPaintSet(ezkube.CreationTimestampAscending, ezkube.CreationTimestampsEqual)
+		setA = NewPaintSet(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds)
+		setB = NewPaintSet(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds)
 		paintA = &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{Name: "nameA", Namespace: "nsA"},
 		}
@@ -146,9 +146,11 @@ var _ = Describe("PaintSet", func() {
 	It("should correctly match two sets", func() {
 		setA.Insert(paintA, paintB)
 		setB.Insert(paintA, paintB)
-		Expect(setA).To(Equal(setB))
+		for i := 0; i < setA.Length(); i++ {
+			Expect(setA.List()[i]).To(Equal(setB.List()[i]))
+		}
 		setB.Insert(paintC)
-		Expect(setA).ToNot(Equal(setB))
+		Expect(setA.Length()).ToNot(Equal(setB.Length()))
 	})
 
 	It("should return corrent length", func() {
@@ -159,12 +161,16 @@ var _ = Describe("PaintSet", func() {
 	It("can create a set from a kube list", func() {
 		setA.Insert(paintA, paintB)
 		setC := NewPaintSetFromList(
-			ezkube.CreationTimestampAscending,
-			ezkube.CreationTimestampsEqual,
+			ezkube.ResourceIdsAscending,
+			ezkube.CompareResourceIds,
 			&v1.PaintList{
 				Items: []v1.Paint{*paintA, *paintB},
-			})
-		Expect(setA).To(Equal(setC))
+			},
+		)
+		Expect(setA.Length()).To(Equal(setC.Length()))
+		for i := 0; i < setA.Length(); i++ {
+			Expect(setA.List()[i]).To(Equal(setC.List()[i]))
+		}
 	})
 
 	It("should return set deltas", func() {
@@ -194,14 +200,32 @@ var _ = Describe("PaintSet", func() {
 		}
 		setA.Insert(oldPaintA, oldPaintB, oldPaintD)
 		setB.Insert(newPaintA, newPaintC, newPaintD)
-		// Expect(setA.Delta(setB)).To(Equal(sets.ResourceDelta{
-		// 	Inserted: NewPaintSet(
-		// 		ezkube.CreationTimestampAscending,
-		// 		ezkube.CreationTimestampsEqual,
-		// 		newPaintA,
-		// 		newPaintC,
-		// 	),
-		// 	// Removed: (oldPaintB),
-		// }))
+
+		delta := setA.Delta(setB)
+		expectedDelta := sets.ResourceDelta{
+			Inserted: sets.NewResourceSet(
+				ezkube.ResourceIdsAscending,
+				ezkube.CompareResourceIds,
+				newPaintA,
+				newPaintC,
+			),
+			Removed: sets.NewResourceSet(
+				ezkube.ResourceIdsAscending,
+				ezkube.CompareResourceIds,
+				oldPaintB,
+			),
+		}
+
+		// validate removed
+		Expect(delta.Removed.Length()).To(Equal(expectedDelta.Removed.Length()))
+		for i := 0; i < delta.Removed.Length(); i++ {
+			Expect(delta.Removed.List()[i]).To(Equal(expectedDelta.Removed.List()[i]))
+		}
+
+		// validate inserted
+		Expect(delta.Inserted.Length()).To(Equal(expectedDelta.Inserted.Length()))
+		for i := 0; i < delta.Inserted.Length(); i++ {
+			Expect(delta.Inserted.List()[i]).To(Equal(expectedDelta.Inserted.List()[i]))
+		}
 	})
 })

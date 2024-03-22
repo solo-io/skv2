@@ -13,7 +13,6 @@ import (
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/admissionregistration.k8s.io/v1/sets"
 	v1 "k8s.io/api/admissionregistration/v1"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockValidatingWebhookConfigurationSet is a mock of ValidatingWebhookConfigurationSet interface
@@ -273,10 +272,10 @@ func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Clone() *gomock.Cal
 }
 
 // GetSortFunc mocks base method
-func (m *MockValidatingWebhookConfigurationSet) GetSortFunc() func(client.Object, client.Object) bool {
+func (m *MockValidatingWebhookConfigurationSet) GetSortFunc() func(interface{}, interface{}) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSortFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
 	return ret0
 }
 
@@ -286,16 +285,16 @@ func (mr *MockValidatingWebhookConfigurationSetMockRecorder) GetSortFunc() *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).GetSortFunc))
 }
 
-// GetEqualityFunc mocks base method
-func (m *MockValidatingWebhookConfigurationSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+// GetCompareFunc mocks base method
+func (m *MockValidatingWebhookConfigurationSet) GetCompareFunc() func(interface{}, interface{}) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEqualityFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
 	return ret0
 }
 
-// GetEqualityFunc indicates an expected call of GetEqualityFunc
-func (mr *MockValidatingWebhookConfigurationSetMockRecorder) GetEqualityFunc() *gomock.Call {
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) GetCompareFunc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).GetEqualityFunc))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).GetCompareFunc))
 }

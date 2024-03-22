@@ -11,7 +11,6 @@ import (
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type RoleSet interface {
@@ -50,50 +49,44 @@ type RoleSet interface {
 	// Create a deep copy of the current RoleSet
 	Clone() RoleSet
 	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+	GetSortFunc() func(toInsert, existing interface{}) bool
 	// Get the equality function used by the set
-	GetEqualityFunc() func(a, b client.Object) bool
+	GetCompareFunc() func(a, b interface{}) int
 }
 
 func makeGenericRoleSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	roleList []*rbac_authorization_k8s_io_v1.Role,
 ) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range roleList {
 		genericResources = append(genericResources, obj)
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
-	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type roleSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
 func NewRoleSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	roleList ...*rbac_authorization_k8s_io_v1.Role,
 ) RoleSet {
 	return &roleSet{
-		set:          makeGenericRoleSet(sortFunc, equalityFunc, roleList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericRoleSet(sortFunc, compareFunc, roleList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
 func NewRoleSetFromList(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	roleList *rbac_authorization_k8s_io_v1.RoleList,
 ) RoleSet {
 	list := make([]*rbac_authorization_k8s_io_v1.Role, 0, len(roleList.Items))
@@ -101,9 +94,9 @@ func NewRoleSetFromList(
 		list = append(list, &roleList.Items[idx])
 	}
 	return &roleSet{
-		set:          makeGenericRoleSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericRoleSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
@@ -204,7 +197,7 @@ func (s *roleSet) Union(set RoleSet) RoleSet {
 	if s == nil {
 		return set
 	}
-	return NewRoleSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+	return NewRoleSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *roleSet) Difference(set RoleSet) RoleSet {
@@ -213,9 +206,9 @@ func (s *roleSet) Difference(set RoleSet) RoleSet {
 	}
 	newSet := s.Generic().Difference(set.Generic())
 	return &roleSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
 	}
 }
 
@@ -228,7 +221,7 @@ func (s *roleSet) Intersection(set RoleSet) RoleSet {
 	for _, obj := range newSet.List() {
 		roleList = append(roleList, obj.(*rbac_authorization_k8s_io_v1.Role))
 	}
-	return NewRoleSet(s.sortFunc, s.equalityFunc, roleList...)
+	return NewRoleSet(s.sortFunc, s.compareFunc, roleList...)
 }
 
 func (s *roleSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.Role, error) {
@@ -270,27 +263,21 @@ func (s *roleSet) Clone() RoleSet {
 	if s == nil {
 		return nil
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
-	}
 	return &roleSet{
 		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
+			s.sortFunc,
+			s.compareFunc,
 			s.Generic().Clone().List()...,
 		),
 	}
 }
 
-func (s *roleSet) GetSortFunc() func(toInsert, existing client.Object) bool {
+func (s *roleSet) GetSortFunc() func(toInsert, existing interface{}) bool {
 	return s.sortFunc
 }
 
-func (s *roleSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+func (s *roleSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }
 
 type RoleBindingSet interface {
@@ -329,50 +316,44 @@ type RoleBindingSet interface {
 	// Create a deep copy of the current RoleBindingSet
 	Clone() RoleBindingSet
 	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+	GetSortFunc() func(toInsert, existing interface{}) bool
 	// Get the equality function used by the set
-	GetEqualityFunc() func(a, b client.Object) bool
+	GetCompareFunc() func(a, b interface{}) int
 }
 
 func makeGenericRoleBindingSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	roleBindingList []*rbac_authorization_k8s_io_v1.RoleBinding,
 ) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range roleBindingList {
 		genericResources = append(genericResources, obj)
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
-	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type roleBindingSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
 func NewRoleBindingSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	roleBindingList ...*rbac_authorization_k8s_io_v1.RoleBinding,
 ) RoleBindingSet {
 	return &roleBindingSet{
-		set:          makeGenericRoleBindingSet(sortFunc, equalityFunc, roleBindingList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericRoleBindingSet(sortFunc, compareFunc, roleBindingList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
 func NewRoleBindingSetFromList(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	roleBindingList *rbac_authorization_k8s_io_v1.RoleBindingList,
 ) RoleBindingSet {
 	list := make([]*rbac_authorization_k8s_io_v1.RoleBinding, 0, len(roleBindingList.Items))
@@ -380,9 +361,9 @@ func NewRoleBindingSetFromList(
 		list = append(list, &roleBindingList.Items[idx])
 	}
 	return &roleBindingSet{
-		set:          makeGenericRoleBindingSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericRoleBindingSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
@@ -483,7 +464,7 @@ func (s *roleBindingSet) Union(set RoleBindingSet) RoleBindingSet {
 	if s == nil {
 		return set
 	}
-	return NewRoleBindingSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+	return NewRoleBindingSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *roleBindingSet) Difference(set RoleBindingSet) RoleBindingSet {
@@ -492,9 +473,9 @@ func (s *roleBindingSet) Difference(set RoleBindingSet) RoleBindingSet {
 	}
 	newSet := s.Generic().Difference(set.Generic())
 	return &roleBindingSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
 	}
 }
 
@@ -507,7 +488,7 @@ func (s *roleBindingSet) Intersection(set RoleBindingSet) RoleBindingSet {
 	for _, obj := range newSet.List() {
 		roleBindingList = append(roleBindingList, obj.(*rbac_authorization_k8s_io_v1.RoleBinding))
 	}
-	return NewRoleBindingSet(s.sortFunc, s.equalityFunc, roleBindingList...)
+	return NewRoleBindingSet(s.sortFunc, s.compareFunc, roleBindingList...)
 }
 
 func (s *roleBindingSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.RoleBinding, error) {
@@ -549,27 +530,21 @@ func (s *roleBindingSet) Clone() RoleBindingSet {
 	if s == nil {
 		return nil
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
-	}
 	return &roleBindingSet{
 		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
+			s.sortFunc,
+			s.compareFunc,
 			s.Generic().Clone().List()...,
 		),
 	}
 }
 
-func (s *roleBindingSet) GetSortFunc() func(toInsert, existing client.Object) bool {
+func (s *roleBindingSet) GetSortFunc() func(toInsert, existing interface{}) bool {
 	return s.sortFunc
 }
 
-func (s *roleBindingSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+func (s *roleBindingSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }
 
 type ClusterRoleSet interface {
@@ -608,50 +583,44 @@ type ClusterRoleSet interface {
 	// Create a deep copy of the current ClusterRoleSet
 	Clone() ClusterRoleSet
 	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+	GetSortFunc() func(toInsert, existing interface{}) bool
 	// Get the equality function used by the set
-	GetEqualityFunc() func(a, b client.Object) bool
+	GetCompareFunc() func(a, b interface{}) int
 }
 
 func makeGenericClusterRoleSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	clusterRoleList []*rbac_authorization_k8s_io_v1.ClusterRole,
 ) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range clusterRoleList {
 		genericResources = append(genericResources, obj)
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
-	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type clusterRoleSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
 func NewClusterRoleSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	clusterRoleList ...*rbac_authorization_k8s_io_v1.ClusterRole,
 ) ClusterRoleSet {
 	return &clusterRoleSet{
-		set:          makeGenericClusterRoleSet(sortFunc, equalityFunc, clusterRoleList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericClusterRoleSet(sortFunc, compareFunc, clusterRoleList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
 func NewClusterRoleSetFromList(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	clusterRoleList *rbac_authorization_k8s_io_v1.ClusterRoleList,
 ) ClusterRoleSet {
 	list := make([]*rbac_authorization_k8s_io_v1.ClusterRole, 0, len(clusterRoleList.Items))
@@ -659,9 +628,9 @@ func NewClusterRoleSetFromList(
 		list = append(list, &clusterRoleList.Items[idx])
 	}
 	return &clusterRoleSet{
-		set:          makeGenericClusterRoleSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericClusterRoleSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
@@ -762,7 +731,7 @@ func (s *clusterRoleSet) Union(set ClusterRoleSet) ClusterRoleSet {
 	if s == nil {
 		return set
 	}
-	return NewClusterRoleSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+	return NewClusterRoleSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *clusterRoleSet) Difference(set ClusterRoleSet) ClusterRoleSet {
@@ -771,9 +740,9 @@ func (s *clusterRoleSet) Difference(set ClusterRoleSet) ClusterRoleSet {
 	}
 	newSet := s.Generic().Difference(set.Generic())
 	return &clusterRoleSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
 	}
 }
 
@@ -786,7 +755,7 @@ func (s *clusterRoleSet) Intersection(set ClusterRoleSet) ClusterRoleSet {
 	for _, obj := range newSet.List() {
 		clusterRoleList = append(clusterRoleList, obj.(*rbac_authorization_k8s_io_v1.ClusterRole))
 	}
-	return NewClusterRoleSet(s.sortFunc, s.equalityFunc, clusterRoleList...)
+	return NewClusterRoleSet(s.sortFunc, s.compareFunc, clusterRoleList...)
 }
 
 func (s *clusterRoleSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.ClusterRole, error) {
@@ -828,27 +797,21 @@ func (s *clusterRoleSet) Clone() ClusterRoleSet {
 	if s == nil {
 		return nil
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
-	}
 	return &clusterRoleSet{
 		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
+			s.sortFunc,
+			s.compareFunc,
 			s.Generic().Clone().List()...,
 		),
 	}
 }
 
-func (s *clusterRoleSet) GetSortFunc() func(toInsert, existing client.Object) bool {
+func (s *clusterRoleSet) GetSortFunc() func(toInsert, existing interface{}) bool {
 	return s.sortFunc
 }
 
-func (s *clusterRoleSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+func (s *clusterRoleSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }
 
 type ClusterRoleBindingSet interface {
@@ -887,50 +850,44 @@ type ClusterRoleBindingSet interface {
 	// Create a deep copy of the current ClusterRoleBindingSet
 	Clone() ClusterRoleBindingSet
 	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+	GetSortFunc() func(toInsert, existing interface{}) bool
 	// Get the equality function used by the set
-	GetEqualityFunc() func(a, b client.Object) bool
+	GetCompareFunc() func(a, b interface{}) int
 }
 
 func makeGenericClusterRoleBindingSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	clusterRoleBindingList []*rbac_authorization_k8s_io_v1.ClusterRoleBinding,
 ) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range clusterRoleBindingList {
 		genericResources = append(genericResources, obj)
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
-	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type clusterRoleBindingSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
 func NewClusterRoleBindingSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	clusterRoleBindingList ...*rbac_authorization_k8s_io_v1.ClusterRoleBinding,
 ) ClusterRoleBindingSet {
 	return &clusterRoleBindingSet{
-		set:          makeGenericClusterRoleBindingSet(sortFunc, equalityFunc, clusterRoleBindingList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericClusterRoleBindingSet(sortFunc, compareFunc, clusterRoleBindingList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
 func NewClusterRoleBindingSetFromList(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	clusterRoleBindingList *rbac_authorization_k8s_io_v1.ClusterRoleBindingList,
 ) ClusterRoleBindingSet {
 	list := make([]*rbac_authorization_k8s_io_v1.ClusterRoleBinding, 0, len(clusterRoleBindingList.Items))
@@ -938,9 +895,9 @@ func NewClusterRoleBindingSetFromList(
 		list = append(list, &clusterRoleBindingList.Items[idx])
 	}
 	return &clusterRoleBindingSet{
-		set:          makeGenericClusterRoleBindingSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericClusterRoleBindingSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
@@ -1041,7 +998,7 @@ func (s *clusterRoleBindingSet) Union(set ClusterRoleBindingSet) ClusterRoleBind
 	if s == nil {
 		return set
 	}
-	return NewClusterRoleBindingSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+	return NewClusterRoleBindingSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *clusterRoleBindingSet) Difference(set ClusterRoleBindingSet) ClusterRoleBindingSet {
@@ -1050,9 +1007,9 @@ func (s *clusterRoleBindingSet) Difference(set ClusterRoleBindingSet) ClusterRol
 	}
 	newSet := s.Generic().Difference(set.Generic())
 	return &clusterRoleBindingSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
 	}
 }
 
@@ -1065,7 +1022,7 @@ func (s *clusterRoleBindingSet) Intersection(set ClusterRoleBindingSet) ClusterR
 	for _, obj := range newSet.List() {
 		clusterRoleBindingList = append(clusterRoleBindingList, obj.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding))
 	}
-	return NewClusterRoleBindingSet(s.sortFunc, s.equalityFunc, clusterRoleBindingList...)
+	return NewClusterRoleBindingSet(s.sortFunc, s.compareFunc, clusterRoleBindingList...)
 }
 
 func (s *clusterRoleBindingSet) Find(id ezkube.ResourceId) (*rbac_authorization_k8s_io_v1.ClusterRoleBinding, error) {
@@ -1107,25 +1064,19 @@ func (s *clusterRoleBindingSet) Clone() ClusterRoleBindingSet {
 	if s == nil {
 		return nil
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
-	}
 	return &clusterRoleBindingSet{
 		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
+			s.sortFunc,
+			s.compareFunc,
 			s.Generic().Clone().List()...,
 		),
 	}
 }
 
-func (s *clusterRoleBindingSet) GetSortFunc() func(toInsert, existing client.Object) bool {
+func (s *clusterRoleBindingSet) GetSortFunc() func(toInsert, existing interface{}) bool {
 	return s.sortFunc
 }
 
-func (s *clusterRoleBindingSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+func (s *clusterRoleBindingSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }

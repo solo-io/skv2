@@ -174,14 +174,51 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 	}
 }
 
-func ResourceIdsEqual(a, b ResourceId) bool {
-	return a.GetName() == b.GetName() &&
-		a.GetNamespace() == b.GetNamespace()
+// CompareResourceId returns an integer comparing two ResourceIds lexicographically.
+// The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
+// a, b must be of type ResourceId
+func CompareResourceIds(a, b interface{}) int {
+	aa, aok := a.(ResourceId)
+	bb, bok := b.(ResourceId)
+	if !aok {
+		panic("a is not a ResourceId")
+	}
+	if !bok {
+		panic("b is not a ResourceId")
+	}
+	if resourceIdsEqual(aa, bb) {
+		return 0
+	}
+	if resourceIdsLessThan(aa, bb) {
+		return -1
+	}
+	return 1
 }
 
-func ResourceIdsAscending(a, b ResourceId) bool {
-	if a.GetName() != b.GetName() {
-		return a.GetName() < b.GetName()
+func ResourceIdsAscending(a, b interface{}) bool {
+	aa, aok := a.(ResourceId)
+	bb, bok := b.(ResourceId)
+	if !aok {
+		panic("a is not a ResourceId")
 	}
-	return a.GetNamespace() < b.GetNamespace()
+	if !bok {
+		panic("b is not a ResourceId")
+	}
+	return resourceIdsLessThan(aa, bb)
+}
+
+func resourceIdsEqual(a, b ResourceId) bool {
+	return a.GetName() == b.GetName() && a.GetNamespace() == b.GetNamespace()
+}
+
+func resourceIdsLessThan(a, b ResourceId) bool {
+	// namespace is the primary sort key
+	if a.GetNamespace() > b.GetNamespace() {
+		return false
+	}
+	// name is the secondary sort key
+	if a.GetName() < b.GetName() {
+		return true
+	}
+	return false
 }

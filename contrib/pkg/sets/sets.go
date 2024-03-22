@@ -60,8 +60,8 @@ type threadSafeResourceSet struct {
 }
 
 func NewResourceSet(
-	sortFunc func(toInsert, existing ezkube.ResourceId) bool,
-	equalityFunc func(a, b ezkube.ResourceId) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	equalityFunc func(a, b interface{}) int,
 	resources ...ezkube.ResourceId,
 ) ResourceSet {
 	return &threadSafeResourceSet{
@@ -93,9 +93,7 @@ func (t *threadSafeResourceSet) Map() Resources {
 	return t.set
 }
 
-func (t *threadSafeResourceSet) Insert(
-	resources ...ezkube.ResourceId,
-) {
+func (t *threadSafeResourceSet) Insert(resources ...ezkube.ResourceId) {
 	t.lock.Lock()
 	defer t.lock.Unlock()
 	t.set.Insert(resources...)
@@ -107,17 +105,13 @@ func (t *threadSafeResourceSet) Has(resource ezkube.ResourceId) bool {
 	return t.set.Has(resource)
 }
 
-func (t *threadSafeResourceSet) IsSuperset(
-	set ResourceSet,
-) bool {
+func (t *threadSafeResourceSet) IsSuperset(set ResourceSet) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.IsSuperset(set.Map())
 }
 
-func (t *threadSafeResourceSet) Equal(
-	set ResourceSet,
-) bool {
+func (t *threadSafeResourceSet) Equal(set ResourceSet) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.Equal(set.Map())

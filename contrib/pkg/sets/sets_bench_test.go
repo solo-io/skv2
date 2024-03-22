@@ -44,15 +44,13 @@ func benchmarkResourcesSet(count int, b *testing.B) {
 	}
 
 	for n := 0; n < b.N; n++ {
-		s := v1sets.NewPaintSet(ezkube.CreationTimestampAscending, ezkube.CreationTimestampsEqual)
-		for _, resource := range resources {
-			s.Insert(resource)
-		}
-
-		l := s.List(filterResource)
-
+		s := v1sets.NewPaintSet(ezkube.CreationTimestampAscending, ezkube.CreationTimestampsCompare)
+		// for _, resource := range resources {
+		s.Insert(resources...)
+		// }
+		l := s.List()
+		// l := s.List(filterResource)
 		// SortByCreationTime(l) // only for map implementation
-
 		for _, r := range l {
 			r.GetName()
 		}

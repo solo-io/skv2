@@ -44,8 +44,6 @@ type ResourceSet[T client.Object] interface {
 	Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 	// Clone returns a deep copy of the set
 	Clone() ResourceSet[T]
-	// GetSortFunc() func(toInsert, existing T) bool
-	// GetEqualityFunc() func(a, b T) bool
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -64,21 +62,21 @@ func (r *ResourceDelta[T]) DeltaV1() sk_sets.ResourceDelta {
 }
 
 type resourceSet[T client.Object] struct {
-	lock         sync.RWMutex
-	set          []T
-	sortFunc     func(toInsert, existing T) bool
-	equalityFunc func(a, b T) bool
+	lock        sync.RWMutex
+	set         []T
+	sortFunc    func(toInsert, existing T) bool
+	compareFunc func(a, b T) int
 }
 
 func NewResourceSet[T client.Object](
 	sortFunc func(toInsert, existing T) bool,
-	equalityFunc func(a, b T) bool,
+	compareFunc func(a, b T) int,
 	resources ...T,
 ) ResourceSet[T] {
 	rs := &resourceSet[T]{
-		set:          []T{},
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         []T{},
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 	rs.Insert(resources...)
 	return rs
@@ -128,10 +126,10 @@ func (s *resourceSet[T]) Insert(resources ...T) {
 }
 
 func (s *resourceSet[T]) insert(resource T) {
-	insertIndex := sort.Search(len(s.set), func(i int) bool { return s.sortFunc(resource, s.set[i]) })
+	insertIndex := sort.Search(s.Length(), func(i int) bool { return s.sortFunc(resource, s.set[i]) })
 
 	// if the resource is already in the set, replace it
-	if insertIndex < len(s.set) && s.equalityFunc(resource, s.set[insertIndex]) {
+	if insertIndex < len(s.set) && s.compareFunc(resource, s.set[insertIndex]) == 0 {
 		s.set[insertIndex] = resource
 		return
 	}
@@ -151,8 +149,10 @@ func (s *resourceSet[T]) insert(resource T) {
 func (s *resourceSet[T]) Has(resource T) bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	insertIndex := sort.Search(len(s.set), func(i int) bool { return s.sortFunc(resource, s.set[i]) })
-	return insertIndex < len(s.set) && s.equalityFunc(resource, s.set[insertIndex])
+	i := sort.Search(s.Length(), func(i int) bool {
+		return ezkube.CompareResourceIds(s.set[i], resource) >= 0
+	})
+	return i < s.Length() && s.compareFunc(s.set[i], resource) == 0
 }
 
 func (s *resourceSet[T]) Equal(
@@ -166,10 +166,13 @@ func (s *resourceSet[T]) Equal(
 func (s *resourceSet[T]) Delete(resource T) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	i := sort.Search(len(s.set), func(i int) bool { return s.equalityFunc(s.set[i], resource) })
-	if i == len(s.set) {
+	i := sort.Search(s.Length(), func(i int) bool {
+		return s.compareFunc(s.set[i], resource) >= 0
+	})
+	if found := i < s.Length() && s.compareFunc(s.set[i], resource) == 0; !found {
 		return
 	}
+
 	newSet := make([]T, len(s.set)-1)
 	copy(newSet, s.set[:i])
 	copy(newSet[i:], s.set[i+1:])
@@ -177,13 +180,13 @@ func (s *resourceSet[T]) Delete(resource T) {
 }
 
 func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
-	return NewResourceSet[T](s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+	return NewResourceSet[T](s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *resourceSet[T]) Difference(set ResourceSet[T]) ResourceSet[T] {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	result := NewResourceSet[T](s.sortFunc, s.equalityFunc)
+	result := NewResourceSet[T](s.sortFunc, s.compareFunc)
 	for _, resource := range s.set {
 		if !set.Has(resource) {
 			result.Insert(resource)
@@ -194,13 +197,13 @@ func (s *resourceSet[T]) Difference(set ResourceSet[T]) ResourceSet[T] {
 
 func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 	var walk, other ResourceSet[T]
-	result := NewResourceSet(s.sortFunc, s.equalityFunc)
+	result := NewResourceSet(s.sortFunc, s.compareFunc)
 	if s.Length() < set.Length() {
-		walk = NewResourceSet(s.sortFunc, s.equalityFunc, s.List()...)
+		walk = NewResourceSet(s.sortFunc, s.compareFunc, s.List()...)
 		other = set
 	} else {
 		walk = set
-		other = NewResourceSet(s.sortFunc, s.equalityFunc, s.List()...)
+		other = NewResourceSet(s.sortFunc, s.compareFunc, s.List()...)
 	}
 	for _, key := range walk.List() {
 		if other.Has(key) {
@@ -213,15 +216,18 @@ func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 func (s *resourceSet[T]) Find(id T) (T, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
+	key := sk_sets.Key(id)
+	var key_i string
 	i := sort.Search(s.Length(), func(i int) bool {
-		return s.equalityFunc(s.set[i], id)
+		key_i = sk_sets.Key(s.set[i])
+		return key <= key_i
 	})
 	resource := s.set[i]
-	if i == s.Length() {
-		return resource, sk_sets.NotFoundErr(resource, id)
+	if i != s.Length() && key_i == key {
+		return resource, nil
 	}
 
-	return resource, nil
+	return resource, sk_sets.NotFoundErr(resource, id)
 }
 
 func (s *resourceSet[T]) Length() int {
@@ -268,7 +274,7 @@ func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 // Create a clone of the current set
 // note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
 func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
-	new := NewResourceSet[T](oldSet.sortFunc, oldSet.equalityFunc)
+	new := NewResourceSet[T](oldSet.sortFunc, oldSet.compareFunc)
 	oldSet.List(func(oldObj T) bool {
 		copy := oldObj.DeepCopyObject().(T)
 		new.Insert(copy)
@@ -278,23 +284,15 @@ func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 }
 
 func (s *resourceSet[T]) Generic() sk_sets.ResourceSet {
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
+	genericSortFunc := func(toInsert, existing interface{}) bool {
 		return s.sortFunc(toInsert.(T), existing.(T))
 	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(T), b.(T))
+	genericCompareFunc := func(a, b interface{}) int {
+		return s.compareFunc(a.(T), b.(T))
 	}
-	set := sk_sets.NewResourceSet(genericSortFunc, genericEqualityFunc)
+	set := sk_sets.NewResourceSet(genericSortFunc, genericCompareFunc)
 	for _, v := range s.List() {
 		set.Insert(v)
 	}
 	return set
-}
-
-func (s *resourceSet[T]) GetSortFunc() func(toInsert, existing T) bool {
-	return s.sortFunc
-}
-
-func (s *resourceSet[T]) GetEqualityFunc() func(a, b T) bool {
-	return s.equalityFunc
 }

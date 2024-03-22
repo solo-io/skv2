@@ -52,50 +52,44 @@ type {{ $resource.Kind }}Set interface {
     // Create a deep copy of the current {{ $resource.Kind }}Set
     Clone() {{ $resource.Kind }}Set
     // Get the sort function used by the set
-    GetSortFunc() func(toInsert, existing client.Object) bool
+    GetSortFunc() func(toInsert, existing interface{}) bool
 	// Get the equality function used by the set
-	GetEqualityFunc() func(a, b client.Object) bool
+	GetCompareFunc() func(a, b interface{}) int
 }
 
 func makeGeneric{{ $resource.Kind }}Set(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
     {{ $kindLowerCamel }}List []*{{ $import_prefix }}.{{ $resource.Kind }},
 ) sksets.ResourceSet {
     var genericResources []ezkube.ResourceId
     for _, obj := range {{ $kindLowerCamel }}List {
         genericResources = append(genericResources, obj)
     }
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
-	}
-    return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+    return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type {{ $kindLowerCamel }}Set struct {
     set sksets.ResourceSet
-    sortFunc func(toInsert, existing client.Object) bool
-    equalityFunc func(a, b client.Object) bool
+    sortFunc func(toInsert, existing interface{}) bool
+    compareFunc func(a, b interface{}) int
 }
 
 func New{{ $resource.Kind }}Set(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
     {{ $kindLowerCamel }}List ...*{{ $import_prefix }}.{{ $resource.Kind }},
 ) {{ $resource.Kind }}Set {
     return &{{ $kindLowerCamel }}Set{
-        set: makeGeneric{{ $resource.Kind }}Set(sortFunc, equalityFunc, {{ $kindLowerCamel }}List),
+        set: makeGeneric{{ $resource.Kind }}Set(sortFunc, compareFunc, {{ $kindLowerCamel }}List),
         sortFunc: sortFunc,
-        equalityFunc: equalityFunc,
+        compareFunc: compareFunc,
     }
 }
 
 func New{{ $resource.Kind }}SetFromList(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
     {{ $kindLowerCamel }}List *{{ $import_prefix }}.{{ $resource.Kind }}List,
 ) {{ $resource.Kind }}Set {
     list := make([]*{{ $import_prefix }}.{{ $resource.Kind }}, 0, len({{ $kindLowerCamel }}List.Items))
@@ -107,9 +101,9 @@ func New{{ $resource.Kind }}SetFromList(
         {{- end }}
     }
     return &{{ $kindLowerCamel }}Set{
-        set: makeGeneric{{ $resource.Kind }}Set(sortFunc, equalityFunc, list),
+        set: makeGeneric{{ $resource.Kind }}Set(sortFunc, compareFunc, list),
         sortFunc: sortFunc,
-        equalityFunc: equalityFunc,
+        compareFunc: compareFunc,
     }
 }
 
@@ -210,7 +204,7 @@ func (s *{{ $kindLowerCamel }}Set) Union(set {{ $resource.Kind }}Set) {{ $resour
     if s == nil {
         return set
     }
-    return New{{ $resource.Kind }}Set(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+    return New{{ $resource.Kind }}Set(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *{{ $kindLowerCamel }}Set) Difference(set {{ $resource.Kind }}Set) {{ $resource.Kind }}Set {
@@ -221,7 +215,7 @@ func (s *{{ $kindLowerCamel }}Set) Difference(set {{ $resource.Kind }}Set) {{ $r
     return &{{ $kindLowerCamel }}Set{
         set: newSet,
         sortFunc: s.sortFunc,
-        equalityFunc: s.equalityFunc,
+        compareFunc: s.compareFunc,
     }
 }
 
@@ -234,7 +228,7 @@ func (s *{{ $kindLowerCamel }}Set) Intersection(set {{ $resource.Kind }}Set) {{ 
     for _, obj := range newSet.List() {
         {{ $kindLowerCamel }}List = append({{ $kindLowerCamel }}List, obj.(*{{ $import_prefix }}.{{ $resource.Kind }}))
     }
-    return New{{ $resource.Kind }}Set(s.sortFunc, s.equalityFunc, {{ $kindLowerCamel }}List...)
+    return New{{ $resource.Kind }}Set(s.sortFunc, s.compareFunc, {{ $kindLowerCamel }}List...)
 }
 
 
@@ -277,27 +271,21 @@ func (s *{{ $kindLowerCamel }}Set) Clone() {{ $resource.Kind }}Set {
 	if s == nil {
 		return nil
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
-	}
 	return &{{ $kindLowerCamel }}Set{
         set: sksets.NewResourceSet(
-            genericSortFunc,
-            genericEqualityFunc,
+            s.sortFunc,
+            s.compareFunc,
             s.Generic().Clone().List()...,
         ),
     }
 }
 
-func (s *{{ $kindLowerCamel }}Set) GetSortFunc() func(toInsert, existing client.Object) bool {
+func (s *{{ $kindLowerCamel }}Set) GetSortFunc() func(toInsert, existing interface{}) bool {
     return s.sortFunc
 }
 
-func (s *{{ $kindLowerCamel }}Set) GetEqualityFunc() func(a, b client.Object) bool {
-    return s.equalityFunc
+func (s *{{ $kindLowerCamel }}Set) GetCompareFunc() func(a, b interface{}) int {
+    return s.compareFunc
 }
 
 {{- end }}

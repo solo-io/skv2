@@ -11,7 +11,6 @@ import (
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type KubernetesClusterSet interface {
@@ -50,50 +49,44 @@ type KubernetesClusterSet interface {
 	// Create a deep copy of the current KubernetesClusterSet
 	Clone() KubernetesClusterSet
 	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+	GetSortFunc() func(toInsert, existing interface{}) bool
 	// Get the equality function used by the set
-	GetEqualityFunc() func(a, b client.Object) bool
+	GetCompareFunc() func(a, b interface{}) int
 }
 
 func makeGenericKubernetesClusterSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range kubernetesClusterList {
 		genericResources = append(genericResources, obj)
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
-	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type kubernetesClusterSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
 func NewKubernetesClusterSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) KubernetesClusterSet {
 	return &kubernetesClusterSet{
-		set:          makeGenericKubernetesClusterSet(sortFunc, equalityFunc, kubernetesClusterList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericKubernetesClusterSet(sortFunc, compareFunc, kubernetesClusterList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
 func NewKubernetesClusterSetFromList(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
 	kubernetesClusterList *multicluster_solo_io_v1alpha1.KubernetesClusterList,
 ) KubernetesClusterSet {
 	list := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(kubernetesClusterList.Items))
@@ -101,9 +94,9 @@ func NewKubernetesClusterSetFromList(
 		list = append(list, &kubernetesClusterList.Items[idx])
 	}
 	return &kubernetesClusterSet{
-		set:          makeGenericKubernetesClusterSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
+		set:         makeGenericKubernetesClusterSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
 	}
 }
 
@@ -204,7 +197,7 @@ func (s *kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesCluster
 	if s == nil {
 		return set
 	}
-	return NewKubernetesClusterSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+	return NewKubernetesClusterSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
@@ -213,9 +206,9 @@ func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesCl
 	}
 	newSet := s.Generic().Difference(set.Generic())
 	return &kubernetesClusterSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
 	}
 }
 
@@ -228,7 +221,7 @@ func (s *kubernetesClusterSet) Intersection(set KubernetesClusterSet) Kubernetes
 	for _, obj := range newSet.List() {
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
 	}
-	return NewKubernetesClusterSet(s.sortFunc, s.equalityFunc, kubernetesClusterList...)
+	return NewKubernetesClusterSet(s.sortFunc, s.compareFunc, kubernetesClusterList...)
 }
 
 func (s *kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error) {
@@ -270,25 +263,19 @@ func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
 	if s == nil {
 		return nil
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
-	}
 	return &kubernetesClusterSet{
 		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
+			s.sortFunc,
+			s.compareFunc,
 			s.Generic().Clone().List()...,
 		),
 	}
 }
 
-func (s *kubernetesClusterSet) GetSortFunc() func(toInsert, existing client.Object) bool {
+func (s *kubernetesClusterSet) GetSortFunc() func(toInsert, existing interface{}) bool {
 	return s.sortFunc
 }
 
-func (s *kubernetesClusterSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+func (s *kubernetesClusterSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }

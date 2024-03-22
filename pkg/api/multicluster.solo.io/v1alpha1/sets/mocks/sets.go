@@ -13,7 +13,6 @@ import (
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockKubernetesClusterSet is a mock of KubernetesClusterSet interface
@@ -273,10 +272,10 @@ func (mr *MockKubernetesClusterSetMockRecorder) Clone() *gomock.Call {
 }
 
 // GetSortFunc mocks base method
-func (m *MockKubernetesClusterSet) GetSortFunc() func(client.Object, client.Object) bool {
+func (m *MockKubernetesClusterSet) GetSortFunc() func(interface{}, interface{}) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSortFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
 	return ret0
 }
 
@@ -286,16 +285,16 @@ func (mr *MockKubernetesClusterSetMockRecorder) GetSortFunc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockKubernetesClusterSet)(nil).GetSortFunc))
 }
 
-// GetEqualityFunc mocks base method
-func (m *MockKubernetesClusterSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+// GetCompareFunc mocks base method
+func (m *MockKubernetesClusterSet) GetCompareFunc() func(interface{}, interface{}) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEqualityFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
 	return ret0
 }
 
-// GetEqualityFunc indicates an expected call of GetEqualityFunc
-func (mr *MockKubernetesClusterSetMockRecorder) GetEqualityFunc() *gomock.Call {
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockKubernetesClusterSetMockRecorder) GetCompareFunc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockKubernetesClusterSet)(nil).GetEqualityFunc))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockKubernetesClusterSet)(nil).GetCompareFunc))
 }

@@ -13,7 +13,6 @@ import (
 	v1sets "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/rbac.authorization.k8s.io/v1/sets"
 	v1 "k8s.io/api/rbac/v1"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockRoleSet is a mock of RoleSet interface
@@ -273,10 +272,10 @@ func (mr *MockRoleSetMockRecorder) Clone() *gomock.Call {
 }
 
 // GetSortFunc mocks base method
-func (m *MockRoleSet) GetSortFunc() func(client.Object, client.Object) bool {
+func (m *MockRoleSet) GetSortFunc() func(interface{}, interface{}) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSortFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
 	return ret0
 }
 
@@ -286,18 +285,18 @@ func (mr *MockRoleSetMockRecorder) GetSortFunc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockRoleSet)(nil).GetSortFunc))
 }
 
-// GetEqualityFunc mocks base method
-func (m *MockRoleSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+// GetCompareFunc mocks base method
+func (m *MockRoleSet) GetCompareFunc() func(interface{}, interface{}) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEqualityFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
 	return ret0
 }
 
-// GetEqualityFunc indicates an expected call of GetEqualityFunc
-func (mr *MockRoleSetMockRecorder) GetEqualityFunc() *gomock.Call {
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockRoleSetMockRecorder) GetCompareFunc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockRoleSet)(nil).GetEqualityFunc))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockRoleSet)(nil).GetCompareFunc))
 }
 
 // MockRoleBindingSet is a mock of RoleBindingSet interface
@@ -557,10 +556,10 @@ func (mr *MockRoleBindingSetMockRecorder) Clone() *gomock.Call {
 }
 
 // GetSortFunc mocks base method
-func (m *MockRoleBindingSet) GetSortFunc() func(client.Object, client.Object) bool {
+func (m *MockRoleBindingSet) GetSortFunc() func(interface{}, interface{}) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSortFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
 	return ret0
 }
 
@@ -570,18 +569,18 @@ func (mr *MockRoleBindingSetMockRecorder) GetSortFunc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockRoleBindingSet)(nil).GetSortFunc))
 }
 
-// GetEqualityFunc mocks base method
-func (m *MockRoleBindingSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+// GetCompareFunc mocks base method
+func (m *MockRoleBindingSet) GetCompareFunc() func(interface{}, interface{}) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEqualityFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
 	return ret0
 }
 
-// GetEqualityFunc indicates an expected call of GetEqualityFunc
-func (mr *MockRoleBindingSetMockRecorder) GetEqualityFunc() *gomock.Call {
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockRoleBindingSetMockRecorder) GetCompareFunc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockRoleBindingSet)(nil).GetEqualityFunc))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockRoleBindingSet)(nil).GetCompareFunc))
 }
 
 // MockClusterRoleSet is a mock of ClusterRoleSet interface
@@ -841,10 +840,10 @@ func (mr *MockClusterRoleSetMockRecorder) Clone() *gomock.Call {
 }
 
 // GetSortFunc mocks base method
-func (m *MockClusterRoleSet) GetSortFunc() func(client.Object, client.Object) bool {
+func (m *MockClusterRoleSet) GetSortFunc() func(interface{}, interface{}) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSortFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
 	return ret0
 }
 
@@ -854,18 +853,18 @@ func (mr *MockClusterRoleSetMockRecorder) GetSortFunc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockClusterRoleSet)(nil).GetSortFunc))
 }
 
-// GetEqualityFunc mocks base method
-func (m *MockClusterRoleSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+// GetCompareFunc mocks base method
+func (m *MockClusterRoleSet) GetCompareFunc() func(interface{}, interface{}) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEqualityFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
 	return ret0
 }
 
-// GetEqualityFunc indicates an expected call of GetEqualityFunc
-func (mr *MockClusterRoleSetMockRecorder) GetEqualityFunc() *gomock.Call {
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockClusterRoleSetMockRecorder) GetCompareFunc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockClusterRoleSet)(nil).GetEqualityFunc))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockClusterRoleSet)(nil).GetCompareFunc))
 }
 
 // MockClusterRoleBindingSet is a mock of ClusterRoleBindingSet interface
@@ -1125,10 +1124,10 @@ func (mr *MockClusterRoleBindingSetMockRecorder) Clone() *gomock.Call {
 }
 
 // GetSortFunc mocks base method
-func (m *MockClusterRoleBindingSet) GetSortFunc() func(client.Object, client.Object) bool {
+func (m *MockClusterRoleBindingSet) GetSortFunc() func(interface{}, interface{}) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSortFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
 	return ret0
 }
 
@@ -1138,16 +1137,16 @@ func (mr *MockClusterRoleBindingSetMockRecorder) GetSortFunc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).GetSortFunc))
 }
 
-// GetEqualityFunc mocks base method
-func (m *MockClusterRoleBindingSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+// GetCompareFunc mocks base method
+func (m *MockClusterRoleBindingSet) GetCompareFunc() func(interface{}, interface{}) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEqualityFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
 	return ret0
 }
 
-// GetEqualityFunc indicates an expected call of GetEqualityFunc
-func (mr *MockClusterRoleBindingSetMockRecorder) GetEqualityFunc() *gomock.Call {
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockClusterRoleBindingSetMockRecorder) GetCompareFunc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).GetEqualityFunc))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).GetCompareFunc))
 }

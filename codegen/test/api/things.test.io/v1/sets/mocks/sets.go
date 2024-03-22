@@ -13,7 +13,6 @@ import (
 	sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockPaintSet is a mock of PaintSet interface
@@ -273,10 +272,10 @@ func (mr *MockPaintSetMockRecorder) Clone() *gomock.Call {
 }
 
 // GetSortFunc mocks base method
-func (m *MockPaintSet) GetSortFunc() func(client.Object, client.Object) bool {
+func (m *MockPaintSet) GetSortFunc() func(interface{}, interface{}) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSortFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
 	return ret0
 }
 
@@ -286,18 +285,18 @@ func (mr *MockPaintSetMockRecorder) GetSortFunc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockPaintSet)(nil).GetSortFunc))
 }
 
-// GetEqualityFunc mocks base method
-func (m *MockPaintSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+// GetCompareFunc mocks base method
+func (m *MockPaintSet) GetCompareFunc() func(interface{}, interface{}) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEqualityFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
 	return ret0
 }
 
-// GetEqualityFunc indicates an expected call of GetEqualityFunc
-func (mr *MockPaintSetMockRecorder) GetEqualityFunc() *gomock.Call {
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockPaintSetMockRecorder) GetCompareFunc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockPaintSet)(nil).GetEqualityFunc))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockPaintSet)(nil).GetCompareFunc))
 }
 
 // MockClusterResourceSet is a mock of ClusterResourceSet interface
@@ -557,10 +556,10 @@ func (mr *MockClusterResourceSetMockRecorder) Clone() *gomock.Call {
 }
 
 // GetSortFunc mocks base method
-func (m *MockClusterResourceSet) GetSortFunc() func(client.Object, client.Object) bool {
+func (m *MockClusterResourceSet) GetSortFunc() func(interface{}, interface{}) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSortFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
 	return ret0
 }
 
@@ -570,16 +569,16 @@ func (mr *MockClusterResourceSetMockRecorder) GetSortFunc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockClusterResourceSet)(nil).GetSortFunc))
 }
 
-// GetEqualityFunc mocks base method
-func (m *MockClusterResourceSet) GetEqualityFunc() func(client.Object, client.Object) bool {
+// GetCompareFunc mocks base method
+func (m *MockClusterResourceSet) GetCompareFunc() func(interface{}, interface{}) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEqualityFunc")
-	ret0, _ := ret[0].(func(client.Object, client.Object) bool)
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
 	return ret0
 }
 
-// GetEqualityFunc indicates an expected call of GetEqualityFunc
-func (mr *MockClusterResourceSetMockRecorder) GetEqualityFunc() *gomock.Call {
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockClusterResourceSetMockRecorder) GetCompareFunc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEqualityFunc", reflect.TypeOf((*MockClusterResourceSet)(nil).GetEqualityFunc))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockClusterResourceSet)(nil).GetCompareFunc))
 }
