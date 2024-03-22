@@ -10,6 +10,7 @@ import (
 	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -65,10 +66,46 @@ func makeGenericKubernetesClusterSet(
 		genericResources = append(genericResources, obj)
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &multicluster_solo_io_v1alpha1.KubernetesCluster{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &multicluster_solo_io_v1alpha1.KubernetesCluster{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &multicluster_solo_io_v1alpha1.KubernetesCluster{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &multicluster_solo_io_v1alpha1.KubernetesCluster{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return equalityFunc(objA, objB)
 	}
 	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
@@ -271,10 +308,46 @@ func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
 		return nil
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &multicluster_solo_io_v1alpha1.KubernetesCluster{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &multicluster_solo_io_v1alpha1.KubernetesCluster{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return s.sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &multicluster_solo_io_v1alpha1.KubernetesCluster{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &multicluster_solo_io_v1alpha1.KubernetesCluster{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return s.equalityFunc(objA, objB)
 	}
 	return &kubernetesClusterSet{
 		set: sksets.NewResourceSet(

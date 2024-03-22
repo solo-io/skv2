@@ -10,6 +10,7 @@ import (
 	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -65,10 +66,46 @@ func makeGenericRoleSet(
 		genericResources = append(genericResources, obj)
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &rbac_authorization_k8s_io_v1.Role{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &rbac_authorization_k8s_io_v1.Role{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &rbac_authorization_k8s_io_v1.Role{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &rbac_authorization_k8s_io_v1.Role{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return equalityFunc(objA, objB)
 	}
 	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
@@ -271,10 +308,46 @@ func (s *roleSet) Clone() RoleSet {
 		return nil
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &rbac_authorization_k8s_io_v1.Role{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &rbac_authorization_k8s_io_v1.Role{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return s.sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &rbac_authorization_k8s_io_v1.Role{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &rbac_authorization_k8s_io_v1.Role{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return s.equalityFunc(objA, objB)
 	}
 	return &roleSet{
 		set: sksets.NewResourceSet(
@@ -344,10 +417,46 @@ func makeGenericRoleBindingSet(
 		genericResources = append(genericResources, obj)
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &rbac_authorization_k8s_io_v1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &rbac_authorization_k8s_io_v1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &rbac_authorization_k8s_io_v1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &rbac_authorization_k8s_io_v1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return equalityFunc(objA, objB)
 	}
 	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
@@ -550,10 +659,46 @@ func (s *roleBindingSet) Clone() RoleBindingSet {
 		return nil
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &rbac_authorization_k8s_io_v1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &rbac_authorization_k8s_io_v1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return s.sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &rbac_authorization_k8s_io_v1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &rbac_authorization_k8s_io_v1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return s.equalityFunc(objA, objB)
 	}
 	return &roleBindingSet{
 		set: sksets.NewResourceSet(
@@ -623,10 +768,46 @@ func makeGenericClusterRoleSet(
 		genericResources = append(genericResources, obj)
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &rbac_authorization_k8s_io_v1.ClusterRole{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &rbac_authorization_k8s_io_v1.ClusterRole{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &rbac_authorization_k8s_io_v1.ClusterRole{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &rbac_authorization_k8s_io_v1.ClusterRole{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return equalityFunc(objA, objB)
 	}
 	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
@@ -829,10 +1010,46 @@ func (s *clusterRoleSet) Clone() ClusterRoleSet {
 		return nil
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &rbac_authorization_k8s_io_v1.ClusterRole{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &rbac_authorization_k8s_io_v1.ClusterRole{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return s.sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &rbac_authorization_k8s_io_v1.ClusterRole{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &rbac_authorization_k8s_io_v1.ClusterRole{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return s.equalityFunc(objA, objB)
 	}
 	return &clusterRoleSet{
 		set: sksets.NewResourceSet(
@@ -902,10 +1119,46 @@ func makeGenericClusterRoleBindingSet(
 		genericResources = append(genericResources, obj)
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &rbac_authorization_k8s_io_v1.ClusterRoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &rbac_authorization_k8s_io_v1.ClusterRoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &rbac_authorization_k8s_io_v1.ClusterRoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &rbac_authorization_k8s_io_v1.ClusterRoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return equalityFunc(objA, objB)
 	}
 	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
@@ -1108,10 +1361,46 @@ func (s *clusterRoleBindingSet) Clone() ClusterRoleBindingSet {
 		return nil
 	}
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		return s.sortFunc(toInsert.(client.Object), existing.(client.Object))
+		objToInsert, ok := toInsert.(client.Object)
+		if !ok {
+			objToInsert = &rbac_authorization_k8s_io_v1.ClusterRoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      toInsert.GetName(),
+					Namespace: toInsert.GetNamespace(),
+				},
+			}
+		}
+		objExisting, ok := existing.(client.Object)
+		if !ok {
+			objExisting = &rbac_authorization_k8s_io_v1.ClusterRoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      existing.GetName(),
+					Namespace: existing.GetNamespace(),
+				},
+			}
+		}
+		return s.sortFunc(objToInsert, objExisting)
 	}
 	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		return s.equalityFunc(a.(client.Object), b.(client.Object))
+		objA, ok := a.(client.Object)
+		if !ok {
+			objA = &rbac_authorization_k8s_io_v1.ClusterRoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      a.GetName(),
+					Namespace: a.GetNamespace(),
+				},
+			}
+		}
+		objB, ok := b.(client.Object)
+		if !ok {
+			objB = &rbac_authorization_k8s_io_v1.ClusterRoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      b.GetName(),
+					Namespace: b.GetNamespace(),
+				},
+			}
+		}
+		return s.equalityFunc(objA, objB)
 	}
 	return &clusterRoleBindingSet{
 		set: sksets.NewResourceSet(
