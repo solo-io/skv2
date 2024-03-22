@@ -159,7 +159,7 @@ func (s *roleSet) Map() map[string]*rbac_authorization_k8s_io_v1.Role {
 	}
 
 	newMap := map[string]*rbac_authorization_k8s_io_v1.Role{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*rbac_authorization_k8s_io_v1.Role)
 	}
 	return newMap
@@ -438,7 +438,7 @@ func (s *roleBindingSet) Map() map[string]*rbac_authorization_k8s_io_v1.RoleBind
 	}
 
 	newMap := map[string]*rbac_authorization_k8s_io_v1.RoleBinding{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*rbac_authorization_k8s_io_v1.RoleBinding)
 	}
 	return newMap
@@ -717,7 +717,7 @@ func (s *clusterRoleSet) Map() map[string]*rbac_authorization_k8s_io_v1.ClusterR
 	}
 
 	newMap := map[string]*rbac_authorization_k8s_io_v1.ClusterRole{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*rbac_authorization_k8s_io_v1.ClusterRole)
 	}
 	return newMap
@@ -996,7 +996,7 @@ func (s *clusterRoleBindingSet) Map() map[string]*rbac_authorization_k8s_io_v1.C
 	}
 
 	newMap := map[string]*rbac_authorization_k8s_io_v1.ClusterRoleBinding{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*rbac_authorization_k8s_io_v1.ClusterRoleBinding)
 	}
 	return newMap

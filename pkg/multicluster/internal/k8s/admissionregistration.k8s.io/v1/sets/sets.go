@@ -159,7 +159,7 @@ func (s *validatingWebhookConfigurationSet) Map() map[string]*admissionregistrat
 	}
 
 	newMap := map[string]*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
 	}
 	return newMap

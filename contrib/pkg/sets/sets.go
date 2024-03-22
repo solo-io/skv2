@@ -29,7 +29,7 @@ type ResourceSet interface {
 	Keys() sets.String
 	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
-	Map() Resources
+	Map() map[string]ezkube.ResourceId
 	Insert(resource ...ezkube.ResourceId)
 	Equal(set ResourceSet) bool
 	Has(resource ezkube.ResourceId) bool
@@ -38,6 +38,7 @@ type ResourceSet interface {
 	Difference(set ResourceSet) ResourceSet
 	Intersection(set ResourceSet) ResourceSet
 	IsSuperset(set ResourceSet) bool
+	Resources() Resources
 	Find(resourceType, id ezkube.ResourceId) (ezkube.ResourceId, error)
 	Length() int
 	// returns the delta between this and and another ResourceSet
@@ -75,6 +76,12 @@ func (t *threadSafeResourceSet) Keys() sets.String {
 	return t.set.Keys()
 }
 
+func (t *threadSafeResourceSet) Resources() Resources {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.set
+}
+
 func (t *threadSafeResourceSet) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
@@ -87,10 +94,10 @@ func (t *threadSafeResourceSet) UnsortedList(filterResource ...func(ezkube.Resou
 	return t.set.UnsortedList(filterResource...)
 }
 
-func (t *threadSafeResourceSet) Map() Resources {
+func (t *threadSafeResourceSet) Map() map[string]ezkube.ResourceId {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set
+	return t.set.Map()
 }
 
 func (t *threadSafeResourceSet) Insert(
@@ -112,7 +119,7 @@ func (t *threadSafeResourceSet) IsSuperset(
 ) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set.IsSuperset(set.Map())
+	return t.set.IsSuperset(set.Resources())
 }
 
 func (t *threadSafeResourceSet) Equal(
@@ -120,7 +127,7 @@ func (t *threadSafeResourceSet) Equal(
 ) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set.Equal(set.Map())
+	return t.set.Equal(set.Resources())
 }
 
 func (t *threadSafeResourceSet) Delete(resource ezkube.ResourceId) {
@@ -132,19 +139,19 @@ func (t *threadSafeResourceSet) Delete(resource ezkube.ResourceId) {
 func (t *threadSafeResourceSet) Union(set ResourceSet) ResourceSet {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	return &threadSafeResourceSet{set: t.set.Union(set.Map())}
+	return &threadSafeResourceSet{set: t.set.Union(set.Resources())}
 }
 
 func (t *threadSafeResourceSet) Difference(set ResourceSet) ResourceSet {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return &threadSafeResourceSet{set: t.set.Difference(set.Map())}
+	return &threadSafeResourceSet{set: t.set.Difference(set.Resources())}
 }
 
 func (t *threadSafeResourceSet) Intersection(set ResourceSet) ResourceSet {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return &threadSafeResourceSet{set: t.set.Intersection(set.Map())}
+	return &threadSafeResourceSet{set: t.set.Intersection(set.Resources())}
 }
 
 func (t *threadSafeResourceSet) Find(

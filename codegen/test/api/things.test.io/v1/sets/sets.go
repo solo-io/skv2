@@ -159,7 +159,7 @@ func (s *paintSet) Map() map[string]*things_test_io_v1.Paint {
 	}
 
 	newMap := map[string]*things_test_io_v1.Paint{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*things_test_io_v1.Paint)
 	}
 	return newMap
@@ -438,7 +438,7 @@ func (s *clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource
 	}
 
 	newMap := map[string]*things_test_io_v1.ClusterResource{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*things_test_io_v1.ClusterResource)
 	}
 	return newMap

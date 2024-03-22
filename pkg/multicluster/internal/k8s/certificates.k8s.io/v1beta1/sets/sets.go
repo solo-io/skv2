@@ -159,7 +159,7 @@ func (s *certificateSigningRequestSet) Map() map[string]*certificates_k8s_io_v1b
 	}
 
 	newMap := map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
 	}
 	return newMap

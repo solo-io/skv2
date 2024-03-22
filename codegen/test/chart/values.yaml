@@ -2,13 +2,27 @@
 
 painter:
   deploymentOverrides: null
-  env: null
+  env:
+    - name: FOO
+      value: BAR
   extraEnvs: {}
   floatingUserId: false
-  image: {}
+  image:
+    pullPolicy: IfNotPresent
+    registry: quay.io/solo-io
+    repository: painter
+    tag: v0.0.0
   ports: {}
   runAsUser: 10101
   serviceOverrides: null
   serviceType: ""
-  sidecars: {}
+  sidecars:
+    palette:
+      env: null
+      extraEnvs: {}
+      image:
+        pullPolicy: IfNotPresent
+        registry: quay.io/solo-io
+        repository: palette
+        tag: v0.0.0
 

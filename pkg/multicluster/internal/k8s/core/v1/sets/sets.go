@@ -159,7 +159,7 @@ func (s *secretSet) Map() map[string]*v1.Secret {
 	}
 
 	newMap := map[string]*v1.Secret{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*v1.Secret)
 	}
 	return newMap
@@ -438,7 +438,7 @@ func (s *serviceAccountSet) Map() map[string]*v1.ServiceAccount {
 	}
 
 	newMap := map[string]*v1.ServiceAccount{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*v1.ServiceAccount)
 	}
 	return newMap
@@ -717,7 +717,7 @@ func (s *namespaceSet) Map() map[string]*v1.Namespace {
 	}
 
 	newMap := map[string]*v1.Namespace{}
-	for k, v := range s.Generic().Map().Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*v1.Namespace)
 	}
 	return newMap

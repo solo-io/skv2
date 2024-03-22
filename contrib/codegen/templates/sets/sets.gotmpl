@@ -165,7 +165,7 @@ func (s *{{ $kindLowerCamel }}Set) Map() map[string]*{{ $import_prefix }}.{{ $re
     }
 
     newMap := map[string]*{{ $import_prefix }}.{{ $resource.Kind }}{}
-    for k, v := range s.Generic().Map().Map() {
+    for k, v := range s.Generic().Map() {
         newMap[k] = v.(*{{ $import_prefix }}.{{ $resource.Kind }})
     }
     return newMap
