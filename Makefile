@@ -1,3 +1,5 @@
+GO_ARGS := GOEXPERIMENT=rangefunc
+
 #----------------------------------------------------------------------------------
 # Build
 #----------------------------------------------------------------------------------
@@ -6,7 +8,7 @@
 
 .PHONY: mod-download
 mod-download:
-	go mod download
+	$(GO_ARGS) go mod download
 
 
 DEPSGOBIN=$(shell pwd)/_output/.bin
@@ -16,12 +18,12 @@ export PATH:=$(GOBIN):$(PATH)
 .PHONY: install-go-tools
 install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
-	go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
-	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
-	go install github.com/solo-io/protoc-gen-ext@v0.0.18
-	go install github.com/golang/mock/mockgen@v1.4.4
-	go install github.com/onsi/ginkgo/v2/ginkgo@v2.9.5
-	go install golang.org/x/tools/cmd/goimports
+	$(GO_ARGS) go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
+	$(GO_ARGS) go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
+	$(GO_ARGS) go install github.com/solo-io/protoc-gen-ext@v0.0.18
+	$(GO_ARGS) go install github.com/golang/mock/mockgen@v1.4.4
+	$(GO_ARGS) go install github.com/onsi/ginkgo/v2/ginkgo@v2.9.5
+	$(GO_ARGS) go install golang.org/x/tools/cmd/goimports
 
 # proto compiler installation
 PROTOC_VERSION:=3.15.8
@@ -54,13 +56,13 @@ install-tools: install-go-tools install-protoc
 .PHONY: generate-code
 generate-code: install-tools update-licenses
 	$(DEPSGOBIN)/protoc --version
-	go run api/generate.go
+	$(GO_ARGS) go run api/generate.go
 	# the api/generate.go command is separated out to enable us to run go generate on the generated files (used for mockgen)
 # this re-gens test protos
-	go test ./codegen
-	go generate -v ./...
+	$(GO_ARGS) go test ./codegen
+	$(GO_ARGS) go generate -v ./...
 	$(DEPSGOBIN)/goimports -w .
-	go mod tidy
+	$(GO_ARGS) go mod tidy
 
 generate-changelog:
 	@ci/changelog.sh
@@ -73,7 +75,7 @@ generate-changelog:
 # set TEST_PKG to run a specific test package
 .PHONY: run-tests
 run-tests:
-	PATH=$(DEPSGOBIN):$$PATH ginkgo -r -failFast -trace -progress \
+	$(GO_ARGS) PATH=$(DEPSGOBIN):$$PATH ginkgo -r -failFast -trace -progress \
 		-progress \
 		-compilers=4 \
 		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG) \
@@ -81,10 +83,10 @@ run-tests:
 		-randomizeAllSpecs \
 		-randomizeSuites \
 		-keepGoing
-	$(DEPSGOBIN)/goimports -w .
+	$(GO_ARGS) $(DEPSGOBIN)/goimports -w .
 
 run-test:
-	PATH=$(DEPSGOBIN):$$PATH ginkgo $(GINKGO_FLAGS) $(TEST_PKG)
+	$(GO_ARGS) PATH=$(DEPSGOBIN):$$PATH ginkgo $(GINKGO_FLAGS) $(TEST_PKG)
 
 #----------------------------------------------------------------------------------
 # Third Party License Management

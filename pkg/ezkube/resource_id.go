@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -215,6 +216,39 @@ func resourceIdsLessThan(a, b ResourceId) bool {
 	// namespace is the primary sort key
 	if a.GetNamespace() > b.GetNamespace() {
 		return false
+	}
+	// name is the secondary sort key
+	if a.GetName() < b.GetName() {
+		return true
+	}
+	return false
+}
+
+// CompareResourceId returns an integer comparing two ResourceIds lexicographically.
+// The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
+// a, b must be of type ResourceId
+func CompareObjects(a, b client.Object) int {
+	if controllerutils.ObjectsEqual(a, b) {
+		return 0
+	}
+	if objectsLessThan(a, b) {
+		return -1
+	}
+	return 1
+}
+
+func ObjectsAscending(a, b client.Object) bool {
+	return objectsLessThan(a, b)
+}
+
+func objectsLessThan(a, b client.Object) bool {
+	// cluster name is the primary sort key
+	if GetClusterName(a) > GetClusterName(b) {
+		return false
+	}
+	// namespace is the secondary sort key
+	if a.GetNamespace() < b.GetNamespace() {
+		return true
 	}
 	// name is the secondary sort key
 	if a.GetName() < b.GetName() {

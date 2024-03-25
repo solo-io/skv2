@@ -1,6 +1,7 @@
 package sets
 
 import (
+	"slices"
 	"sort"
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
@@ -113,23 +114,7 @@ func (r *Resources) Keys() sets.String {
 }
 
 func (r *Resources) List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
-	if len(filterResource) == 0 {
-		return r.set
-	}
-	resources := make([]ezkube.ResourceId, 0, len(r.set))
-	for _, resource := range r.set {
-		var filtered bool
-		for _, filter := range filterResource {
-			if filter(resource) {
-				filtered = true
-				break
-			}
-		}
-		if !filtered {
-			resources = append(resources, resource)
-		}
-	}
-	return resources
+	return r.set
 }
 
 func (r *Resources) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
@@ -162,16 +147,13 @@ func (r *Resources) Insert(resources ...ezkube.ResourceId) {
 		}
 
 		// insert the resource at the determined index
-		newSet := make([]ezkube.ResourceId, len(r.set)+1)
-		copy(newSet, r.set[:insertIndex])
-		newSet[insertIndex] = resource
-		copy(newSet[insertIndex+1:], r.set[insertIndex:])
-		r.set = newSet
+		r.set = slices.Insert(r.set, insertIndex, resource)
 	}
 }
 
 // Delete removes all items from the set.
 func (r *Resources) Delete(items ...ezkube.ResourceId) {
+	// slices.Delete[]()
 	for _, item := range items {
 		i := sort.Search(r.Length(), func(i int) bool {
 			return r.compareFunc(r.set[i], item) >= 0
@@ -311,3 +293,27 @@ func (r *Resources) PopAny() (ezkube.ResourceId, bool) {
 	}
 	return nil, false
 }
+
+// // must have GOEXPERIMENT=rangefunc enabled
+// // used in for v := r.All { ... }
+// func (r *Resources) All1() iter.Seq[ezkube.ResourceId] {
+// 	return func(yield func(ezkube.ResourceId) bool) {
+// 		for _, resource := range r.set {
+// 			if !yield(resource) {
+// 				break
+// 			}
+// 		}
+// 	}
+// }
+
+// // must have GOEXPERIMENT=rangefunc enabled
+// // used in for k, v := r.All2 { ... }
+// func (r *Resources) All2() iter.Seq2[int, ezkube.ResourceId] {
+// 	return func(yield func(int, ezkube.ResourceId) bool) {
+// 		for i, resource := range r.set {
+// 			if !yield(i, resource) {
+// 				break
+// 			}
+// 		}
+// 	}
+// }

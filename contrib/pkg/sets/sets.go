@@ -166,3 +166,27 @@ func (t *threadSafeResourceSet) Delta(newSet ResourceSet) ResourceDelta {
 func (t *threadSafeResourceSet) Clone() ResourceSet {
 	return t.set.Clone()
 }
+
+// // must have GOEXPERIMENT=rangefunc enabled
+// // example -> for k, v := r.All2 { ... }
+// func (r *threadSafeResourceSet) All2() iter.Seq2[int, ezkube.ResourceId] {
+// 	return func(yield func(int, ezkube.ResourceId) bool) {
+// 		for i, resource := range r.set.set {
+// 			if !yield(i, resource) {
+// 				break
+// 			}
+// 		}
+// 	}
+// }
+
+// // must have GOEXPERIMENT=rangefunc enabled
+// // example -> for v := r.All1 { ... }
+// func (r *threadSafeResourceSet) All1() iter.Seq[ezkube.ResourceId] {
+// 	return func(yield func(ezkube.ResourceId) bool) {
+// 		for _, resource := range r.set.set {
+// 			if !yield(resource) {
+// 				break
+// 			}
+// 		}
+// 	}
+// }

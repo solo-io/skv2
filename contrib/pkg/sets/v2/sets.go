@@ -1,6 +1,8 @@
 package sets_v2
 
 import (
+	"iter"
+	"slices"
 	"sort"
 	"sync"
 
@@ -15,9 +17,7 @@ type ResourceSet[T client.Object] interface {
 	// Get the set stored keys
 	Keys() sets.Set[string]
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(T) bool) []T
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	UnsortedList(filterResource ...func(T) bool) []T
+	List(filterResource ...func(T) bool) iter.Seq2[int, T]
 	// Return the Set as a map of key to resource.
 	Map() map[string]T
 	// Insert a resource into the set.
@@ -64,13 +64,13 @@ func (r *ResourceDelta[T]) DeltaV1() sk_sets.ResourceDelta {
 type resourceSet[T client.Object] struct {
 	lock        sync.RWMutex
 	set         []T
-	sortFunc    func(toInsert, existing T) bool
-	compareFunc func(a, b T) int
+	sortFunc    func(toInsert, existing client.Object) bool
+	compareFunc func(a, b client.Object) int
 }
 
 func NewResourceSet[T client.Object](
-	sortFunc func(toInsert, existing T) bool,
-	compareFunc func(a, b T) int,
+	sortFunc func(toInsert, existing client.Object) bool,
+	compareFunc func(a, b client.Object) int,
 	resources ...T,
 ) ResourceSet[T] {
 	rs := &resourceSet[T]{
@@ -92,16 +92,22 @@ func (s *resourceSet[T]) Keys() sets.Set[string] {
 	return sets.Set[string]{}
 }
 
-func (s *resourceSet[T]) List(filterResource ...func(T) bool) []T {
+func (s *resourceSet[T]) List(filterResource ...func(T) bool) iter.Seq2[int, T] {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	return s.set
-}
-
-func (s *resourceSet[T]) UnsortedList(filterResource ...func(T) bool) []T {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	return s.List()
+	return func(yield func(int, T) bool) {
+	OUTER:
+		for i, resource := range s.set {
+			for _, filter := range filterResource {
+				if filter(resource) {
+					continue OUTER
+				}
+			}
+			if !yield(i, resource) {
+				break
+			}
+		}
+	}
 }
 
 func (s *resourceSet[T]) Map() map[string]T {
@@ -120,39 +126,31 @@ func (s *resourceSet[T]) Map() map[string]T {
 func (s *resourceSet[T]) Insert(resources ...T) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	for _, objToInsert := range resources {
-		s.insert(objToInsert)
-	}
-}
+	for _, resource := range resources {
+		insertIndex := sort.Search(len(s.set), func(i int) bool { return s.sortFunc(resource, s.set[i]) })
 
-func (s *resourceSet[T]) insert(resource T) {
-	insertIndex := sort.Search(s.Length(), func(i int) bool { return s.sortFunc(resource, s.set[i]) })
+		// if the resource is already in the set, replace it
+		if insertIndex < len(s.set) && s.compareFunc(resource, s.set[insertIndex]) == 0 {
+			s.set[insertIndex] = resource
+			return
+		}
+		if s.sortFunc == nil {
+			s.set = append(s.set, resource)
+			return
+		}
 
-	// if the resource is already in the set, replace it
-	if insertIndex < len(s.set) && s.compareFunc(resource, s.set[insertIndex]) == 0 {
-		s.set[insertIndex] = resource
-		return
+		// insert the resource at the determined index
+		s.set = slices.Insert(s.set, insertIndex, resource)
 	}
-	if s.sortFunc == nil {
-		s.set = append(s.set, resource)
-		return
-	}
-
-	// insert the resource at the determined index
-	newSet := make([]T, len(s.set)+1)
-	copy(newSet, s.set[:insertIndex])
-	newSet[insertIndex] = resource
-	copy(newSet[insertIndex+1:], s.set[insertIndex:])
-	s.set = newSet
 }
 
 func (s *resourceSet[T]) Has(resource T) bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	i := sort.Search(s.Length(), func(i int) bool {
+	i := sort.Search(len(s.set), func(i int) bool {
 		return ezkube.CompareResourceIds(s.set[i], resource) >= 0
 	})
-	return i < s.Length() && s.compareFunc(s.set[i], resource) == 0
+	return i < len(s.set) && s.compareFunc(s.set[i], resource) == 0
 }
 
 func (s *resourceSet[T]) Equal(
@@ -166,21 +164,26 @@ func (s *resourceSet[T]) Equal(
 func (s *resourceSet[T]) Delete(resource T) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	i := sort.Search(s.Length(), func(i int) bool {
+	i := sort.Search(len(s.set), func(i int) bool {
 		return s.compareFunc(s.set[i], resource) >= 0
 	})
-	if found := i < s.Length() && s.compareFunc(s.set[i], resource) == 0; !found {
+	if found := i < len(s.set) && s.compareFunc(s.set[i], resource) == 0; !found {
 		return
 	}
 
-	newSet := make([]T, len(s.set)-1)
-	copy(newSet, s.set[:i])
-	copy(newSet[i:], s.set[i+1:])
-	s.set = newSet
+	s.set = slices.Delete(s.set, i, i+1)
 }
 
 func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
-	return NewResourceSet[T](s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
+	list := []T{}
+	for _, resource := range s.Generic().Union(set.Generic()).List() {
+		list = append(list, resource.(T))
+	}
+	return NewResourceSet[T](
+		s.sortFunc,
+		s.compareFunc,
+		list...,
+	)
 }
 
 func (s *resourceSet[T]) Difference(set ResourceSet[T]) ResourceSet[T] {
@@ -196,14 +199,16 @@ func (s *resourceSet[T]) Difference(set ResourceSet[T]) ResourceSet[T] {
 }
 
 func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	var walk, other ResourceSet[T]
-	result := NewResourceSet(s.sortFunc, s.compareFunc)
-	if s.Length() < set.Length() {
-		walk = NewResourceSet(s.sortFunc, s.compareFunc, s.List()...)
+	result := NewResourceSet[T](s.sortFunc, s.compareFunc)
+	if len(s.set) < set.Length() {
+		walk = NewResourceSet(s.sortFunc, s.compareFunc, s.set...)
 		other = set
 	} else {
 		walk = set
-		other = NewResourceSet(s.sortFunc, s.compareFunc, s.List()...)
+		other = NewResourceSet(s.sortFunc, s.compareFunc, s.set...)
 	}
 	for _, key := range walk.List() {
 		if other.Has(key) {
@@ -217,13 +222,14 @@ func (s *resourceSet[T]) Find(id T) (T, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	key := sk_sets.Key(id)
-	var key_i string
-	i := sort.Search(s.Length(), func(i int) bool {
-		key_i = sk_sets.Key(s.set[i])
-		return key <= key_i
+	i := sort.Search(len(s.set), func(i int) bool {
+		return key <= sk_sets.Key(s.set[i])
 	})
-	resource := s.set[i]
-	if i != s.Length() && key_i == key {
+	var resource T
+	if i < len(s.set) {
+		resource = s.set[i]
+	}
+	if i != len(s.set) && sk_sets.Key(resource) == key {
 		return resource, nil
 	}
 
@@ -238,32 +244,31 @@ func (s *resourceSet[T]) Length() int {
 
 // note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
 func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta {
-	updated, removed := NewResourceSet[T](nil, nil), NewResourceSet[T](nil, nil)
+	updated, removed := NewResourceSet[T](oldSet.sortFunc, oldSet.compareFunc), NewResourceSet[T](oldSet.sortFunc, oldSet.compareFunc)
 
 	// find objects updated or removed
-	oldSet.List(func(oldObj T) bool {
-		newObj, err := newSet.Find(oldObj)
+	for _, resource := range oldSet.set {
+		newObj, err := newSet.Find(resource)
 		switch {
 		case err != nil:
 			// obj removed
-			removed.Insert(oldObj)
-		case !controllerutils.ObjectsEqual(oldObj, newObj):
+			removed.Insert(resource)
+		case !controllerutils.ObjectsEqual(resource, newObj):
 			// obj updated
 			updated.Insert(newObj)
 		default:
 			// obj the same
 		}
-		return true // return value ignored
-	})
+	}
 
 	// find objects added
-	newSet.List(func(newObj T) bool {
-		if _, err := oldSet.Find(newObj); err != nil {
+	for _, newObj := range newSet.Generic().List() {
+		if _, err := oldSet.Find(newObj.(T)); err != nil {
 			// obj added
-			updated.Insert(newObj)
+			updated.Insert(newObj.(T))
 		}
-		return true // return value ignored
-	})
+	}
+
 	delta := &ResourceDelta[T]{
 		Inserted: updated,
 		Removed:  removed,

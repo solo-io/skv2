@@ -14,7 +14,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
-	v1sets "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1/sets"
+	v2sets "github.com/solo-io/skv2/contrib/pkg/sets/v2"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,26 +40,36 @@ func benchmarkResourcesSet(count int, b *testing.B) {
 				CreationTimestamp: metav1.Time{Time: metav1.Now().Time.Add(time.Duration(i))},
 			},
 		}
-
 	}
 
 	for n := 0; n < b.N; n++ {
-		s := v1sets.NewPaintSet(ezkube.CreationTimestampAscending, ezkube.CreationTimestampsCompare)
-		// for _, resource := range resources {
+		// s := v1sets.NewPaintSet(ezkube.CreationTimestampAscending, ezkube.CreationTimestampsCompare)
+		s := v2sets.NewResourceSet[*things_test_io_v1.Paint](ezkube.ObjectsAscending, ezkube.CompareObjects)
 		s.Insert(resources...)
-		// }
-		l := s.List()
-		// l := s.List(filterResource)
+
 		// SortByCreationTime(l) // only for map implementation
-		for _, r := range l {
+
+		i := 0
+		for _, r := range s.List(filterResource) {
 			r.GetName()
+			i++
+		}
+
+		if count <= filterAfter {
+			continue
+		}
+		if i != filterAfter+1 {
+			b.Fatalf("expected 20000, got %d", i)
 		}
 	}
 }
 
+const filterAfter = 19999
+
+// skip iterating resources > 20001
 func filterResource(resource *things_test_io_v1.Paint) bool {
 	i, _ := strconv.Atoi(strings.Split(resource.GetName(), "-")[1])
-	return i < 20001
+	return i > filterAfter
 }
 
 // SortByCreationTime accepts a slice of client.Object instances and sorts it by creation timestamp in ascending order.
