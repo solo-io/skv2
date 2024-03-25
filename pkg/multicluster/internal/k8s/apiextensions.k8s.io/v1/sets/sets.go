@@ -4,54 +4,56 @@
 
 package v1sets
 
-import (
-	apiextensions_k8s_io_v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-	"github.com/rotisserie/eris"
-	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/skv2/pkg/ezkube"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    apiextensions_k8s_io_v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+
+    "github.com/rotisserie/eris"
+    sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    "k8s.io/apimachinery/pkg/util/sets"
+    "sigs.k8s.io/controller-runtime/pkg/client"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type CustomResourceDefinitionSet interface {
 	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	List(filterResource ...func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	UnsortedList(filterResource ...func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition
-	// Return the Set as a map of key to resource.
-	Map() map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition
-	// Insert a resource into the set.
-	Insert(customResourceDefinition ...*apiextensions_k8s_io_v1.CustomResourceDefinition)
-	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(customResourceDefinitionSet CustomResourceDefinitionSet) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(customResourceDefinition ezkube.ResourceId) bool
-	// Delete the key matching the resource
-	Delete(customResourceDefinition ezkube.ResourceId)
-	// Return the union with the provided set
-	Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
-	// Return the difference with the provided set
-	Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
-	// Return the intersection with the provided set
-	Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
-	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1.CustomResourceDefinition, error)
-	// Get the length of the set
-	Length() int
-	// returns the generic implementation of the set
-	Generic() sksets.ResourceSet
-	// returns the delta between this and and another CustomResourceDefinitionSet
-	Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta
-	// Create a deep copy of the current CustomResourceDefinitionSet
-	Clone() CustomResourceDefinitionSet
-	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+    Keys() sets.String
+    // List of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    List(filterResource ... func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition
+    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    UnsortedList(filterResource ... func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition
+    // Return the Set as a map of key to resource.
+    Map() map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition
+    // Insert a resource into the set.
+    Insert(customResourceDefinition ...*apiextensions_k8s_io_v1.CustomResourceDefinition)
+    // Compare the equality of the keys in two sets (not the resources themselves)
+    Equal(customResourceDefinitionSet CustomResourceDefinitionSet) bool
+    // Check if the set contains a key matching the resource (not the resource itself)
+    Has(customResourceDefinition ezkube.ResourceId) bool
+    // Delete the key matching the resource
+    Delete(customResourceDefinition  ezkube.ResourceId)
+    // Return the union with the provided set
+    Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
+    // Return the difference with the provided set
+    Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
+    // Return the intersection with the provided set
+    Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet
+    // Find the resource with the given ID
+    Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1.CustomResourceDefinition, error)
+    // Get the length of the set
+    Length() int
+    // returns the generic implementation of the set
+    Generic() sksets.ResourceSet
+    // returns the delta between this and and another CustomResourceDefinitionSet
+    Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta
+    // Create a deep copy of the current CustomResourceDefinitionSet
+    Clone() CustomResourceDefinitionSet
+    // Get the sort function used by the set
+    GetSortFunc() func(toInsert, existing client.Object) bool
 	// Get the equality function used by the set
 	GetEqualityFunc() func(a, b client.Object) bool
 }
@@ -59,18 +61,18 @@ type CustomResourceDefinitionSet interface {
 func makeGenericCustomResourceDefinitionSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition,
+    customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition,
 ) sksets.ResourceSet {
-	var genericResources []ezkube.ResourceId
-	for _, obj := range customResourceDefinitionList {
-		genericResources = append(genericResources, obj)
-	}
+    var genericResources []ezkube.ResourceId
+    for _, obj := range customResourceDefinitionList {
+        genericResources = append(genericResources, obj)
+    }
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &apiextensions_k8s_io_v1.CustomResourceDefinition{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -78,8 +80,8 @@ func makeGenericCustomResourceDefinitionSet(
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &apiextensions_k8s_io_v1.CustomResourceDefinition{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -90,8 +92,8 @@ func makeGenericCustomResourceDefinitionSet(
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &apiextensions_k8s_io_v1.CustomResourceDefinition{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -99,208 +101,209 @@ func makeGenericCustomResourceDefinitionSet(
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &apiextensions_k8s_io_v1.CustomResourceDefinition{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return equalityFunc(objA, objB)
+		return equalityFunc(objA,objB)
 	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+    return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
 
 type customResourceDefinitionSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+    set sksets.ResourceSet
+    sortFunc func(toInsert, existing client.Object) bool
+    equalityFunc func(a, b client.Object) bool
 }
 
 func NewCustomResourceDefinitionSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition,
+    customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition,
 ) CustomResourceDefinitionSet {
-	return &customResourceDefinitionSet{
-		set:          makeGenericCustomResourceDefinitionSet(sortFunc, equalityFunc, customResourceDefinitionList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    return &customResourceDefinitionSet{
+        set: makeGenericCustomResourceDefinitionSet(sortFunc, equalityFunc, customResourceDefinitionList),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func NewCustomResourceDefinitionSetFromList(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	customResourceDefinitionList *apiextensions_k8s_io_v1.CustomResourceDefinitionList,
+    customResourceDefinitionList *apiextensions_k8s_io_v1.CustomResourceDefinitionList,
 ) CustomResourceDefinitionSet {
-	list := make([]*apiextensions_k8s_io_v1.CustomResourceDefinition, 0, len(customResourceDefinitionList.Items))
-	for idx := range customResourceDefinitionList.Items {
-		list = append(list, &customResourceDefinitionList.Items[idx])
-	}
-	return &customResourceDefinitionSet{
-		set:          makeGenericCustomResourceDefinitionSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    list := make([]*apiextensions_k8s_io_v1.CustomResourceDefinition, 0, len(customResourceDefinitionList.Items))
+    for idx := range customResourceDefinitionList.Items {
+        list = append(list, &customResourceDefinitionList.Items[idx])
+    }
+    return &customResourceDefinitionSet{
+        set: makeGenericCustomResourceDefinitionSet(sortFunc, equalityFunc, list),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func (s *customResourceDefinitionSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-	}
-	return s.Generic().Keys()
+    }
+    return s.Generic().Keys()
 }
 
-func (s *customResourceDefinitionSet) List(filterResource ...func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
-		})
-	}
+func (s *customResourceDefinitionSet) List(filterResource ... func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+        })
+    }
 
-	objs := s.Generic().List(genericFilters...)
-	customResourceDefinitionList := make([]*apiextensions_k8s_io_v1.CustomResourceDefinition, 0, len(objs))
-	for _, obj := range objs {
-		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
-	}
-	return customResourceDefinitionList
+    objs := s.Generic().List(genericFilters...)
+    customResourceDefinitionList := make([]*apiextensions_k8s_io_v1.CustomResourceDefinition, 0, len(objs))
+    for _, obj := range objs {
+        customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+    }
+    return customResourceDefinitionList
 }
 
-func (s *customResourceDefinitionSet) UnsortedList(filterResource ...func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
-		})
-	}
+func (s *customResourceDefinitionSet) UnsortedList(filterResource ... func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+        })
+    }
 
-	var customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition
-	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
-	}
-	return customResourceDefinitionList
+    var customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition
+    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+        customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+    }
+    return customResourceDefinitionList
 }
 
 func (s *customResourceDefinitionSet) Map() map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition {
-	if s == nil {
-		return nil
-	}
+    if s == nil {
+        return nil
+    }
 
-	newMap := map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition{}
-	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
-	}
-	return newMap
+    newMap := map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition{}
+    for k, v := range s.Generic().Map() {
+        newMap[k] = v.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
+    }
+    return newMap
 }
 
 func (s *customResourceDefinitionSet) Insert(
-	customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition,
+        customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition,
 ) {
-	if s == nil {
-		panic("cannot insert into nil set")
-	}
+    if s == nil {
+        panic("cannot insert into nil set")
+    }
 
-	for _, obj := range customResourceDefinitionList {
-		s.Generic().Insert(obj)
-	}
+    for _, obj := range customResourceDefinitionList {
+        s.Generic().Insert(obj)
+    }
 }
 
 func (s *customResourceDefinitionSet) Has(customResourceDefinition ezkube.ResourceId) bool {
-	if s == nil {
-		return false
-	}
-	return s.Generic().Has(customResourceDefinition)
+    if s == nil {
+        return false
+    }
+    return s.Generic().Has(customResourceDefinition)
 }
 
 func (s *customResourceDefinitionSet) Equal(
-	customResourceDefinitionSet CustomResourceDefinitionSet,
+        customResourceDefinitionSet CustomResourceDefinitionSet,
 ) bool {
-	if s == nil {
-		return customResourceDefinitionSet == nil
-	}
-	return s.Generic().Equal(customResourceDefinitionSet.Generic())
+    if s == nil {
+        return customResourceDefinitionSet == nil
+    }
+    return s.Generic().Equal(customResourceDefinitionSet.Generic())
 }
 
 func (s *customResourceDefinitionSet) Delete(CustomResourceDefinition ezkube.ResourceId) {
-	if s == nil {
-		return
-	}
-	s.Generic().Delete(CustomResourceDefinition)
+    if s == nil {
+        return
+    }
+    s.Generic().Delete(CustomResourceDefinition)
 }
 
 func (s *customResourceDefinitionSet) Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
-	if s == nil {
-		return set
-	}
-	return NewCustomResourceDefinitionSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+    if s == nil {
+        return set
+    }
+    return NewCustomResourceDefinitionSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
-	if s == nil {
-		return set
-	}
-	newSet := s.Generic().Difference(set.Generic())
-	return &customResourceDefinitionSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
-	}
+    if s == nil {
+        return set
+    }
+    newSet := s.Generic().Difference(set.Generic())
+    return &customResourceDefinitionSet{
+        set: newSet,
+        sortFunc: s.sortFunc,
+        equalityFunc: s.equalityFunc,
+    }
 }
 
 func (s *customResourceDefinitionSet) Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
-	if s == nil {
-		return nil
-	}
-	newSet := s.Generic().Intersection(set.Generic())
-	var customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition
-	for _, obj := range newSet.List() {
-		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
-	}
-	return NewCustomResourceDefinitionSet(s.sortFunc, s.equalityFunc, customResourceDefinitionList...)
+    if s == nil {
+        return nil
+    }
+    newSet := s.Generic().Intersection(set.Generic())
+    var customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition
+    for _, obj := range newSet.List() {
+        customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+    }
+    return NewCustomResourceDefinitionSet(s.sortFunc, s.equalityFunc, customResourceDefinitionList...)
 }
 
+
 func (s *customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1.CustomResourceDefinition, error) {
-	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find CustomResourceDefinition %v", sksets.Key(id))
-	}
+    if s == nil {
+        return nil, eris.Errorf("empty set, cannot find CustomResourceDefinition %v", sksets.Key(id))
+    }
 	obj, err := s.Generic().Find(&apiextensions_k8s_io_v1.CustomResourceDefinition{}, id)
 	if err != nil {
 		return nil, err
-	}
+    }
 
-	return obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition), nil
+    return obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition), nil
 }
 
 func (s *customResourceDefinitionSet) Length() int {
-	if s == nil {
-		return 0
-	}
-	return s.Generic().Length()
+    if s == nil {
+        return 0
+    }
+    return s.Generic().Length()
 }
 
 func (s *customResourceDefinitionSet) Generic() sksets.ResourceSet {
-	if s == nil {
-		return nil
-	}
-	return s.set
+    if s == nil {
+        return nil
+    }
+    return s.set
 }
 
 func (s *customResourceDefinitionSet) Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta {
-	if s == nil {
-		return sksets.ResourceDelta{
-			Inserted: newSet.Generic(),
-		}
-	}
-	return s.Generic().Delta(newSet.Generic())
+    if s == nil {
+        return sksets.ResourceDelta{
+            Inserted: newSet.Generic(),
+        }
+    }
+    return s.Generic().Delta(newSet.Generic())
 }
 
 func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
@@ -311,8 +314,8 @@ func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &apiextensions_k8s_io_v1.CustomResourceDefinition{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -320,8 +323,8 @@ func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &apiextensions_k8s_io_v1.CustomResourceDefinition{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -332,8 +335,8 @@ func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &apiextensions_k8s_io_v1.CustomResourceDefinition{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -341,27 +344,27 @@ func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &apiextensions_k8s_io_v1.CustomResourceDefinition{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return s.equalityFunc(objA, objB)
+		return s.equalityFunc(objA,objB)
 	}
 	return &customResourceDefinitionSet{
-		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
-			s.Generic().Clone().List()...,
-		),
-	}
+        set: sksets.NewResourceSet(
+            genericSortFunc,
+            genericEqualityFunc,
+            s.Generic().Clone().List()...,
+        ),
+    }
 }
 
 func (s *customResourceDefinitionSet) GetSortFunc() func(toInsert, existing client.Object) bool {
-	return s.sortFunc
+    return s.sortFunc
 }
 
 func (s *customResourceDefinitionSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+    return s.equalityFunc
 }

@@ -108,3 +108,7 @@ clean:
 	rm -rf pkg/api
 	rm -rf vendor_any
 	rm -rf _output
+
+.PHONY: update-deps
+update-deps:
+	

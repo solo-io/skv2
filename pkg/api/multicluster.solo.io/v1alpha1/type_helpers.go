@@ -3,5 +3,8 @@
 // Definitions for the Kubernetes types
 package v1alpha1
 
+import (
+)
+
 // KubernetesClusterSlice represents a slice of *KubernetesCluster
 type KubernetesClusterSlice []*KubernetesCluster

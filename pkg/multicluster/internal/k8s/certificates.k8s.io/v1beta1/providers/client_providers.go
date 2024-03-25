@@ -2,11 +2,13 @@
 
 package v1beta1
 
-import (
-	certificates_k8s_io_v1beta1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/certificates.k8s.io/v1beta1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    certificates_k8s_io_v1beta1 "github.com/solo-io/skv2/pkg/multicluster/internal/k8s/certificates.k8s.io/v1beta1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,28 +21,28 @@ import (
 
 // Provider for CertificateSigningRequestClient from Clientset
 func CertificateSigningRequestClientFromClientsetProvider(clients certificates_k8s_io_v1beta1.Clientset) certificates_k8s_io_v1beta1.CertificateSigningRequestClient {
-	return clients.CertificateSigningRequests()
+    return clients.CertificateSigningRequests()
 }
 
 // Provider for CertificateSigningRequest Client from Client
 func CertificateSigningRequestClientProvider(client client.Client) certificates_k8s_io_v1beta1.CertificateSigningRequestClient {
-	return certificates_k8s_io_v1beta1.NewCertificateSigningRequestClient(client)
+    return certificates_k8s_io_v1beta1.NewCertificateSigningRequestClient(client)
 }
 
 type CertificateSigningRequestClientFactory func(client client.Client) certificates_k8s_io_v1beta1.CertificateSigningRequestClient
 
 func CertificateSigningRequestClientFactoryProvider() CertificateSigningRequestClientFactory {
-	return CertificateSigningRequestClientProvider
+    return CertificateSigningRequestClientProvider
 }
 
 type CertificateSigningRequestClientFromConfigFactory func(cfg *rest.Config) (certificates_k8s_io_v1beta1.CertificateSigningRequestClient, error)
 
 func CertificateSigningRequestClientFromConfigFactoryProvider() CertificateSigningRequestClientFromConfigFactory {
-	return func(cfg *rest.Config) (certificates_k8s_io_v1beta1.CertificateSigningRequestClient, error) {
-		clients, err := certificates_k8s_io_v1beta1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.CertificateSigningRequests(), nil
-	}
+    return func(cfg *rest.Config) (certificates_k8s_io_v1beta1.CertificateSigningRequestClient, error) {
+        clients, err := certificates_k8s_io_v1beta1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.CertificateSigningRequests(), nil
+    }
 }

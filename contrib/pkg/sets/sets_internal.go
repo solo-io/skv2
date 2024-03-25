@@ -24,7 +24,7 @@ func newResources(
 	resources ...ezkube.ResourceId,
 ) Resources {
 	r := Resources{
-		set:          append([]ezkube.ResourceId{}, resources...),
+		set:          nil,
 		sortFunc:     sortFunc,
 		equalityFunc: equalityFunc,
 	}
@@ -145,7 +145,9 @@ func (r *Resources) Map() map[string]ezkube.ResourceId {
 // The set is sorted based on the sortFunc. If sortFunc is nil, the set will be unsorted.
 func (r *Resources) Insert(resources ...ezkube.ResourceId) {
 	for _, objToInsert := range resources {
-		r.insert(objToInsert)
+		if !r.Has(objToInsert) {
+			r.insert(objToInsert)
+		}
 	}
 }
 

@@ -4,54 +4,56 @@
 
 package v1alpha1sets
 
-import (
-	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
-	"github.com/rotisserie/eris"
-	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/skv2/pkg/ezkube"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+
+    "github.com/rotisserie/eris"
+    sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    "k8s.io/apimachinery/pkg/util/sets"
+    "sigs.k8s.io/controller-runtime/pkg/client"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type KubernetesClusterSet interface {
 	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	List(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	UnsortedList(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
-	// Return the Set as a map of key to resource.
-	Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster
-	// Insert a resource into the set.
-	Insert(kubernetesCluster ...*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(kubernetesClusterSet KubernetesClusterSet) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(kubernetesCluster ezkube.ResourceId) bool
-	// Delete the key matching the resource
-	Delete(kubernetesCluster ezkube.ResourceId)
-	// Return the union with the provided set
-	Union(set KubernetesClusterSet) KubernetesClusterSet
-	// Return the difference with the provided set
-	Difference(set KubernetesClusterSet) KubernetesClusterSet
-	// Return the intersection with the provided set
-	Intersection(set KubernetesClusterSet) KubernetesClusterSet
-	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error)
-	// Get the length of the set
-	Length() int
-	// returns the generic implementation of the set
-	Generic() sksets.ResourceSet
-	// returns the delta between this and and another KubernetesClusterSet
-	Delta(newSet KubernetesClusterSet) sksets.ResourceDelta
-	// Create a deep copy of the current KubernetesClusterSet
-	Clone() KubernetesClusterSet
-	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+    Keys() sets.String
+    // List of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    List(filterResource ... func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
+    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    UnsortedList(filterResource ... func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster
+    // Return the Set as a map of key to resource.
+    Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster
+    // Insert a resource into the set.
+    Insert(kubernetesCluster ...*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    // Compare the equality of the keys in two sets (not the resources themselves)
+    Equal(kubernetesClusterSet KubernetesClusterSet) bool
+    // Check if the set contains a key matching the resource (not the resource itself)
+    Has(kubernetesCluster ezkube.ResourceId) bool
+    // Delete the key matching the resource
+    Delete(kubernetesCluster  ezkube.ResourceId)
+    // Return the union with the provided set
+    Union(set KubernetesClusterSet) KubernetesClusterSet
+    // Return the difference with the provided set
+    Difference(set KubernetesClusterSet) KubernetesClusterSet
+    // Return the intersection with the provided set
+    Intersection(set KubernetesClusterSet) KubernetesClusterSet
+    // Find the resource with the given ID
+    Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error)
+    // Get the length of the set
+    Length() int
+    // returns the generic implementation of the set
+    Generic() sksets.ResourceSet
+    // returns the delta between this and and another KubernetesClusterSet
+    Delta(newSet KubernetesClusterSet) sksets.ResourceDelta
+    // Create a deep copy of the current KubernetesClusterSet
+    Clone() KubernetesClusterSet
+    // Get the sort function used by the set
+    GetSortFunc() func(toInsert, existing client.Object) bool
 	// Get the equality function used by the set
 	GetEqualityFunc() func(a, b client.Object) bool
 }
@@ -59,18 +61,18 @@ type KubernetesClusterSet interface {
 func makeGenericKubernetesClusterSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster,
+    kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) sksets.ResourceSet {
-	var genericResources []ezkube.ResourceId
-	for _, obj := range kubernetesClusterList {
-		genericResources = append(genericResources, obj)
-	}
+    var genericResources []ezkube.ResourceId
+    for _, obj := range kubernetesClusterList {
+        genericResources = append(genericResources, obj)
+    }
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &multicluster_solo_io_v1alpha1.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -78,8 +80,8 @@ func makeGenericKubernetesClusterSet(
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &multicluster_solo_io_v1alpha1.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -90,8 +92,8 @@ func makeGenericKubernetesClusterSet(
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &multicluster_solo_io_v1alpha1.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -99,208 +101,209 @@ func makeGenericKubernetesClusterSet(
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &multicluster_solo_io_v1alpha1.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return equalityFunc(objA, objB)
+		return equalityFunc(objA,objB)
 	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+    return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
 
 type kubernetesClusterSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+    set sksets.ResourceSet
+    sortFunc func(toInsert, existing client.Object) bool
+    equalityFunc func(a, b client.Object) bool
 }
 
 func NewKubernetesClusterSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
+    kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) KubernetesClusterSet {
-	return &kubernetesClusterSet{
-		set:          makeGenericKubernetesClusterSet(sortFunc, equalityFunc, kubernetesClusterList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    return &kubernetesClusterSet{
+        set: makeGenericKubernetesClusterSet(sortFunc, equalityFunc, kubernetesClusterList),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func NewKubernetesClusterSetFromList(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	kubernetesClusterList *multicluster_solo_io_v1alpha1.KubernetesClusterList,
+    kubernetesClusterList *multicluster_solo_io_v1alpha1.KubernetesClusterList,
 ) KubernetesClusterSet {
-	list := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(kubernetesClusterList.Items))
-	for idx := range kubernetesClusterList.Items {
-		list = append(list, &kubernetesClusterList.Items[idx])
-	}
-	return &kubernetesClusterSet{
-		set:          makeGenericKubernetesClusterSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    list := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(kubernetesClusterList.Items))
+    for idx := range kubernetesClusterList.Items {
+        list = append(list, &kubernetesClusterList.Items[idx])
+    }
+    return &kubernetesClusterSet{
+        set: makeGenericKubernetesClusterSet(sortFunc, equalityFunc, list),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func (s *kubernetesClusterSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-	}
-	return s.Generic().Keys()
+    }
+    return s.Generic().Keys()
 }
 
-func (s *kubernetesClusterSet) List(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-		})
-	}
+func (s *kubernetesClusterSet) List(filterResource ... func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+        })
+    }
 
-	objs := s.Generic().List(genericFilters...)
-	kubernetesClusterList := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(objs))
-	for _, obj := range objs {
-		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-	}
-	return kubernetesClusterList
+    objs := s.Generic().List(genericFilters...)
+    kubernetesClusterList := make([]*multicluster_solo_io_v1alpha1.KubernetesCluster, 0, len(objs))
+    for _, obj := range objs {
+        kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+    }
+    return kubernetesClusterList
 }
 
-func (s *kubernetesClusterSet) UnsortedList(filterResource ...func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-		})
-	}
+func (s *kubernetesClusterSet) UnsortedList(filterResource ... func(*multicluster_solo_io_v1alpha1.KubernetesCluster) bool) []*multicluster_solo_io_v1alpha1.KubernetesCluster {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+        })
+    }
 
-	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
-	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-	}
-	return kubernetesClusterList
+    var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
+    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+        kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+    }
+    return kubernetesClusterList
 }
 
 func (s *kubernetesClusterSet) Map() map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster {
-	if s == nil {
-		return nil
-	}
+    if s == nil {
+        return nil
+    }
 
-	newMap := map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
-	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
-	}
-	return newMap
+    newMap := map[string]*multicluster_solo_io_v1alpha1.KubernetesCluster{}
+    for k, v := range s.Generic().Map() {
+        newMap[k] = v.(*multicluster_solo_io_v1alpha1.KubernetesCluster)
+    }
+    return newMap
 }
 
 func (s *kubernetesClusterSet) Insert(
-	kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
+        kubernetesClusterList ...*multicluster_solo_io_v1alpha1.KubernetesCluster,
 ) {
-	if s == nil {
-		panic("cannot insert into nil set")
-	}
+    if s == nil {
+        panic("cannot insert into nil set")
+    }
 
-	for _, obj := range kubernetesClusterList {
-		s.Generic().Insert(obj)
-	}
+    for _, obj := range kubernetesClusterList {
+        s.Generic().Insert(obj)
+    }
 }
 
 func (s *kubernetesClusterSet) Has(kubernetesCluster ezkube.ResourceId) bool {
-	if s == nil {
-		return false
-	}
-	return s.Generic().Has(kubernetesCluster)
+    if s == nil {
+        return false
+    }
+    return s.Generic().Has(kubernetesCluster)
 }
 
 func (s *kubernetesClusterSet) Equal(
-	kubernetesClusterSet KubernetesClusterSet,
+        kubernetesClusterSet KubernetesClusterSet,
 ) bool {
-	if s == nil {
-		return kubernetesClusterSet == nil
-	}
-	return s.Generic().Equal(kubernetesClusterSet.Generic())
+    if s == nil {
+        return kubernetesClusterSet == nil
+    }
+    return s.Generic().Equal(kubernetesClusterSet.Generic())
 }
 
 func (s *kubernetesClusterSet) Delete(KubernetesCluster ezkube.ResourceId) {
-	if s == nil {
-		return
-	}
-	s.Generic().Delete(KubernetesCluster)
+    if s == nil {
+        return
+    }
+    s.Generic().Delete(KubernetesCluster)
 }
 
 func (s *kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
-	if s == nil {
-		return set
-	}
-	return NewKubernetesClusterSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+    if s == nil {
+        return set
+    }
+    return NewKubernetesClusterSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
-	if s == nil {
-		return set
-	}
-	newSet := s.Generic().Difference(set.Generic())
-	return &kubernetesClusterSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
-	}
+    if s == nil {
+        return set
+    }
+    newSet := s.Generic().Difference(set.Generic())
+    return &kubernetesClusterSet{
+        set: newSet,
+        sortFunc: s.sortFunc,
+        equalityFunc: s.equalityFunc,
+    }
 }
 
 func (s *kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesClusterSet {
-	if s == nil {
-		return nil
-	}
-	newSet := s.Generic().Intersection(set.Generic())
-	var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
-	for _, obj := range newSet.List() {
-		kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
-	}
-	return NewKubernetesClusterSet(s.sortFunc, s.equalityFunc, kubernetesClusterList...)
+    if s == nil {
+        return nil
+    }
+    newSet := s.Generic().Intersection(set.Generic())
+    var kubernetesClusterList []*multicluster_solo_io_v1alpha1.KubernetesCluster
+    for _, obj := range newSet.List() {
+        kubernetesClusterList = append(kubernetesClusterList, obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster))
+    }
+    return NewKubernetesClusterSet(s.sortFunc, s.equalityFunc, kubernetesClusterList...)
 }
 
+
 func (s *kubernetesClusterSet) Find(id ezkube.ResourceId) (*multicluster_solo_io_v1alpha1.KubernetesCluster, error) {
-	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find KubernetesCluster %v", sksets.Key(id))
-	}
+    if s == nil {
+        return nil, eris.Errorf("empty set, cannot find KubernetesCluster %v", sksets.Key(id))
+    }
 	obj, err := s.Generic().Find(&multicluster_solo_io_v1alpha1.KubernetesCluster{}, id)
 	if err != nil {
 		return nil, err
-	}
+    }
 
-	return obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster), nil
+    return obj.(*multicluster_solo_io_v1alpha1.KubernetesCluster), nil
 }
 
 func (s *kubernetesClusterSet) Length() int {
-	if s == nil {
-		return 0
-	}
-	return s.Generic().Length()
+    if s == nil {
+        return 0
+    }
+    return s.Generic().Length()
 }
 
 func (s *kubernetesClusterSet) Generic() sksets.ResourceSet {
-	if s == nil {
-		return nil
-	}
-	return s.set
+    if s == nil {
+        return nil
+    }
+    return s.set
 }
 
 func (s *kubernetesClusterSet) Delta(newSet KubernetesClusterSet) sksets.ResourceDelta {
-	if s == nil {
-		return sksets.ResourceDelta{
-			Inserted: newSet.Generic(),
-		}
-	}
-	return s.Generic().Delta(newSet.Generic())
+    if s == nil {
+        return sksets.ResourceDelta{
+            Inserted: newSet.Generic(),
+        }
+    }
+    return s.Generic().Delta(newSet.Generic())
 }
 
 func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
@@ -311,8 +314,8 @@ func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &multicluster_solo_io_v1alpha1.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -320,8 +323,8 @@ func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &multicluster_solo_io_v1alpha1.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -332,8 +335,8 @@ func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &multicluster_solo_io_v1alpha1.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -341,27 +344,27 @@ func (s *kubernetesClusterSet) Clone() KubernetesClusterSet {
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &multicluster_solo_io_v1alpha1.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return s.equalityFunc(objA, objB)
+		return s.equalityFunc(objA,objB)
 	}
 	return &kubernetesClusterSet{
-		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
-			s.Generic().Clone().List()...,
-		),
-	}
+        set: sksets.NewResourceSet(
+            genericSortFunc,
+            genericEqualityFunc,
+            s.Generic().Clone().List()...,
+        ),
+    }
 }
 
 func (s *kubernetesClusterSet) GetSortFunc() func(toInsert, existing client.Object) bool {
-	return s.sortFunc
+    return s.sortFunc
 }
 
 func (s *kubernetesClusterSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+    return s.equalityFunc
 }

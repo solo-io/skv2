@@ -4,54 +4,56 @@
 
 package v1sets
 
-import (
-	v1 "k8s.io/api/core/v1"
 
-	"github.com/rotisserie/eris"
-	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/skv2/pkg/ezkube"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    v1 "k8s.io/api/core/v1"
+
+    "github.com/rotisserie/eris"
+    sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    "k8s.io/apimachinery/pkg/util/sets"
+    "sigs.k8s.io/controller-runtime/pkg/client"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type SecretSet interface {
 	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	List(filterResource ...func(*v1.Secret) bool) []*v1.Secret
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	UnsortedList(filterResource ...func(*v1.Secret) bool) []*v1.Secret
-	// Return the Set as a map of key to resource.
-	Map() map[string]*v1.Secret
-	// Insert a resource into the set.
-	Insert(secret ...*v1.Secret)
-	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(secretSet SecretSet) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(secret ezkube.ResourceId) bool
-	// Delete the key matching the resource
-	Delete(secret ezkube.ResourceId)
-	// Return the union with the provided set
-	Union(set SecretSet) SecretSet
-	// Return the difference with the provided set
-	Difference(set SecretSet) SecretSet
-	// Return the intersection with the provided set
-	Intersection(set SecretSet) SecretSet
-	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*v1.Secret, error)
-	// Get the length of the set
-	Length() int
-	// returns the generic implementation of the set
-	Generic() sksets.ResourceSet
-	// returns the delta between this and and another SecretSet
-	Delta(newSet SecretSet) sksets.ResourceDelta
-	// Create a deep copy of the current SecretSet
-	Clone() SecretSet
-	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+    Keys() sets.String
+    // List of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    List(filterResource ... func(*v1.Secret) bool) []*v1.Secret
+    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    UnsortedList(filterResource ... func(*v1.Secret) bool) []*v1.Secret
+    // Return the Set as a map of key to resource.
+    Map() map[string]*v1.Secret
+    // Insert a resource into the set.
+    Insert(secret ...*v1.Secret)
+    // Compare the equality of the keys in two sets (not the resources themselves)
+    Equal(secretSet SecretSet) bool
+    // Check if the set contains a key matching the resource (not the resource itself)
+    Has(secret ezkube.ResourceId) bool
+    // Delete the key matching the resource
+    Delete(secret  ezkube.ResourceId)
+    // Return the union with the provided set
+    Union(set SecretSet) SecretSet
+    // Return the difference with the provided set
+    Difference(set SecretSet) SecretSet
+    // Return the intersection with the provided set
+    Intersection(set SecretSet) SecretSet
+    // Find the resource with the given ID
+    Find(id ezkube.ResourceId) (*v1.Secret, error)
+    // Get the length of the set
+    Length() int
+    // returns the generic implementation of the set
+    Generic() sksets.ResourceSet
+    // returns the delta between this and and another SecretSet
+    Delta(newSet SecretSet) sksets.ResourceDelta
+    // Create a deep copy of the current SecretSet
+    Clone() SecretSet
+    // Get the sort function used by the set
+    GetSortFunc() func(toInsert, existing client.Object) bool
 	// Get the equality function used by the set
 	GetEqualityFunc() func(a, b client.Object) bool
 }
@@ -59,18 +61,18 @@ type SecretSet interface {
 func makeGenericSecretSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	secretList []*v1.Secret,
+    secretList []*v1.Secret,
 ) sksets.ResourceSet {
-	var genericResources []ezkube.ResourceId
-	for _, obj := range secretList {
-		genericResources = append(genericResources, obj)
-	}
+    var genericResources []ezkube.ResourceId
+    for _, obj := range secretList {
+        genericResources = append(genericResources, obj)
+    }
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &v1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -78,8 +80,8 @@ func makeGenericSecretSet(
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &v1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -90,8 +92,8 @@ func makeGenericSecretSet(
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &v1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -99,208 +101,209 @@ func makeGenericSecretSet(
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &v1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return equalityFunc(objA, objB)
+		return equalityFunc(objA,objB)
 	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+    return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
 
 type secretSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+    set sksets.ResourceSet
+    sortFunc func(toInsert, existing client.Object) bool
+    equalityFunc func(a, b client.Object) bool
 }
 
 func NewSecretSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	secretList ...*v1.Secret,
+    secretList ...*v1.Secret,
 ) SecretSet {
-	return &secretSet{
-		set:          makeGenericSecretSet(sortFunc, equalityFunc, secretList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    return &secretSet{
+        set: makeGenericSecretSet(sortFunc, equalityFunc, secretList),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func NewSecretSetFromList(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	secretList *v1.SecretList,
+    secretList *v1.SecretList,
 ) SecretSet {
-	list := make([]*v1.Secret, 0, len(secretList.Items))
-	for idx := range secretList.Items {
-		list = append(list, &secretList.Items[idx])
-	}
-	return &secretSet{
-		set:          makeGenericSecretSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    list := make([]*v1.Secret, 0, len(secretList.Items))
+    for idx := range secretList.Items {
+        list = append(list, &secretList.Items[idx])
+    }
+    return &secretSet{
+        set: makeGenericSecretSet(sortFunc, equalityFunc, list),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func (s *secretSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-	}
-	return s.Generic().Keys()
+    }
+    return s.Generic().Keys()
 }
 
-func (s *secretSet) List(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Secret))
-		})
-	}
+func (s *secretSet) List(filterResource ... func(*v1.Secret) bool) []*v1.Secret {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*v1.Secret))
+        })
+    }
 
-	objs := s.Generic().List(genericFilters...)
-	secretList := make([]*v1.Secret, 0, len(objs))
-	for _, obj := range objs {
-		secretList = append(secretList, obj.(*v1.Secret))
-	}
-	return secretList
+    objs := s.Generic().List(genericFilters...)
+    secretList := make([]*v1.Secret, 0, len(objs))
+    for _, obj := range objs {
+        secretList = append(secretList, obj.(*v1.Secret))
+    }
+    return secretList
 }
 
-func (s *secretSet) UnsortedList(filterResource ...func(*v1.Secret) bool) []*v1.Secret {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Secret))
-		})
-	}
+func (s *secretSet) UnsortedList(filterResource ... func(*v1.Secret) bool) []*v1.Secret {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*v1.Secret))
+        })
+    }
 
-	var secretList []*v1.Secret
-	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		secretList = append(secretList, obj.(*v1.Secret))
-	}
-	return secretList
+    var secretList []*v1.Secret
+    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+        secretList = append(secretList, obj.(*v1.Secret))
+    }
+    return secretList
 }
 
 func (s *secretSet) Map() map[string]*v1.Secret {
-	if s == nil {
-		return nil
-	}
+    if s == nil {
+        return nil
+    }
 
-	newMap := map[string]*v1.Secret{}
-	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*v1.Secret)
-	}
-	return newMap
+    newMap := map[string]*v1.Secret{}
+    for k, v := range s.Generic().Map() {
+        newMap[k] = v.(*v1.Secret)
+    }
+    return newMap
 }
 
 func (s *secretSet) Insert(
-	secretList ...*v1.Secret,
+        secretList ...*v1.Secret,
 ) {
-	if s == nil {
-		panic("cannot insert into nil set")
-	}
+    if s == nil {
+        panic("cannot insert into nil set")
+    }
 
-	for _, obj := range secretList {
-		s.Generic().Insert(obj)
-	}
+    for _, obj := range secretList {
+        s.Generic().Insert(obj)
+    }
 }
 
 func (s *secretSet) Has(secret ezkube.ResourceId) bool {
-	if s == nil {
-		return false
-	}
-	return s.Generic().Has(secret)
+    if s == nil {
+        return false
+    }
+    return s.Generic().Has(secret)
 }
 
 func (s *secretSet) Equal(
-	secretSet SecretSet,
+        secretSet SecretSet,
 ) bool {
-	if s == nil {
-		return secretSet == nil
-	}
-	return s.Generic().Equal(secretSet.Generic())
+    if s == nil {
+        return secretSet == nil
+    }
+    return s.Generic().Equal(secretSet.Generic())
 }
 
 func (s *secretSet) Delete(Secret ezkube.ResourceId) {
-	if s == nil {
-		return
-	}
-	s.Generic().Delete(Secret)
+    if s == nil {
+        return
+    }
+    s.Generic().Delete(Secret)
 }
 
 func (s *secretSet) Union(set SecretSet) SecretSet {
-	if s == nil {
-		return set
-	}
-	return NewSecretSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+    if s == nil {
+        return set
+    }
+    return NewSecretSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *secretSet) Difference(set SecretSet) SecretSet {
-	if s == nil {
-		return set
-	}
-	newSet := s.Generic().Difference(set.Generic())
-	return &secretSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
-	}
+    if s == nil {
+        return set
+    }
+    newSet := s.Generic().Difference(set.Generic())
+    return &secretSet{
+        set: newSet,
+        sortFunc: s.sortFunc,
+        equalityFunc: s.equalityFunc,
+    }
 }
 
 func (s *secretSet) Intersection(set SecretSet) SecretSet {
-	if s == nil {
-		return nil
-	}
-	newSet := s.Generic().Intersection(set.Generic())
-	var secretList []*v1.Secret
-	for _, obj := range newSet.List() {
-		secretList = append(secretList, obj.(*v1.Secret))
-	}
-	return NewSecretSet(s.sortFunc, s.equalityFunc, secretList...)
+    if s == nil {
+        return nil
+    }
+    newSet := s.Generic().Intersection(set.Generic())
+    var secretList []*v1.Secret
+    for _, obj := range newSet.List() {
+        secretList = append(secretList, obj.(*v1.Secret))
+    }
+    return NewSecretSet(s.sortFunc, s.equalityFunc, secretList...)
 }
 
+
 func (s *secretSet) Find(id ezkube.ResourceId) (*v1.Secret, error) {
-	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find Secret %v", sksets.Key(id))
-	}
+    if s == nil {
+        return nil, eris.Errorf("empty set, cannot find Secret %v", sksets.Key(id))
+    }
 	obj, err := s.Generic().Find(&v1.Secret{}, id)
 	if err != nil {
 		return nil, err
-	}
+    }
 
-	return obj.(*v1.Secret), nil
+    return obj.(*v1.Secret), nil
 }
 
 func (s *secretSet) Length() int {
-	if s == nil {
-		return 0
-	}
-	return s.Generic().Length()
+    if s == nil {
+        return 0
+    }
+    return s.Generic().Length()
 }
 
 func (s *secretSet) Generic() sksets.ResourceSet {
-	if s == nil {
-		return nil
-	}
-	return s.set
+    if s == nil {
+        return nil
+    }
+    return s.set
 }
 
 func (s *secretSet) Delta(newSet SecretSet) sksets.ResourceDelta {
-	if s == nil {
-		return sksets.ResourceDelta{
-			Inserted: newSet.Generic(),
-		}
-	}
-	return s.Generic().Delta(newSet.Generic())
+    if s == nil {
+        return sksets.ResourceDelta{
+            Inserted: newSet.Generic(),
+        }
+    }
+    return s.Generic().Delta(newSet.Generic())
 }
 
 func (s *secretSet) Clone() SecretSet {
@@ -311,8 +314,8 @@ func (s *secretSet) Clone() SecretSet {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &v1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -320,8 +323,8 @@ func (s *secretSet) Clone() SecretSet {
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &v1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -332,8 +335,8 @@ func (s *secretSet) Clone() SecretSet {
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &v1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -341,68 +344,68 @@ func (s *secretSet) Clone() SecretSet {
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &v1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return s.equalityFunc(objA, objB)
+		return s.equalityFunc(objA,objB)
 	}
 	return &secretSet{
-		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
-			s.Generic().Clone().List()...,
-		),
-	}
+        set: sksets.NewResourceSet(
+            genericSortFunc,
+            genericEqualityFunc,
+            s.Generic().Clone().List()...,
+        ),
+    }
 }
 
 func (s *secretSet) GetSortFunc() func(toInsert, existing client.Object) bool {
-	return s.sortFunc
+    return s.sortFunc
 }
 
 func (s *secretSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+    return s.equalityFunc
 }
 
 type ServiceAccountSet interface {
 	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	List(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	UnsortedList(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
-	// Return the Set as a map of key to resource.
-	Map() map[string]*v1.ServiceAccount
-	// Insert a resource into the set.
-	Insert(serviceAccount ...*v1.ServiceAccount)
-	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(serviceAccountSet ServiceAccountSet) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(serviceAccount ezkube.ResourceId) bool
-	// Delete the key matching the resource
-	Delete(serviceAccount ezkube.ResourceId)
-	// Return the union with the provided set
-	Union(set ServiceAccountSet) ServiceAccountSet
-	// Return the difference with the provided set
-	Difference(set ServiceAccountSet) ServiceAccountSet
-	// Return the intersection with the provided set
-	Intersection(set ServiceAccountSet) ServiceAccountSet
-	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*v1.ServiceAccount, error)
-	// Get the length of the set
-	Length() int
-	// returns the generic implementation of the set
-	Generic() sksets.ResourceSet
-	// returns the delta between this and and another ServiceAccountSet
-	Delta(newSet ServiceAccountSet) sksets.ResourceDelta
-	// Create a deep copy of the current ServiceAccountSet
-	Clone() ServiceAccountSet
-	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+    Keys() sets.String
+    // List of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    List(filterResource ... func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
+    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    UnsortedList(filterResource ... func(*v1.ServiceAccount) bool) []*v1.ServiceAccount
+    // Return the Set as a map of key to resource.
+    Map() map[string]*v1.ServiceAccount
+    // Insert a resource into the set.
+    Insert(serviceAccount ...*v1.ServiceAccount)
+    // Compare the equality of the keys in two sets (not the resources themselves)
+    Equal(serviceAccountSet ServiceAccountSet) bool
+    // Check if the set contains a key matching the resource (not the resource itself)
+    Has(serviceAccount ezkube.ResourceId) bool
+    // Delete the key matching the resource
+    Delete(serviceAccount  ezkube.ResourceId)
+    // Return the union with the provided set
+    Union(set ServiceAccountSet) ServiceAccountSet
+    // Return the difference with the provided set
+    Difference(set ServiceAccountSet) ServiceAccountSet
+    // Return the intersection with the provided set
+    Intersection(set ServiceAccountSet) ServiceAccountSet
+    // Find the resource with the given ID
+    Find(id ezkube.ResourceId) (*v1.ServiceAccount, error)
+    // Get the length of the set
+    Length() int
+    // returns the generic implementation of the set
+    Generic() sksets.ResourceSet
+    // returns the delta between this and and another ServiceAccountSet
+    Delta(newSet ServiceAccountSet) sksets.ResourceDelta
+    // Create a deep copy of the current ServiceAccountSet
+    Clone() ServiceAccountSet
+    // Get the sort function used by the set
+    GetSortFunc() func(toInsert, existing client.Object) bool
 	// Get the equality function used by the set
 	GetEqualityFunc() func(a, b client.Object) bool
 }
@@ -410,18 +413,18 @@ type ServiceAccountSet interface {
 func makeGenericServiceAccountSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	serviceAccountList []*v1.ServiceAccount,
+    serviceAccountList []*v1.ServiceAccount,
 ) sksets.ResourceSet {
-	var genericResources []ezkube.ResourceId
-	for _, obj := range serviceAccountList {
-		genericResources = append(genericResources, obj)
-	}
+    var genericResources []ezkube.ResourceId
+    for _, obj := range serviceAccountList {
+        genericResources = append(genericResources, obj)
+    }
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &v1.ServiceAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -429,8 +432,8 @@ func makeGenericServiceAccountSet(
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &v1.ServiceAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -441,8 +444,8 @@ func makeGenericServiceAccountSet(
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &v1.ServiceAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -450,208 +453,209 @@ func makeGenericServiceAccountSet(
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &v1.ServiceAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return equalityFunc(objA, objB)
+		return equalityFunc(objA,objB)
 	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+    return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
 
 type serviceAccountSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+    set sksets.ResourceSet
+    sortFunc func(toInsert, existing client.Object) bool
+    equalityFunc func(a, b client.Object) bool
 }
 
 func NewServiceAccountSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	serviceAccountList ...*v1.ServiceAccount,
+    serviceAccountList ...*v1.ServiceAccount,
 ) ServiceAccountSet {
-	return &serviceAccountSet{
-		set:          makeGenericServiceAccountSet(sortFunc, equalityFunc, serviceAccountList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    return &serviceAccountSet{
+        set: makeGenericServiceAccountSet(sortFunc, equalityFunc, serviceAccountList),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func NewServiceAccountSetFromList(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	serviceAccountList *v1.ServiceAccountList,
+    serviceAccountList *v1.ServiceAccountList,
 ) ServiceAccountSet {
-	list := make([]*v1.ServiceAccount, 0, len(serviceAccountList.Items))
-	for idx := range serviceAccountList.Items {
-		list = append(list, &serviceAccountList.Items[idx])
-	}
-	return &serviceAccountSet{
-		set:          makeGenericServiceAccountSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    list := make([]*v1.ServiceAccount, 0, len(serviceAccountList.Items))
+    for idx := range serviceAccountList.Items {
+        list = append(list, &serviceAccountList.Items[idx])
+    }
+    return &serviceAccountSet{
+        set: makeGenericServiceAccountSet(sortFunc, equalityFunc, list),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func (s *serviceAccountSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-	}
-	return s.Generic().Keys()
+    }
+    return s.Generic().Keys()
 }
 
-func (s *serviceAccountSet) List(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.ServiceAccount))
-		})
-	}
+func (s *serviceAccountSet) List(filterResource ... func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*v1.ServiceAccount))
+        })
+    }
 
-	objs := s.Generic().List(genericFilters...)
-	serviceAccountList := make([]*v1.ServiceAccount, 0, len(objs))
-	for _, obj := range objs {
-		serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
-	}
-	return serviceAccountList
+    objs := s.Generic().List(genericFilters...)
+    serviceAccountList := make([]*v1.ServiceAccount, 0, len(objs))
+    for _, obj := range objs {
+        serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
+    }
+    return serviceAccountList
 }
 
-func (s *serviceAccountSet) UnsortedList(filterResource ...func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.ServiceAccount))
-		})
-	}
+func (s *serviceAccountSet) UnsortedList(filterResource ... func(*v1.ServiceAccount) bool) []*v1.ServiceAccount {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*v1.ServiceAccount))
+        })
+    }
 
-	var serviceAccountList []*v1.ServiceAccount
-	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
-	}
-	return serviceAccountList
+    var serviceAccountList []*v1.ServiceAccount
+    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+        serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
+    }
+    return serviceAccountList
 }
 
 func (s *serviceAccountSet) Map() map[string]*v1.ServiceAccount {
-	if s == nil {
-		return nil
-	}
+    if s == nil {
+        return nil
+    }
 
-	newMap := map[string]*v1.ServiceAccount{}
-	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*v1.ServiceAccount)
-	}
-	return newMap
+    newMap := map[string]*v1.ServiceAccount{}
+    for k, v := range s.Generic().Map() {
+        newMap[k] = v.(*v1.ServiceAccount)
+    }
+    return newMap
 }
 
 func (s *serviceAccountSet) Insert(
-	serviceAccountList ...*v1.ServiceAccount,
+        serviceAccountList ...*v1.ServiceAccount,
 ) {
-	if s == nil {
-		panic("cannot insert into nil set")
-	}
+    if s == nil {
+        panic("cannot insert into nil set")
+    }
 
-	for _, obj := range serviceAccountList {
-		s.Generic().Insert(obj)
-	}
+    for _, obj := range serviceAccountList {
+        s.Generic().Insert(obj)
+    }
 }
 
 func (s *serviceAccountSet) Has(serviceAccount ezkube.ResourceId) bool {
-	if s == nil {
-		return false
-	}
-	return s.Generic().Has(serviceAccount)
+    if s == nil {
+        return false
+    }
+    return s.Generic().Has(serviceAccount)
 }
 
 func (s *serviceAccountSet) Equal(
-	serviceAccountSet ServiceAccountSet,
+        serviceAccountSet ServiceAccountSet,
 ) bool {
-	if s == nil {
-		return serviceAccountSet == nil
-	}
-	return s.Generic().Equal(serviceAccountSet.Generic())
+    if s == nil {
+        return serviceAccountSet == nil
+    }
+    return s.Generic().Equal(serviceAccountSet.Generic())
 }
 
 func (s *serviceAccountSet) Delete(ServiceAccount ezkube.ResourceId) {
-	if s == nil {
-		return
-	}
-	s.Generic().Delete(ServiceAccount)
+    if s == nil {
+        return
+    }
+    s.Generic().Delete(ServiceAccount)
 }
 
 func (s *serviceAccountSet) Union(set ServiceAccountSet) ServiceAccountSet {
-	if s == nil {
-		return set
-	}
-	return NewServiceAccountSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+    if s == nil {
+        return set
+    }
+    return NewServiceAccountSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *serviceAccountSet) Difference(set ServiceAccountSet) ServiceAccountSet {
-	if s == nil {
-		return set
-	}
-	newSet := s.Generic().Difference(set.Generic())
-	return &serviceAccountSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
-	}
+    if s == nil {
+        return set
+    }
+    newSet := s.Generic().Difference(set.Generic())
+    return &serviceAccountSet{
+        set: newSet,
+        sortFunc: s.sortFunc,
+        equalityFunc: s.equalityFunc,
+    }
 }
 
 func (s *serviceAccountSet) Intersection(set ServiceAccountSet) ServiceAccountSet {
-	if s == nil {
-		return nil
-	}
-	newSet := s.Generic().Intersection(set.Generic())
-	var serviceAccountList []*v1.ServiceAccount
-	for _, obj := range newSet.List() {
-		serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
-	}
-	return NewServiceAccountSet(s.sortFunc, s.equalityFunc, serviceAccountList...)
+    if s == nil {
+        return nil
+    }
+    newSet := s.Generic().Intersection(set.Generic())
+    var serviceAccountList []*v1.ServiceAccount
+    for _, obj := range newSet.List() {
+        serviceAccountList = append(serviceAccountList, obj.(*v1.ServiceAccount))
+    }
+    return NewServiceAccountSet(s.sortFunc, s.equalityFunc, serviceAccountList...)
 }
 
+
 func (s *serviceAccountSet) Find(id ezkube.ResourceId) (*v1.ServiceAccount, error) {
-	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find ServiceAccount %v", sksets.Key(id))
-	}
+    if s == nil {
+        return nil, eris.Errorf("empty set, cannot find ServiceAccount %v", sksets.Key(id))
+    }
 	obj, err := s.Generic().Find(&v1.ServiceAccount{}, id)
 	if err != nil {
 		return nil, err
-	}
+    }
 
-	return obj.(*v1.ServiceAccount), nil
+    return obj.(*v1.ServiceAccount), nil
 }
 
 func (s *serviceAccountSet) Length() int {
-	if s == nil {
-		return 0
-	}
-	return s.Generic().Length()
+    if s == nil {
+        return 0
+    }
+    return s.Generic().Length()
 }
 
 func (s *serviceAccountSet) Generic() sksets.ResourceSet {
-	if s == nil {
-		return nil
-	}
-	return s.set
+    if s == nil {
+        return nil
+    }
+    return s.set
 }
 
 func (s *serviceAccountSet) Delta(newSet ServiceAccountSet) sksets.ResourceDelta {
-	if s == nil {
-		return sksets.ResourceDelta{
-			Inserted: newSet.Generic(),
-		}
-	}
-	return s.Generic().Delta(newSet.Generic())
+    if s == nil {
+        return sksets.ResourceDelta{
+            Inserted: newSet.Generic(),
+        }
+    }
+    return s.Generic().Delta(newSet.Generic())
 }
 
 func (s *serviceAccountSet) Clone() ServiceAccountSet {
@@ -662,8 +666,8 @@ func (s *serviceAccountSet) Clone() ServiceAccountSet {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &v1.ServiceAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -671,8 +675,8 @@ func (s *serviceAccountSet) Clone() ServiceAccountSet {
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &v1.ServiceAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -683,8 +687,8 @@ func (s *serviceAccountSet) Clone() ServiceAccountSet {
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &v1.ServiceAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -692,68 +696,68 @@ func (s *serviceAccountSet) Clone() ServiceAccountSet {
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &v1.ServiceAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return s.equalityFunc(objA, objB)
+		return s.equalityFunc(objA,objB)
 	}
 	return &serviceAccountSet{
-		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
-			s.Generic().Clone().List()...,
-		),
-	}
+        set: sksets.NewResourceSet(
+            genericSortFunc,
+            genericEqualityFunc,
+            s.Generic().Clone().List()...,
+        ),
+    }
 }
 
 func (s *serviceAccountSet) GetSortFunc() func(toInsert, existing client.Object) bool {
-	return s.sortFunc
+    return s.sortFunc
 }
 
 func (s *serviceAccountSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+    return s.equalityFunc
 }
 
 type NamespaceSet interface {
 	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	List(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	// The filter function should return false to keep the resource, true to drop it.
-	UnsortedList(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace
-	// Return the Set as a map of key to resource.
-	Map() map[string]*v1.Namespace
-	// Insert a resource into the set.
-	Insert(namespace ...*v1.Namespace)
-	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(namespaceSet NamespaceSet) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(namespace ezkube.ResourceId) bool
-	// Delete the key matching the resource
-	Delete(namespace ezkube.ResourceId)
-	// Return the union with the provided set
-	Union(set NamespaceSet) NamespaceSet
-	// Return the difference with the provided set
-	Difference(set NamespaceSet) NamespaceSet
-	// Return the intersection with the provided set
-	Intersection(set NamespaceSet) NamespaceSet
-	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*v1.Namespace, error)
-	// Get the length of the set
-	Length() int
-	// returns the generic implementation of the set
-	Generic() sksets.ResourceSet
-	// returns the delta between this and and another NamespaceSet
-	Delta(newSet NamespaceSet) sksets.ResourceDelta
-	// Create a deep copy of the current NamespaceSet
-	Clone() NamespaceSet
-	// Get the sort function used by the set
-	GetSortFunc() func(toInsert, existing client.Object) bool
+    Keys() sets.String
+    // List of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    List(filterResource ... func(*v1.Namespace) bool) []*v1.Namespace
+    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+    // The filter function should return false to keep the resource, true to drop it.
+    UnsortedList(filterResource ... func(*v1.Namespace) bool) []*v1.Namespace
+    // Return the Set as a map of key to resource.
+    Map() map[string]*v1.Namespace
+    // Insert a resource into the set.
+    Insert(namespace ...*v1.Namespace)
+    // Compare the equality of the keys in two sets (not the resources themselves)
+    Equal(namespaceSet NamespaceSet) bool
+    // Check if the set contains a key matching the resource (not the resource itself)
+    Has(namespace ezkube.ResourceId) bool
+    // Delete the key matching the resource
+    Delete(namespace  ezkube.ResourceId)
+    // Return the union with the provided set
+    Union(set NamespaceSet) NamespaceSet
+    // Return the difference with the provided set
+    Difference(set NamespaceSet) NamespaceSet
+    // Return the intersection with the provided set
+    Intersection(set NamespaceSet) NamespaceSet
+    // Find the resource with the given ID
+    Find(id ezkube.ResourceId) (*v1.Namespace, error)
+    // Get the length of the set
+    Length() int
+    // returns the generic implementation of the set
+    Generic() sksets.ResourceSet
+    // returns the delta between this and and another NamespaceSet
+    Delta(newSet NamespaceSet) sksets.ResourceDelta
+    // Create a deep copy of the current NamespaceSet
+    Clone() NamespaceSet
+    // Get the sort function used by the set
+    GetSortFunc() func(toInsert, existing client.Object) bool
 	// Get the equality function used by the set
 	GetEqualityFunc() func(a, b client.Object) bool
 }
@@ -761,18 +765,18 @@ type NamespaceSet interface {
 func makeGenericNamespaceSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	namespaceList []*v1.Namespace,
+    namespaceList []*v1.Namespace,
 ) sksets.ResourceSet {
-	var genericResources []ezkube.ResourceId
-	for _, obj := range namespaceList {
-		genericResources = append(genericResources, obj)
-	}
+    var genericResources []ezkube.ResourceId
+    for _, obj := range namespaceList {
+        genericResources = append(genericResources, obj)
+    }
 	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &v1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -780,8 +784,8 @@ func makeGenericNamespaceSet(
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &v1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -792,8 +796,8 @@ func makeGenericNamespaceSet(
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &v1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -801,208 +805,209 @@ func makeGenericNamespaceSet(
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &v1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return equalityFunc(objA, objB)
+		return equalityFunc(objA,objB)
 	}
-	return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+    return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
 }
 
 type namespaceSet struct {
-	set          sksets.ResourceSet
-	sortFunc     func(toInsert, existing client.Object) bool
-	equalityFunc func(a, b client.Object) bool
+    set sksets.ResourceSet
+    sortFunc func(toInsert, existing client.Object) bool
+    equalityFunc func(a, b client.Object) bool
 }
 
 func NewNamespaceSet(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	namespaceList ...*v1.Namespace,
+    namespaceList ...*v1.Namespace,
 ) NamespaceSet {
-	return &namespaceSet{
-		set:          makeGenericNamespaceSet(sortFunc, equalityFunc, namespaceList),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    return &namespaceSet{
+        set: makeGenericNamespaceSet(sortFunc, equalityFunc, namespaceList),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func NewNamespaceSetFromList(
 	sortFunc func(toInsert, existing client.Object) bool,
 	equalityFunc func(a, b client.Object) bool,
-	namespaceList *v1.NamespaceList,
+    namespaceList *v1.NamespaceList,
 ) NamespaceSet {
-	list := make([]*v1.Namespace, 0, len(namespaceList.Items))
-	for idx := range namespaceList.Items {
-		list = append(list, &namespaceList.Items[idx])
-	}
-	return &namespaceSet{
-		set:          makeGenericNamespaceSet(sortFunc, equalityFunc, list),
-		sortFunc:     sortFunc,
-		equalityFunc: equalityFunc,
-	}
+    list := make([]*v1.Namespace, 0, len(namespaceList.Items))
+    for idx := range namespaceList.Items {
+        list = append(list, &namespaceList.Items[idx])
+    }
+    return &namespaceSet{
+        set: makeGenericNamespaceSet(sortFunc, equalityFunc, list),
+        sortFunc: sortFunc,
+        equalityFunc: equalityFunc,
+    }
 }
 
 func (s *namespaceSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-	}
-	return s.Generic().Keys()
+    }
+    return s.Generic().Keys()
 }
 
-func (s *namespaceSet) List(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Namespace))
-		})
-	}
+func (s *namespaceSet) List(filterResource ... func(*v1.Namespace) bool) []*v1.Namespace {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*v1.Namespace))
+        })
+    }
 
-	objs := s.Generic().List(genericFilters...)
-	namespaceList := make([]*v1.Namespace, 0, len(objs))
-	for _, obj := range objs {
-		namespaceList = append(namespaceList, obj.(*v1.Namespace))
-	}
-	return namespaceList
+    objs := s.Generic().List(genericFilters...)
+    namespaceList := make([]*v1.Namespace, 0, len(objs))
+    for _, obj := range objs {
+        namespaceList = append(namespaceList, obj.(*v1.Namespace))
+    }
+    return namespaceList
 }
 
-func (s *namespaceSet) UnsortedList(filterResource ...func(*v1.Namespace) bool) []*v1.Namespace {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		filter := filter
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*v1.Namespace))
-		})
-	}
+func (s *namespaceSet) UnsortedList(filterResource ... func(*v1.Namespace) bool) []*v1.Namespace {
+    if s == nil {
+        return nil
+    }
+    var genericFilters []func(ezkube.ResourceId) bool
+    for _, filter := range filterResource {
+        filter := filter
+        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+            return filter(obj.(*v1.Namespace))
+        })
+    }
 
-	var namespaceList []*v1.Namespace
-	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		namespaceList = append(namespaceList, obj.(*v1.Namespace))
-	}
-	return namespaceList
+    var namespaceList []*v1.Namespace
+    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+        namespaceList = append(namespaceList, obj.(*v1.Namespace))
+    }
+    return namespaceList
 }
 
 func (s *namespaceSet) Map() map[string]*v1.Namespace {
-	if s == nil {
-		return nil
-	}
+    if s == nil {
+        return nil
+    }
 
-	newMap := map[string]*v1.Namespace{}
-	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*v1.Namespace)
-	}
-	return newMap
+    newMap := map[string]*v1.Namespace{}
+    for k, v := range s.Generic().Map() {
+        newMap[k] = v.(*v1.Namespace)
+    }
+    return newMap
 }
 
 func (s *namespaceSet) Insert(
-	namespaceList ...*v1.Namespace,
+        namespaceList ...*v1.Namespace,
 ) {
-	if s == nil {
-		panic("cannot insert into nil set")
-	}
+    if s == nil {
+        panic("cannot insert into nil set")
+    }
 
-	for _, obj := range namespaceList {
-		s.Generic().Insert(obj)
-	}
+    for _, obj := range namespaceList {
+        s.Generic().Insert(obj)
+    }
 }
 
 func (s *namespaceSet) Has(namespace ezkube.ResourceId) bool {
-	if s == nil {
-		return false
-	}
-	return s.Generic().Has(namespace)
+    if s == nil {
+        return false
+    }
+    return s.Generic().Has(namespace)
 }
 
 func (s *namespaceSet) Equal(
-	namespaceSet NamespaceSet,
+        namespaceSet NamespaceSet,
 ) bool {
-	if s == nil {
-		return namespaceSet == nil
-	}
-	return s.Generic().Equal(namespaceSet.Generic())
+    if s == nil {
+        return namespaceSet == nil
+    }
+    return s.Generic().Equal(namespaceSet.Generic())
 }
 
 func (s *namespaceSet) Delete(Namespace ezkube.ResourceId) {
-	if s == nil {
-		return
-	}
-	s.Generic().Delete(Namespace)
+    if s == nil {
+        return
+    }
+    s.Generic().Delete(Namespace)
 }
 
 func (s *namespaceSet) Union(set NamespaceSet) NamespaceSet {
-	if s == nil {
-		return set
-	}
-	return NewNamespaceSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+    if s == nil {
+        return set
+    }
+    return NewNamespaceSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *namespaceSet) Difference(set NamespaceSet) NamespaceSet {
-	if s == nil {
-		return set
-	}
-	newSet := s.Generic().Difference(set.Generic())
-	return &namespaceSet{
-		set:          newSet,
-		sortFunc:     s.sortFunc,
-		equalityFunc: s.equalityFunc,
-	}
+    if s == nil {
+        return set
+    }
+    newSet := s.Generic().Difference(set.Generic())
+    return &namespaceSet{
+        set: newSet,
+        sortFunc: s.sortFunc,
+        equalityFunc: s.equalityFunc,
+    }
 }
 
 func (s *namespaceSet) Intersection(set NamespaceSet) NamespaceSet {
-	if s == nil {
-		return nil
-	}
-	newSet := s.Generic().Intersection(set.Generic())
-	var namespaceList []*v1.Namespace
-	for _, obj := range newSet.List() {
-		namespaceList = append(namespaceList, obj.(*v1.Namespace))
-	}
-	return NewNamespaceSet(s.sortFunc, s.equalityFunc, namespaceList...)
+    if s == nil {
+        return nil
+    }
+    newSet := s.Generic().Intersection(set.Generic())
+    var namespaceList []*v1.Namespace
+    for _, obj := range newSet.List() {
+        namespaceList = append(namespaceList, obj.(*v1.Namespace))
+    }
+    return NewNamespaceSet(s.sortFunc, s.equalityFunc, namespaceList...)
 }
 
+
 func (s *namespaceSet) Find(id ezkube.ResourceId) (*v1.Namespace, error) {
-	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find Namespace %v", sksets.Key(id))
-	}
+    if s == nil {
+        return nil, eris.Errorf("empty set, cannot find Namespace %v", sksets.Key(id))
+    }
 	obj, err := s.Generic().Find(&v1.Namespace{}, id)
 	if err != nil {
 		return nil, err
-	}
+    }
 
-	return obj.(*v1.Namespace), nil
+    return obj.(*v1.Namespace), nil
 }
 
 func (s *namespaceSet) Length() int {
-	if s == nil {
-		return 0
-	}
-	return s.Generic().Length()
+    if s == nil {
+        return 0
+    }
+    return s.Generic().Length()
 }
 
 func (s *namespaceSet) Generic() sksets.ResourceSet {
-	if s == nil {
-		return nil
-	}
-	return s.set
+    if s == nil {
+        return nil
+    }
+    return s.set
 }
 
 func (s *namespaceSet) Delta(newSet NamespaceSet) sksets.ResourceDelta {
-	if s == nil {
-		return sksets.ResourceDelta{
-			Inserted: newSet.Generic(),
-		}
-	}
-	return s.Generic().Delta(newSet.Generic())
+    if s == nil {
+        return sksets.ResourceDelta{
+            Inserted: newSet.Generic(),
+        }
+    }
+    return s.Generic().Delta(newSet.Generic())
 }
 
 func (s *namespaceSet) Clone() NamespaceSet {
@@ -1013,8 +1018,8 @@ func (s *namespaceSet) Clone() NamespaceSet {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &v1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      toInsert.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
 			}
@@ -1022,8 +1027,8 @@ func (s *namespaceSet) Clone() NamespaceSet {
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &v1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      existing.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
 			}
@@ -1034,8 +1039,8 @@ func (s *namespaceSet) Clone() NamespaceSet {
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &v1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      a.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
 			}
@@ -1043,27 +1048,27 @@ func (s *namespaceSet) Clone() NamespaceSet {
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &v1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      b.GetName(),
+				ObjectMeta: metav1.ObjectMeta{
+					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
 			}
 		}
-		return s.equalityFunc(objA, objB)
+		return s.equalityFunc(objA,objB)
 	}
 	return &namespaceSet{
-		set: sksets.NewResourceSet(
-			genericSortFunc,
-			genericEqualityFunc,
-			s.Generic().Clone().List()...,
-		),
-	}
+        set: sksets.NewResourceSet(
+            genericSortFunc,
+            genericEqualityFunc,
+            s.Generic().Clone().List()...,
+        ),
+    }
 }
 
 func (s *namespaceSet) GetSortFunc() func(toInsert, existing client.Object) bool {
-	return s.sortFunc
+    return s.sortFunc
 }
 
 func (s *namespaceSet) GetEqualityFunc() func(a, b client.Object) bool {
-	return s.equalityFunc
+    return s.equalityFunc
 }

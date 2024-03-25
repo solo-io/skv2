@@ -10,7 +10,7 @@ import (
     "github.com/solo-io/skv2/pkg/ezkube"
     "k8s.io/apimachinery/pkg/util/sets"
     "sigs.k8s.io/controller-runtime/pkg/client"
-    v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 {{- range $resource := $.Resources }}
@@ -71,7 +71,7 @@ func makeGeneric{{ $resource.Kind }}Set(
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &{{ $import_prefix }}.{{ $resource.Kind }}{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
@@ -80,7 +80,7 @@ func makeGeneric{{ $resource.Kind }}Set(
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &{{ $import_prefix }}.{{ $resource.Kind }}{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
@@ -92,7 +92,7 @@ func makeGeneric{{ $resource.Kind }}Set(
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &{{ $import_prefix }}.{{ $resource.Kind }}{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
@@ -101,7 +101,7 @@ func makeGeneric{{ $resource.Kind }}Set(
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &{{ $import_prefix }}.{{ $resource.Kind }}{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
@@ -318,7 +318,7 @@ func (s *{{ $kindLowerCamel }}Set) Clone() {{ $resource.Kind }}Set {
 		objToInsert, ok := toInsert.(client.Object)
 		if !ok {
 			objToInsert = &{{ $import_prefix }}.{{ $resource.Kind }}{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: toInsert.GetName(),
 					Namespace: toInsert.GetNamespace(),
 				},
@@ -327,7 +327,7 @@ func (s *{{ $kindLowerCamel }}Set) Clone() {{ $resource.Kind }}Set {
 		objExisting, ok := existing.(client.Object)
 		if !ok {
 			objExisting = &{{ $import_prefix }}.{{ $resource.Kind }}{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: existing.GetName(),
 					Namespace: existing.GetNamespace(),
 				},
@@ -339,7 +339,7 @@ func (s *{{ $kindLowerCamel }}Set) Clone() {{ $resource.Kind }}Set {
 		objA, ok := a.(client.Object)
 		if !ok {
 			objA = &{{ $import_prefix }}.{{ $resource.Kind }}{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: a.GetName(),
 					Namespace: a.GetNamespace(),
 				},
@@ -348,7 +348,7 @@ func (s *{{ $kindLowerCamel }}Set) Clone() {{ $resource.Kind }}Set {
 		objB, ok := b.(client.Object)
 		if !ok {
 			objB = &{{ $import_prefix }}.{{ $resource.Kind }}{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: b.GetName(),
 					Namespace: b.GetNamespace(),
 				},
