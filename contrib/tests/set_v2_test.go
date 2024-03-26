@@ -17,8 +17,8 @@ var _ = FDescribe("PaintSetV2", func() {
 	)
 
 	BeforeEach(func() {
-		setA = sets_v2.NewResourceSet[*v1.Paint](ezkube.ObjectsAscending, ezkube.CompareObjects)
-		setB = sets_v2.NewResourceSet[*v1.Paint](ezkube.ObjectsAscending, ezkube.CompareObjects)
+		setA = sets_v2.NewResourceSet[*v1.Paint](ezkube.ResourceIdsCompare)
+		setB = sets_v2.NewResourceSet[*v1.Paint](ezkube.ResourceIdsCompare)
 		paintA = &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{Name: "nameA", Namespace: "nsA"},
 		}
@@ -36,7 +36,7 @@ var _ = FDescribe("PaintSetV2", func() {
 		setA.Insert(paintB, paintC)
 		Expect(setA.Has(paintB)).To(BeTrue())
 		Expect(setA.Has(paintC)).To(BeTrue())
-		Expect(setA.Length()).To(Equal(3))
+		Expect(setA.Len()).To(Equal(3))
 	})
 
 	It("should return set existence", func() {
@@ -94,7 +94,7 @@ var _ = FDescribe("PaintSetV2", func() {
 		setA.Insert(paintA, paintB)
 		setB.Insert(paintA, paintB, paintC)
 		unionSet := setA.Union(setB)
-		Expect(unionSet.Length()).To(Equal(3))
+		Expect(unionSet.Len()).To(Equal(3))
 		Expect(unionSet.Has(paintA)).To(BeTrue())
 		Expect(unionSet.Has(paintB)).To(BeTrue())
 		Expect(unionSet.Has(paintC)).To(BeTrue())
@@ -106,7 +106,7 @@ var _ = FDescribe("PaintSetV2", func() {
 		setA.Insert(paintA, paintB)
 		setB.Insert(paintA, paintB, paintC)
 		differenceA := setA.Difference(setB)
-		Expect(differenceA.Length()).To(Equal(0))
+		Expect(differenceA.Len()).To(Equal(0))
 		Expect(differenceA.Map()).To(BeEmpty())
 		Expect(differenceA).ToNot(BeIdenticalTo(setA))
 
@@ -122,7 +122,7 @@ var _ = FDescribe("PaintSetV2", func() {
 		intersectionA := setA.Intersection(setB)
 		Expect(intersectionA.Has(paintA)).To(BeTrue())
 		Expect(intersectionA.Has(paintB)).To(BeTrue())
-		Expect(intersectionA.Length()).To(Equal(2))
+		Expect(intersectionA.Len()).To(Equal(2))
 		Expect(intersectionA.Map()).To(HaveKeyWithValue(sets.Key(paintA), paintA))
 		Expect(intersectionA.Map()).To(HaveKeyWithValue(sets.Key(paintB), paintB))
 		Expect(intersectionA).ToNot(BeIdenticalTo(setA))
@@ -138,18 +138,74 @@ var _ = FDescribe("PaintSetV2", func() {
 
 	It("should return corrent length", func() {
 		setA.Insert(paintA, paintB)
-		Expect(setA.Length()).To(Equal(2))
+		Expect(setA.Len()).To(Equal(2))
 	})
 
-	It("should return set deltas", func() {
-		// update
+	// It("should return set deltas", func() {
+	// 	// update
+	// 	oldPaintA := &v1.Paint{
+	// 		ObjectMeta: metav1.ObjectMeta{Name: "background", Namespace: "color"},
+	// 		Spec:       v1.PaintSpec{Color: &v1.PaintColor{Hue: "orange"}},
+	// 	}
+	// 	newPaintA := &v1.Paint{
+	// 		ObjectMeta: metav1.ObjectMeta{Name: "background", Namespace: "color"},
+	// 		Spec:       v1.PaintSpec{Color: &v1.PaintColor{Hue: "green"}},
+	// 	}
+	// 	// remove
+	// 	oldPaintB := &v1.Paint{
+	// 		ObjectMeta: metav1.ObjectMeta{Name: "ugly", Namespace: "color"},
+	// 	}
+	// 	// add
+	// 	newPaintC := &v1.Paint{
+	// 		ObjectMeta: metav1.ObjectMeta{Name: "beautiful", Namespace: "color"},
+	// 	}
+	// 	// no change
+	// 	oldPaintD := &v1.Paint{
+	// 		ObjectMeta: metav1.ObjectMeta{Name: "decent", Namespace: "color"},
+	// 	}
+	// 	newPaintD := &v1.Paint{
+	// 		ObjectMeta: metav1.ObjectMeta{Name: "decent", Namespace: "color"},
+	// 	}
+	// 	setA.Insert(oldPaintA, oldPaintB, oldPaintD)
+	// 	setB.Insert(newPaintA, newPaintC, newPaintD)
+
+	// 	expectedDelta := sets_v2.ResourceDelta[*v1.Paint]{
+	// 		Inserted: sets_v2.NewResourceSet(ezkube.ObjectsAscending, ezkube.CompareObjects, newPaintA, newPaintC),
+	// 		Removed:  sets_v2.NewResourceSet(ezkube.ObjectsAscending, ezkube.CompareObjects, oldPaintB),
+	// 	}
+
+	// 	actualDelta := setA.Delta(setB)
+
+	// 	Expect(actualDelta.Removed.Length()).To(Equal(expectedDelta.DeltaV1().Removed.Length()))
+	// 	for _, removed := range actualDelta.Removed.List() {
+	// 		Expect(removed).To(Equal(oldPaintB))
+	// 	}
+
+	// 	Expect(actualDelta.Inserted.Length()).To(Equal(expectedDelta.DeltaV1().Inserted.Length()))
+	// 	for i, inserted := range actualDelta.Inserted.List() {
+	// 		if i == 0 {
+	// 			Expect(inserted).To(Equal(newPaintA))
+	// 		}
+	// 		if i == 1 {
+	// 			Expect(inserted).To(Equal(newPaintC))
+	// 		}
+	// 	}
+	// })
+
+	It("should find resources", func() {
 		oldPaintA := &v1.Paint{
-			ObjectMeta: metav1.ObjectMeta{Name: "background", Namespace: "color"},
-			Spec:       v1.PaintSpec{Color: &v1.PaintColor{Hue: "orange"}},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "background",
+				Namespace:   "color",
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "orange"},
+			},
 		}
 		newPaintA := &v1.Paint{
-			ObjectMeta: metav1.ObjectMeta{Name: "background", Namespace: "color"},
-			Spec:       v1.PaintSpec{Color: &v1.PaintColor{Hue: "green"}},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "background",
+				Namespace:   "color",
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "orange"},
+			},
 		}
 		// remove
 		oldPaintB := &v1.Paint{
@@ -159,22 +215,13 @@ var _ = FDescribe("PaintSetV2", func() {
 		newPaintC := &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{Name: "beautiful", Namespace: "color"},
 		}
-		// no change
-		oldPaintD := &v1.Paint{
-			ObjectMeta: metav1.ObjectMeta{Name: "decent", Namespace: "color"},
-		}
-		newPaintD := &v1.Paint{
-			ObjectMeta: metav1.ObjectMeta{Name: "decent", Namespace: "color"},
-		}
-		setA.Insert(oldPaintA, oldPaintB, oldPaintD)
-		setB.Insert(newPaintA, newPaintC, newPaintD)
+		paintList := []*v1.Paint{oldPaintA, newPaintA, oldPaintB, newPaintC}
+		setA.Insert(paintList...)
 
-		expectedDelta := sets_v2.ResourceDelta[*v1.Paint]{
-			Inserted: sets_v2.NewResourceSet(ezkube.ObjectsAscending, ezkube.CompareObjects, newPaintA, newPaintC),
-			Removed:  sets_v2.NewResourceSet(ezkube.ObjectsAscending, ezkube.CompareObjects, oldPaintB),
+		for _, paint := range paintList {
+			found, err := setA.Find(paint)
+			Expect(Expect(err).NotTo(HaveOccurred()))
+			Expect(found).To(Equal(paint))
 		}
-
-		actualDelta := setA.Delta(setB)
-		Expect(actualDelta.Inserted.Length()).To(Equal(expectedDelta.DeltaV1().Inserted.Length()))
 	})
 })

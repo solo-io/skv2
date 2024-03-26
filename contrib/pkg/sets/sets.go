@@ -28,7 +28,6 @@ func TypedKey(id ezkube.ResourceId) string {
 type ResourceSet interface {
 	Keys() sets.String
 	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
-	UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	Map() Resources
 	Insert(resource ...ezkube.ResourceId)
 	Equal(set ResourceSet) bool
@@ -79,12 +78,6 @@ func (t *threadSafeResourceSet) List(filterResource ...func(ezkube.ResourceId) b
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.List(filterResource...)
-}
-
-func (t *threadSafeResourceSet) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
-	t.lock.RLock()
-	defer t.lock.RUnlock()
-	return t.set.UnsortedList(filterResource...)
 }
 
 func (t *threadSafeResourceSet) Map() Resources {

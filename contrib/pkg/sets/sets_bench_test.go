@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -32,11 +31,17 @@ func BenchmarkResourcesSet100000(b *testing.B) { benchmarkResourcesSet(100000, b
 func benchmarkResourcesSet(count int, b *testing.B) {
 	resources := make([]*things_test_io_v1.Paint, count)
 	for i := 0; i < count; i++ {
+		clusterName := ""
+		if i%3 == 0 {
+			clusterName = "cluster-2"
+		} else {
+			clusterName = "cluster-1"
+		}
 		resources[i] = &things_test_io_v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:              fmt.Sprintf("name-%d", i),
 				Namespace:         fmt.Sprintf("namespace-%d", i),
-				Annotations:       map[string]string{ezkube.ClusterAnnotation: "random-cluster"},
+				Annotations:       map[string]string{ezkube.ClusterAnnotation: clusterName},
 				CreationTimestamp: metav1.Time{Time: metav1.Now().Time.Add(time.Duration(i))},
 			},
 		}
@@ -44,7 +49,7 @@ func benchmarkResourcesSet(count int, b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		// s := v1sets.NewPaintSet(ezkube.CreationTimestampAscending, ezkube.CreationTimestampsCompare)
-		s := v2sets.NewResourceSet[*things_test_io_v1.Paint](ezkube.ObjectsAscending, ezkube.CompareObjects)
+		s := v2sets.NewResourceSet[*things_test_io_v1.Paint](ezkube.ResourceIdsCompare)
 		s.Insert(resources...)
 
 		// SortByCreationTime(l) // only for map implementation
@@ -68,8 +73,12 @@ const filterAfter = 19999
 
 // skip iterating resources > 20001
 func filterResource(resource *things_test_io_v1.Paint) bool {
-	i, _ := strconv.Atoi(strings.Split(resource.GetName(), "-")[1])
-	return i > filterAfter
+	// i, _ := strconv.Atoi(strings.Split(resource.GetName(), "-")[1])
+	// return i > filterAfter
+	if ezkube.GetClusterName(resource) == "cluster-1" {
+		return false
+	}
+	return true
 }
 
 // SortByCreationTime accepts a slice of client.Object instances and sorts it by creation timestamp in ascending order.

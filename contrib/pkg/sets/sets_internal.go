@@ -134,15 +134,11 @@ func (r Resources) Map() map[string]ezkube.ResourceId {
 // The set is sorted based on the sortFunc. If sortFunc is nil, the set will be unsorted.
 func (r *Resources) Insert(resources ...ezkube.ResourceId) {
 	for _, resource := range resources {
-		insertIndex := sort.Search(r.Length(), func(i int) bool { return r.sortFunc(resource, r.set[i]) })
+		insertIndex := sort.Search(r.Length(), func(i int) bool { return r.compareFunc(resource, r.set[i]) < 0 })
 
 		// if the resource is already in the set, replace it
 		if insertIndex < len(r.set) && r.compareFunc(resource, r.set[insertIndex]) == 0 {
 			r.set[insertIndex] = resource
-			return
-		}
-		if r.sortFunc == nil {
-			r.set = append(r.set, resource)
 			return
 		}
 
@@ -263,7 +259,7 @@ func (r1 Resources) Intersection(r2 Resources) Resources {
 // Has returns true if and only if item is contained in the set.
 func (r *Resources) Has(item ezkube.ResourceId) bool {
 	i := sort.Search(r.Length(), func(i int) bool {
-		return ezkube.CompareResourceIds(r.set[i], item) >= 0
+		return r.compareFunc(r.set[i], item) >= 0
 	})
 	return i < r.Length() && r.compareFunc(r.set[i], item) == 0
 }
