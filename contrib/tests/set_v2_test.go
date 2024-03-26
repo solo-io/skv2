@@ -12,8 +12,8 @@ import (
 
 var _ = FDescribe("PaintSetV2", func() {
 	var (
-		setA, setB             sets_v2.ResourceSet[*v1.Paint]
-		paintA, paintB, paintC *v1.Paint
+		setA, setB                     sets_v2.ResourceSet[*v1.Paint]
+		paintA, paintBCluster2, paintC *v1.Paint
 	)
 
 	BeforeEach(func() {
@@ -22,7 +22,7 @@ var _ = FDescribe("PaintSetV2", func() {
 		paintA = &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{Name: "nameA", Namespace: "nsA"},
 		}
-		paintB = &v1.Paint{
+		paintBCluster2 = &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{Name: "nameB", Namespace: "nsB"},
 		}
 		paintC = &v1.Paint{
@@ -33,8 +33,8 @@ var _ = FDescribe("PaintSetV2", func() {
 	It("should insert", func() {
 		setA.Insert(paintA)
 		Expect(setA.Has(paintA)).To(BeTrue())
-		setA.Insert(paintB, paintC)
-		Expect(setA.Has(paintB)).To(BeTrue())
+		setA.Insert(paintBCluster2, paintC)
+		Expect(setA.Has(paintBCluster2)).To(BeTrue())
 		Expect(setA.Has(paintC)).To(BeTrue())
 		Expect(setA.Len()).To(Equal(3))
 	})
@@ -42,35 +42,35 @@ var _ = FDescribe("PaintSetV2", func() {
 	It("should return set existence", func() {
 		setA.Insert(paintA)
 		Expect(setA.Has(paintA)).To(BeTrue())
-		Expect(setA.Has(paintB)).To(BeFalse())
-		setA.Insert(paintB, paintC)
+		Expect(setA.Has(paintBCluster2)).To(BeFalse())
+		setA.Insert(paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
-		Expect(setA.Has(paintB)).To(BeTrue())
+		Expect(setA.Has(paintBCluster2)).To(BeTrue())
 		Expect(setA.Has(paintC)).To(BeTrue())
 	})
 
 	It("should return set equality", func() {
-		setB.Insert(paintA, paintB, paintC)
+		setB.Insert(paintA, paintBCluster2, paintC)
 		setA.Insert(paintA)
 		Expect(setA.Equal(setB)).To(BeFalse())
-		setA.Insert(paintC, paintB)
+		setA.Insert(paintC, paintBCluster2)
 		Expect(setA.Equal(setB)).To(BeTrue())
 	})
 
 	It("should delete", func() {
-		setA.Insert(paintA, paintB, paintC)
+		setA.Insert(paintA, paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
 		setA.Delete(paintA)
 		Expect(setA.Has(paintA)).To(BeFalse())
 	})
 
 	It("should filter List", func() {
-		setA.Insert(paintA, paintB, paintC)
+		setA.Insert(paintA, paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
 
 		for i, filtered := range setA.List(func(p *v1.Paint) bool { return p.GetName() == "nameA" }) {
 			if i == 1 {
-				Expect(filtered).To(Equal(paintB))
+				Expect(filtered).To(Equal(paintBCluster2))
 			}
 			if i == 2 {
 				Expect(filtered).To(Equal(paintC))
@@ -79,7 +79,7 @@ var _ = FDescribe("PaintSetV2", func() {
 	})
 
 	It("should double filter List", func() {
-		setA.Insert(paintA, paintB, paintC)
+		setA.Insert(paintA, paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
 		for _, filtered := range setA.List(func(p *v1.Paint) bool {
 			return p.Name == "nameA"
@@ -91,20 +91,20 @@ var _ = FDescribe("PaintSetV2", func() {
 	})
 
 	It("should union two sets and return new set", func() {
-		setA.Insert(paintA, paintB)
-		setB.Insert(paintA, paintB, paintC)
+		setA.Insert(paintA, paintBCluster2)
+		setB.Insert(paintA, paintBCluster2, paintC)
 		unionSet := setA.Union(setB)
 		Expect(unionSet.Len()).To(Equal(3))
 		Expect(unionSet.Has(paintA)).To(BeTrue())
-		Expect(unionSet.Has(paintB)).To(BeTrue())
+		Expect(unionSet.Has(paintBCluster2)).To(BeTrue())
 		Expect(unionSet.Has(paintC)).To(BeTrue())
 		Expect(unionSet).ToNot(BeIdenticalTo(setA))
 		Expect(unionSet).ToNot(BeIdenticalTo(setB))
 	})
 
 	It("should take the difference of two sets and return new set", func() {
-		setA.Insert(paintA, paintB)
-		setB.Insert(paintA, paintB, paintC)
+		setA.Insert(paintA, paintBCluster2)
+		setB.Insert(paintA, paintBCluster2, paintC)
 		differenceA := setA.Difference(setB)
 		Expect(differenceA.Len()).To(Equal(0))
 		Expect(differenceA.Map()).To(BeEmpty())
@@ -117,27 +117,27 @@ var _ = FDescribe("PaintSetV2", func() {
 	})
 
 	It("should take the intersection of two sets and return new set", func() {
-		setA.Insert(paintA, paintB)
-		setB.Insert(paintA, paintB, paintC)
+		setA.Insert(paintA, paintBCluster2)
+		setB.Insert(paintA, paintBCluster2, paintC)
 		intersectionA := setA.Intersection(setB)
 		Expect(intersectionA.Has(paintA)).To(BeTrue())
-		Expect(intersectionA.Has(paintB)).To(BeTrue())
+		Expect(intersectionA.Has(paintBCluster2)).To(BeTrue())
 		Expect(intersectionA.Len()).To(Equal(2))
 		Expect(intersectionA.Map()).To(HaveKeyWithValue(sets.Key(paintA), paintA))
-		Expect(intersectionA.Map()).To(HaveKeyWithValue(sets.Key(paintB), paintB))
+		Expect(intersectionA.Map()).To(HaveKeyWithValue(sets.Key(paintBCluster2), paintBCluster2))
 		Expect(intersectionA).ToNot(BeIdenticalTo(setA))
 	})
 
 	// It("should correctly match two sets", func() {
-	// 	setA.Insert(paintA, paintB)
-	// 	setB.Insert(paintA, paintB)
+	// 	setA.Insert(paintA, paintBCluster2)
+	// 	setB.Insert(paintA, paintBCluster2)
 	// 	Expect(setA).To(Equal(setB))
 	// 	setB.Insert(paintC)
 	// 	Expect(setA).ToNot(Equal(setB))
 	// })
 
 	It("should return corrent length", func() {
-		setA.Insert(paintA, paintB)
+		setA.Insert(paintA, paintBCluster2)
 		Expect(setA.Len()).To(Equal(2))
 	})
 
@@ -222,6 +222,58 @@ var _ = FDescribe("PaintSetV2", func() {
 			found, err := setA.Find(paint)
 			Expect(Expect(err).NotTo(HaveOccurred()))
 			Expect(found).To(Equal(paint))
+		}
+	})
+
+	It("should sort resources first by cluster, then by namespace, then by name", func() {
+		paintAAcluster1 := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "a",
+				Namespace:   "a",
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-1"},
+			},
+		}
+		paintABcluster1 := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "a",
+				Namespace:   "b",
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-1"},
+			},
+		}
+		paintBBcluster1 := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "b",
+				Namespace:   "b",
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-1"},
+			},
+		}
+		paintACluster2 := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "a",
+				Namespace:   "c",
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-2"},
+			},
+		}
+		paintBCluster2 := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "b",
+				Namespace:   "c",
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-2"},
+			},
+		}
+		expectedOrder := []*v1.Paint{
+			paintAAcluster1, paintABcluster1, paintBBcluster1,
+			paintACluster2, paintBCluster2,
+		}
+		setA.Insert(expectedOrder...)
+
+		var paintList []*v1.Paint
+		for _, paint := range setA.List() {
+			paintList = append(paintList, paint)
+		}
+
+		for i, paint := range expectedOrder {
+			Expect(paintList[i]).To(Equal(paint))
 		}
 	})
 })

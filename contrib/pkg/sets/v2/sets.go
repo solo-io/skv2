@@ -25,10 +25,10 @@ type ResourceSet[T client.Object] interface {
 	Insert(resource ...T)
 	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(set ResourceSet[T]) bool
-	// Check if the set contains the resource. Uses the compare func to determine equality.
+	// Check if the set contains the resource.
 	Has(resource T) bool
-	// Delete the matching resource. Uses the compare func to determine equality.
-	Delete(resource T)
+	// Delete the matching resource.
+	Delete(resource ezkube.ResourceId)
 	// Return the union with the provided set
 	Union(set ResourceSet[T]) ResourceSet[T]
 	// Return the difference with the provided set
@@ -157,13 +157,16 @@ func (s *resourceSet[T]) Equal(
 	return s.Generic().Equal(set.Generic())
 }
 
-func (s *resourceSet[T]) Delete(resource T) {
+func (s *resourceSet[T]) Delete(resource ezkube.ResourceId) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
+
+	desired_key := sk_sets.Key(resource)
 	i := sort.Search(len(s.set), func(i int) bool {
-		return s.compareFunc(s.set[i], resource) >= 0
+		return sk_sets.Key(s.set[i]) >= desired_key
 	})
-	if i != len(s.set) && s.compareFunc(s.set[i], resource) == 0 {
+	found := i < len(s.set) && sk_sets.Key(s.set[i]) == desired_key
+	if found {
 		s.set = slices.Delete(s.set, i, i+1)
 	}
 }

@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/skv2/pkg/controllerutils"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -178,81 +177,32 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 // CompareResourceId returns an integer comparing two ResourceIds lexicographically.
 // The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
 // a, b must be of type ResourceId
-func CompareResourceIds(a, b interface{}) int {
-	aa, aok := a.(ResourceId)
-	bb, bok := b.(ResourceId)
-	if !aok {
-		panic("a is not a ResourceId")
-	}
-	if !bok {
-		panic("b is not a ResourceId")
-	}
-	if resourceIdsEqual(aa, bb) {
+func ResourceIdsCompare(a, b client.Object) int {
+	if resourceIdsEqual(a, b) {
 		return 0
 	}
-	if resourceIdsLessThan(aa, bb) {
+	if resourceIdsLessThan(a, b) {
 		return -1
 	}
 	return 1
 }
 
-func ResourceIdsAscending(a, b interface{}) bool {
-	aa, aok := a.(ResourceId)
-	bb, bok := b.(ResourceId)
-	if !aok {
-		panic("a is not a ResourceId")
-	}
-	if !bok {
-		panic("b is not a ResourceId")
-	}
-	return resourceIdsLessThan(aa, bb)
+func resourceIdsEqual(a, b client.Object) bool {
+	return a.GetName() == b.GetName() && a.GetNamespace() == b.GetNamespace() && GetClusterName(a) == GetClusterName(b)
 }
 
-func resourceIdsEqual(a, b ResourceId) bool {
-	return a.GetName() == b.GetName() && a.GetNamespace() == b.GetNamespace()
-}
-
-func resourceIdsLessThan(a, b ResourceId) bool {
-	// namespace is the primary sort key
-	if a.GetNamespace() > b.GetNamespace() {
-		return false
-	}
-	// name is the secondary sort key
-	if a.GetName() < b.GetName() {
-		return true
-	}
-	return false
-}
-
-// CompareResourceId returns an integer comparing two ResourceIds lexicographically.
-// The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
-// a, b must be of type ResourceId
-func CompareObjects(a, b client.Object) int {
-	if controllerutils.ObjectsEqual(a, b) {
-		return 0
-	}
-	if objectsLessThan(a, b) {
-		return -1
-	}
-	return 1
-}
-
-func ObjectsAscending(a, b client.Object) bool {
-	return objectsLessThan(a, b)
-}
-
-func objectsLessThan(a, b client.Object) bool {
+func resourceIdsLessThan(a, b client.Object) bool {
 	// cluster name is the primary sort key
 	if GetClusterName(a) > GetClusterName(b) {
 		return false
 	}
 	// namespace is the secondary sort key
-	if a.GetNamespace() < b.GetNamespace() {
-		return true
+	if a.GetNamespace() > b.GetNamespace() {
+		return false
 	}
-	// name is the secondary sort key
-	if a.GetName() < b.GetName() {
-		return true
+	// name is the tertiary sort key
+	if a.GetName() > b.GetName() {
+		return false
 	}
-	return false
+	return true
 }
