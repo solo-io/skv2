@@ -1,7 +1,6 @@
 package ezkube
 
 import (
-	"hash/fnv"
 	"strings"
 	"sync"
 
@@ -151,37 +150,6 @@ func KeyWithSeparator(id ResourceId, separator string) string {
 		b.WriteString(deprecatedClusterId.GetClusterName())
 	}
 	return b.String()
-}
-
-func HashedKeyWithSeparator(id ResourceId, separator string) uint64 {
-	hasher := fnv.New64a()
-	if id == nil {
-		hasher.Write([]byte("<unknown>"))
-		return hasher.Sum64()
-	}
-
-	var clusterName string
-
-	// handle the possibility that clusterName could be set either as an annotation (new way)
-	// or as a field (old way pre-k8s 1.25)
-	if clusterId, ok := id.(ClusterResourceId); ok {
-		clusterNameByAnnotation := GetClusterName(clusterId)
-		if clusterNameByAnnotation != "" {
-			clusterName = clusterNameByAnnotation
-		}
-	} else if deprecatedClusterId, ok := id.(interface{ GetClusterName() string }); ok {
-		clusterName = deprecatedClusterId.GetClusterName()
-	}
-	b := make([]byte, 0, len(id.GetName())+len(id.GetNamespace())+len(separator)+len(clusterName))
-	b = append(b, id.GetName()...)
-	b = append(b, separator...)
-	b = append(b, id.GetNamespace()...)
-	b = append(b, separator...)
-	b = append(b, clusterName...)
-	hasher.Write(b)
-
-	// Join parts with separator and compute hash
-	return hasher.Sum64()
 }
 
 // ResourceIdFromKeyWithSeparator converts a key back into a ResourceId, using the given separator.
