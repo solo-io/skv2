@@ -171,7 +171,7 @@ func (s *customResourceDefinitionSet) Union(set CustomResourceDefinitionSet) Cus
 	if s == nil {
 		return set
 	}
-	return NewCustomResourceDefinitionSet(append(s.List(), set.List()...)...)
+	return &customResourceDefinitionMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
 }
 
 func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
@@ -233,5 +233,203 @@ func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
 	if s == nil {
 		return nil
 	}
-	return &customResourceDefinitionSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &customResourceDefinitionMergedSet{sets: []sksets.ResourceSet{s.Generic()}}
+}
+
+type customResourceDefinitionMergedSet struct {
+	sets []sksets.ResourceSet
+}
+
+func NewCustomResourceDefinitionMergedSet(customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition) CustomResourceDefinitionSet {
+	return &customResourceDefinitionMergedSet{sets: []sksets.ResourceSet{makeGenericCustomResourceDefinitionSet(customResourceDefinitionList)}}
+}
+
+func NewCustomResourceDefinitionMergedSetFromList(customResourceDefinitionList *apiextensions_k8s_io_v1.CustomResourceDefinitionList) CustomResourceDefinitionSet {
+	list := make([]*apiextensions_k8s_io_v1.CustomResourceDefinition, 0, len(customResourceDefinitionList.Items))
+	for idx := range customResourceDefinitionList.Items {
+		list = append(list, &customResourceDefinitionList.Items[idx])
+	}
+	return &customResourceDefinitionMergedSet{sets: []sksets.ResourceSet{makeGenericCustomResourceDefinitionSet(list)}}
+}
+
+func (s *customResourceDefinitionMergedSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	toRet := sets.String{}
+	for _, set := range s.sets {
+		toRet = toRet.Union(set.Keys())
+	}
+	return toRet
+}
+
+func (s *customResourceDefinitionMergedSet) List(filterResource ...func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+		})
+	}
+	customResourceDefinitionList := []*apiextensions_k8s_io_v1.CustomResourceDefinition{}
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
+		for _, obj := range set.List(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
+			customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+		}
+	}
+	return customResourceDefinitionList
+}
+
+func (s *customResourceDefinitionMergedSet) UnsortedList(filterResource ...func(*apiextensions_k8s_io_v1.CustomResourceDefinition) bool) []*apiextensions_k8s_io_v1.CustomResourceDefinition {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+		})
+	}
+	customResourceDefinitionList := []*apiextensions_k8s_io_v1.CustomResourceDefinition{}
+	tracker := map[ezkube.ResourceId]bool{}
+	for i := len(s.sets) - 1; i >= 0; i-- {
+		set := s.sets[i]
+		for _, obj := range set.UnsortedList(genericFilters...) {
+			if tracker[obj] {
+				continue
+			}
+			tracker[obj] = true
+			customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
+		}
+	}
+	return customResourceDefinitionList
+}
+
+func (s *customResourceDefinitionMergedSet) Map() map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition{}
+	for _, set := range s.sets {
+		for k, v := range set.Map() {
+			newMap[k] = v.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
+		}
+	}
+	return newMap
+}
+
+func (s *customResourceDefinitionMergedSet) Insert(
+	customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition,
+) {
+	if s == nil {
+	}
+	if len(s.sets) == 0 {
+		s.sets = append(s.sets, makeGenericCustomResourceDefinitionSet(customResourceDefinitionList))
+	}
+	for _, obj := range customResourceDefinitionList {
+		inserted := false
+		for _, set := range s.sets {
+			if set.Has(obj) {
+				set.Insert(obj)
+				inserted = true
+				break
+			}
+		}
+		if !inserted {
+			s.sets[0].Insert(obj)
+		}
+	}
+}
+
+func (s *customResourceDefinitionMergedSet) Has(customResourceDefinition ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	for _, set := range s.sets {
+		if set.Has(customResourceDefinition) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *customResourceDefinitionMergedSet) Equal(
+	customResourceDefinitionSet CustomResourceDefinitionSet,
+) bool {
+	panic("unimplemented")
+}
+
+func (s *customResourceDefinitionMergedSet) Delete(CustomResourceDefinition ezkube.ResourceId) {
+	for _, set := range s.sets {
+		set.Delete(CustomResourceDefinition)
+	}
+}
+
+func (s *customResourceDefinitionMergedSet) Union(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
+	if s == nil {
+		return set
+	}
+	return &customResourceDefinitionMergedSet{sets: append(s.sets, set.Generic())}
+}
+
+func (s *customResourceDefinitionMergedSet) Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
+	panic("unimplemented")
+}
+
+func (s *customResourceDefinitionMergedSet) Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
+	panic("unimplemented")
+}
+
+func (s *customResourceDefinitionMergedSet) Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1.CustomResourceDefinition, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find CustomResourceDefinition %v", sksets.Key(id))
+	}
+
+	var err error
+	for _, set := range s.sets {
+		var obj ezkube.ResourceId
+		obj, err = set.Find(&apiextensions_k8s_io_v1.CustomResourceDefinition{}, id)
+		if err == nil {
+			return obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition), nil
+		}
+	}
+
+	return nil, err
+}
+
+func (s *customResourceDefinitionMergedSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	totalLen := 0
+	for _, set := range s.sets {
+		totalLen += set.Length()
+	}
+	return totalLen
+}
+
+func (s *customResourceDefinitionMergedSet) Generic() sksets.ResourceSet {
+	panic("unimplemented")
+}
+
+func (s *customResourceDefinitionMergedSet) Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta {
+	panic("unimplemented")
+}
+
+func (s *customResourceDefinitionMergedSet) Clone() CustomResourceDefinitionSet {
+	if s == nil {
+		return nil
+	}
+	return &customResourceDefinitionMergedSet{sets: s.sets[:]}
 }
