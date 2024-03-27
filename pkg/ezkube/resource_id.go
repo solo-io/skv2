@@ -174,35 +174,16 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 	}
 }
 
-// CompareResourceId returns an integer comparing two ResourceIds lexicographically.
+// ResourceIdsCompare returns an integer comparing two ResourceIds lexicographically.
 // The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
-// a, b must be of type ResourceId
-func ResourceIdsCompare(a, b client.Object) int {
-	if resourceIdsEqual(a, b) {
+func ResourceIdsCompare(a, b ResourceId) int {
+	key_a := KeyWithSeparator(a, ".")
+	key_b := KeyWithSeparator(b, ".")
+	if key_a == key_b {
 		return 0
 	}
-	if resourceIdsLessThan(a, b) {
+	if key_a < key_b {
 		return -1
 	}
 	return 1
-}
-
-func resourceIdsEqual(a, b client.Object) bool {
-	return a.GetName() == b.GetName() && a.GetNamespace() == b.GetNamespace() && GetClusterName(a) == GetClusterName(b)
-}
-
-func resourceIdsLessThan(a, b client.Object) bool {
-	// cluster name is the primary sort key
-	if GetClusterName(a) > GetClusterName(b) {
-		return false
-	}
-	// namespace is the secondary sort key
-	if a.GetNamespace() > b.GetNamespace() {
-		return false
-	}
-	// name is the tertiary sort key
-	if a.GetName() > b.GetName() {
-		return false
-	}
-	return true
 }

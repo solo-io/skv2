@@ -3,7 +3,6 @@ package sets_v2
 import (
 	"iter"
 	"slices"
-	"sort"
 	"sync"
 
 	sk_sets "github.com/solo-io/skv2/contrib/pkg/sets"
@@ -46,7 +45,7 @@ type ResourceSet[T client.Object] interface {
 	// Clone returns a deep copy of the set
 	Clone() ResourceSet[T]
 	// Get the compare function used by the set
-	GetCompareFunc() func(a, b client.Object) int
+	GetCompareFunc() func(a, b ezkube.ResourceId) int
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -67,11 +66,11 @@ func (r *ResourceDelta[T]) DeltaV1() sk_sets.ResourceDelta {
 type resourceSet[T client.Object] struct {
 	lock        sync.RWMutex
 	set         []T
-	compareFunc func(a, b client.Object) int
+	compareFunc func(a, b ezkube.ResourceId) int
 }
 
 func NewResourceSet[T client.Object](
-	compareFunc func(a, b client.Object) int,
+	compareFunc func(a, b ezkube.ResourceId) int,
 	resources ...T,
 ) ResourceSet[T] {
 	rs := &resourceSet[T]{
@@ -127,14 +126,15 @@ func (s *resourceSet[T]) Insert(resources ...T) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	for _, resource := range resources {
-		insertIndex := sort.Search(len(s.set), func(i int) bool { return s.compareFunc(resource, s.set[i]) < 0 })
-
-		// if the resource is already in the set, replace it
-		if insertIndex < len(s.set) && s.compareFunc(resource, s.set[insertIndex]) == 0 {
+		insertIndex, found := slices.BinarySearchFunc(
+			s.set,
+			resource,
+			func(a, b T) int { return s.compareFunc(a, b) },
+		)
+		if found {
 			s.set[insertIndex] = resource
-			return
+			continue
 		}
-
 		// insert the resource at the determined index
 		s.set = slices.Insert(s.set, insertIndex, resource)
 	}
@@ -143,10 +143,12 @@ func (s *resourceSet[T]) Insert(resources ...T) {
 func (s *resourceSet[T]) Has(resource T) bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	i := sort.Search(len(s.set), func(i int) bool {
-		return s.compareFunc(s.set[i], resource) >= 0
-	})
-	return i < len(s.set) && s.compareFunc(s.set[i], resource) == 0
+	_, found := slices.BinarySearchFunc(
+		s.set,
+		resource,
+		func(a, b T) int { return s.compareFunc(a, b) },
+	)
+	return found
 }
 
 func (s *resourceSet[T]) Equal(
@@ -161,11 +163,11 @@ func (s *resourceSet[T]) Delete(resource ezkube.ResourceId) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	desired_key := sk_sets.Key(resource)
-	i := sort.Search(len(s.set), func(i int) bool {
-		return sk_sets.Key(s.set[i]) >= desired_key
-	})
-	found := i < len(s.set) && sk_sets.Key(s.set[i]) == desired_key
+	i, found := slices.BinarySearchFunc(
+		s.set,
+		resource,
+		func(a T, b ezkube.ResourceId) int { return s.compareFunc(a, b) },
+	)
 	if found {
 		s.set = slices.Delete(s.set, i, i+1)
 	}
@@ -214,20 +216,21 @@ func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 	return result
 }
 
-// this is only possible when the compare func is ezkube.ResourceIdsCompare
-// otherwise the set won't be sorted to allow for binary search
 func (s *resourceSet[T]) Find(resource ezkube.ResourceId) (T, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	desired_key := sk_sets.Key(resource)
-	i := sort.Search(len(s.set), func(i int) bool {
-		return sk_sets.Key(s.set[i]) >= desired_key
-	})
-	var found T
-	if i < len(s.set) && sk_sets.Key(s.set[i]) == desired_key {
-		return s.set[i], nil
+
+	insertIndex, found := slices.BinarySearchFunc(
+		s.set,
+		resource,
+		func(a T, b ezkube.ResourceId) int { return s.compareFunc(a, b) },
+	)
+	if found {
+		return s.set[insertIndex], nil
 	}
-	return found, sk_sets.NotFoundErr(found, resource)
+
+	var r T
+	return r, sk_sets.NotFoundErr(r, resource)
 }
 
 func (s *resourceSet[T]) Len() int {
@@ -293,6 +296,6 @@ func (s *resourceSet[T]) Generic() sk_sets.ResourceSet {
 	return set
 }
 
-func (s *resourceSet[T]) GetCompareFunc() func(a, b client.Object) int {
+func (s *resourceSet[T]) GetCompareFunc() func(a, b ezkube.ResourceId) int {
 	return s.compareFunc
 }

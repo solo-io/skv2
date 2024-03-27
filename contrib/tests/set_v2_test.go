@@ -39,6 +39,15 @@ var _ = FDescribe("PaintSetV2", func() {
 		Expect(setA.Len()).To(Equal(3))
 	})
 
+	When("inserting an existing resource", func() {
+		It("should overwrite the existing resource", func() {
+			setA.Insert(paintA)
+			setA.Insert(paintBCluster2)
+			setA.Insert(paintA)
+			Expect(setA.Len()).To(Equal(2))
+		})
+	})
+
 	It("should return set existence", func() {
 		setA.Insert(paintA)
 		Expect(setA.Has(paintA)).To(BeTrue())
@@ -61,6 +70,7 @@ var _ = FDescribe("PaintSetV2", func() {
 		setA.Insert(paintA, paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
 		setA.Delete(paintA)
+		Expect(setA.Len()).To(Equal(2))
 		Expect(setA.Has(paintA)).To(BeFalse())
 	})
 
@@ -207,64 +217,74 @@ var _ = FDescribe("PaintSetV2", func() {
 				Annotations: map[string]string{ezkube.ClusterAnnotation: "orange"},
 			},
 		}
-		// remove
 		oldPaintB := &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{Name: "ugly", Namespace: "color"},
 		}
-		// add
 		newPaintC := &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{Name: "beautiful", Namespace: "color"},
 		}
-		paintList := []*v1.Paint{oldPaintA, newPaintA, oldPaintB, newPaintC}
+		paintList := []*v1.Paint{oldPaintA, newPaintA, oldPaintB, newPaintC, newPaintC}
+		expectedPaintList := []*v1.Paint{newPaintC, oldPaintB, newPaintA}
 		setA.Insert(paintList...)
 
-		for _, paint := range paintList {
+		Expect(setA.Len()).To(Equal(3))
+
+		for _, paint := range expectedPaintList {
 			found, err := setA.Find(paint)
 			Expect(Expect(err).NotTo(HaveOccurred()))
 			Expect(found).To(Equal(paint))
 		}
 	})
 
-	It("should sort resources first by cluster, then by namespace, then by name", func() {
-		paintAAcluster1 := &v1.Paint{
+	It("should sort resources by name.ns.cluster", func() {
+		paintAA1 := &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "a",
 				Namespace:   "a",
-				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-1"},
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "1"},
 			},
 		}
-		paintABcluster1 := &v1.Paint{
+		paintAB1 := &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "a",
 				Namespace:   "b",
-				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-1"},
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "1"},
 			},
 		}
-		paintBBcluster1 := &v1.Paint{
+		paintBB1 := &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "b",
 				Namespace:   "b",
-				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-1"},
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "1"},
 			},
 		}
-		paintACluster2 := &v1.Paint{
+		paintAC2 := &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "a",
 				Namespace:   "c",
-				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-2"},
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "2"},
 			},
 		}
-		paintBCluster2 := &v1.Paint{
+		paintBC2 := &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "b",
 				Namespace:   "c",
-				Annotations: map[string]string{ezkube.ClusterAnnotation: "cluster-2"},
+				Annotations: map[string]string{ezkube.ClusterAnnotation: "2"},
 			},
 		}
-		expectedOrder := []*v1.Paint{
-			paintAAcluster1, paintABcluster1, paintBBcluster1,
-			paintACluster2, paintBCluster2,
+		paintAC := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "a",
+				Namespace: "c",
+			},
 		}
+		paintBC := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "b",
+				Namespace: "c",
+			},
+		}
+		expectedOrder := []*v1.Paint{paintAA1, paintAB1, paintAC, paintAC2, paintBB1, paintBC, paintBC2}
 		setA.Insert(expectedOrder...)
 
 		var paintList []*v1.Paint
