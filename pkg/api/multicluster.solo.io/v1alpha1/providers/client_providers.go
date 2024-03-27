@@ -2,13 +2,11 @@
 
 package v1alpha1
 
-
-
 import (
-    multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 
-    "k8s.io/client-go/rest"
-    "sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -21,28 +19,28 @@ import (
 
 // Provider for KubernetesClusterClient from Clientset
 func KubernetesClusterClientFromClientsetProvider(clients multicluster_solo_io_v1alpha1.Clientset) multicluster_solo_io_v1alpha1.KubernetesClusterClient {
-    return clients.KubernetesClusters()
+	return clients.KubernetesClusters()
 }
 
 // Provider for KubernetesCluster Client from Client
 func KubernetesClusterClientProvider(client client.Client) multicluster_solo_io_v1alpha1.KubernetesClusterClient {
-    return multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client)
+	return multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client)
 }
 
 type KubernetesClusterClientFactory func(client client.Client) multicluster_solo_io_v1alpha1.KubernetesClusterClient
 
 func KubernetesClusterClientFactoryProvider() KubernetesClusterClientFactory {
-    return KubernetesClusterClientProvider
+	return KubernetesClusterClientProvider
 }
 
 type KubernetesClusterClientFromConfigFactory func(cfg *rest.Config) (multicluster_solo_io_v1alpha1.KubernetesClusterClient, error)
 
 func KubernetesClusterClientFromConfigFactoryProvider() KubernetesClusterClientFromConfigFactory {
-    return func(cfg *rest.Config) (multicluster_solo_io_v1alpha1.KubernetesClusterClient, error) {
-        clients, err := multicluster_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
-        if err != nil {
-            return nil, err
-        }
-        return clients.KubernetesClusters(), nil
-    }
+	return func(cfg *rest.Config) (multicluster_solo_io_v1alpha1.KubernetesClusterClient, error) {
+		clients, err := multicluster_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.KubernetesClusters(), nil
+	}
 }

@@ -8,118 +8,118 @@ package controller
 import (
 	"context"
 
-    admissionregistration_k8s_io_v1 "k8s.io/api/admissionregistration/v1"
+	admissionregistration_k8s_io_v1 "k8s.io/api/admissionregistration/v1"
 
-    "github.com/pkg/errors"
-    "github.com/solo-io/skv2/pkg/events"
-    "sigs.k8s.io/controller-runtime/pkg/manager"
-    "sigs.k8s.io/controller-runtime/pkg/predicate"
-    "sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/events"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Handle events for the ValidatingWebhookConfiguration Resource
 // DEPRECATED: Prefer reconciler pattern.
 type ValidatingWebhookConfigurationEventHandler interface {
-    CreateValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
-    UpdateValidatingWebhookConfiguration(old, new *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
-    DeleteValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
-    GenericValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
+	CreateValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
+	UpdateValidatingWebhookConfiguration(old, new *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
+	DeleteValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
+	GenericValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
 }
 
 type ValidatingWebhookConfigurationEventHandlerFuncs struct {
-    OnCreate  func(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
-    OnUpdate  func(old, new *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
-    OnDelete  func(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
-    OnGeneric func(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
+	OnCreate  func(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
+	OnUpdate  func(old, new *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
+	OnDelete  func(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
+	OnGeneric func(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error
 }
 
 func (f *ValidatingWebhookConfigurationEventHandlerFuncs) CreateValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error {
-    if f.OnCreate == nil {
-        return nil
-    }
-    return f.OnCreate(obj)
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
 }
 
 func (f *ValidatingWebhookConfigurationEventHandlerFuncs) DeleteValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error {
-    if f.OnDelete == nil {
-        return nil
-    }
-    return f.OnDelete(obj)
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
 }
 
 func (f *ValidatingWebhookConfigurationEventHandlerFuncs) UpdateValidatingWebhookConfiguration(objOld, objNew *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error {
-    if f.OnUpdate == nil {
-        return nil
-    }
-    return f.OnUpdate(objOld, objNew)
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
 }
 
 func (f *ValidatingWebhookConfigurationEventHandlerFuncs) GenericValidatingWebhookConfiguration(obj *admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration) error {
-    if f.OnGeneric == nil {
-        return nil
-    }
-    return f.OnGeneric(obj)
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
 }
 
 type ValidatingWebhookConfigurationEventWatcher interface {
-    AddEventHandler(ctx context.Context, h ValidatingWebhookConfigurationEventHandler, predicates ...predicate.Predicate) error
+	AddEventHandler(ctx context.Context, h ValidatingWebhookConfigurationEventHandler, predicates ...predicate.Predicate) error
 }
 
 type validatingWebhookConfigurationEventWatcher struct {
-    watcher events.EventWatcher
+	watcher events.EventWatcher
 }
 
 func NewValidatingWebhookConfigurationEventWatcher(name string, mgr manager.Manager) ValidatingWebhookConfigurationEventWatcher {
-    return &validatingWebhookConfigurationEventWatcher{
-        watcher: events.NewWatcher(name, mgr, &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}),
-    }
+	return &validatingWebhookConfigurationEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration{}),
+	}
 }
 
 func (c *validatingWebhookConfigurationEventWatcher) AddEventHandler(ctx context.Context, h ValidatingWebhookConfigurationEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericValidatingWebhookConfigurationHandler{handler: h}
-    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
-        return err
-    }
-    return nil
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
 }
 
 // genericValidatingWebhookConfigurationHandler implements a generic events.EventHandler
 type genericValidatingWebhookConfigurationHandler struct {
-    handler ValidatingWebhookConfigurationEventHandler
+	handler ValidatingWebhookConfigurationEventHandler
 }
 
 func (h genericValidatingWebhookConfigurationHandler) Create(object client.Object) error {
-    obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
-    if !ok {
-        return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)
-    }
-    return h.handler.CreateValidatingWebhookConfiguration(obj)
+	obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
+	if !ok {
+		return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)
+	}
+	return h.handler.CreateValidatingWebhookConfiguration(obj)
 }
 
 func (h genericValidatingWebhookConfigurationHandler) Delete(object client.Object) error {
-    obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
-    if !ok {
-        return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)
-    }
-    return h.handler.DeleteValidatingWebhookConfiguration(obj)
+	obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
+	if !ok {
+		return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)
+	}
+	return h.handler.DeleteValidatingWebhookConfiguration(obj)
 }
 
 func (h genericValidatingWebhookConfigurationHandler) Update(old, new client.Object) error {
-    objOld, ok := old.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
-    if !ok {
-        return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", old)
-    }
-    objNew, ok := new.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
-    if !ok {
-        return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", new)
-    }
-    return h.handler.UpdateValidatingWebhookConfiguration(objOld, objNew)
+	objOld, ok := old.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
+	if !ok {
+		return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", old)
+	}
+	objNew, ok := new.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
+	if !ok {
+		return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", new)
+	}
+	return h.handler.UpdateValidatingWebhookConfiguration(objOld, objNew)
 }
 
 func (h genericValidatingWebhookConfigurationHandler) Generic(object client.Object) error {
-    obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
-    if !ok {
-        return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)
-    }
-    return h.handler.GenericValidatingWebhookConfiguration(obj)
+	obj, ok := object.(*admissionregistration_k8s_io_v1.ValidatingWebhookConfiguration)
+	if !ok {
+		return errors.Errorf("internal error: ValidatingWebhookConfiguration handler received event for %T", object)
+	}
+	return h.handler.GenericValidatingWebhookConfiguration(obj)
 }

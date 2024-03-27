@@ -4,8 +4,9 @@
 package v1
 
 import (
-    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    "k8s.io/apimachinery/pkg/runtime/schema")
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -14,22 +15,22 @@ import (
 
 // GroupVersionKind for Paint
 var PaintGVK = schema.GroupVersionKind{
-    Group: "things.test.io",
-    Version: "v1",
-    Kind: "Paint",
+	Group:   "things.test.io",
+	Version: "v1",
+	Kind:    "Paint",
 }
 
 // Paint is the Schema for the paint API
 type Paint struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec PaintSpec `json:"spec,omitempty"`
-    Status PaintStatus `json:"status,omitempty"`
+	Spec   PaintSpec   `json:"spec,omitempty"`
+	Status PaintStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (Paint)  GVK() schema.GroupVersionKind {
+func (Paint) GVK() schema.GroupVersionKind {
 	return PaintGVK
 }
 
@@ -37,9 +38,9 @@ func (Paint)  GVK() schema.GroupVersionKind {
 
 // PaintList contains a list of Paint
 type PaintList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []Paint `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Paint `json:"items"`
 }
 
 // +genclient
@@ -49,21 +50,21 @@ type PaintList struct {
 
 // GroupVersionKind for ClusterResource
 var ClusterResourceGVK = schema.GroupVersionKind{
-    Group: "things.test.io",
-    Version: "v1",
-    Kind: "ClusterResource",
+	Group:   "things.test.io",
+	Version: "v1",
+	Kind:    "ClusterResource",
 }
 
 // ClusterResource is the Schema for the clusterResource API
 type ClusterResource struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec ClusterResourceSpec `json:"spec,omitempty"`
+	Spec ClusterResourceSpec `json:"spec,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (ClusterResource)  GVK() schema.GroupVersionKind {
+func (ClusterResource) GVK() schema.GroupVersionKind {
 	return ClusterResourceGVK
 }
 
@@ -71,12 +72,12 @@ func (ClusterResource)  GVK() schema.GroupVersionKind {
 
 // ClusterResourceList contains a list of ClusterResource
 type ClusterResourceList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []ClusterResource `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []ClusterResource `json:"items"`
 }
 
 func init() {
-    SchemeBuilder.Register(&Paint{}, &PaintList{})
-    SchemeBuilder.Register(&ClusterResource{}, &ClusterResourceList{})
+	SchemeBuilder.Register(&Paint{}, &PaintList{})
+	SchemeBuilder.Register(&ClusterResource{}, &ClusterResourceList{})
 }

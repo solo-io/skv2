@@ -4,7 +4,7 @@
 package v1beta1
 
 import (
-    . "k8s.io/api/certificates/v1beta1"
+	. "k8s.io/api/certificates/v1beta1"
 )
 
 // CertificateSigningRequestSlice represents a slice of *CertificateSigningRequest

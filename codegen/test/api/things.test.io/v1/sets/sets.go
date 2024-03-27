@@ -4,719 +4,545 @@
 
 package v1sets
 
-
-
 import (
-    things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
+	things_test_io_v1 "github.com/solo-io/skv2/codegen/test/api/things.test.io/v1"
 
-    "github.com/rotisserie/eris"
-    sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-    "github.com/solo-io/skv2/pkg/ezkube"
-    "k8s.io/apimachinery/pkg/util/sets"
-    "sigs.k8s.io/controller-runtime/pkg/client"
-    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/rotisserie/eris"
+	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type PaintSet interface {
 	// Get the set stored keys
-    Keys() sets.String
-    // List of resources stored in the set. Pass an optional filter function to filter on the list.
-    // The filter function should return false to keep the resource, true to drop it.
-    List(filterResource ... func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
-    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-    // The filter function should return false to keep the resource, true to drop it.
-    UnsortedList(filterResource ... func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
-    // Return the Set as a map of key to resource.
-    Map() map[string]*things_test_io_v1.Paint
-    // Insert a resource into the set.
-    Insert(paint ...*things_test_io_v1.Paint)
-    // Compare the equality of the keys in two sets (not the resources themselves)
-    Equal(paintSet PaintSet) bool
-    // Check if the set contains a key matching the resource (not the resource itself)
-    Has(paint ezkube.ResourceId) bool
-    // Delete the key matching the resource
-    Delete(paint  ezkube.ResourceId)
-    // Return the union with the provided set
-    Union(set PaintSet) PaintSet
-    // Return the difference with the provided set
-    Difference(set PaintSet) PaintSet
-    // Return the intersection with the provided set
-    Intersection(set PaintSet) PaintSet
-    // Find the resource with the given ID
-    Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error)
-    // Get the length of the set
-    Length() int
-    // returns the generic implementation of the set
-    Generic() sksets.ResourceSet
-    // returns the delta between this and and another PaintSet
-    Delta(newSet PaintSet) sksets.ResourceDelta
-    // Create a deep copy of the current PaintSet
-    Clone() PaintSet
-    // Get the sort function used by the set
-    GetSortFunc() func(toInsert, existing client.Object) bool
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
+	List(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
+	UnsortedList(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint
+	// Return the Set as a map of key to resource.
+	Map() map[string]*things_test_io_v1.Paint
+	// Insert a resource into the set.
+	Insert(paint ...*things_test_io_v1.Paint)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(paintSet PaintSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(paint ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(paint ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set PaintSet) PaintSet
+	// Return the difference with the provided set
+	Difference(set PaintSet) PaintSet
+	// Return the intersection with the provided set
+	Intersection(set PaintSet) PaintSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another PaintSet
+	Delta(newSet PaintSet) sksets.ResourceDelta
+	// Create a deep copy of the current PaintSet
+	Clone() PaintSet
+	// Get the sort function used by the set
+	GetSortFunc() func(toInsert, existing interface{}) bool
 	// Get the equality function used by the set
-	GetEqualityFunc() func(a, b client.Object) bool
+	GetCompareFunc() func(a, b interface{}) int
 }
 
 func makeGenericPaintSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
-    paintList []*things_test_io_v1.Paint,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	paintList []*things_test_io_v1.Paint,
 ) sksets.ResourceSet {
-    var genericResources []ezkube.ResourceId
-    for _, obj := range paintList {
-        genericResources = append(genericResources, obj)
-    }
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		objToInsert, ok := toInsert.(client.Object)
-		if !ok {
-			objToInsert = &things_test_io_v1.Paint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: toInsert.GetName(),
-					Namespace: toInsert.GetNamespace(),
-				},
-			}
-		}
-		objExisting, ok := existing.(client.Object)
-		if !ok {
-			objExisting = &things_test_io_v1.Paint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: existing.GetName(),
-					Namespace: existing.GetNamespace(),
-				},
-			}
-		}
-		return sortFunc(objToInsert, objExisting)
+	var genericResources []ezkube.ResourceId
+	for _, obj := range paintList {
+		genericResources = append(genericResources, obj)
 	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		objA, ok := a.(client.Object)
-		if !ok {
-			objA = &things_test_io_v1.Paint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: a.GetName(),
-					Namespace: a.GetNamespace(),
-				},
-			}
-		}
-		objB, ok := b.(client.Object)
-		if !ok {
-			objB = &things_test_io_v1.Paint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: b.GetName(),
-					Namespace: b.GetNamespace(),
-				},
-			}
-		}
-		return equalityFunc(objA,objB)
-	}
-    return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type paintSet struct {
-    set sksets.ResourceSet
-    sortFunc func(toInsert, existing client.Object) bool
-    equalityFunc func(a, b client.Object) bool
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
 func NewPaintSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
-    paintList ...*things_test_io_v1.Paint,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	paintList ...*things_test_io_v1.Paint,
 ) PaintSet {
-    return &paintSet{
-        set: makeGenericPaintSet(sortFunc, equalityFunc, paintList),
-        sortFunc: sortFunc,
-        equalityFunc: equalityFunc,
-    }
+	return &paintSet{
+		set:         makeGenericPaintSet(sortFunc, compareFunc, paintList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
 func NewPaintSetFromList(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
-    paintList *things_test_io_v1.PaintList,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	paintList *things_test_io_v1.PaintList,
 ) PaintSet {
-    list := make([]*things_test_io_v1.Paint, 0, len(paintList.Items))
-    for idx := range paintList.Items {
-        list = append(list, &paintList.Items[idx])
-    }
-    return &paintSet{
-        set: makeGenericPaintSet(sortFunc, equalityFunc, list),
-        sortFunc: sortFunc,
-        equalityFunc: equalityFunc,
-    }
+	list := make([]*things_test_io_v1.Paint, 0, len(paintList.Items))
+	for idx := range paintList.Items {
+		list = append(list, &paintList.Items[idx])
+	}
+	return &paintSet{
+		set:         makeGenericPaintSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
 func (s *paintSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-    }
-    return s.Generic().Keys()
+	}
+	return s.Generic().Keys()
 }
 
-func (s *paintSet) List(filterResource ... func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*things_test_io_v1.Paint))
-        })
-    }
+func (s *paintSet) List(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*things_test_io_v1.Paint))
+		})
+	}
 
-    objs := s.Generic().List(genericFilters...)
-    paintList := make([]*things_test_io_v1.Paint, 0, len(objs))
-    for _, obj := range objs {
-        paintList = append(paintList, obj.(*things_test_io_v1.Paint))
-    }
-    return paintList
+	objs := s.Generic().List(genericFilters...)
+	paintList := make([]*things_test_io_v1.Paint, 0, len(objs))
+	for _, obj := range objs {
+		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
+	}
+	return paintList
 }
 
-func (s *paintSet) UnsortedList(filterResource ... func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*things_test_io_v1.Paint))
-        })
-    }
+func (s *paintSet) UnsortedList(filterResource ...func(*things_test_io_v1.Paint) bool) []*things_test_io_v1.Paint {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*things_test_io_v1.Paint))
+		})
+	}
 
-    var paintList []*things_test_io_v1.Paint
-    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-        paintList = append(paintList, obj.(*things_test_io_v1.Paint))
-    }
-    return paintList
+	var paintList []*things_test_io_v1.Paint
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
+	}
+	return paintList
 }
 
 func (s *paintSet) Map() map[string]*things_test_io_v1.Paint {
-    if s == nil {
-        return nil
-    }
+	if s == nil {
+		return nil
+	}
 
-    newMap := map[string]*things_test_io_v1.Paint{}
-    for k, v := range s.Generic().Map() {
-        newMap[k] = v.(*things_test_io_v1.Paint)
-    }
-    return newMap
+	newMap := map[string]*things_test_io_v1.Paint{}
+	for k, v := range s.Generic().Map().Map() {
+		newMap[k] = v.(*things_test_io_v1.Paint)
+	}
+	return newMap
 }
 
 func (s *paintSet) Insert(
-        paintList ...*things_test_io_v1.Paint,
+	paintList ...*things_test_io_v1.Paint,
 ) {
-    if s == nil {
-        panic("cannot insert into nil set")
-    }
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
 
-    for _, obj := range paintList {
-        s.Generic().Insert(obj)
-    }
+	for _, obj := range paintList {
+		s.Generic().Insert(obj)
+	}
 }
 
 func (s *paintSet) Has(paint ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    return s.Generic().Has(paint)
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(paint)
 }
 
 func (s *paintSet) Equal(
-        paintSet PaintSet,
+	paintSet PaintSet,
 ) bool {
-    if s == nil {
-        return paintSet == nil
-    }
-    return s.Generic().Equal(paintSet.Generic())
+	if s == nil {
+		return paintSet == nil
+	}
+	return s.Generic().Equal(paintSet.Generic())
 }
 
 func (s *paintSet) Delete(Paint ezkube.ResourceId) {
-    if s == nil {
-        return
-    }
-    s.Generic().Delete(Paint)
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(Paint)
 }
 
 func (s *paintSet) Union(set PaintSet) PaintSet {
-    if s == nil {
-        return set
-    }
-    return NewPaintSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+	if s == nil {
+		return set
+	}
+	return NewPaintSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *paintSet) Difference(set PaintSet) PaintSet {
-    if s == nil {
-        return set
-    }
-    newSet := s.Generic().Difference(set.Generic())
-    return &paintSet{
-        set: newSet,
-        sortFunc: s.sortFunc,
-        equalityFunc: s.equalityFunc,
-    }
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &paintSet{
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
+	}
 }
 
 func (s *paintSet) Intersection(set PaintSet) PaintSet {
-    if s == nil {
-        return nil
-    }
-    newSet := s.Generic().Intersection(set.Generic())
-    var paintList []*things_test_io_v1.Paint
-    for _, obj := range newSet.List() {
-        paintList = append(paintList, obj.(*things_test_io_v1.Paint))
-    }
-    return NewPaintSet(s.sortFunc, s.equalityFunc, paintList...)
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var paintList []*things_test_io_v1.Paint
+	for _, obj := range newSet.List() {
+		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
+	}
+	return NewPaintSet(s.sortFunc, s.compareFunc, paintList...)
 }
 
-
 func (s *paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find Paint %v", sksets.Key(id))
-    }
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find Paint %v", sksets.Key(id))
+	}
 	obj, err := s.Generic().Find(&things_test_io_v1.Paint{}, id)
 	if err != nil {
 		return nil, err
-    }
+	}
 
-    return obj.(*things_test_io_v1.Paint), nil
+	return obj.(*things_test_io_v1.Paint), nil
 }
 
 func (s *paintSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    return s.Generic().Length()
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
 }
 
 func (s *paintSet) Generic() sksets.ResourceSet {
-    if s == nil {
-        return nil
-    }
-    return s.set
+	if s == nil {
+		return nil
+	}
+	return s.set
 }
 
 func (s *paintSet) Delta(newSet PaintSet) sksets.ResourceDelta {
-    if s == nil {
-        return sksets.ResourceDelta{
-            Inserted: newSet.Generic(),
-        }
-    }
-    return s.Generic().Delta(newSet.Generic())
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 func (s *paintSet) Clone() PaintSet {
 	if s == nil {
 		return nil
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		objToInsert, ok := toInsert.(client.Object)
-		if !ok {
-			objToInsert = &things_test_io_v1.Paint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: toInsert.GetName(),
-					Namespace: toInsert.GetNamespace(),
-				},
-			}
-		}
-		objExisting, ok := existing.(client.Object)
-		if !ok {
-			objExisting = &things_test_io_v1.Paint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: existing.GetName(),
-					Namespace: existing.GetNamespace(),
-				},
-			}
-		}
-		return s.sortFunc(objToInsert, objExisting)
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		objA, ok := a.(client.Object)
-		if !ok {
-			objA = &things_test_io_v1.Paint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: a.GetName(),
-					Namespace: a.GetNamespace(),
-				},
-			}
-		}
-		objB, ok := b.(client.Object)
-		if !ok {
-			objB = &things_test_io_v1.Paint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: b.GetName(),
-					Namespace: b.GetNamespace(),
-				},
-			}
-		}
-		return s.equalityFunc(objA,objB)
-	}
 	return &paintSet{
-        set: sksets.NewResourceSet(
-            genericSortFunc,
-            genericEqualityFunc,
-            s.Generic().Clone().List()...,
-        ),
-    }
+		set: sksets.NewResourceSet(
+			s.sortFunc,
+			s.compareFunc,
+			s.Generic().Clone().List()...,
+		),
+	}
 }
 
-func (s *paintSet) GetSortFunc() func(toInsert, existing client.Object) bool {
-    return s.sortFunc
+func (s *paintSet) GetSortFunc() func(toInsert, existing interface{}) bool {
+	return s.sortFunc
 }
 
-func (s *paintSet) GetEqualityFunc() func(a, b client.Object) bool {
-    return s.equalityFunc
+func (s *paintSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }
 
 type ClusterResourceSet interface {
 	// Get the set stored keys
-    Keys() sets.String
-    // List of resources stored in the set. Pass an optional filter function to filter on the list.
-    // The filter function should return false to keep the resource, true to drop it.
-    List(filterResource ... func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
-    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-    // The filter function should return false to keep the resource, true to drop it.
-    UnsortedList(filterResource ... func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
-    // Return the Set as a map of key to resource.
-    Map() map[string]*things_test_io_v1.ClusterResource
-    // Insert a resource into the set.
-    Insert(clusterResource ...*things_test_io_v1.ClusterResource)
-    // Compare the equality of the keys in two sets (not the resources themselves)
-    Equal(clusterResourceSet ClusterResourceSet) bool
-    // Check if the set contains a key matching the resource (not the resource itself)
-    Has(clusterResource ezkube.ResourceId) bool
-    // Delete the key matching the resource
-    Delete(clusterResource  ezkube.ResourceId)
-    // Return the union with the provided set
-    Union(set ClusterResourceSet) ClusterResourceSet
-    // Return the difference with the provided set
-    Difference(set ClusterResourceSet) ClusterResourceSet
-    // Return the intersection with the provided set
-    Intersection(set ClusterResourceSet) ClusterResourceSet
-    // Find the resource with the given ID
-    Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error)
-    // Get the length of the set
-    Length() int
-    // returns the generic implementation of the set
-    Generic() sksets.ResourceSet
-    // returns the delta between this and and another ClusterResourceSet
-    Delta(newSet ClusterResourceSet) sksets.ResourceDelta
-    // Create a deep copy of the current ClusterResourceSet
-    Clone() ClusterResourceSet
-    // Get the sort function used by the set
-    GetSortFunc() func(toInsert, existing client.Object) bool
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
+	List(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	// The filter function should return false to keep the resource, true to drop it.
+	UnsortedList(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource
+	// Return the Set as a map of key to resource.
+	Map() map[string]*things_test_io_v1.ClusterResource
+	// Insert a resource into the set.
+	Insert(clusterResource ...*things_test_io_v1.ClusterResource)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(clusterResourceSet ClusterResourceSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(clusterResource ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(clusterResource ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set ClusterResourceSet) ClusterResourceSet
+	// Return the difference with the provided set
+	Difference(set ClusterResourceSet) ClusterResourceSet
+	// Return the intersection with the provided set
+	Intersection(set ClusterResourceSet) ClusterResourceSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another ClusterResourceSet
+	Delta(newSet ClusterResourceSet) sksets.ResourceDelta
+	// Create a deep copy of the current ClusterResourceSet
+	Clone() ClusterResourceSet
+	// Get the sort function used by the set
+	GetSortFunc() func(toInsert, existing interface{}) bool
 	// Get the equality function used by the set
-	GetEqualityFunc() func(a, b client.Object) bool
+	GetCompareFunc() func(a, b interface{}) int
 }
 
 func makeGenericClusterResourceSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
-    clusterResourceList []*things_test_io_v1.ClusterResource,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	clusterResourceList []*things_test_io_v1.ClusterResource,
 ) sksets.ResourceSet {
-    var genericResources []ezkube.ResourceId
-    for _, obj := range clusterResourceList {
-        genericResources = append(genericResources, obj)
-    }
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		objToInsert, ok := toInsert.(client.Object)
-		if !ok {
-			objToInsert = &things_test_io_v1.ClusterResource{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: toInsert.GetName(),
-					Namespace: toInsert.GetNamespace(),
-				},
-			}
-		}
-		objExisting, ok := existing.(client.Object)
-		if !ok {
-			objExisting = &things_test_io_v1.ClusterResource{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: existing.GetName(),
-					Namespace: existing.GetNamespace(),
-				},
-			}
-		}
-		return sortFunc(objToInsert, objExisting)
+	var genericResources []ezkube.ResourceId
+	for _, obj := range clusterResourceList {
+		genericResources = append(genericResources, obj)
 	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		objA, ok := a.(client.Object)
-		if !ok {
-			objA = &things_test_io_v1.ClusterResource{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: a.GetName(),
-					Namespace: a.GetNamespace(),
-				},
-			}
-		}
-		objB, ok := b.(client.Object)
-		if !ok {
-			objB = &things_test_io_v1.ClusterResource{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: b.GetName(),
-					Namespace: b.GetNamespace(),
-				},
-			}
-		}
-		return equalityFunc(objA,objB)
-	}
-    return sksets.NewResourceSet(genericSortFunc, genericEqualityFunc, genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type clusterResourceSet struct {
-    set sksets.ResourceSet
-    sortFunc func(toInsert, existing client.Object) bool
-    equalityFunc func(a, b client.Object) bool
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
 func NewClusterResourceSet(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
-    clusterResourceList ...*things_test_io_v1.ClusterResource,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	clusterResourceList ...*things_test_io_v1.ClusterResource,
 ) ClusterResourceSet {
-    return &clusterResourceSet{
-        set: makeGenericClusterResourceSet(sortFunc, equalityFunc, clusterResourceList),
-        sortFunc: sortFunc,
-        equalityFunc: equalityFunc,
-    }
+	return &clusterResourceSet{
+		set:         makeGenericClusterResourceSet(sortFunc, compareFunc, clusterResourceList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
 func NewClusterResourceSetFromList(
-	sortFunc func(toInsert, existing client.Object) bool,
-	equalityFunc func(a, b client.Object) bool,
-    clusterResourceList *things_test_io_v1.ClusterResourceList,
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	clusterResourceList *things_test_io_v1.ClusterResourceList,
 ) ClusterResourceSet {
-    list := make([]*things_test_io_v1.ClusterResource, 0, len(clusterResourceList.Items))
-    for idx := range clusterResourceList.Items {
-        list = append(list, &clusterResourceList.Items[idx])
-    }
-    return &clusterResourceSet{
-        set: makeGenericClusterResourceSet(sortFunc, equalityFunc, list),
-        sortFunc: sortFunc,
-        equalityFunc: equalityFunc,
-    }
+	list := make([]*things_test_io_v1.ClusterResource, 0, len(clusterResourceList.Items))
+	for idx := range clusterResourceList.Items {
+		list = append(list, &clusterResourceList.Items[idx])
+	}
+	return &clusterResourceSet{
+		set:         makeGenericClusterResourceSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
 func (s *clusterResourceSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-    }
-    return s.Generic().Keys()
+	}
+	return s.Generic().Keys()
 }
 
-func (s *clusterResourceSet) List(filterResource ... func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*things_test_io_v1.ClusterResource))
-        })
-    }
+func (s *clusterResourceSet) List(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*things_test_io_v1.ClusterResource))
+		})
+	}
 
-    objs := s.Generic().List(genericFilters...)
-    clusterResourceList := make([]*things_test_io_v1.ClusterResource, 0, len(objs))
-    for _, obj := range objs {
-        clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
-    }
-    return clusterResourceList
+	objs := s.Generic().List(genericFilters...)
+	clusterResourceList := make([]*things_test_io_v1.ClusterResource, 0, len(objs))
+	for _, obj := range objs {
+		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
+	}
+	return clusterResourceList
 }
 
-func (s *clusterResourceSet) UnsortedList(filterResource ... func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        filter := filter
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*things_test_io_v1.ClusterResource))
-        })
-    }
+func (s *clusterResourceSet) UnsortedList(filterResource ...func(*things_test_io_v1.ClusterResource) bool) []*things_test_io_v1.ClusterResource {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		filter := filter
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*things_test_io_v1.ClusterResource))
+		})
+	}
 
-    var clusterResourceList []*things_test_io_v1.ClusterResource
-    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-        clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
-    }
-    return clusterResourceList
+	var clusterResourceList []*things_test_io_v1.ClusterResource
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
+	}
+	return clusterResourceList
 }
 
 func (s *clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource {
-    if s == nil {
-        return nil
-    }
+	if s == nil {
+		return nil
+	}
 
-    newMap := map[string]*things_test_io_v1.ClusterResource{}
-    for k, v := range s.Generic().Map() {
-        newMap[k] = v.(*things_test_io_v1.ClusterResource)
-    }
-    return newMap
+	newMap := map[string]*things_test_io_v1.ClusterResource{}
+	for k, v := range s.Generic().Map().Map() {
+		newMap[k] = v.(*things_test_io_v1.ClusterResource)
+	}
+	return newMap
 }
 
 func (s *clusterResourceSet) Insert(
-        clusterResourceList ...*things_test_io_v1.ClusterResource,
+	clusterResourceList ...*things_test_io_v1.ClusterResource,
 ) {
-    if s == nil {
-        panic("cannot insert into nil set")
-    }
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
 
-    for _, obj := range clusterResourceList {
-        s.Generic().Insert(obj)
-    }
+	for _, obj := range clusterResourceList {
+		s.Generic().Insert(obj)
+	}
 }
 
 func (s *clusterResourceSet) Has(clusterResource ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    return s.Generic().Has(clusterResource)
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(clusterResource)
 }
 
 func (s *clusterResourceSet) Equal(
-        clusterResourceSet ClusterResourceSet,
+	clusterResourceSet ClusterResourceSet,
 ) bool {
-    if s == nil {
-        return clusterResourceSet == nil
-    }
-    return s.Generic().Equal(clusterResourceSet.Generic())
+	if s == nil {
+		return clusterResourceSet == nil
+	}
+	return s.Generic().Equal(clusterResourceSet.Generic())
 }
 
 func (s *clusterResourceSet) Delete(ClusterResource ezkube.ResourceId) {
-    if s == nil {
-        return
-    }
-    s.Generic().Delete(ClusterResource)
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(ClusterResource)
 }
 
 func (s *clusterResourceSet) Union(set ClusterResourceSet) ClusterResourceSet {
-    if s == nil {
-        return set
-    }
-    return NewClusterResourceSet(s.sortFunc, s.equalityFunc, append(s.List(), set.List()...)...)
+	if s == nil {
+		return set
+	}
+	return NewClusterResourceSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *clusterResourceSet) Difference(set ClusterResourceSet) ClusterResourceSet {
-    if s == nil {
-        return set
-    }
-    newSet := s.Generic().Difference(set.Generic())
-    return &clusterResourceSet{
-        set: newSet,
-        sortFunc: s.sortFunc,
-        equalityFunc: s.equalityFunc,
-    }
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &clusterResourceSet{
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
+	}
 }
 
 func (s *clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResourceSet {
-    if s == nil {
-        return nil
-    }
-    newSet := s.Generic().Intersection(set.Generic())
-    var clusterResourceList []*things_test_io_v1.ClusterResource
-    for _, obj := range newSet.List() {
-        clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
-    }
-    return NewClusterResourceSet(s.sortFunc, s.equalityFunc, clusterResourceList...)
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var clusterResourceList []*things_test_io_v1.ClusterResource
+	for _, obj := range newSet.List() {
+		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
+	}
+	return NewClusterResourceSet(s.sortFunc, s.compareFunc, clusterResourceList...)
 }
 
-
 func (s *clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find ClusterResource %v", sksets.Key(id))
-    }
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find ClusterResource %v", sksets.Key(id))
+	}
 	obj, err := s.Generic().Find(&things_test_io_v1.ClusterResource{}, id)
 	if err != nil {
 		return nil, err
-    }
+	}
 
-    return obj.(*things_test_io_v1.ClusterResource), nil
+	return obj.(*things_test_io_v1.ClusterResource), nil
 }
 
 func (s *clusterResourceSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    return s.Generic().Length()
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
 }
 
 func (s *clusterResourceSet) Generic() sksets.ResourceSet {
-    if s == nil {
-        return nil
-    }
-    return s.set
+	if s == nil {
+		return nil
+	}
+	return s.set
 }
 
 func (s *clusterResourceSet) Delta(newSet ClusterResourceSet) sksets.ResourceDelta {
-    if s == nil {
-        return sksets.ResourceDelta{
-            Inserted: newSet.Generic(),
-        }
-    }
-    return s.Generic().Delta(newSet.Generic())
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 func (s *clusterResourceSet) Clone() ClusterResourceSet {
 	if s == nil {
 		return nil
 	}
-	genericSortFunc := func(toInsert, existing ezkube.ResourceId) bool {
-		objToInsert, ok := toInsert.(client.Object)
-		if !ok {
-			objToInsert = &things_test_io_v1.ClusterResource{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: toInsert.GetName(),
-					Namespace: toInsert.GetNamespace(),
-				},
-			}
-		}
-		objExisting, ok := existing.(client.Object)
-		if !ok {
-			objExisting = &things_test_io_v1.ClusterResource{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: existing.GetName(),
-					Namespace: existing.GetNamespace(),
-				},
-			}
-		}
-		return s.sortFunc(objToInsert, objExisting)
-	}
-	genericEqualityFunc := func(a, b ezkube.ResourceId) bool {
-		objA, ok := a.(client.Object)
-		if !ok {
-			objA = &things_test_io_v1.ClusterResource{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: a.GetName(),
-					Namespace: a.GetNamespace(),
-				},
-			}
-		}
-		objB, ok := b.(client.Object)
-		if !ok {
-			objB = &things_test_io_v1.ClusterResource{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: b.GetName(),
-					Namespace: b.GetNamespace(),
-				},
-			}
-		}
-		return s.equalityFunc(objA,objB)
-	}
 	return &clusterResourceSet{
-        set: sksets.NewResourceSet(
-            genericSortFunc,
-            genericEqualityFunc,
-            s.Generic().Clone().List()...,
-        ),
-    }
+		set: sksets.NewResourceSet(
+			s.sortFunc,
+			s.compareFunc,
+			s.Generic().Clone().List()...,
+		),
+	}
 }
 
-func (s *clusterResourceSet) GetSortFunc() func(toInsert, existing client.Object) bool {
-    return s.sortFunc
+func (s *clusterResourceSet) GetSortFunc() func(toInsert, existing interface{}) bool {
+	return s.sortFunc
 }
 
-func (s *clusterResourceSet) GetEqualityFunc() func(a, b client.Object) bool {
-    return s.equalityFunc
+func (s *clusterResourceSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }

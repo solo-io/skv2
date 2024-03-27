@@ -7,18 +7,19 @@ import (
 	"testing"
 
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestResourcesSet(t *testing.T) {
 	s := Resources{}
 	s2 := Resources{}
-	if len(s) != 0 {
-		t.Errorf("Expected len=0: %d", len(s))
+	if s.Length() != 0 {
+		t.Errorf("Expected len=0: %d", s.Length())
 	}
 	s.Insert(&v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "b"})
-	if len(s) != 2 {
-		t.Errorf("Expected len=2: %d", len(s))
+	if s.Length() != 2 {
+		t.Errorf("Expected len=2: %d", s.Length())
 	}
 	s.Insert(&v1.ObjectRef{Name: "c"})
 	if s.Has(&v1.ObjectRef{Name: "d"}) {
@@ -51,13 +52,13 @@ func TestResourcesSet(t *testing.T) {
 func TestResourcesSetDeleteMultiples(t *testing.T) {
 	s := Resources{}
 	s.Insert(&v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "b"}, &v1.ObjectRef{Name: "c"})
-	if len(s) != 3 {
-		t.Errorf("Expected len=3: %d", len(s))
+	if s.Length() != 3 {
+		t.Errorf("Expected len=3: %d", s.Length())
 	}
 
 	s.Delete(&v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "c"})
-	if len(s) != 1 {
-		t.Errorf("Expected len=1: %d", len(s))
+	if s.Length() != 1 {
+		t.Errorf("Expected len=1: %d", s.Length())
 	}
 	if s.Has(&v1.ObjectRef{Name: "a"}) {
 		t.Errorf("Unexpected contents: %#v", s)
@@ -72,16 +73,16 @@ func TestResourcesSetDeleteMultiples(t *testing.T) {
 }
 
 func TestNewStringSet(t *testing.T) {
-	s := newResources(&v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "b"}, &v1.ObjectRef{Name: "c"})
-	if len(s) != 3 {
-		t.Errorf("Expected len=3: %d", len(s))
+	s := newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "a"}, &v1.ObjectRef{Name: "b"}, &v1.ObjectRef{Name: "c"})
+	if s.Length() != 3 {
+		t.Errorf("Expected len=3: %d", s.Length())
 	}
 	if !s.Has(&v1.ObjectRef{Name: "a"}) || !s.Has(&v1.ObjectRef{Name: "b"}) || !s.Has(&v1.ObjectRef{Name: "c"}) {
 		t.Errorf("Unexpected contents: %#v", s)
 	}
 }
 func TestResourcesSetList(t *testing.T) {
-	s := newResources(
+	s := newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 		&v1.ObjectRef{Name: "z"},
 		&v1.ObjectRef{Name: "y"},
 		&v1.ObjectRef{Name: "x"},
@@ -89,10 +90,10 @@ func TestResourcesSetList(t *testing.T) {
 	)
 	list := s.List()
 	expected := []*v1.ObjectRef{
-		&v1.ObjectRef{Name: "a"},
-		&v1.ObjectRef{Name: "x"},
-		&v1.ObjectRef{Name: "y"},
-		&v1.ObjectRef{Name: "z"},
+		{Name: "a"},
+		{Name: "x"},
+		{Name: "y"},
+		{Name: "z"},
 	}
 	for idx := range list {
 		if !proto.Equal(list[idx].(proto.Message), expected[idx]) {
@@ -102,8 +103,8 @@ func TestResourcesSetList(t *testing.T) {
 }
 
 func TestResourcesSetDifference(t *testing.T) {
-	a := newResources(&v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "3"})
-	b := newResources(
+	a := newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "3"})
+	b := newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 		&v1.ObjectRef{Name: "1"},
 		&v1.ObjectRef{Name: "2"},
 		&v1.ObjectRef{Name: "4"},
@@ -111,14 +112,14 @@ func TestResourcesSetDifference(t *testing.T) {
 	)
 	c := a.Difference(b)
 	d := b.Difference(a)
-	if len(c) != 1 {
-		t.Errorf("Expected len=1: %d", len(c))
+	if c.Length() != 1 {
+		t.Errorf("Expected len=1: %d", c.Length())
 	}
 	if !c.Has(&v1.ObjectRef{Name: "3"}) {
 		t.Errorf("Unexpected contents: %#v", c.List())
 	}
-	if len(d) != 2 {
-		t.Errorf("Expected len=2: %d", len(d))
+	if d.Length() != 2 {
+		t.Errorf("Expected len=2: %d", d.Length())
 	}
 	if !d.Has(&v1.ObjectRef{Name: "4"}) || !d.Has(&v1.ObjectRef{Name: "5"}) {
 		t.Errorf("Unexpected contents: %#v", d.List())
@@ -126,7 +127,7 @@ func TestResourcesSetDifference(t *testing.T) {
 }
 
 func TestResourcesSetHasAny(t *testing.T) {
-	a := newResources(&v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "3"})
+	a := newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "3"})
 
 	if !a.HasAny(&v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "4"}) {
 		t.Errorf("expected true, got false")
@@ -139,37 +140,37 @@ func TestResourcesSetHasAny(t *testing.T) {
 
 func TestResourcesSetEquals(t *testing.T) {
 	// Simple case (order doesn't matter)
-	a := newResources(&v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"})
-	b := newResources(&v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "1"})
+	a := newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"})
+	b := newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "1"})
 	if !a.Equal(b) {
 		t.Errorf("Expected to be equal: %v vs %v", a, b)
 	}
 
 	// It is a set; duplicates are ignored
-	b = newResources(&v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "1"})
+	b = newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "1"})
 	if !a.Equal(b) {
 		t.Errorf("Expected to be equal: %v vs %v", a, b)
 	}
 
 	// Edge cases around empty sets / empty strings
-	a = newResources()
-	b = newResources()
+	a = newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds)
+	b = newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds)
 	if !a.Equal(b) {
 		t.Errorf("Expected to be equal: %v vs %v", a, b)
 	}
 
-	b = newResources(&v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "3"})
+	b = newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{Name: "3"})
 	if a.Equal(b) {
 		t.Errorf("Expected to be not-equal: %v vs %v", a, b)
 	}
 
-	b = newResources(&v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{})
+	b = newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "1"}, &v1.ObjectRef{Name: "2"}, &v1.ObjectRef{})
 	if a.Equal(b) {
 		t.Errorf("Expected to be not-equal: %v vs %v", a, b)
 	}
 
 	// Check for equality after mutation
-	a = newResources()
+	a = newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds)
 	a.Insert(&v1.ObjectRef{Name: "1"})
 	if a.Equal(b) {
 		t.Errorf("Expected to be not-equal: %v vs %v", a, b)
@@ -198,19 +199,19 @@ func TestResourcesUnion(t *testing.T) {
 		expected Resources
 	}{
 		{
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 			),
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 				&v1.ObjectRef{Name: "5"},
 				&v1.ObjectRef{Name: "6"},
 			),
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
@@ -220,29 +221,14 @@ func TestResourcesUnion(t *testing.T) {
 			),
 		},
 		{
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 			),
-			newResources(),
-			newResources(
-				&v1.ObjectRef{Name: "1"},
-				&v1.ObjectRef{Name: "2"},
-				&v1.ObjectRef{Name: "3"},
-				&v1.ObjectRef{Name: "4"},
-			),
-		},
-		{
-			newResources(),
-			newResources(
-				&v1.ObjectRef{Name: "1"},
-				&v1.ObjectRef{Name: "2"},
-				&v1.ObjectRef{Name: "3"},
-				&v1.ObjectRef{Name: "4"},
-			),
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
@@ -250,16 +236,31 @@ func TestResourcesUnion(t *testing.T) {
 			),
 		},
 		{
-			newResources(),
-			newResources(),
-			newResources(),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
+				&v1.ObjectRef{Name: "1"},
+				&v1.ObjectRef{Name: "2"},
+				&v1.ObjectRef{Name: "3"},
+				&v1.ObjectRef{Name: "4"},
+			),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
+				&v1.ObjectRef{Name: "1"},
+				&v1.ObjectRef{Name: "2"},
+				&v1.ObjectRef{Name: "3"},
+				&v1.ObjectRef{Name: "4"},
+			),
+		},
+		{
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
 		},
 	}
 
 	for _, test := range tests {
 		union := test.s1.Union(test.s2)
-		if union.Len() != test.expected.Len() {
-			t.Errorf("Expected union.Len()=%d but got %d", test.expected.Len(), union.Len())
+		if union.Length() != test.expected.Length() {
+			t.Errorf("Expected union.Length()=%d but got %d", test.expected.Length(), union.Length())
 		}
 
 		if !union.Equal(test.expected) {
@@ -275,34 +276,34 @@ func TestResourcesIntersection(t *testing.T) {
 		expected Resources
 	}{
 		{
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 			),
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 				&v1.ObjectRef{Name: "5"},
 				&v1.ObjectRef{Name: "6"},
 			),
-			newResources(&v1.ObjectRef{Name: "3"}, &v1.ObjectRef{Name: "4"}),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds, &v1.ObjectRef{Name: "3"}, &v1.ObjectRef{Name: "4"}),
 		},
 		{
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 			),
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 			),
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
@@ -310,36 +311,36 @@ func TestResourcesIntersection(t *testing.T) {
 			),
 		},
 		{
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 			),
-			newResources(),
-			newResources(),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
 		},
 		{
-			newResources(),
-			newResources(
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds,
 				&v1.ObjectRef{Name: "1"},
 				&v1.ObjectRef{Name: "2"},
 				&v1.ObjectRef{Name: "3"},
 				&v1.ObjectRef{Name: "4"},
 			),
-			newResources(),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
 		},
 		{
-			newResources(),
-			newResources(),
-			newResources(),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
+			newResources(ezkube.ResourceIdsAscending, ezkube.CompareResourceIds),
 		},
 	}
 
 	for _, test := range tests {
 		intersection := test.s1.Intersection(test.s2)
-		if intersection.Len() != test.expected.Len() {
-			t.Errorf("Expected intersection.Len()=%d but got %d", test.expected.Len(), intersection.Len())
+		if intersection.Length() != test.expected.Length() {
+			t.Errorf("Expected intersection.Length()=%d but got %d", test.expected.Length(), intersection.Length())
 		}
 
 		if !intersection.Equal(test.expected) {
