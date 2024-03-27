@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
+	"github.com/solo-io/skv2/codegen/proto/schemagen"
 	"github.com/solo-io/skv2/codegen/util"
 	"github.com/solo-io/skv2/pkg/crdutils"
 
@@ -82,10 +83,8 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 		grpsByGroupName[grp.Group] = append(grpsByGroupName[grp.Group], grp)
 		shouldRenderGroups[grp.Group] = shouldRenderGroups[grp.Group] || grp.RenderManifests
 		grandfatheredGroups[grp.GroupVersion.String()] = grandfatheredGroups[grp.GroupVersion.String()] || grp.SkipConditionalCRDLoading
-		shouldSkipCRDManifest[grp.Group] =
-			shouldSkipCRDManifest[grp.Group] || grp.SkipCRDManifest
-		shouldSkipTemplatedCRDManifest[grp.Group] =
-			shouldSkipTemplatedCRDManifest[grp.Group] || grp.SkipTemplatedCRDManifest
+		shouldSkipCRDManifest[grp.Group] = shouldSkipCRDManifest[grp.Group] || grp.SkipCRDManifest
+		shouldSkipTemplatedCRDManifest[grp.Group] = shouldSkipTemplatedCRDManifest[grp.Group] || grp.SkipTemplatedCRDManifest
 	}
 
 	for _, grp := range grps {
@@ -132,8 +131,48 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 	return renderedFiles, nil
 }
 
-// Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
 func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
+	if groupOptions.SchemaGenerator == schemagen.ProtocGenOpenAPI {
+		return generateOpenApiFromProtocGen(grp, protoDir, protoOpts, groupOptions)
+	}
+	return generateOpenApiFromCue(grp, protoDir, protoOpts, groupOptions)
+}
+
+// Use protoc-gen-openapi for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
+func generateOpenApiFromProtocGen(grp model.Group, protoDir string, _ protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
+	// Collect all protobuf definitions including transitive dependencies.
+	var imports []string
+	for _, fileDescriptor := range grp.Descriptors {
+		imports = append(imports, fileDescriptor.Imports...)
+	}
+	imports = stringutils.Unique(imports)
+
+	protoFiles := make([]string, len(grp.Descriptors))
+	// collect the set of messsages for which validation is disabled
+	for i, fileDescriptor := range grp.Descriptors {
+		protoFiles[i] = fileDescriptor.ProtoFilePath
+	}
+	protoGen := schemagen.NewProtocGenerator(&groupOptions.SchemaValidationOpts)
+	gvkSchemas, err := protoGen.GetJSONSchemas(protoFiles, imports, grp.GroupVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	oapiSchemas := make(model.OpenApiSchemas)
+	for gvk, schema := range gvkSchemas {
+		jsonSchema, err := postProcessOpenAPISchema(schema, groupOptions)
+		if err != nil {
+			return nil, err
+		}
+		// TODO: drop schemas we are not interested in
+		oapiSchemas[gvk.Kind] = jsonSchema
+	}
+
+	return oapiSchemas, nil
+}
+
+// Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
+func generateOpenApiFromCue(grp model.Group, protoDir string, protoOpts protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
 	if protoDir == "" {
 		protoDir = anyvendor.DefaultDepDir
 	}
@@ -215,7 +254,6 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 
 // returns the map of proto fields marked as unstructured, used by CUE to generate openapi schemas
 func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[string][][]string, error) {
-
 	unstructuredFields := map[string][][]string{}
 	defaultProtoPkg := grp.Group
 	defaultGoPkg := util.GoPackage(grp)
@@ -296,8 +334,8 @@ func (r ManifestsRenderer) renderCRDManifest(appName, groupName string, objs []k
 
 func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	objs []kuberesource.GlooCustomResourceDefinition,
-	grandfatheredGroups map[string]bool) (OutFile, error) {
-
+	grandfatheredGroups map[string]bool,
+) (OutFile, error) {
 	renderer := DefaultTemplateRenderer
 
 	// when rendering helm charts, we need
@@ -399,6 +437,35 @@ func marshalObjToYaml(appName string, obj metav1.Object) (string, error) {
 
 func postProcessValidationSchema(oapi *openapi.OrderedMap, groupOptions model.GroupOptions) (*apiextv1.JSONSchemaProps, error) {
 	oapiJson, err := oapi.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	var obj map[string]interface{}
+	if err = json.Unmarshal(oapiJson, &obj); err != nil {
+		return nil, err
+	}
+
+	// remove 'properties' and 'required' fields to prevent validating proto.Any fields
+	removeProtoAnyValidation(obj)
+
+	if groupOptions.EscapeGoTemplateOperators {
+		// escape {{ or }} in descriptions as they will cause helm to error
+		escapeGoTemplateOperators(obj)
+	}
+
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		return nil, err
+	}
+	jsonSchema := &apiextv1.JSONSchemaProps{}
+	if err = json.Unmarshal(bytes, jsonSchema); err != nil {
+		return nil, err
+	}
+	return jsonSchema, nil
+}
+
+func postProcessOpenAPISchema(schema *apiextv1.JSONSchemaProps, groupOptions model.GroupOptions) (*apiextv1.JSONSchemaProps, error) {
+	oapiJson, err := json.Marshal(schema)
 	if err != nil {
 		return nil, err
 	}

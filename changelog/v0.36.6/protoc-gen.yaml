@@ -1,0 +1,7 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink:  https://github.com/solo-io/gloo-mesh-enterprise/issues/16049
+    resolvesIssue: false
+    description: >
+      "Enable CRD schema generation using protoc-gen-openapi"
+    skipCI: "false"
