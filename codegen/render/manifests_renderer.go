@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
+	"github.com/solo-io/skv2/codegen/proto/schemagen"
 	"github.com/solo-io/skv2/codegen/util"
 	"github.com/solo-io/skv2/pkg/crdutils"
 
@@ -82,10 +83,8 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 		grpsByGroupName[grp.Group] = append(grpsByGroupName[grp.Group], grp)
 		shouldRenderGroups[grp.Group] = shouldRenderGroups[grp.Group] || grp.RenderManifests
 		grandfatheredGroups[grp.GroupVersion.String()] = grandfatheredGroups[grp.GroupVersion.String()] || grp.SkipConditionalCRDLoading
-		shouldSkipCRDManifest[grp.Group] =
-			shouldSkipCRDManifest[grp.Group] || grp.SkipCRDManifest
-		shouldSkipTemplatedCRDManifest[grp.Group] =
-			shouldSkipTemplatedCRDManifest[grp.Group] || grp.SkipTemplatedCRDManifest
+		shouldSkipCRDManifest[grp.Group] = shouldSkipCRDManifest[grp.Group] || grp.SkipCRDManifest
+		shouldSkipTemplatedCRDManifest[grp.Group] = shouldSkipTemplatedCRDManifest[grp.Group] || grp.SkipTemplatedCRDManifest
 	}
 
 	for _, grp := range grps {
@@ -151,10 +150,65 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 		Module: grp.Module,
 		Paths:  imports,
 	}
+	fmt.Printf("================ protodir=%s %s/%s: %+v\n", protoDir, grp.GroupVersion.Group, grp.GroupVersion.Version, *cfg)
+
+	protoFiles := make([]string, len(grp.Descriptors))
+	// collect the set of messsages for which validation is disabled
+	for i, fileDescriptor := range grp.Descriptors {
+		protoFiles[i] = fileDescriptor.ProtoFilePath
+		fmt.Printf("========== file: %s\n", fileDescriptor.ProtoFilePath)
+	}
+	protoGen := schemagen.NewProtocGenerator(&schemagen.ValidationSchemaOptions{
+		MessagesWithEmptySchema: []string{
+			"ratelimit.api.solo.io.Descriptor",
+		},
+	})
+	gvkSchemas, err := protoGen.GetJSONSchemas(protoFiles, imports, grp.GroupVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	oapiSchemas := make(model.OpenApiSchemas)
+	for gvk, schema := range gvkSchemas {
+		fmt.Printf("============== gvk=%s, ID=%s, URL=%s\n", gvk, schema.ID, schema.Schema)
+		// TODO: post process
+		jsonSchema, err := postProcessOpenAPISchema(schema, groupOptions)
+		if err != nil {
+			return nil, err
+		}
+		// TODO: fix key
+		oapiSchemas[gvk.Kind] = jsonSchema
+	}
+
+	return oapiSchemas, nil
+	// TODO(protogen): ignore irrelevant proto imports
+}
+
+// Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
+func generateOpenApiFromCue(grp model.Group, protoDir string, protoOpts protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
+	if protoDir == "" {
+		protoDir = anyvendor.DefaultDepDir
+	}
+
+	// Collect all protobuf definitions including transitive dependencies.
+	var imports []string
+	for _, fileDescriptor := range grp.Descriptors {
+		imports = append(imports, fileDescriptor.Imports...)
+	}
+	imports = stringutils.Unique(imports)
+
+	// Parse protobuf into cuelang
+	cfg := &protobuf.Config{
+		Root:   protoDir,
+		Module: grp.Module,
+		Paths:  imports,
+	}
+	fmt.Printf("================ protodir=%s %s/%s: %+v\n", protoDir, grp.GroupVersion.Group, grp.GroupVersion.Version, *cfg)
 
 	ext := protobuf.NewExtractor(cfg)
 	// collect the set of messsages for which validation is disabled
 	for _, fileDescriptor := range grp.Descriptors {
+		fmt.Printf("========== file: %s\n", fileDescriptor.ProtoFilePath)
 		if err := ext.AddFile(fileDescriptor.ProtoFilePath, nil); err != nil {
 			return nil, err
 		}
@@ -182,7 +236,9 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 	built := cue.Build(instances)
 	for _, builtInstance := range built {
 		// Avoid generating openapi for irrelevant proto imports.
+		fmt.Println("========  import path: ", builtInstance.ImportPath)
 		if !strings.HasSuffix(builtInstance.ImportPath, grp.Group+"/"+grp.Version) {
+			fmt.Println("========  skipping import path: ", builtInstance.ImportPath)
 			continue
 		}
 
@@ -206,6 +262,7 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 				return nil, err
 			}
 			oapiSchemas[kv.Key] = jsonSchema
+			fmt.Println("========  openapi schema key:", kv.Key)
 		}
 
 		return oapiSchemas, err
@@ -215,7 +272,6 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 
 // returns the map of proto fields marked as unstructured, used by CUE to generate openapi schemas
 func getUnstructuredFieldsMap(grp model.Group, opts protoutil.Options) (map[string][][]string, error) {
-
 	unstructuredFields := map[string][][]string{}
 	defaultProtoPkg := grp.Group
 	defaultGoPkg := util.GoPackage(grp)
@@ -296,8 +352,8 @@ func (r ManifestsRenderer) renderCRDManifest(appName, groupName string, objs []k
 
 func (r ManifestsRenderer) renderTemplatedCRDManifest(appName, groupName string,
 	objs []kuberesource.GlooCustomResourceDefinition,
-	grandfatheredGroups map[string]bool) (OutFile, error) {
-
+	grandfatheredGroups map[string]bool,
+) (OutFile, error) {
 	renderer := DefaultTemplateRenderer
 
 	// when rendering helm charts, we need
@@ -399,6 +455,35 @@ func marshalObjToYaml(appName string, obj metav1.Object) (string, error) {
 
 func postProcessValidationSchema(oapi *openapi.OrderedMap, groupOptions model.GroupOptions) (*apiextv1.JSONSchemaProps, error) {
 	oapiJson, err := oapi.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	var obj map[string]interface{}
+	if err = json.Unmarshal(oapiJson, &obj); err != nil {
+		return nil, err
+	}
+
+	// remove 'properties' and 'required' fields to prevent validating proto.Any fields
+	removeProtoAnyValidation(obj)
+
+	if groupOptions.EscapeGoTemplateOperators {
+		// escape {{ or }} in descriptions as they will cause helm to error
+		escapeGoTemplateOperators(obj)
+	}
+
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		return nil, err
+	}
+	jsonSchema := &apiextv1.JSONSchemaProps{}
+	if err = json.Unmarshal(bytes, jsonSchema); err != nil {
+		return nil, err
+	}
+	return jsonSchema, nil
+}
+
+func postProcessOpenAPISchema(schema *apiextv1.JSONSchemaProps, groupOptions model.GroupOptions) (*apiextv1.JSONSchemaProps, error) {
+	oapiJson, err := json.Marshal(schema)
 	if err != nil {
 		return nil, err
 	}
