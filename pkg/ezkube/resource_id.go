@@ -173,3 +173,17 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 		return nil, eris.Errorf("could not convert key %s with separator %s into resource id; unexpected number of parts: %d", key, separator, len(parts))
 	}
 }
+
+// ResourceIdsCompare returns an integer comparing two ResourceIds lexicographically.
+// The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
+func ResourceIdsCompare(a, b ResourceId) int {
+	key_a := KeyWithSeparator(a, ".")
+	key_b := KeyWithSeparator(b, ".")
+	if key_a == key_b {
+		return 0
+	}
+	if key_a < key_b {
+		return -1
+	}
+	return 1
+}

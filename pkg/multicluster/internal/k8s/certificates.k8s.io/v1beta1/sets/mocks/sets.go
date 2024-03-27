@@ -270,3 +270,31 @@ func (mr *MockCertificateSigningRequestSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).Clone))
 }
+
+// GetSortFunc mocks base method
+func (m *MockCertificateSigningRequestSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockCertificateSigningRequestSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockCertificateSigningRequestSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockCertificateSigningRequestSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockCertificateSigningRequestSet)(nil).GetCompareFunc))
+}

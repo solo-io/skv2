@@ -122,7 +122,7 @@ func (s *customResourceDefinitionSet) Map() map[string]*apiextensions_k8s_io_v1b
 	}
 
 	newMap := map[string]*apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
-	for k, v := range s.Generic().Map() {
+	for k, v := range s.Generic().Map().Map() {
 		newMap[k] = v.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)
 	}
 	return newMap

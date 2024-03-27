@@ -271,6 +271,34 @@ func (mr *MockSecretSetMockRecorder) Clone() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockSecretSet)(nil).Clone))
 }
 
+// GetSortFunc mocks base method
+func (m *MockSecretSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockSecretSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockSecretSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockSecretSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockSecretSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockSecretSet)(nil).GetCompareFunc))
+}
+
 // MockServiceAccountSet is a mock of ServiceAccountSet interface
 type MockServiceAccountSet struct {
 	ctrl     *gomock.Controller
@@ -527,6 +555,34 @@ func (mr *MockServiceAccountSetMockRecorder) Clone() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockServiceAccountSet)(nil).Clone))
 }
 
+// GetSortFunc mocks base method
+func (m *MockServiceAccountSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockServiceAccountSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockServiceAccountSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockServiceAccountSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockServiceAccountSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockServiceAccountSet)(nil).GetCompareFunc))
+}
+
 // MockNamespaceSet is a mock of NamespaceSet interface
 type MockNamespaceSet struct {
 	ctrl     *gomock.Controller
@@ -781,4 +837,32 @@ func (m *MockNamespaceSet) Clone() v1sets.NamespaceSet {
 func (mr *MockNamespaceSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockNamespaceSet)(nil).Clone))
+}
+
+// GetSortFunc mocks base method
+func (m *MockNamespaceSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockNamespaceSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockNamespaceSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockNamespaceSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockNamespaceSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockNamespaceSet)(nil).GetCompareFunc))
 }

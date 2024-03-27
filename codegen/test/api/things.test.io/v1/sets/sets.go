@@ -48,30 +48,56 @@ type PaintSet interface {
 	Delta(newSet PaintSet) sksets.ResourceDelta
 	// Create a deep copy of the current PaintSet
 	Clone() PaintSet
+	// Get the sort function used by the set
+	GetSortFunc() func(toInsert, existing interface{}) bool
+	// Get the equality function used by the set
+	GetCompareFunc() func(a, b interface{}) int
 }
 
-func makeGenericPaintSet(paintList []*things_test_io_v1.Paint) sksets.ResourceSet {
+func makeGenericPaintSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	paintList []*things_test_io_v1.Paint,
+) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range paintList {
 		genericResources = append(genericResources, obj)
 	}
-	return sksets.NewResourceSet(genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type paintSet struct {
-	set sksets.ResourceSet
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
-func NewPaintSet(paintList ...*things_test_io_v1.Paint) PaintSet {
-	return &paintSet{set: makeGenericPaintSet(paintList)}
+func NewPaintSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	paintList ...*things_test_io_v1.Paint,
+) PaintSet {
+	return &paintSet{
+		set:         makeGenericPaintSet(sortFunc, compareFunc, paintList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
-func NewPaintSetFromList(paintList *things_test_io_v1.PaintList) PaintSet {
+func NewPaintSetFromList(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	paintList *things_test_io_v1.PaintList,
+) PaintSet {
 	list := make([]*things_test_io_v1.Paint, 0, len(paintList.Items))
 	for idx := range paintList.Items {
 		list = append(list, &paintList.Items[idx])
 	}
-	return &paintSet{set: makeGenericPaintSet(list)}
+	return &paintSet{
+		set:         makeGenericPaintSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
 func (s *paintSet) Keys() sets.String {
@@ -126,7 +152,7 @@ func (s *paintSet) Map() map[string]*things_test_io_v1.Paint {
 	}
 
 	newMap := map[string]*things_test_io_v1.Paint{}
-	for k, v := range s.Generic().Map() {
+	for k, v := range s.Generic().Map().Map() {
 		newMap[k] = v.(*things_test_io_v1.Paint)
 	}
 	return newMap
@@ -171,7 +197,7 @@ func (s *paintSet) Union(set PaintSet) PaintSet {
 	if s == nil {
 		return set
 	}
-	return NewPaintSet(append(s.List(), set.List()...)...)
+	return NewPaintSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *paintSet) Difference(set PaintSet) PaintSet {
@@ -179,7 +205,11 @@ func (s *paintSet) Difference(set PaintSet) PaintSet {
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &paintSet{set: newSet}
+	return &paintSet{
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
+	}
 }
 
 func (s *paintSet) Intersection(set PaintSet) PaintSet {
@@ -191,7 +221,7 @@ func (s *paintSet) Intersection(set PaintSet) PaintSet {
 	for _, obj := range newSet.List() {
 		paintList = append(paintList, obj.(*things_test_io_v1.Paint))
 	}
-	return NewPaintSet(paintList...)
+	return NewPaintSet(s.sortFunc, s.compareFunc, paintList...)
 }
 
 func (s *paintSet) Find(id ezkube.ResourceId) (*things_test_io_v1.Paint, error) {
@@ -233,7 +263,21 @@ func (s *paintSet) Clone() PaintSet {
 	if s == nil {
 		return nil
 	}
-	return &paintSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &paintSet{
+		set: sksets.NewResourceSet(
+			s.sortFunc,
+			s.compareFunc,
+			s.Generic().Clone().List()...,
+		),
+	}
+}
+
+func (s *paintSet) GetSortFunc() func(toInsert, existing interface{}) bool {
+	return s.sortFunc
+}
+
+func (s *paintSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }
 
 type ClusterResourceSet interface {
@@ -271,30 +315,56 @@ type ClusterResourceSet interface {
 	Delta(newSet ClusterResourceSet) sksets.ResourceDelta
 	// Create a deep copy of the current ClusterResourceSet
 	Clone() ClusterResourceSet
+	// Get the sort function used by the set
+	GetSortFunc() func(toInsert, existing interface{}) bool
+	// Get the equality function used by the set
+	GetCompareFunc() func(a, b interface{}) int
 }
 
-func makeGenericClusterResourceSet(clusterResourceList []*things_test_io_v1.ClusterResource) sksets.ResourceSet {
+func makeGenericClusterResourceSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	clusterResourceList []*things_test_io_v1.ClusterResource,
+) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range clusterResourceList {
 		genericResources = append(genericResources, obj)
 	}
-	return sksets.NewResourceSet(genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type clusterResourceSet struct {
-	set sksets.ResourceSet
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
-func NewClusterResourceSet(clusterResourceList ...*things_test_io_v1.ClusterResource) ClusterResourceSet {
-	return &clusterResourceSet{set: makeGenericClusterResourceSet(clusterResourceList)}
+func NewClusterResourceSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	clusterResourceList ...*things_test_io_v1.ClusterResource,
+) ClusterResourceSet {
+	return &clusterResourceSet{
+		set:         makeGenericClusterResourceSet(sortFunc, compareFunc, clusterResourceList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
-func NewClusterResourceSetFromList(clusterResourceList *things_test_io_v1.ClusterResourceList) ClusterResourceSet {
+func NewClusterResourceSetFromList(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	clusterResourceList *things_test_io_v1.ClusterResourceList,
+) ClusterResourceSet {
 	list := make([]*things_test_io_v1.ClusterResource, 0, len(clusterResourceList.Items))
 	for idx := range clusterResourceList.Items {
 		list = append(list, &clusterResourceList.Items[idx])
 	}
-	return &clusterResourceSet{set: makeGenericClusterResourceSet(list)}
+	return &clusterResourceSet{
+		set:         makeGenericClusterResourceSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
 func (s *clusterResourceSet) Keys() sets.String {
@@ -349,7 +419,7 @@ func (s *clusterResourceSet) Map() map[string]*things_test_io_v1.ClusterResource
 	}
 
 	newMap := map[string]*things_test_io_v1.ClusterResource{}
-	for k, v := range s.Generic().Map() {
+	for k, v := range s.Generic().Map().Map() {
 		newMap[k] = v.(*things_test_io_v1.ClusterResource)
 	}
 	return newMap
@@ -394,7 +464,7 @@ func (s *clusterResourceSet) Union(set ClusterResourceSet) ClusterResourceSet {
 	if s == nil {
 		return set
 	}
-	return NewClusterResourceSet(append(s.List(), set.List()...)...)
+	return NewClusterResourceSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *clusterResourceSet) Difference(set ClusterResourceSet) ClusterResourceSet {
@@ -402,7 +472,11 @@ func (s *clusterResourceSet) Difference(set ClusterResourceSet) ClusterResourceS
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &clusterResourceSet{set: newSet}
+	return &clusterResourceSet{
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
+	}
 }
 
 func (s *clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResourceSet {
@@ -414,7 +488,7 @@ func (s *clusterResourceSet) Intersection(set ClusterResourceSet) ClusterResourc
 	for _, obj := range newSet.List() {
 		clusterResourceList = append(clusterResourceList, obj.(*things_test_io_v1.ClusterResource))
 	}
-	return NewClusterResourceSet(clusterResourceList...)
+	return NewClusterResourceSet(s.sortFunc, s.compareFunc, clusterResourceList...)
 }
 
 func (s *clusterResourceSet) Find(id ezkube.ResourceId) (*things_test_io_v1.ClusterResource, error) {
@@ -456,5 +530,19 @@ func (s *clusterResourceSet) Clone() ClusterResourceSet {
 	if s == nil {
 		return nil
 	}
-	return &clusterResourceSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &clusterResourceSet{
+		set: sksets.NewResourceSet(
+			s.sortFunc,
+			s.compareFunc,
+			s.Generic().Clone().List()...,
+		),
+	}
+}
+
+func (s *clusterResourceSet) GetSortFunc() func(toInsert, existing interface{}) bool {
+	return s.sortFunc
+}
+
+func (s *clusterResourceSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }

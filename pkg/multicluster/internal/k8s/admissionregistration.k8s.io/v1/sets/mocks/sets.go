@@ -270,3 +270,31 @@ func (mr *MockValidatingWebhookConfigurationSetMockRecorder) Clone() *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).Clone))
 }
+
+// GetSortFunc mocks base method
+func (m *MockValidatingWebhookConfigurationSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockValidatingWebhookConfigurationSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockValidatingWebhookConfigurationSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockValidatingWebhookConfigurationSet)(nil).GetCompareFunc))
+}

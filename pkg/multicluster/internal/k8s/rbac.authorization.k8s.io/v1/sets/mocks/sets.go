@@ -271,6 +271,34 @@ func (mr *MockRoleSetMockRecorder) Clone() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRoleSet)(nil).Clone))
 }
 
+// GetSortFunc mocks base method
+func (m *MockRoleSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockRoleSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockRoleSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockRoleSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockRoleSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockRoleSet)(nil).GetCompareFunc))
+}
+
 // MockRoleBindingSet is a mock of RoleBindingSet interface
 type MockRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -525,6 +553,34 @@ func (m *MockRoleBindingSet) Clone() v1sets.RoleBindingSet {
 func (mr *MockRoleBindingSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRoleBindingSet)(nil).Clone))
+}
+
+// GetSortFunc mocks base method
+func (m *MockRoleBindingSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockRoleBindingSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockRoleBindingSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockRoleBindingSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockRoleBindingSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockRoleBindingSet)(nil).GetCompareFunc))
 }
 
 // MockClusterRoleSet is a mock of ClusterRoleSet interface
@@ -783,6 +839,34 @@ func (mr *MockClusterRoleSetMockRecorder) Clone() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClusterRoleSet)(nil).Clone))
 }
 
+// GetSortFunc mocks base method
+func (m *MockClusterRoleSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockClusterRoleSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockClusterRoleSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockClusterRoleSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockClusterRoleSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockClusterRoleSet)(nil).GetCompareFunc))
+}
+
 // MockClusterRoleBindingSet is a mock of ClusterRoleBindingSet interface
 type MockClusterRoleBindingSet struct {
 	ctrl     *gomock.Controller
@@ -1037,4 +1121,32 @@ func (m *MockClusterRoleBindingSet) Clone() v1sets.ClusterRoleBindingSet {
 func (mr *MockClusterRoleBindingSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).Clone))
+}
+
+// GetSortFunc mocks base method
+func (m *MockClusterRoleBindingSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockClusterRoleBindingSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockClusterRoleBindingSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockClusterRoleBindingSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockClusterRoleBindingSet)(nil).GetCompareFunc))
 }

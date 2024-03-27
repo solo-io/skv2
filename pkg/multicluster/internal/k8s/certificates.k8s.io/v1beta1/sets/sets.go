@@ -48,30 +48,56 @@ type CertificateSigningRequestSet interface {
 	Delta(newSet CertificateSigningRequestSet) sksets.ResourceDelta
 	// Create a deep copy of the current CertificateSigningRequestSet
 	Clone() CertificateSigningRequestSet
+	// Get the sort function used by the set
+	GetSortFunc() func(toInsert, existing interface{}) bool
+	// Get the equality function used by the set
+	GetCompareFunc() func(a, b interface{}) int
 }
 
-func makeGenericCertificateSigningRequestSet(certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest) sksets.ResourceSet {
+func makeGenericCertificateSigningRequestSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	certificateSigningRequestList []*certificates_k8s_io_v1beta1.CertificateSigningRequest,
+) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range certificateSigningRequestList {
 		genericResources = append(genericResources, obj)
 	}
-	return sksets.NewResourceSet(genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type certificateSigningRequestSet struct {
-	set sksets.ResourceSet
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
-func NewCertificateSigningRequestSet(certificateSigningRequestList ...*certificates_k8s_io_v1beta1.CertificateSigningRequest) CertificateSigningRequestSet {
-	return &certificateSigningRequestSet{set: makeGenericCertificateSigningRequestSet(certificateSigningRequestList)}
+func NewCertificateSigningRequestSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	certificateSigningRequestList ...*certificates_k8s_io_v1beta1.CertificateSigningRequest,
+) CertificateSigningRequestSet {
+	return &certificateSigningRequestSet{
+		set:         makeGenericCertificateSigningRequestSet(sortFunc, compareFunc, certificateSigningRequestList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
-func NewCertificateSigningRequestSetFromList(certificateSigningRequestList *certificates_k8s_io_v1beta1.CertificateSigningRequestList) CertificateSigningRequestSet {
+func NewCertificateSigningRequestSetFromList(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	certificateSigningRequestList *certificates_k8s_io_v1beta1.CertificateSigningRequestList,
+) CertificateSigningRequestSet {
 	list := make([]*certificates_k8s_io_v1beta1.CertificateSigningRequest, 0, len(certificateSigningRequestList.Items))
 	for idx := range certificateSigningRequestList.Items {
 		list = append(list, &certificateSigningRequestList.Items[idx])
 	}
-	return &certificateSigningRequestSet{set: makeGenericCertificateSigningRequestSet(list)}
+	return &certificateSigningRequestSet{
+		set:         makeGenericCertificateSigningRequestSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
 func (s *certificateSigningRequestSet) Keys() sets.String {
@@ -126,7 +152,7 @@ func (s *certificateSigningRequestSet) Map() map[string]*certificates_k8s_io_v1b
 	}
 
 	newMap := map[string]*certificates_k8s_io_v1beta1.CertificateSigningRequest{}
-	for k, v := range s.Generic().Map() {
+	for k, v := range s.Generic().Map().Map() {
 		newMap[k] = v.(*certificates_k8s_io_v1beta1.CertificateSigningRequest)
 	}
 	return newMap
@@ -171,7 +197,7 @@ func (s *certificateSigningRequestSet) Union(set CertificateSigningRequestSet) C
 	if s == nil {
 		return set
 	}
-	return NewCertificateSigningRequestSet(append(s.List(), set.List()...)...)
+	return NewCertificateSigningRequestSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *certificateSigningRequestSet) Difference(set CertificateSigningRequestSet) CertificateSigningRequestSet {
@@ -179,7 +205,11 @@ func (s *certificateSigningRequestSet) Difference(set CertificateSigningRequestS
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &certificateSigningRequestSet{set: newSet}
+	return &certificateSigningRequestSet{
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
+	}
 }
 
 func (s *certificateSigningRequestSet) Intersection(set CertificateSigningRequestSet) CertificateSigningRequestSet {
@@ -191,7 +221,7 @@ func (s *certificateSigningRequestSet) Intersection(set CertificateSigningReques
 	for _, obj := range newSet.List() {
 		certificateSigningRequestList = append(certificateSigningRequestList, obj.(*certificates_k8s_io_v1beta1.CertificateSigningRequest))
 	}
-	return NewCertificateSigningRequestSet(certificateSigningRequestList...)
+	return NewCertificateSigningRequestSet(s.sortFunc, s.compareFunc, certificateSigningRequestList...)
 }
 
 func (s *certificateSigningRequestSet) Find(id ezkube.ResourceId) (*certificates_k8s_io_v1beta1.CertificateSigningRequest, error) {
@@ -233,5 +263,19 @@ func (s *certificateSigningRequestSet) Clone() CertificateSigningRequestSet {
 	if s == nil {
 		return nil
 	}
-	return &certificateSigningRequestSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &certificateSigningRequestSet{
+		set: sksets.NewResourceSet(
+			s.sortFunc,
+			s.compareFunc,
+			s.Generic().Clone().List()...,
+		),
+	}
+}
+
+func (s *certificateSigningRequestSet) GetSortFunc() func(toInsert, existing interface{}) bool {
+	return s.sortFunc
+}
+
+func (s *certificateSigningRequestSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }

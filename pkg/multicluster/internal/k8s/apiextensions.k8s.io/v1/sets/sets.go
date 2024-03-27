@@ -48,30 +48,56 @@ type CustomResourceDefinitionSet interface {
 	Delta(newSet CustomResourceDefinitionSet) sksets.ResourceDelta
 	// Create a deep copy of the current CustomResourceDefinitionSet
 	Clone() CustomResourceDefinitionSet
+	// Get the sort function used by the set
+	GetSortFunc() func(toInsert, existing interface{}) bool
+	// Get the equality function used by the set
+	GetCompareFunc() func(a, b interface{}) int
 }
 
-func makeGenericCustomResourceDefinitionSet(customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition) sksets.ResourceSet {
+func makeGenericCustomResourceDefinitionSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	customResourceDefinitionList []*apiextensions_k8s_io_v1.CustomResourceDefinition,
+) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range customResourceDefinitionList {
 		genericResources = append(genericResources, obj)
 	}
-	return sksets.NewResourceSet(genericResources...)
+	return sksets.NewResourceSet(sortFunc, compareFunc, genericResources...)
 }
 
 type customResourceDefinitionSet struct {
-	set sksets.ResourceSet
+	set         sksets.ResourceSet
+	sortFunc    func(toInsert, existing interface{}) bool
+	compareFunc func(a, b interface{}) int
 }
 
-func NewCustomResourceDefinitionSet(customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition) CustomResourceDefinitionSet {
-	return &customResourceDefinitionSet{set: makeGenericCustomResourceDefinitionSet(customResourceDefinitionList)}
+func NewCustomResourceDefinitionSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	customResourceDefinitionList ...*apiextensions_k8s_io_v1.CustomResourceDefinition,
+) CustomResourceDefinitionSet {
+	return &customResourceDefinitionSet{
+		set:         makeGenericCustomResourceDefinitionSet(sortFunc, compareFunc, customResourceDefinitionList),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
-func NewCustomResourceDefinitionSetFromList(customResourceDefinitionList *apiextensions_k8s_io_v1.CustomResourceDefinitionList) CustomResourceDefinitionSet {
+func NewCustomResourceDefinitionSetFromList(
+	sortFunc func(toInsert, existing interface{}) bool,
+	compareFunc func(a, b interface{}) int,
+	customResourceDefinitionList *apiextensions_k8s_io_v1.CustomResourceDefinitionList,
+) CustomResourceDefinitionSet {
 	list := make([]*apiextensions_k8s_io_v1.CustomResourceDefinition, 0, len(customResourceDefinitionList.Items))
 	for idx := range customResourceDefinitionList.Items {
 		list = append(list, &customResourceDefinitionList.Items[idx])
 	}
-	return &customResourceDefinitionSet{set: makeGenericCustomResourceDefinitionSet(list)}
+	return &customResourceDefinitionSet{
+		set:         makeGenericCustomResourceDefinitionSet(sortFunc, compareFunc, list),
+		sortFunc:    sortFunc,
+		compareFunc: compareFunc,
+	}
 }
 
 func (s *customResourceDefinitionSet) Keys() sets.String {
@@ -126,7 +152,7 @@ func (s *customResourceDefinitionSet) Map() map[string]*apiextensions_k8s_io_v1.
 	}
 
 	newMap := map[string]*apiextensions_k8s_io_v1.CustomResourceDefinition{}
-	for k, v := range s.Generic().Map() {
+	for k, v := range s.Generic().Map().Map() {
 		newMap[k] = v.(*apiextensions_k8s_io_v1.CustomResourceDefinition)
 	}
 	return newMap
@@ -171,7 +197,7 @@ func (s *customResourceDefinitionSet) Union(set CustomResourceDefinitionSet) Cus
 	if s == nil {
 		return set
 	}
-	return NewCustomResourceDefinitionSet(append(s.List(), set.List()...)...)
+	return NewCustomResourceDefinitionSet(s.sortFunc, s.compareFunc, append(s.List(), set.List()...)...)
 }
 
 func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
@@ -179,7 +205,11 @@ func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &customResourceDefinitionSet{set: newSet}
+	return &customResourceDefinitionSet{
+		set:         newSet,
+		sortFunc:    s.sortFunc,
+		compareFunc: s.compareFunc,
+	}
 }
 
 func (s *customResourceDefinitionSet) Intersection(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {
@@ -191,7 +221,7 @@ func (s *customResourceDefinitionSet) Intersection(set CustomResourceDefinitionS
 	for _, obj := range newSet.List() {
 		customResourceDefinitionList = append(customResourceDefinitionList, obj.(*apiextensions_k8s_io_v1.CustomResourceDefinition))
 	}
-	return NewCustomResourceDefinitionSet(customResourceDefinitionList...)
+	return NewCustomResourceDefinitionSet(s.sortFunc, s.compareFunc, customResourceDefinitionList...)
 }
 
 func (s *customResourceDefinitionSet) Find(id ezkube.ResourceId) (*apiextensions_k8s_io_v1.CustomResourceDefinition, error) {
@@ -233,5 +263,19 @@ func (s *customResourceDefinitionSet) Clone() CustomResourceDefinitionSet {
 	if s == nil {
 		return nil
 	}
-	return &customResourceDefinitionSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &customResourceDefinitionSet{
+		set: sksets.NewResourceSet(
+			s.sortFunc,
+			s.compareFunc,
+			s.Generic().Clone().List()...,
+		),
+	}
+}
+
+func (s *customResourceDefinitionSet) GetSortFunc() func(toInsert, existing interface{}) bool {
+	return s.sortFunc
+}
+
+func (s *customResourceDefinitionSet) GetCompareFunc() func(a, b interface{}) int {
+	return s.compareFunc
 }

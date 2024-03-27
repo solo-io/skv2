@@ -28,7 +28,6 @@ func TypedKey(id ezkube.ResourceId) string {
 type ResourceSet interface {
 	Keys() sets.String
 	List(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
-	UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId
 	Map() Resources
 	Insert(resource ...ezkube.ResourceId)
 	Equal(set ResourceSet) bool
@@ -59,8 +58,14 @@ type threadSafeResourceSet struct {
 	set  Resources
 }
 
-func NewResourceSet(resources ...ezkube.ResourceId) ResourceSet {
-	return &threadSafeResourceSet{set: newResources(resources...)}
+func NewResourceSet(
+	sortFunc func(toInsert, existing interface{}) bool,
+	equalityFunc func(a, b interface{}) int,
+	resources ...ezkube.ResourceId,
+) ResourceSet {
+	return &threadSafeResourceSet{
+		set: newResources(sortFunc, equalityFunc, resources...),
+	}
 }
 
 func (t *threadSafeResourceSet) Keys() sets.String {
@@ -75,21 +80,13 @@ func (t *threadSafeResourceSet) List(filterResource ...func(ezkube.ResourceId) b
 	return t.set.List(filterResource...)
 }
 
-func (t *threadSafeResourceSet) UnsortedList(filterResource ...func(ezkube.ResourceId) bool) []ezkube.ResourceId {
-	t.lock.RLock()
-	defer t.lock.RUnlock()
-	return t.set.UnsortedList(filterResource...)
-}
-
 func (t *threadSafeResourceSet) Map() Resources {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set.Map()
+	return t.set
 }
 
-func (t *threadSafeResourceSet) Insert(
-	resources ...ezkube.ResourceId,
-) {
+func (t *threadSafeResourceSet) Insert(resources ...ezkube.ResourceId) {
 	t.lock.Lock()
 	defer t.lock.Unlock()
 	t.set.Insert(resources...)
@@ -101,23 +98,13 @@ func (t *threadSafeResourceSet) Has(resource ezkube.ResourceId) bool {
 	return t.set.Has(resource)
 }
 
-// Has returns true if and only if item is contained in the set.
-func (s Resources) Has(item ezkube.ResourceId) bool {
-	_, contained := s[Key(item)]
-	return contained
-}
-
-func (t *threadSafeResourceSet) IsSuperset(
-	set ResourceSet,
-) bool {
+func (t *threadSafeResourceSet) IsSuperset(set ResourceSet) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.IsSuperset(set.Map())
 }
 
-func (t *threadSafeResourceSet) Equal(
-	set ResourceSet,
-) bool {
+func (t *threadSafeResourceSet) Equal(set ResourceSet) bool {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	return t.set.Equal(set.Map())
@@ -159,7 +146,7 @@ func (t *threadSafeResourceSet) Find(
 func (t *threadSafeResourceSet) Length() int {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	return t.set.Len()
+	return t.set.Length()
 }
 
 // note that this function will currently panic if called for a ResourceSet containing non-runtime.Objects
@@ -172,3 +159,27 @@ func (t *threadSafeResourceSet) Delta(newSet ResourceSet) ResourceDelta {
 func (t *threadSafeResourceSet) Clone() ResourceSet {
 	return t.set.Clone()
 }
+
+// // must have GOEXPERIMENT=rangefunc enabled
+// // example -> for k, v := r.All2 { ... }
+// func (r *threadSafeResourceSet) All2() iter.Seq2[int, ezkube.ResourceId] {
+// 	return func(yield func(int, ezkube.ResourceId) bool) {
+// 		for i, resource := range r.set.set {
+// 			if !yield(i, resource) {
+// 				break
+// 			}
+// 		}
+// 	}
+// }
+
+// // must have GOEXPERIMENT=rangefunc enabled
+// // example -> for v := r.All1 { ... }
+// func (r *threadSafeResourceSet) All1() iter.Seq[ezkube.ResourceId] {
+// 	return func(yield func(ezkube.ResourceId) bool) {
+// 		for _, resource := range r.set.set {
+// 			if !yield(resource) {
+// 				break
+// 			}
+// 		}
+// 	}
+// }

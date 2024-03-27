@@ -271,6 +271,34 @@ func (mr *MockPaintSetMockRecorder) Clone() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockPaintSet)(nil).Clone))
 }
 
+// GetSortFunc mocks base method
+func (m *MockPaintSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockPaintSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockPaintSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockPaintSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockPaintSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockPaintSet)(nil).GetCompareFunc))
+}
+
 // MockClusterResourceSet is a mock of ClusterResourceSet interface
 type MockClusterResourceSet struct {
 	ctrl     *gomock.Controller
@@ -525,4 +553,32 @@ func (m *MockClusterResourceSet) Clone() v1sets.ClusterResourceSet {
 func (mr *MockClusterResourceSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClusterResourceSet)(nil).Clone))
+}
+
+// GetSortFunc mocks base method
+func (m *MockClusterResourceSet) GetSortFunc() func(interface{}, interface{}) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSortFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) bool)
+	return ret0
+}
+
+// GetSortFunc indicates an expected call of GetSortFunc
+func (mr *MockClusterResourceSetMockRecorder) GetSortFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSortFunc", reflect.TypeOf((*MockClusterResourceSet)(nil).GetSortFunc))
+}
+
+// GetCompareFunc mocks base method
+func (m *MockClusterResourceSet) GetCompareFunc() func(interface{}, interface{}) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompareFunc")
+	ret0, _ := ret[0].(func(interface{}, interface{}) int)
+	return ret0
+}
+
+// GetCompareFunc indicates an expected call of GetCompareFunc
+func (mr *MockClusterResourceSetMockRecorder) GetCompareFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompareFunc", reflect.TypeOf((*MockClusterResourceSet)(nil).GetCompareFunc))
 }
