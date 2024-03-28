@@ -171,7 +171,7 @@ func (s *customResourceDefinitionSet) Union(set CustomResourceDefinitionSet) Cus
 	if s == nil {
 		return set
 	}
-	return &customResourceDefinitionMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewCustomResourceDefinitionSet(append(s.List(), set.List()...)...)
 }
 
 func (s *customResourceDefinitionSet) Difference(set CustomResourceDefinitionSet) CustomResourceDefinitionSet {

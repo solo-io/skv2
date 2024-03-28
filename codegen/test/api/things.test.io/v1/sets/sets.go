@@ -171,7 +171,7 @@ func (s *paintSet) Union(set PaintSet) PaintSet {
 	if s == nil {
 		return set
 	}
-	return &paintMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewPaintSet(append(s.List(), set.List()...)...)
 }
 
 func (s *paintSet) Difference(set PaintSet) PaintSet {
@@ -592,7 +592,7 @@ func (s *clusterResourceSet) Union(set ClusterResourceSet) ClusterResourceSet {
 	if s == nil {
 		return set
 	}
-	return &clusterResourceMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewClusterResourceSet(append(s.List(), set.List()...)...)
 }
 
 func (s *clusterResourceSet) Difference(set ClusterResourceSet) ClusterResourceSet {

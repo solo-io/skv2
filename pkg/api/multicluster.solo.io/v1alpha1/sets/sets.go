@@ -171,7 +171,7 @@ func (s *kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesCluster
 	if s == nil {
 		return set
 	}
-	return &kubernetesClusterMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewKubernetesClusterSet(append(s.List(), set.List()...)...)
 }
 
 func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {

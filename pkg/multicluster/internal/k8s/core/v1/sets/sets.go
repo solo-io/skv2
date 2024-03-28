@@ -171,7 +171,7 @@ func (s *secretSet) Union(set SecretSet) SecretSet {
 	if s == nil {
 		return set
 	}
-	return &secretMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewSecretSet(append(s.List(), set.List()...)...)
 }
 
 func (s *secretSet) Difference(set SecretSet) SecretSet {
@@ -592,7 +592,7 @@ func (s *serviceAccountSet) Union(set ServiceAccountSet) ServiceAccountSet {
 	if s == nil {
 		return set
 	}
-	return &serviceAccountMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewServiceAccountSet(append(s.List(), set.List()...)...)
 }
 
 func (s *serviceAccountSet) Difference(set ServiceAccountSet) ServiceAccountSet {
@@ -1013,7 +1013,7 @@ func (s *namespaceSet) Union(set NamespaceSet) NamespaceSet {
 	if s == nil {
 		return set
 	}
-	return &namespaceMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewNamespaceSet(append(s.List(), set.List()...)...)
 }
 
 func (s *namespaceSet) Difference(set NamespaceSet) NamespaceSet {

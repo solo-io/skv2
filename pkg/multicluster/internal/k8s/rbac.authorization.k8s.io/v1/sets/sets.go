@@ -171,7 +171,7 @@ func (s *roleSet) Union(set RoleSet) RoleSet {
 	if s == nil {
 		return set
 	}
-	return &roleMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewRoleSet(append(s.List(), set.List()...)...)
 }
 
 func (s *roleSet) Difference(set RoleSet) RoleSet {
@@ -592,7 +592,7 @@ func (s *roleBindingSet) Union(set RoleBindingSet) RoleBindingSet {
 	if s == nil {
 		return set
 	}
-	return &roleBindingMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewRoleBindingSet(append(s.List(), set.List()...)...)
 }
 
 func (s *roleBindingSet) Difference(set RoleBindingSet) RoleBindingSet {
@@ -1013,7 +1013,7 @@ func (s *clusterRoleSet) Union(set ClusterRoleSet) ClusterRoleSet {
 	if s == nil {
 		return set
 	}
-	return &clusterRoleMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewClusterRoleSet(append(s.List(), set.List()...)...)
 }
 
 func (s *clusterRoleSet) Difference(set ClusterRoleSet) ClusterRoleSet {
@@ -1434,7 +1434,7 @@ func (s *clusterRoleBindingSet) Union(set ClusterRoleBindingSet) ClusterRoleBind
 	if s == nil {
 		return set
 	}
-	return &clusterRoleBindingMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewClusterRoleBindingSet(append(s.List(), set.List()...)...)
 }
 
 func (s *clusterRoleBindingSet) Difference(set ClusterRoleBindingSet) ClusterRoleBindingSet {

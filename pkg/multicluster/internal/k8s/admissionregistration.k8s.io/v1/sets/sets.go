@@ -171,7 +171,7 @@ func (s *validatingWebhookConfigurationSet) Union(set ValidatingWebhookConfigura
 	if s == nil {
 		return set
 	}
-	return &validatingWebhookConfigurationMergedSet{sets: []sksets.ResourceSet{s.Generic(), set.Generic()}}
+	return NewValidatingWebhookConfigurationSet(append(s.List(), set.List()...)...)
 }
 
 func (s *validatingWebhookConfigurationSet) Difference(set ValidatingWebhookConfigurationSet) ValidatingWebhookConfigurationSet {
