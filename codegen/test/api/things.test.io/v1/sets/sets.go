@@ -420,7 +420,11 @@ func (s *paintMergedSet) Length() int {
 }
 
 func (s *paintMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *paintMergedSet) Delta(newSet PaintSet) sksets.ResourceDelta {
@@ -841,7 +845,11 @@ func (s *clusterResourceMergedSet) Length() int {
 }
 
 func (s *clusterResourceMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *clusterResourceMergedSet) Delta(newSet ClusterResourceSet) sksets.ResourceDelta {

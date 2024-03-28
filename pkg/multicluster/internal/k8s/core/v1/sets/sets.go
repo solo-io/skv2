@@ -420,7 +420,11 @@ func (s *secretMergedSet) Length() int {
 }
 
 func (s *secretMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *secretMergedSet) Delta(newSet SecretSet) sksets.ResourceDelta {
@@ -841,7 +845,11 @@ func (s *serviceAccountMergedSet) Length() int {
 }
 
 func (s *serviceAccountMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *serviceAccountMergedSet) Delta(newSet ServiceAccountSet) sksets.ResourceDelta {
@@ -1262,7 +1270,11 @@ func (s *namespaceMergedSet) Length() int {
 }
 
 func (s *namespaceMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *namespaceMergedSet) Delta(newSet NamespaceSet) sksets.ResourceDelta {

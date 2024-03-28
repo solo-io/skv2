@@ -420,7 +420,11 @@ func (s *roleMergedSet) Length() int {
 }
 
 func (s *roleMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *roleMergedSet) Delta(newSet RoleSet) sksets.ResourceDelta {
@@ -841,7 +845,11 @@ func (s *roleBindingMergedSet) Length() int {
 }
 
 func (s *roleBindingMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *roleBindingMergedSet) Delta(newSet RoleBindingSet) sksets.ResourceDelta {
@@ -1262,7 +1270,11 @@ func (s *clusterRoleMergedSet) Length() int {
 }
 
 func (s *clusterRoleMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *clusterRoleMergedSet) Delta(newSet ClusterRoleSet) sksets.ResourceDelta {
@@ -1683,7 +1695,11 @@ func (s *clusterRoleBindingMergedSet) Length() int {
 }
 
 func (s *clusterRoleBindingMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *clusterRoleBindingMergedSet) Delta(newSet ClusterRoleBindingSet) sksets.ResourceDelta {

@@ -420,7 +420,11 @@ func (s *kubernetesClusterMergedSet) Length() int {
 }
 
 func (s *kubernetesClusterMergedSet) Generic() sksets.ResourceSet {
-	panic("unimplemented")
+	res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+		res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *kubernetesClusterMergedSet) Delta(newSet KubernetesClusterSet) sksets.ResourceDelta {
