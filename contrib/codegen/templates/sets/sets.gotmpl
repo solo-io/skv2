@@ -431,7 +431,11 @@ func (s *{{ $kindLowerCamel }}MergedSet) Length() int {
 }
 
 func (s *{{ $kindLowerCamel }}MergedSet) Generic() sksets.ResourceSet {
-    panic("unimplemented")
+    res := make([]ezkube.ResourceId, s.Length())
+	for _, thing := range s.List() {
+			res = append(res, thing)
+	}
+	return sksets.NewResourceSet(res...)
 }
 
 func (s *{{ $kindLowerCamel }}MergedSet) Delta(newSet {{ $resource.Kind }}Set) sksets.ResourceDelta {
