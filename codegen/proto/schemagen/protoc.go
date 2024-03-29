@@ -40,10 +40,9 @@ func (p *protocGenerator) GetJSONSchemas(protoFiles []string, imports []string, 
 
 	// The Executor used to compile protos
 	protocExecutor := &collector.OpenApiProtocExecutor{
-		OutputDir:                   tmpOutputDir,
-		IncludeDescriptionsInSchema: !p.validationSchemaOptions.RemoveDescriptionsFromSchema,
-		EnumAsIntOrString:           p.validationSchemaOptions.EnumAsIntOrString,
-		MessagesWithEmptySchema:     p.validationSchemaOptions.MessagesWithEmptySchema,
+		OutputDir:               tmpOutputDir,
+		EnumAsIntOrString:       p.validationSchemaOptions.EnumAsIntOrString,
+		MessagesWithEmptySchema: p.validationSchemaOptions.MessagesWithEmptySchema,
 	}
 
 	// 1. Generate the openApiSchemas for the project, writing them to a temp directory (schemaOutputDir)
@@ -62,6 +61,8 @@ func (p *protocGenerator) generateSchemasForProjectProto(
 	projectProtoFile string,
 	imports []string,
 ) error {
+	log.Printf("Generating schema for proto file: %s", projectProtoFile)
+
 	// we don't use the output of protoc so use a temp file
 	tmpFile, err := os.CreateTemp("", "sv2-schema-gen-")
 	if err != nil {

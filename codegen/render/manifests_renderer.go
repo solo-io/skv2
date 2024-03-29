@@ -131,12 +131,15 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 	return renderedFiles, nil
 }
 
-// Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
 func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
-	if protoDir == "" {
-		protoDir = anyvendor.DefaultDepDir
+	if groupOptions.SchemaGenerator == schemagen.Cue {
+		return generateOpenApiFromCue(grp, protoDir, protoOpts, groupOptions)
 	}
+	return generateOpenApiFromProtocGen(grp, protoDir, protoOpts, groupOptions)
+}
 
+// Use protoc-gen-openapi for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
+func generateOpenApiFromProtocGen(grp model.Group, protoDir string, _ protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
 	// Collect all protobuf definitions including transitive dependencies.
 	var imports []string
 	for _, fileDescriptor := range grp.Descriptors {
@@ -144,25 +147,12 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 	}
 	imports = stringutils.Unique(imports)
 
-	// Parse protobuf into cuelang
-	cfg := &protobuf.Config{
-		Root:   protoDir,
-		Module: grp.Module,
-		Paths:  imports,
-	}
-	fmt.Printf("================ protodir=%s %s/%s: %+v\n", protoDir, grp.GroupVersion.Group, grp.GroupVersion.Version, *cfg)
-
 	protoFiles := make([]string, len(grp.Descriptors))
 	// collect the set of messsages for which validation is disabled
 	for i, fileDescriptor := range grp.Descriptors {
 		protoFiles[i] = fileDescriptor.ProtoFilePath
-		fmt.Printf("========== file: %s\n", fileDescriptor.ProtoFilePath)
 	}
-	protoGen := schemagen.NewProtocGenerator(&schemagen.ValidationSchemaOptions{
-		MessagesWithEmptySchema: []string{
-			"ratelimit.api.solo.io.Descriptor",
-		},
-	})
+	protoGen := schemagen.NewProtocGenerator(&groupOptions.SchemaValidationOpts)
 	gvkSchemas, err := protoGen.GetJSONSchemas(protoFiles, imports, grp.GroupVersion)
 	if err != nil {
 		return nil, err
@@ -170,18 +160,16 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 
 	oapiSchemas := make(model.OpenApiSchemas)
 	for gvk, schema := range gvkSchemas {
-		fmt.Printf("============== gvk=%s, ID=%s, URL=%s\n", gvk, schema.ID, schema.Schema)
-		// TODO: post process
+		// fmt.Printf("============== gvk=%s, ID=%s, URL=%s\n", gvk, schema.ID, schema.Schema)
 		jsonSchema, err := postProcessOpenAPISchema(schema, groupOptions)
 		if err != nil {
 			return nil, err
 		}
-		// TODO: fix key
+		// TODO: drop schemas we are not interested in
 		oapiSchemas[gvk.Kind] = jsonSchema
 	}
 
 	return oapiSchemas, nil
-	// TODO(protogen): ignore irrelevant proto imports
 }
 
 // Use cuelang as an intermediate language for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
@@ -203,12 +191,10 @@ func generateOpenApiFromCue(grp model.Group, protoDir string, protoOpts protouti
 		Module: grp.Module,
 		Paths:  imports,
 	}
-	fmt.Printf("================ protodir=%s %s/%s: %+v\n", protoDir, grp.GroupVersion.Group, grp.GroupVersion.Version, *cfg)
 
 	ext := protobuf.NewExtractor(cfg)
 	// collect the set of messsages for which validation is disabled
 	for _, fileDescriptor := range grp.Descriptors {
-		fmt.Printf("========== file: %s\n", fileDescriptor.ProtoFilePath)
 		if err := ext.AddFile(fileDescriptor.ProtoFilePath, nil); err != nil {
 			return nil, err
 		}
@@ -236,9 +222,7 @@ func generateOpenApiFromCue(grp model.Group, protoDir string, protoOpts protouti
 	built := cue.Build(instances)
 	for _, builtInstance := range built {
 		// Avoid generating openapi for irrelevant proto imports.
-		fmt.Println("========  import path: ", builtInstance.ImportPath)
 		if !strings.HasSuffix(builtInstance.ImportPath, grp.Group+"/"+grp.Version) {
-			fmt.Println("========  skipping import path: ", builtInstance.ImportPath)
 			continue
 		}
 
@@ -262,7 +246,6 @@ func generateOpenApiFromCue(grp model.Group, protoDir string, protoOpts protouti
 				return nil, err
 			}
 			oapiSchemas[kv.Key] = jsonSchema
-			fmt.Println("========  openapi schema key:", kv.Key)
 		}
 
 		return oapiSchemas, err

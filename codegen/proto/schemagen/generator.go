@@ -1,20 +1,20 @@
 package schemagen
 
-type ValidationSchemaOptions struct {
-	// Whether to remove descriptions from validation schemas
-	// Default: false
-	//
-	// NOTE: I'd prefer a positive field name (ie includeDescriptions)
-	//	but I wanted to avoid changing the default behavior
-	RemoveDescriptionsFromSchema bool
+type GeneratorKind string
 
+const (
+	Cue              GeneratorKind = "cue"
+	ProtocGenOpenAPI GeneratorKind = "protoc-gen-openapi"
+)
+
+type ValidationSchemaOptions struct {
 	// Whether to assign Enum fields the `x-kubernetes-int-or-string` property
 	// which allows the value to either be an integer or a string
 	// If this is false, only string values are allowed
 	// Default: false
 	EnumAsIntOrString bool
 
-	// A list of messages (core.solo.io.Status) whose validation schema should
+	// A list of messages (e.g. ratelimit.api.solo.io.Descriptor) whose validation schema should
 	// not be generated
 	MessagesWithEmptySchema []string
 }
