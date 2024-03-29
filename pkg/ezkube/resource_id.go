@@ -194,29 +194,32 @@ func ResourceIdsCompare(a, b ResourceId) int {
 		return 1
 	}
 
-	// compare cluster names if applicable
-	a_cri, a_ok := a.(ClusterResourceId)
-	b_cri, b_ok := b.(ClusterResourceId)
+	// compare cluster names
+	// attempt to cast to ClusterResourceId
+	// if fails, attempt cast to deprecatedClusterResourceId since we might be working with a ClusterObjectRef
+	var (
+		aCluster, bCluster string
+	)
 
-	// if both are cluster resource ids, compare cluster names
-	if a_ok && b_ok {
-		if GetClusterName(a_cri) < GetClusterName(b_cri) {
-			return -1
-		}
-		if GetClusterName(a_cri) > GetClusterName(b_cri) {
-			return 1
-		}
-		return 0 // they are equal
+	if a_cri, ok := a.(ClusterResourceId); ok {
+		aCluster = GetClusterName(a_cri)
+	} else if a_dcri, ok := a.(deprecatedClusterResourceId); ok {
+		aCluster = a_dcri.GetClusterName()
 	}
 
-	// if only one has a cluster name, it is considered greater
-	if b_ok && GetClusterName(b_cri) != "" {
-		// "" < "{b cluster name}"
+	if b_cri, ok := b.(ClusterResourceId); ok {
+		bCluster = GetClusterName(b_cri)
+	} else if b_dcri, ok := b.(deprecatedClusterResourceId); ok {
+		bCluster = b_dcri.GetClusterName()
+	}
+
+	if aCluster < bCluster {
 		return -1
 	}
-	if a_ok && GetClusterName(a_cri) != "" {
-		// "{a cluster name}" > ""
+	if aCluster > bCluster {
 		return 1
 	}
-	return 0 // they are equal
+
+	// they are equal
+	return 0
 }
