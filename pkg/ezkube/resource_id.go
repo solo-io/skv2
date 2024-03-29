@@ -175,15 +175,48 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 }
 
 // ResourceIdsCompare returns an integer comparing two ResourceIds lexicographically.
+// The comparison is based on name, then namespace, then cluster name.
 // The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
 func ResourceIdsCompare(a, b ResourceId) int {
-	key_a := KeyWithSeparator(a, ".")
-	key_b := KeyWithSeparator(b, ".")
-	if key_a == key_b {
-		return 0
-	}
-	if key_a < key_b {
+	// compare names
+	if a.GetName() < b.GetName() {
 		return -1
 	}
-	return 1
+	if a.GetName() > b.GetName() {
+		return 1
+	}
+
+	// compare namespaces
+	if a.GetNamespace() < b.GetNamespace() {
+		return -1
+	}
+	if a.GetNamespace() > b.GetNamespace() {
+		return 1
+	}
+
+	// compare cluster names if applicable
+	a_cri, a_ok := a.(ClusterResourceId)
+	b_cri, b_ok := b.(ClusterResourceId)
+
+	// if both are cluster resource ids, compare cluster names
+	if a_ok && b_ok {
+		if GetClusterName(a_cri) < GetClusterName(b_cri) {
+			return -1
+		}
+		if GetClusterName(a_cri) > GetClusterName(b_cri) {
+			return 1
+		}
+		return 0 // they are equal
+	}
+
+	// if only one has a cluster name, it is considered greater
+	if b_ok && GetClusterName(b_cri) != "" {
+		// "" < "{b cluster name}"
+		return -1
+	}
+	if a_ok && GetClusterName(a_cri) != "" {
+		// "{a cluster name}" > ""
+		return 1
+	}
+	return 0 // they are equal
 }

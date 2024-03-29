@@ -234,6 +234,10 @@ var _ = FDescribe("PaintSetV2", func() {
 			Expect(Expect(err).NotTo(HaveOccurred()))
 			Expect(found).To(Equal(paint))
 		}
+		// find based on something that implemented ClusterObjectRef
+		found, err := setA.Find(ezkube.MakeClusterObjectRef(newPaintC))
+		Expect(Expect(err).NotTo(HaveOccurred()))
+		Expect(found).To(Equal(newPaintC))
 	})
 
 	It("should sort resources by name.ns.cluster", func() {
