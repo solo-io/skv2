@@ -344,6 +344,7 @@ func (s *{{ $kindLowerCamel }}MergedSet) Insert(
         {{ $kindLowerCamel }}List ...*{{ $import_prefix }}.{{ $resource.Kind }},
 ) {
     if s == nil {
+        panic("cannot insert into nil set")
     }
     if len(s.sets) == 0 {
         s.sets = append(s.sets, makeGeneric{{ $resource.Kind }}Set({{ $kindLowerCamel }}List))

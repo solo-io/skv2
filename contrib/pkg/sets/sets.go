@@ -44,6 +44,7 @@ type ResourceSet interface {
 	Delta(newSet ResourceSet) ResourceDelta
 	// Clone returns a deep copy of the set
 	Clone() ResourceSet
+	Merge(otherSet ResourceSet) ResourceSet
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
