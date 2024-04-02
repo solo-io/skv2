@@ -21,6 +21,8 @@ type ResourceSet[T client.Object] interface {
 	// The iteration can be stopped by returning false from the function.
 	// Returning true will continue the iteration.
 	Iter(func(int, T) bool)
+
+	InefficientList() []T
 	// Return the Set as a map of key to resource.
 	Map() map[string]T
 	// Insert a resource into the set.
@@ -109,6 +111,14 @@ func (s *resourceSet[T]) List(filterResource ...func(T) bool) func(yield func(in
 			}
 		}
 	}
+}
+
+// Deprecated: use Iter instead
+// InefficientList returns the set as a slice.
+func (s *resourceSet[T]) InefficientList() []T {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return s.set[:]
 }
 
 func (s *resourceSet[T]) Iter(yield func(int, T) bool) {
