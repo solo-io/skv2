@@ -1,4 +1,3 @@
-GO_ARGS := GOEXPERIMENT=rangefunc
 
 #----------------------------------------------------------------------------------
 # Build
@@ -8,7 +7,7 @@ GO_ARGS := GOEXPERIMENT=rangefunc
 
 .PHONY: mod-download
 mod-download:
-	$(GO_ARGS) go mod download
+	go mod download
 
 
 DEPSGOBIN=$(shell pwd)/_output/.bin
