@@ -113,6 +113,7 @@ type Deployment struct {
 	UseDaemonSet bool
 	Container
 	Sidecars                    []Sidecar
+	PodSecurityContext          *corev1.PodSecurityContext
 	Volumes                     []corev1.Volume
 	ConditionalVolumes          []ConditionalVolume
 	CustomPodLabels             map[string]string
