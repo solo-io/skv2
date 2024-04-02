@@ -289,9 +289,10 @@ func (s *resourceSet[T]) Generic() sk_sets.ResourceSet {
 		return s.compareFunc(a.(T), b.(T))
 	}
 	set := sk_sets.NewResourceSet(nil, genericCompareFunc)
-	for _, v := range s.List() {
+	s.List()(func(_ int, v T) bool {
 		set.Insert(v)
-	}
+		return true
+	})
 	return set
 }
 
