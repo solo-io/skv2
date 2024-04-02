@@ -69,12 +69,11 @@ type resourceSet[T client.Object] struct {
 }
 
 func NewResourceSet[T client.Object](
-	compareFunc func(a, b ezkube.ResourceId) int,
 	resources ...T,
 ) ResourceSet[T] {
 	rs := &resourceSet[T]{
 		set:         []T{},
-		compareFunc: compareFunc,
+		compareFunc: ezkube.ResourceIdsCompare,
 	}
 	rs.Insert(resources...)
 	return rs
@@ -178,7 +177,6 @@ func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
 		list = append(list, resource.(T))
 	}
 	return NewResourceSet[T](
-		s.compareFunc,
 		list...,
 	)
 }
@@ -186,7 +184,7 @@ func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
 func (s *resourceSet[T]) Difference(set ResourceSet[T]) ResourceSet[T] {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	result := NewResourceSet[T](s.compareFunc)
+	result := NewResourceSet[T]()
 	for _, resource := range s.set {
 		if !set.Has(resource) {
 			result.Insert(resource)
@@ -199,13 +197,13 @@ func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	var walk, other ResourceSet[T]
-	result := NewResourceSet[T](s.compareFunc)
+	result := NewResourceSet[T]()
 	if len(s.set) < set.Len() {
-		walk = NewResourceSet(s.compareFunc, s.set...)
+		walk = NewResourceSet(s.set...)
 		other = set
 	} else {
 		walk = set
-		other = NewResourceSet(s.compareFunc, s.set...)
+		other = NewResourceSet(s.set...)
 	}
 	walk.List()(func(_ int, key T) bool {
 		if other.Has(key) {
@@ -241,7 +239,7 @@ func (s *resourceSet[T]) Len() int {
 
 // note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
 func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta {
-	updated, removed := NewResourceSet[T](oldSet.compareFunc), NewResourceSet[T](oldSet.compareFunc)
+	updated, removed := NewResourceSet[T](), NewResourceSet[T]()
 
 	// find objects updated or removed
 	for _, resource := range oldSet.set {
@@ -276,7 +274,7 @@ func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 // Create a clone of the current set
 // note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
 func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
-	new := NewResourceSet[T](oldSet.compareFunc)
+	new := NewResourceSet[T]()
 
 	oldSet.List()(func(_ int, oldObj T) bool {
 		copy := oldObj.DeepCopyObject().(T)

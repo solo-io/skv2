@@ -17,8 +17,8 @@ var _ = FDescribe("PaintSetV2", func() {
 	)
 
 	BeforeEach(func() {
-		setA = sets_v2.NewResourceSet[*v1.Paint](ezkube.ResourceIdsCompare)
-		setB = sets_v2.NewResourceSet[*v1.Paint](ezkube.ResourceIdsCompare)
+		setA = sets_v2.NewResourceSet[*v1.Paint]()
+		setB = sets_v2.NewResourceSet[*v1.Paint]()
 		paintA = &v1.Paint{
 			ObjectMeta: metav1.ObjectMeta{Name: "nameA", Namespace: "nsA"},
 		}

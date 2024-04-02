@@ -173,3 +173,53 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 		return nil, eris.Errorf("could not convert key %s with separator %s into resource id; unexpected number of parts: %d", key, separator, len(parts))
 	}
 }
+
+// ResourceIdsCompare returns an integer comparing two ResourceIds lexicographically.
+// The comparison is based on name, then namespace, then cluster name.
+// The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
+func ResourceIdsCompare(a, b ResourceId) int {
+	// compare names
+	if a.GetName() < b.GetName() {
+		return -1
+	}
+	if a.GetName() > b.GetName() {
+		return 1
+	}
+
+	// compare namespaces
+	if a.GetNamespace() < b.GetNamespace() {
+		return -1
+	}
+	if a.GetNamespace() > b.GetNamespace() {
+		return 1
+	}
+
+	// compare cluster names
+	// attempt to cast to ClusterResourceId
+	// if fails, attempt cast to deprecatedClusterResourceId since we might be working with a ClusterObjectRef
+	var (
+		aCluster, bCluster string
+	)
+
+	if a_cri, ok := a.(ClusterResourceId); ok {
+		aCluster = GetClusterName(a_cri)
+	} else if a_dcri, ok := a.(deprecatedClusterResourceId); ok {
+		aCluster = a_dcri.GetClusterName()
+	}
+
+	if b_cri, ok := b.(ClusterResourceId); ok {
+		bCluster = GetClusterName(b_cri)
+	} else if b_dcri, ok := b.(deprecatedClusterResourceId); ok {
+		bCluster = b_dcri.GetClusterName()
+	}
+
+	if aCluster < bCluster {
+		return -1
+	}
+	if aCluster > bCluster {
+		return 1
+	}
+
+	// they are equal
+	return 0
+}
