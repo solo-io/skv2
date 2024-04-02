@@ -207,11 +207,12 @@ func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 		walk = set
 		other = NewResourceSet(s.compareFunc, s.set...)
 	}
-	for _, key := range walk.List() {
+	walk.List()(func(_ int, key T) bool {
 		if other.Has(key) {
 			result.Insert(key)
 		}
-	}
+		return true
+	})
 	return result
 }
 
@@ -277,10 +278,11 @@ func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 	new := NewResourceSet[T](oldSet.compareFunc)
 
-	for _, oldObj := range oldSet.List() {
+	oldSet.List()(func(_ int, oldObj T) bool {
 		copy := oldObj.DeepCopyObject().(T)
 		new.Insert(copy)
-	}
+		return true
+	})
 	return new
 }
 
