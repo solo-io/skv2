@@ -1,7 +1,6 @@
 package sets_v2
 
 import (
-	"iter"
 	"slices"
 	"sync"
 
@@ -17,7 +16,7 @@ type ResourceSet[T client.Object] interface {
 	Keys() sets.Set[string]
 	// List returns an iterator for the set.
 	// Pass an optional filter function to skip iteration on specific entries; Note: index will still progress.
-	List(filterResource ...func(T) bool) iter.Seq2[int, T]
+	List(filterResource ...func(T) bool) func(yield func(int, T) bool)
 	// Return the Set as a map of key to resource.
 	Map() map[string]T
 	// Insert a resource into the set.
@@ -91,7 +90,7 @@ func (s *resourceSet[T]) Keys() sets.Set[string] {
 	return sets.Set[string]{}
 }
 
-func (s *resourceSet[T]) List(filterResource ...func(T) bool) iter.Seq2[int, T] {
+func (s *resourceSet[T]) List(filterResource ...func(T) bool) func(yield func(int, T) bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	return func(yield func(int, T) bool) {
