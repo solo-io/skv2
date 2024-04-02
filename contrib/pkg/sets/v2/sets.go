@@ -1,6 +1,7 @@
 package sets_v2
 
 import (
+	"slices"
 	"sync"
 
 	sk_sets "github.com/solo-io/skv2/contrib/pkg/sets"
@@ -12,21 +13,20 @@ import (
 
 type ResourceSet[T client.Object] interface {
 	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(T) bool) []T
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	UnsortedList(filterResource ...func(T) bool) []T
+	Keys() sets.Set[string]
+	// List returns an iterator for the set.
+	// Pass an optional filter function to skip iteration on specific entries; Note: index will still progress.
+	List(filterResource ...func(T) bool) func(yield func(int, T) bool)
 	// Return the Set as a map of key to resource.
 	Map() map[string]T
 	// Insert a resource into the set.
 	Insert(resource ...T)
 	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(set ResourceSet[T]) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
+	// Check if the set contains the resource.
 	Has(resource T) bool
-	// Delete the key matching the resource
-	Delete(resource T)
+	// Delete the matching resource.
+	Delete(resource ezkube.ResourceId)
 	// Return the union with the provided set
 	Union(set ResourceSet[T]) ResourceSet[T]
 	// Return the difference with the provided set
@@ -34,15 +34,17 @@ type ResourceSet[T client.Object] interface {
 	// Return the intersection with the provided set
 	Intersection(set ResourceSet[T]) ResourceSet[T]
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (T, error)
+	Find(resource ezkube.ResourceId) (T, error)
 	// Get the length of the set
-	Length() int
+	Len() int
 	// returns the generic implementation of the set
 	Generic() sk_sets.ResourceSet
 	// returns the delta between this and and another ResourceSet[T]
 	Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 	// Clone returns a deep copy of the set
 	Clone() ResourceSet[T]
+	// Get the compare function used by the set
+	GetCompareFunc() func(a, b ezkube.ResourceId) int
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -61,93 +63,91 @@ func (r *ResourceDelta[T]) DeltaV1() sk_sets.ResourceDelta {
 }
 
 type resourceSet[T client.Object] struct {
-	lock    sync.RWMutex
-	set     sets.String
-	mapping map[string]T
+	lock        sync.RWMutex
+	set         []T
+	compareFunc func(a, b ezkube.ResourceId) int
 }
 
-func NewResourceSet[T client.Object](resources ...T) ResourceSet[T] {
-	set := sets.NewString()
-	mapping := map[string]T{}
-	for _, resource := range resources {
-		key := sk_sets.Key(resource)
-		set.Insert(key)
-		mapping[key] = resource
+func NewResourceSet[T client.Object](
+	compareFunc func(a, b ezkube.ResourceId) int,
+	resources ...T,
+) ResourceSet[T] {
+	rs := &resourceSet[T]{
+		set:         []T{},
+		compareFunc: compareFunc,
 	}
-	return &resourceSet[T]{set: set, mapping: mapping}
+	rs.Insert(resources...)
+	return rs
 }
 
-func (s *resourceSet[T]) Keys() sets.String {
-	return sets.NewString(s.set.List()...)
-}
-
-func (s *resourceSet[T]) List(filterResource ...func(T) bool) []T {
+func (s *resourceSet[T]) Keys() sets.Set[string] {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	var resources []T
-	for _, key := range s.set.List() {
-		var filtered bool
-		for _, filter := range filterResource {
-			if filter(s.mapping[key]) {
-				filtered = true
+	keys := sets.Set[string]{}
+	for _, resource := range s.set {
+		keys.Insert(sk_sets.Key(resource))
+	}
+	return sets.Set[string]{}
+}
+
+func (s *resourceSet[T]) List(filterResource ...func(T) bool) func(yield func(int, T) bool) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return func(yield func(int, T) bool) {
+	OUTER:
+		for i, resource := range s.set {
+			for _, filter := range filterResource {
+				if filter(resource) {
+					continue OUTER
+				}
+			}
+			if !yield(i, resource) {
 				break
 			}
 		}
-		if !filtered {
-			resources = append(resources, s.mapping[key])
-		}
 	}
-	return resources
-}
-
-func (s *resourceSet[T]) UnsortedList(filterResource ...func(T) bool) []T {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	keys := s.set.UnsortedList()
-	resources := make([]T, 0, len(keys))
-
-	for _, key := range keys {
-		var filtered bool
-		for _, filter := range filterResource {
-			if filter(s.mapping[key]) {
-				filtered = true
-				break
-			}
-		}
-		if !filtered {
-			resources = append(resources, s.mapping[key])
-		}
-	}
-	return resources
 }
 
 func (s *resourceSet[T]) Map() map[string]T {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	newMap := map[string]T{}
-	for k, v := range s.mapping {
-		newMap[k] = v
+	for _, resource := range s.set {
+		newMap[sk_sets.Key(resource)] = resource
 	}
 	return newMap
 }
 
-func (s *resourceSet[T]) Insert(
-	resources ...T,
-) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+// Insert adds items to the set.
+// If an item is already in the set, it is overwritten.
+// The set is sorted based on the compare func.
+func (s *resourceSet[T]) Insert(resources ...T) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	for _, resource := range resources {
-		key := sk_sets.Key(resource)
-		s.mapping[key] = resource
-		s.set.Insert(key)
+		insertIndex, found := slices.BinarySearchFunc(
+			s.set,
+			resource,
+			func(a, b T) int { return s.compareFunc(a, b) },
+		)
+		if found {
+			s.set[insertIndex] = resource
+			continue
+		}
+		// insert the resource at the determined index
+		s.set = slices.Insert(s.set, insertIndex, resource)
 	}
 }
 
 func (s *resourceSet[T]) Has(resource T) bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	return s.set.Has(sk_sets.Key(resource))
+	_, found := slices.BinarySearchFunc(
+		s.set,
+		resource,
+		func(a, b T) int { return s.compareFunc(a, b) },
+	)
+	return found
 }
 
 func (s *resourceSet[T]) Equal(
@@ -155,94 +155,117 @@ func (s *resourceSet[T]) Equal(
 ) bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	return s.set.Equal(set.Keys())
+	return s.Generic().Equal(set.Generic())
 }
 
-func (s *resourceSet[T]) Delete(resource T) {
+func (s *resourceSet[T]) Delete(resource ezkube.ResourceId) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	key := sk_sets.Key(resource)
-	delete(s.mapping, key)
-	s.set.Delete(key)
+
+	i, found := slices.BinarySearchFunc(
+		s.set,
+		resource,
+		func(a T, b ezkube.ResourceId) int { return s.compareFunc(a, b) },
+	)
+	if found {
+		s.set = slices.Delete(s.set, i, i+1)
+	}
 }
 
 func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
-	return NewResourceSet[T](append(s.List(), set.List()...)...)
+	list := []T{}
+	for _, resource := range s.Generic().Union(set.Generic()).List() {
+		list = append(list, resource.(T))
+	}
+	return NewResourceSet[T](
+		s.compareFunc,
+		list...,
+	)
 }
 
 func (s *resourceSet[T]) Difference(set ResourceSet[T]) ResourceSet[T] {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	newSet := s.set.Difference(set.Keys())
-	var newResources []T
-	for key, _ := range newSet {
-		val, _ := s.mapping[key]
-		newResources = append(newResources, val)
+	result := NewResourceSet[T](s.compareFunc)
+	for _, resource := range s.set {
+		if !set.Has(resource) {
+			result.Insert(resource)
+		}
 	}
-	return NewResourceSet[T](newResources...)
+	return result
 }
 
 func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	newSet := s.set.Intersection(set.Keys())
-	var newResources []T
-	for key, _ := range newSet {
-		val, _ := s.mapping[key]
-		newResources = append(newResources, val)
+	var walk, other ResourceSet[T]
+	result := NewResourceSet[T](s.compareFunc)
+	if len(s.set) < set.Len() {
+		walk = NewResourceSet(s.compareFunc, s.set...)
+		other = set
+	} else {
+		walk = set
+		other = NewResourceSet(s.compareFunc, s.set...)
 	}
-	return NewResourceSet[T](newResources...)
+	walk.List()(func(_ int, key T) bool {
+		if other.Has(key) {
+			result.Insert(key)
+		}
+		return true
+	})
+	return result
 }
 
-func (s *resourceSet[T]) Find(
-	id ezkube.ResourceId,
-) (T, error) {
+func (s *resourceSet[T]) Find(resource ezkube.ResourceId) (T, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	key := sk_sets.Key(id)
-	resource, ok := s.mapping[key]
-	if !ok {
-		return resource, sk_sets.NotFoundErr(resource, id)
+
+	insertIndex, found := slices.BinarySearchFunc(
+		s.set,
+		resource,
+		func(a T, b ezkube.ResourceId) int { return s.compareFunc(a, b) },
+	)
+	if found {
+		return s.set[insertIndex], nil
 	}
 
-	return resource, nil
+	var r T
+	return r, sk_sets.NotFoundErr(r, resource)
 }
 
-func (s *resourceSet[T]) Length() int {
-
+func (s *resourceSet[T]) Len() int {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	return len(s.mapping)
+	return len(s.set)
 }
 
 // note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
 func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta {
-	updated, removed := NewResourceSet[T](), NewResourceSet[T]()
+	updated, removed := NewResourceSet[T](oldSet.compareFunc), NewResourceSet[T](oldSet.compareFunc)
 
 	// find objects updated or removed
-	oldSet.List(func(oldObj T) bool {
-		newObj, err := newSet.Find(oldObj)
+	for _, resource := range oldSet.set {
+		newObj, err := newSet.Find(resource)
 		switch {
 		case err != nil:
 			// obj removed
-			removed.Insert(oldObj)
-		case !controllerutils.ObjectsEqual(oldObj, newObj):
+			removed.Insert(resource)
+		case !controllerutils.ObjectsEqual(resource, newObj):
 			// obj updated
 			updated.Insert(newObj)
 		default:
 			// obj the same
 		}
-		return true // return value ignored
-	})
+	}
 
 	// find objects added
-	newSet.List(func(newObj T) bool {
-		if _, err := oldSet.Find(newObj); err != nil {
+	for _, newObj := range newSet.Generic().List() {
+		if _, err := oldSet.Find(newObj.(T)); err != nil {
 			// obj added
-			updated.Insert(newObj)
+			updated.Insert(newObj.(T))
 		}
-		return true // return value ignored
-	})
+	}
+
 	delta := &ResourceDelta[T]{
 		Inserted: updated,
 		Removed:  removed,
@@ -253,8 +276,9 @@ func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 // Create a clone of the current set
 // note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
 func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
-	new := NewResourceSet[T]()
-	oldSet.List(func(oldObj T) bool {
+	new := NewResourceSet[T](oldSet.compareFunc)
+
+	oldSet.List()(func(_ int, oldObj T) bool {
 		copy := oldObj.DeepCopyObject().(T)
 		new.Insert(copy)
 		return true
@@ -263,9 +287,14 @@ func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 }
 
 func (s *resourceSet[T]) Generic() sk_sets.ResourceSet {
-	set := sk_sets.NewResourceSet()
-	for _, v := range s.List() {
+	set := sk_sets.NewResourceSet(nil)
+	s.List()(func(_ int, v T) bool {
 		set.Insert(v)
-	}
+		return true
+	})
 	return set
+}
+
+func (s *resourceSet[T]) GetCompareFunc() func(a, b ezkube.ResourceId) int {
+	return s.compareFunc
 }
