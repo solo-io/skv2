@@ -111,6 +111,16 @@ func (s *resourceSet[T]) List(filterResource ...func(T) bool) func(yield func(in
 	}
 }
 
+func (s *resourceSet[T]) Iter(yield func(int, T) bool) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	for i, resource := range s.set {
+		if !yield(i, resource) {
+			break
+		}
+	}
+}
+
 func (s *resourceSet[T]) Map() map[string]T {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
