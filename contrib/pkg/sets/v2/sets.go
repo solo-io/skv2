@@ -17,6 +17,10 @@ type ResourceSet[T client.Object] interface {
 	// List returns an iterator for the set.
 	// Pass an optional filter function to skip iteration on specific entries; Note: index will still progress.
 	List(filterResource ...func(T) bool) func(yield func(int, T) bool)
+	// Iterate over the set, passing the index and resource to the provided function.
+	// The iteration can be stopped by returning false from the function.
+	// Returning true will continue the iteration.
+	Iter(func(yield func(int, T) bool))
 	// Return the Set as a map of key to resource.
 	Map() map[string]T
 	// Insert a resource into the set.
