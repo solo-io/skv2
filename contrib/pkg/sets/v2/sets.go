@@ -27,6 +27,9 @@ type ResourceSet[T client.Object] interface {
 	Map() map[string]T
 	// Insert a resource into the set.
 	Insert(resource ...T)
+
+	Length() int
+
 	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(set ResourceSet[T]) bool
 	// Check if the set contains the resource.
@@ -112,7 +115,6 @@ func (s *resourceSet[T]) List(filterResource ...func(T) bool) func(yield func(in
 		}
 	}
 }
-
 
 func (s *resourceSet[T]) InefficientListInverted(filterResource ...func(T) bool) []T {
 	s.lock.RLock()
@@ -268,6 +270,12 @@ func (s *resourceSet[T]) Find(resource ezkube.ResourceId) (T, error) {
 }
 
 func (s *resourceSet[T]) Len() int {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return len(s.set)
+}
+
+func (s *resourceSet[T]) Length() int {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	return len(s.set)
