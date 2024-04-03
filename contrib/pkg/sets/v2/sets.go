@@ -121,10 +121,12 @@ func (s *resourceSet[T]) InefficientList(filterResource ...func(T) bool) []T {
 	var ret []T
 	for _, resource := range s.set {
 		for _, filter := range filterResource {
-			if filter(resource) {
-				ret = append(ret, resource)
-				break
+			if len(filterResource) > 0 && !filter(resource) {
+				continue
 			}
+			ret = append(ret, resource)
+			break
+
 		}
 	}
 	return ret
