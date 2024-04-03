@@ -23,6 +23,8 @@ type ResourceSet[T client.Object] interface {
 	Iter(func(int, T) bool)
 
 	InefficientList(filterResource ...func(T) bool) []T
+
+	InefficientListInverted(filterResource ...func(T) bool) []T
 	// Return the Set as a map of key to resource.
 	Map() map[string]T
 	// Insert a resource into the set.
@@ -129,6 +131,25 @@ func (s *resourceSet[T]) InefficientList(filterResource ...func(T) bool) []T {
 				ret = append(ret, resource)
 				break
 			}
+		}
+	}
+	return ret
+}
+
+func (s *resourceSet[T]) InefficientListInverted(filterResource ...func(T) bool) []T {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	var ret []T
+	for _, resource := range s.set {
+		filtered := false
+		for _, filter := range filterResource {
+			if filter(resource) {
+				filtered = true
+				break
+			}
+		}
+		if !filtered {
+			ret = append(ret, resource)
 		}
 	}
 	return ret
