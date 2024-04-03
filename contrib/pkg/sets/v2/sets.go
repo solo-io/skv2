@@ -120,13 +120,15 @@ func (s *resourceSet[T]) InefficientList(filterResource ...func(T) bool) []T {
 	defer s.lock.RUnlock()
 	var ret []T
 	for _, resource := range s.set {
-		for _, filter := range filterResource {
-			if len(filterResource) > 0 && !filter(resource) {
-				continue
-			}
+		if len(filterResource) == 0 {
 			ret = append(ret, resource)
-			break
-
+			continue
+		}
+		for _, filter := range filterResource {
+			if filter(resource) {
+				ret = append(ret, resource)
+				break
+			}
 		}
 	}
 	return ret
