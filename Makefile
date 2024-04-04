@@ -17,6 +17,7 @@ export PATH:=$(GOBIN):$(PATH)
 install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
 	go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
+	go install github.com/solo-io/protoc-gen-openapi@v0.2.0
 	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 	go install github.com/solo-io/protoc-gen-ext@v0.0.18
 	go install github.com/golang/mock/mockgen@v1.4.4
