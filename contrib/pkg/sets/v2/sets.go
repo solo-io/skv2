@@ -98,7 +98,7 @@ func (s *resourceSet[T]) Keys() sets.Set[string] {
 	return sets.Set[string]{}
 }
 
-func (s *resourceSet[T]) FilterIter(filterResource ...func(T) bool) func(yield func(int, T) bool) {
+func (s *resourceSet[T]) InvertedFilterIter(filterResource ...func(T) bool) func(yield func(int, T) bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	return func(yield func(int, T) bool) {
@@ -243,7 +243,7 @@ func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 		walk = set
 		other = NewResourceSet(s.set...)
 	}
-	walk.List()(func(_ int, key T) bool {
+	walk.Iter(func(_ int, key T) bool {
 		if other.Has(key) {
 			result.Insert(key)
 		}
@@ -320,7 +320,7 @@ func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 	new := NewResourceSet[T]()
 
-	oldSet.List()(func(_ int, oldObj T) bool {
+	oldSet.Iter(func(_ int, oldObj T) bool {
 		copy := oldObj.DeepCopyObject().(T)
 		new.Insert(copy)
 		return true
@@ -330,7 +330,7 @@ func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 
 func (s *resourceSet[T]) Generic() sk_sets.ResourceSet {
 	set := sk_sets.NewResourceSet(nil)
-	s.List()(func(_ int, v T) bool {
+	s.Iter(func(_ int, v T) bool {
 		set.Insert(v)
 		return true
 	})
