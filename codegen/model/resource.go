@@ -5,6 +5,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/solo-io/skv2/codegen/collector"
+	"github.com/solo-io/skv2/codegen/proto/schemagen"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -130,6 +131,11 @@ type Group struct {
 type GroupOptions struct {
 	// Required when using crds in the templates directory
 	EscapeGoTemplateOperators bool
+
+	// Options for generating validation schemas
+	SchemaValidationOpts schemagen.ValidationSchemaOptions
+
+	SchemaGenerator schemagen.GeneratorKind
 }
 
 func (g Group) HasProtos() bool {
