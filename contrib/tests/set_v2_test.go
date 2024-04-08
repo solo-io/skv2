@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = FDescribe("PaintSetV2", func() {
+var _ = Describe("PaintSetV2", func() {
 	var (
 		setA, setB                     sets_v2.ResourceSet[*v1.Paint]
 		paintA, paintBCluster2, paintC *v1.Paint
