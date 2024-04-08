@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	sk_sets "github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -14,21 +13,37 @@ import (
 type ResourceSet[T client.Object] interface {
 	// Get the set stored keys
 	Keys() sets.Set[string]
-	// List returns an iterator for the set.
-	// Pass an optional filter function to skip iteration on specific entries; Note: index will still progress.
-	InvertedFilterIter(filterResource ...func(T) bool) func(yield func(int, T) bool)
-	// Iterate over the set, passing the index and resource to the provided function.
-	// The iteration can be stopped by returning false from the function.
-	// Returning true will continue the iteration.
+	// FilterOutAndIterate returns an iterator that will iterate over the set of elements
+	// that *do not match any of the provided filters*. If any of the filters returns true, the resource will be skipped.
+	// The index and resource are passed to the provided function for every element in the set,
+	// where the index is the index of the resource in the *filtered* set.
+	// The iteration can be stopped by returning false from the function. This can be thought of as a "break" statement in a loop.
+	// Returning true will continue the iteration. This can be thought of as a "continue" statement in a loop.
+	// For iteration that does not need to be filtered, use Iter.
+	FilterOutAndIterate(filterResource ...func(T) bool) func(yield func(int, T) bool)
+	
+	// Filter returns an iterator that will iterate over the set of elements
+	// that match the provided filter. If the filter returns true, the resource will be included in the iteration.
+	// The index and resource are passed to the provided function for every element in the *filtered set*.
+	// The index is the index of the resource in the *filtered* set.
+	// The iteration can be stopped by returning false from the function. This can be thought of as a "break" statement in a loop.
+	// Returning true will continue the iteration. This can be thought of as a "continue" statement in a loop.
+	// For iteration that does not need to be filtered, use Iter.
+	Filter(filterResource func(T) bool) func(yield func(int, T) bool)
+	
+	// Iter iterates over the set, passing the index and resource to the provided function for every element in the set.
+	// The iteration can be stopped by returning false from the function. This can be thought of as a "break" statement in a loop.
+	// Returning true will continue the iteration. This can be thought of as a "continue" statement in a loop.
 	Iter(func(int, T) bool)
 
-	InefficientListInverted(filterResource ...func(T) bool) []T
+	// FilterOutAndCreateList constructs a list of resource that do not match any of the provided filters.
+	// Use of this function should be limited to only when a filtered list is needed.
+	// For iteration that does not require creating a new list, use FilterOutAndIterate.
+	FilterOutAndCreateList(filterResource ...func(T) bool) []T
 	// Return the Set as a map of key to resource.
 	Map() map[string]T
 	// Insert a resource into the set.
 	Insert(resource ...T)
-
-	Length() int
 
 	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(set ResourceSet[T]) bool
@@ -46,14 +61,11 @@ type ResourceSet[T client.Object] interface {
 	Find(resource ezkube.ResourceId) (T, error)
 	// Get the length of the set
 	Len() int
+	Length() int
 	// returns the generic implementation of the set
 	Generic() sk_sets.ResourceSet
-	// returns the delta between this and and another ResourceSet[T]
-	Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta
 	// Clone returns a deep copy of the set
 	Clone() ResourceSet[T]
-	// Get the compare function used by the set
-	GetCompareFunc() func(a, b ezkube.ResourceId) int
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -98,12 +110,13 @@ func (s *resourceSet[T]) Keys() sets.Set[string] {
 	return sets.Set[string]{}
 }
 
-func (s *resourceSet[T]) InvertedFilterIter(filterResource ...func(T) bool) func(yield func(int, T) bool) {
+func (s *resourceSet[T]) FilterOutAndIterate(filterResource ...func(T) bool) func(yield func(int, T) bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	return func(yield func(int, T) bool) {
+		i := 0
 	OUTER:
-		for i, resource := range s.set {
+		for _, resource := range s.set {
 			for _, filter := range filterResource {
 				if filter(resource) {
 					continue OUTER
@@ -112,11 +125,28 @@ func (s *resourceSet[T]) InvertedFilterIter(filterResource ...func(T) bool) func
 			if !yield(i, resource) {
 				break
 			}
+			i += 1
 		}
 	}
 }
 
-func (s *resourceSet[T]) InefficientListInverted(filterResource ...func(T) bool) []T {
+func (s *resourceSet[T]) Filter(filterResource func(T) bool) func(yield func(int, T) bool) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return func(yield func(int, T) bool) {
+		i := 0
+		for _, resource := range s.set {
+			if filterResource(resource) {
+				if !yield(i, resource) {
+					break
+				}
+				i += 1
+			}
+		}
+	}
+}
+
+func (s *resourceSet[T]) FilterOutAndCreateList(filterResource ...func(T) bool) []T {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	var ret []T
@@ -281,40 +311,6 @@ func (s *resourceSet[T]) Length() int {
 	return len(s.set)
 }
 
-// note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
-func (oldSet *resourceSet[T]) Delta(newSet ResourceSet[T]) sk_sets.ResourceDelta {
-	updated, removed := NewResourceSet[T](), NewResourceSet[T]()
-
-	// find objects updated or removed
-	for _, resource := range oldSet.set {
-		newObj, err := newSet.Find(resource)
-		switch {
-		case err != nil:
-			// obj removed
-			removed.Insert(resource)
-		case !controllerutils.ObjectsEqual(resource, newObj):
-			// obj updated
-			updated.Insert(newObj)
-		default:
-			// obj the same
-		}
-	}
-
-	// find objects added
-	for _, newObj := range newSet.Generic().List() {
-		if _, err := oldSet.Find(newObj.(T)); err != nil {
-			// obj added
-			updated.Insert(newObj.(T))
-		}
-	}
-
-	delta := &ResourceDelta[T]{
-		Inserted: updated,
-		Removed:  removed,
-	}
-	return delta.DeltaV1()
-}
-
 // Create a clone of the current set
 // note that this function will currently panic if called for a ResourceSet[T] containing non-runtime.Objects
 func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
@@ -335,8 +331,4 @@ func (s *resourceSet[T]) Generic() sk_sets.ResourceSet {
 		return true
 	})
 	return set
-}
-
-func (s *resourceSet[T]) GetCompareFunc() func(a, b ezkube.ResourceId) int {
-	return s.compareFunc
 }
