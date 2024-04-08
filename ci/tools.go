@@ -23,6 +23,7 @@ import (
 	_ "github.com/golang/protobuf/protoc-gen-go"
 	_ "github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc"
 	_ "github.com/solo-io/protoc-gen-ext"
+	_ "github.com/solo-io/protoc-gen-openapi"
 	_ "golang.org/x/tools/cmd/goimports"
 	_ "k8s.io/code-generator"
 )

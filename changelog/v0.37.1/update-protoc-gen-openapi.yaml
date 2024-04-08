@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/541
+    resolvesIssue: true
+    description: >
+      Updates protoc-gen-openapi to v0.2.1.
