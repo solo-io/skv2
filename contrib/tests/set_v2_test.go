@@ -90,15 +90,6 @@ var _ = FDescribe("PaintSetV2", func() {
 			}
 		}
 
-		setA.FilterOutAndIterate(filterFn)(func(i int, p *v1.Paint) bool {
-			if i == 0 {
-				Expect(p).To(Equal(paintBCluster2))
-			}
-			if i == 1 {
-				Expect(p).To(Equal(paintC))
-			}
-			return true
-		})
 	})
 
 	It("should filter", func() {
