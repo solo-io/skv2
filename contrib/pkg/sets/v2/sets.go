@@ -10,6 +10,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ResourceSet is a thread-safe container for a set of resources.
+// It provides a set of operations for working with the set of resources, typically used for managing Kubernetes resources.
+// The ResourceSet is a generic interface that can be used with any type that satisfies the client.Object interface.
 type ResourceSet[T client.Object] interface {
 	// Get the set stored keys
 	Keys() sets.Set[string]
@@ -30,7 +33,9 @@ type ResourceSet[T client.Object] interface {
 
 	// FilterOutAndCreateList constructs a list of resource that do not match any of the provided filters.
 	// Use of this function should be limited to only when a filtered list is needed.
-	// For iteration that does not require creating a new list, use FilterOutAndIterate.
+	// For iteration that does not require creating a new list, use Iter.
+	// For iteration that requires typical filtering semantics (i.e. filters that return true for resources that should be included),
+	// use
 	FilterOutAndCreateList(filterResource ...func(T) bool) []T
 	// Return the Set as a map of key to resource.
 	Map() map[string]T
@@ -80,17 +85,15 @@ func (r *ResourceDelta[T]) DeltaV1() sk_sets.ResourceDelta {
 }
 
 type resourceSet[T client.Object] struct {
-	lock        sync.RWMutex
-	set         []T
-	compareFunc func(a, b ezkube.ResourceId) int
+	lock sync.RWMutex
+	set  []T
 }
 
 func NewResourceSet[T client.Object](
 	resources ...T,
 ) ResourceSet[T] {
 	rs := &resourceSet[T]{
-		set:         []T{},
-		compareFunc: ezkube.ResourceIdsCompare,
+		set: []T{},
 	}
 	rs.Insert(resources...)
 	return rs
@@ -106,26 +109,8 @@ func (s *resourceSet[T]) Keys() sets.Set[string] {
 	return sets.Set[string]{}
 }
 
-func (s *resourceSet[T]) FilterOutAndIterate(filterResource ...func(T) bool) func(yield func(int, T) bool) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	return func(yield func(int, T) bool) {
-		i := 0
-	OUTER:
-		for _, resource := range s.set {
-			for _, filter := range filterResource {
-				if filter(resource) {
-					continue OUTER
-				}
-			}
-			if !yield(i, resource) {
-				break
-			}
-			i += 1
-		}
-	}
-}
-
+// Filter returns an iterator that will iterate over the set of elements
+// that match the provided filter. If the filter returns true, the resource will be included in the iteration.
 func (s *resourceSet[T]) Filter(filterResource func(T) bool) func(yield func(int, T) bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
@@ -142,6 +127,8 @@ func (s *resourceSet[T]) Filter(filterResource func(T) bool) func(yield func(int
 	}
 }
 
+// This is a convenience function that constructs a list of resource that do not match any of the provided filters.
+// Use of this function should be limited to only when a filtered list is needed, as this allocates a new list.
 func (s *resourceSet[T]) FilterOutAndCreateList(filterResource ...func(T) bool) []T {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
@@ -161,6 +148,9 @@ func (s *resourceSet[T]) FilterOutAndCreateList(filterResource ...func(T) bool) 
 	return ret
 }
 
+// Iter iterates over the set, passing the index and resource to the provided function for every element in the set.
+// The iteration can be stopped by returning false from the function. This can be thought of as a "break" statement in a loop.
+// Returning true will continue the iteration. This can be thought of as a "continue" statement in a loop.
 func (s *resourceSet[T]) Iter(yield func(int, T) bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
@@ -181,9 +171,9 @@ func (s *resourceSet[T]) Map() map[string]T {
 	return newMap
 }
 
-// Insert adds items to the set.
+// Insert adds items to the set in inserted order.
 // If an item is already in the set, it is overwritten.
-// The set is sorted based on the compare func.
+// The set is sorted based on the ResourceId of the resources.
 func (s *resourceSet[T]) Insert(resources ...T) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
@@ -191,7 +181,7 @@ func (s *resourceSet[T]) Insert(resources ...T) {
 		insertIndex, found := slices.BinarySearchFunc(
 			s.set,
 			resource,
-			func(a, b T) int { return s.compareFunc(a, b) },
+			func(a, b T) int { return ezkube.ResourceIdsCompare(a, b) },
 		)
 		if found {
 			s.set[insertIndex] = resource
@@ -202,13 +192,14 @@ func (s *resourceSet[T]) Insert(resources ...T) {
 	}
 }
 
+// Uses binary search to check if the set contains the resource.
 func (s *resourceSet[T]) Has(resource T) bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	_, found := slices.BinarySearchFunc(
 		s.set,
 		resource,
-		func(a, b T) int { return s.compareFunc(a, b) },
+		func(a, b T) int { return ezkube.ResourceIdsCompare(a, b) },
 	)
 	return found
 }
@@ -228,7 +219,7 @@ func (s *resourceSet[T]) Delete(resource ezkube.ResourceId) {
 	i, found := slices.BinarySearchFunc(
 		s.set,
 		resource,
-		func(a T, b ezkube.ResourceId) int { return s.compareFunc(a, b) },
+		func(a T, b ezkube.ResourceId) int { return ezkube.ResourceIdsCompare(a, b) },
 	)
 	if found {
 		s.set = slices.Delete(s.set, i, i+1)
@@ -278,6 +269,9 @@ func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 	return result
 }
 
+// Get the resource with the given ID.
+// Returns nil if the resource is not found.
+// Uses binary search to find the resource.
 func (s *resourceSet[T]) Get(resource ezkube.ResourceId) T {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
@@ -285,7 +279,7 @@ func (s *resourceSet[T]) Get(resource ezkube.ResourceId) T {
 	insertIndex, found := slices.BinarySearchFunc(
 		s.set,
 		resource,
-		func(a T, b ezkube.ResourceId) int { return s.compareFunc(a, b) },
+		func(a T, b ezkube.ResourceId) int { return ezkube.ResourceIdsCompare(a, b) },
 	)
 	if found {
 		return s.set[insertIndex]
@@ -294,6 +288,11 @@ func (s *resourceSet[T]) Get(resource ezkube.ResourceId) T {
 	return r
 }
 
+// Find the resource with the given ID.
+// Returns a NotFoundErr error if the resource is not found.
+// Uses binary search to find the resource.
+// This function is useful when you need to distinguish between a resource not found and a resource that is found but is nil,
+// but it is less efficient than Get as it allocates an error object.
 func (s *resourceSet[T]) Find(resource ezkube.ResourceId) (T, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
@@ -301,7 +300,7 @@ func (s *resourceSet[T]) Find(resource ezkube.ResourceId) (T, error) {
 	insertIndex, found := slices.BinarySearchFunc(
 		s.set,
 		resource,
-		func(a T, b ezkube.ResourceId) int { return s.compareFunc(a, b) },
+		func(a T, b ezkube.ResourceId) int { return ezkube.ResourceIdsCompare(a, b) },
 	)
 	if found {
 		return s.set[insertIndex], nil
