@@ -13,15 +13,7 @@ import (
 type ResourceSet[T client.Object] interface {
 	// Get the set stored keys
 	Keys() sets.Set[string]
-	// FilterOutAndIterate returns an iterator that will iterate over the set of elements
-	// that *do not match any of the provided filters*. If any of the filters returns true, the resource will be skipped.
-	// The index and resource are passed to the provided function for every element in the set,
-	// where the index is the index of the resource in the *filtered* set.
-	// The iteration can be stopped by returning false from the function. This can be thought of as a "break" statement in a loop.
-	// Returning true will continue the iteration. This can be thought of as a "continue" statement in a loop.
-	// For iteration that does not need to be filtered, use Iter.
-	FilterOutAndIterate(filterResource ...func(T) bool) func(yield func(int, T) bool)
-	
+
 	// Filter returns an iterator that will iterate over the set of elements
 	// that match the provided filter. If the filter returns true, the resource will be included in the iteration.
 	// The index and resource are passed to the provided function for every element in the *filtered set*.
@@ -30,7 +22,7 @@ type ResourceSet[T client.Object] interface {
 	// Returning true will continue the iteration. This can be thought of as a "continue" statement in a loop.
 	// For iteration that does not need to be filtered, use Iter.
 	Filter(filterResource func(T) bool) func(yield func(int, T) bool)
-	
+
 	// Iter iterates over the set, passing the index and resource to the provided function for every element in the set.
 	// The iteration can be stopped by returning false from the function. This can be thought of as a "break" statement in a loop.
 	// Returning true will continue the iteration. This can be thought of as a "continue" statement in a loop.

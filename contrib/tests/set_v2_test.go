@@ -74,24 +74,55 @@ var _ = FDescribe("PaintSetV2", func() {
 		Expect(setA.Has(paintA)).To(BeFalse())
 	})
 
-	It("should filter List", func() {
+	It("should filter out", func() {
 		setA.Insert(paintA, paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
+		Expect(setA.Len()).To(Equal(3))
 
-		for i, filtered := range setA.List(func(p *v1.Paint) bool { return p.GetName() == "nameA" }) {
-			if i == 1 {
+		filterFn := func(p *v1.Paint) bool { return p.GetName() == "nameA" }
+
+		for i, filtered := range setA.FilterOutAndCreateList(filterFn) {
+			if i == 0 {
 				Expect(filtered).To(Equal(paintBCluster2))
 			}
-			if i == 2 {
+			if i == 1 {
 				Expect(filtered).To(Equal(paintC))
 			}
 		}
+
+		setA.FilterOutAndIterate(filterFn)(func(i int, p *v1.Paint) bool {
+			if i == 0 {
+				Expect(p).To(Equal(paintBCluster2))
+			}
+			if i == 1 {
+				Expect(p).To(Equal(paintC))
+			}
+			return true
+		})
+	})
+
+	It("should filter", func() {
+		setA.Insert(paintA, paintBCluster2, paintC)
+		Expect(setA.Has(paintA)).To(BeTrue())
+		Expect(setA.Len()).To(Equal(3))
+
+		filterFn := func(p *v1.Paint) bool { return p.GetName() == "nameA" }
+
+		setA.Filter(filterFn)(func(i int, p *v1.Paint) bool {
+			if i == 0 {
+				Expect(p).To(Equal(paintA))
+			}
+			if i != 0 {
+				Fail("only one item should be in the filtered set")
+			}
+			return true
+		})
 	})
 
 	It("should double filter List", func() {
 		setA.Insert(paintA, paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
-		for _, filtered := range setA.List(func(p *v1.Paint) bool {
+		for _, filtered := range setA.FilterOutAndCreateList(func(p *v1.Paint) bool {
 			return p.Name == "nameA"
 		}, func(p *v1.Paint) bool {
 			return p.Name == "nameB"
@@ -138,69 +169,18 @@ var _ = FDescribe("PaintSetV2", func() {
 		Expect(intersectionA).ToNot(BeIdenticalTo(setA))
 	})
 
-	// It("should correctly match two sets", func() {
-	// 	setA.Insert(paintA, paintBCluster2)
-	// 	setB.Insert(paintA, paintBCluster2)
-	// 	Expect(setA).To(Equal(setB))
-	// 	setB.Insert(paintC)
-	// 	Expect(setA).ToNot(Equal(setB))
-	// })
+	It("should correctly match two sets", func() {
+		setA.Insert(paintA, paintBCluster2)
+		setB.Insert(paintA, paintBCluster2)
+		Expect(setA.Equal(setB)).To(BeTrue())
+		setB.Insert(paintC)
+		Expect(setA.Equal(setB)).To(BeFalse())
+	})
 
 	It("should return corrent length", func() {
 		setA.Insert(paintA, paintBCluster2)
 		Expect(setA.Len()).To(Equal(2))
 	})
-
-	// It("should return set deltas", func() {
-	// 	// update
-	// 	oldPaintA := &v1.Paint{
-	// 		ObjectMeta: metav1.ObjectMeta{Name: "background", Namespace: "color"},
-	// 		Spec:       v1.PaintSpec{Color: &v1.PaintColor{Hue: "orange"}},
-	// 	}
-	// 	newPaintA := &v1.Paint{
-	// 		ObjectMeta: metav1.ObjectMeta{Name: "background", Namespace: "color"},
-	// 		Spec:       v1.PaintSpec{Color: &v1.PaintColor{Hue: "green"}},
-	// 	}
-	// 	// remove
-	// 	oldPaintB := &v1.Paint{
-	// 		ObjectMeta: metav1.ObjectMeta{Name: "ugly", Namespace: "color"},
-	// 	}
-	// 	// add
-	// 	newPaintC := &v1.Paint{
-	// 		ObjectMeta: metav1.ObjectMeta{Name: "beautiful", Namespace: "color"},
-	// 	}
-	// 	// no change
-	// 	oldPaintD := &v1.Paint{
-	// 		ObjectMeta: metav1.ObjectMeta{Name: "decent", Namespace: "color"},
-	// 	}
-	// 	newPaintD := &v1.Paint{
-	// 		ObjectMeta: metav1.ObjectMeta{Name: "decent", Namespace: "color"},
-	// 	}
-	// 	setA.Insert(oldPaintA, oldPaintB, oldPaintD)
-	// 	setB.Insert(newPaintA, newPaintC, newPaintD)
-
-	// 	expectedDelta := sets_v2.ResourceDelta[*v1.Paint]{
-	// 		Inserted: sets_v2.NewResourceSet(ezkube.ObjectsAscending, ezkube.CompareObjects, newPaintA, newPaintC),
-	// 		Removed:  sets_v2.NewResourceSet(ezkube.ObjectsAscending, ezkube.CompareObjects, oldPaintB),
-	// 	}
-
-	// 	actualDelta := setA.Delta(setB)
-
-	// 	Expect(actualDelta.Removed.Length()).To(Equal(expectedDelta.DeltaV1().Removed.Length()))
-	// 	for _, removed := range actualDelta.Removed.List() {
-	// 		Expect(removed).To(Equal(oldPaintB))
-	// 	}
-
-	// 	Expect(actualDelta.Inserted.Length()).To(Equal(expectedDelta.DeltaV1().Inserted.Length()))
-	// 	for i, inserted := range actualDelta.Inserted.List() {
-	// 		if i == 0 {
-	// 			Expect(inserted).To(Equal(newPaintA))
-	// 		}
-	// 		if i == 1 {
-	// 			Expect(inserted).To(Equal(newPaintC))
-	// 		}
-	// 	}
-	// })
 
 	It("should find resources", func() {
 		oldPaintA := &v1.Paint{
@@ -292,12 +272,19 @@ var _ = FDescribe("PaintSetV2", func() {
 		setA.Insert(expectedOrder...)
 
 		var paintList []*v1.Paint
-		for _, paint := range setA.List() {
+		var paintList2 []*v1.Paint
+		for _, paint := range setA.FilterOutAndCreateList() {
 			paintList = append(paintList, paint)
 		}
 
+		setA.Iter(func(_ int, paint *v1.Paint) bool {
+			paintList2 = append(paintList2, paint)
+			return true
+		})
+
 		for i, paint := range expectedOrder {
 			Expect(paintList[i]).To(Equal(paint))
+			Expect(paintList2[i]).To(Equal(paint))
 		}
 	})
 })
