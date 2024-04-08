@@ -49,8 +49,12 @@ type ResourceSet[T client.Object] interface {
 	Difference(set ResourceSet[T]) ResourceSet[T]
 	// Return the intersection with the provided set
 	Intersection(set ResourceSet[T]) ResourceSet[T]
-	// Find the resource with the given ID
+	// Find the resource with the given ID.
+	// Returns a NotFoundErr error if the resource is not found.
 	Find(resource ezkube.ResourceId) (T, error)
+	// Find the resource with the given ID.
+	// Returns nil if the resource is not found.
+	Get(resource ezkube.ResourceId) T
 	// Get the length of the set
 	Len() int
 	Length() int
@@ -272,6 +276,22 @@ func (s *resourceSet[T]) Intersection(set ResourceSet[T]) ResourceSet[T] {
 		return true
 	})
 	return result
+}
+
+func (s *resourceSet[T]) Get(resource ezkube.ResourceId) T {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	insertIndex, found := slices.BinarySearchFunc(
+		s.set,
+		resource,
+		func(a T, b ezkube.ResourceId) int { return s.compareFunc(a, b) },
+	)
+	if found {
+		return s.set[insertIndex]
+	}
+	var r T
+	return r
 }
 
 func (s *resourceSet[T]) Find(resource ezkube.ResourceId) (T, error) {
