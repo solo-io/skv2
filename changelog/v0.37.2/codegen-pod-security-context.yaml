@@ -3,5 +3,5 @@ changelog:
     issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/15710
     resolvesIssue: false
     description: |
-      Add support for pod-level security context.
+      Add support for configuring custom strategy and pod-level security context for operator deployments.
     skipCI: false
