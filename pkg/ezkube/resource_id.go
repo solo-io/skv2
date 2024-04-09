@@ -179,19 +179,13 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 // The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
 func ResourceIdsCompare(a, b ResourceId) int {
 	// compare names
-	if a.GetName() < b.GetName() {
-		return -1
-	}
-	if a.GetName() > b.GetName() {
-		return 1
+	if cmp := strings.Compare(a.GetName(), b.GetName()); cmp != 0 {
+		return cmp
 	}
 
 	// compare namespaces
-	if a.GetNamespace() < b.GetNamespace() {
-		return -1
-	}
-	if a.GetNamespace() > b.GetNamespace() {
-		return 1
+	if cmp := strings.Compare(a.GetNamespace(), b.GetNamespace()); cmp != 0 {
+		return cmp
 	}
 
 	// compare cluster names
@@ -203,23 +197,15 @@ func ResourceIdsCompare(a, b ResourceId) int {
 
 	if a_cri, ok := a.(ClusterResourceId); ok {
 		aCluster = GetClusterName(a_cri)
-	} else if a_dcri, ok := a.(deprecatedClusterResourceId); ok {
-		aCluster = a_dcri.GetClusterName()
+	} else {
+		aCluster = getDeprecatedClusterName(a)
 	}
 
 	if b_cri, ok := b.(ClusterResourceId); ok {
 		bCluster = GetClusterName(b_cri)
-	} else if b_dcri, ok := b.(deprecatedClusterResourceId); ok {
-		bCluster = b_dcri.GetClusterName()
+	} else {
+		bCluster = getDeprecatedClusterName(b)
 	}
 
-	if aCluster < bCluster {
-		return -1
-	}
-	if aCluster > bCluster {
-		return 1
-	}
-
-	// they are equal
-	return 0
+	return strings.Compare(aCluster, bCluster)
 }
