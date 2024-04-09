@@ -2460,6 +2460,112 @@
                                                           "type": "null"
                                                         }
                                                       ]
+                                                    },
+                                                    "clusterTrustBundle": {
+                                                      "anyOf": [
+                                                        {
+                                                          "properties": {
+                                                            "name": {
+                                                              "anyOf": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            },
+                                                            "signerName": {
+                                                              "anyOf": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            },
+                                                            "labelSelector": {
+                                                              "anyOf": [
+                                                                {
+                                                                  "properties": {
+                                                                    "matchLabels": {
+                                                                      "anyOf": [
+                                                                        {
+                                                                          "patternProperties": {
+                                                                            ".*": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "type": "object"
+                                                                        },
+                                                                        {
+                                                                          "type": "null"
+                                                                        }
+                                                                      ]
+                                                                    },
+                                                                    "matchExpressions": {
+                                                                      "anyOf": [
+                                                                        {
+                                                                          "items": {
+                                                                            "properties": {
+                                                                              "key": {
+                                                                                "type": "string"
+                                                                              },
+                                                                              "operator": {
+                                                                                "type": "string"
+                                                                              },
+                                                                              "values": {
+                                                                                "anyOf": [
+                                                                                  {
+                                                                                    "items": {
+                                                                                      "type": "string"
+                                                                                    },
+                                                                                    "type": "array"
+                                                                                  },
+                                                                                  {
+                                                                                    "type": "null"
+                                                                                  }
+                                                                                ]
+                                                                              }
+                                                                            },
+                                                                            "type": "object"
+                                                                          },
+                                                                          "type": "array"
+                                                                        },
+                                                                        {
+                                                                          "type": "null"
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  },
+                                                                  "type": "object"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            },
+                                                            "optional": {
+                                                              "anyOf": [
+                                                                {
+                                                                  "type": "boolean"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            },
+                                                            "path": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
                                                     }
                                                   },
                                                   "type": "object"
@@ -2962,24 +3068,6 @@
                                                                 "type": "null"
                                                               }
                                                             ]
-                                                          },
-                                                          "claims": {
-                                                            "anyOf": [
-                                                              {
-                                                                "items": {
-                                                                  "properties": {
-                                                                    "name": {
-                                                                      "type": "string"
-                                                                    }
-                                                                  },
-                                                                  "type": "object"
-                                                                },
-                                                                "type": "array"
-                                                              },
-                                                              {
-                                                                "type": "null"
-                                                              }
-                                                            ]
                                                           }
                                                         },
                                                         "type": "object"
@@ -3067,6 +3155,16 @@
                                                               }
                                                             },
                                                             "type": "object"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "volumeAttributesClassName": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
                                                           },
                                                           {
                                                             "type": "null"
@@ -4046,6 +4144,21 @@
                                                             "type": "null"
                                                           }
                                                         ]
+                                                      },
+                                                      "sleep": {
+                                                        "anyOf": [
+                                                          {
+                                                            "properties": {
+                                                              "seconds": {
+                                                                "type": "integer"
+                                                              }
+                                                            },
+                                                            "type": "object"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
                                                       }
                                                     },
                                                     "type": "object"
@@ -4152,6 +4265,21 @@
                                                               },
                                                               "host": {
                                                                 "type": "string"
+                                                              }
+                                                            },
+                                                            "type": "object"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "sleep": {
+                                                        "anyOf": [
+                                                          {
+                                                            "properties": {
+                                                              "seconds": {
+                                                                "type": "integer"
                                                               }
                                                             },
                                                             "type": "object"
@@ -5299,6 +5427,21 @@
                                                             "type": "null"
                                                           }
                                                         ]
+                                                      },
+                                                      "sleep": {
+                                                        "anyOf": [
+                                                          {
+                                                            "properties": {
+                                                              "seconds": {
+                                                                "type": "integer"
+                                                              }
+                                                            },
+                                                            "type": "object"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
                                                       }
                                                     },
                                                     "type": "object"
@@ -5405,6 +5548,21 @@
                                                               },
                                                               "host": {
                                                                 "type": "string"
+                                                              }
+                                                            },
+                                                            "type": "object"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "sleep": {
+                                                        "anyOf": [
+                                                          {
+                                                            "properties": {
+                                                              "seconds": {
+                                                                "type": "integer"
                                                               }
                                                             },
                                                             "type": "object"
@@ -6522,6 +6680,21 @@
                                                         "type": "null"
                                                       }
                                                     ]
+                                                  },
+                                                  "sleep": {
+                                                    "anyOf": [
+                                                      {
+                                                        "properties": {
+                                                          "seconds": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "type": "object"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
                                                   }
                                                 },
                                                 "type": "object"
@@ -6628,6 +6801,21 @@
                                                           },
                                                           "host": {
                                                             "type": "string"
+                                                          }
+                                                        },
+                                                        "type": "object"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  },
+                                                  "sleep": {
+                                                    "anyOf": [
+                                                      {
+                                                        "properties": {
+                                                          "seconds": {
+                                                            "type": "integer"
                                                           }
                                                         },
                                                         "type": "object"
@@ -7472,6 +7660,32 @@
                                                             "type": "null"
                                                           }
                                                         ]
+                                                      },
+                                                      "matchLabelKeys": {
+                                                        "anyOf": [
+                                                          {
+                                                            "items": {
+                                                              "type": "string"
+                                                            },
+                                                            "type": "array"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "mismatchLabelKeys": {
+                                                        "anyOf": [
+                                                          {
+                                                            "items": {
+                                                              "type": "string"
+                                                            },
+                                                            "type": "array"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
                                                       }
                                                     },
                                                     "type": "object"
@@ -7625,6 +7839,32 @@
                                                                   }
                                                                 },
                                                                 "type": "object"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "matchLabelKeys": {
+                                                            "anyOf": [
+                                                              {
+                                                                "items": {
+                                                                  "type": "string"
+                                                                },
+                                                                "type": "array"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "mismatchLabelKeys": {
+                                                            "anyOf": [
+                                                              {
+                                                                "items": {
+                                                                  "type": "string"
+                                                                },
+                                                                "type": "array"
                                                               },
                                                               {
                                                                 "type": "null"
@@ -7798,6 +8038,32 @@
                                                             "type": "null"
                                                           }
                                                         ]
+                                                      },
+                                                      "matchLabelKeys": {
+                                                        "anyOf": [
+                                                          {
+                                                            "items": {
+                                                              "type": "string"
+                                                            },
+                                                            "type": "array"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "mismatchLabelKeys": {
+                                                        "anyOf": [
+                                                          {
+                                                            "items": {
+                                                              "type": "string"
+                                                            },
+                                                            "type": "array"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
                                                       }
                                                     },
                                                     "type": "object"
@@ -7951,6 +8217,32 @@
                                                                   }
                                                                 },
                                                                 "type": "object"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "matchLabelKeys": {
+                                                            "anyOf": [
+                                                              {
+                                                                "items": {
+                                                                  "type": "string"
+                                                                },
+                                                                "type": "array"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "mismatchLabelKeys": {
+                                                            "anyOf": [
+                                                              {
+                                                                "items": {
+                                                                  "type": "string"
+                                                                },
+                                                                "type": "array"
                                                               },
                                                               {
                                                                 "type": "null"
@@ -9036,6 +9328,16 @@
                                   },
                                   "hostname": {
                                     "type": "string"
+                                  },
+                                  "ipMode": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
                                   },
                                   "ports": {
                                     "anyOf": [
