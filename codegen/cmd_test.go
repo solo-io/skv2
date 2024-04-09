@@ -1839,6 +1839,94 @@ roleRef:
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
 
+	DescribeTable("rendering deployment strategy",
+		func(deploymentStrategy *appsv1.DeploymentStrategy) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Strategy: deploymentStrategy,
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-deployment-strategy",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			values := map[string]interface{}{"enabled": true}
+			helmValues := map[string]interface{}{"painter": values}
+
+			renderedManifests := helmTemplate("codegen/test/chart-deployment-strategy", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedDeploymentStrategy := renderedDeployment.Spec.Strategy
+			if deploymentStrategy == nil {
+				Expect(renderedDeploymentStrategy).To(Equal(appsv1.DeploymentStrategy{}))
+			} else {
+				Expect(renderedDeploymentStrategy).To(Equal(*deploymentStrategy))
+			}
+		},
+		Entry("when the deployment strategy is not defined",
+			nil),
+		Entry("when the deployment strategy is configured to recreate",
+			&appsv1.DeploymentStrategy{
+				Type: appsv1.RecreateDeploymentStrategyType,
+			}),
+		Entry("when the deployment strategy is configured to rolling update",
+			&appsv1.DeploymentStrategy{
+				Type: appsv1.RollingUpdateDeploymentStrategyType,
+				RollingUpdate: &appsv1.RollingUpdateDeployment{
+					MaxUnavailable: &intstr.IntOrString{
+						IntVal: 1,
+					},
+				},
+			}),
+	)
+
 	DescribeTable("rendering pod security context",
 		func(podSecurityContextValues map[string]interface{}, podSecurityContext *v1.PodSecurityContext, expectedPodSecurityContext *v1.PodSecurityContext) {
 			cmd := &Command{

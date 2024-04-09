@@ -9,6 +9,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 
 [[/* custom values defined in codegen model */]]
 [[- $containers := containerConfigs $operator -]]
+[[- $deploymentStrategy := $operator.Deployment.Strategy -]]
 [[- $podSecurityContext := $operator.Deployment.PodSecurityContext -]]
 [[- $volumes := $operator.Deployment.Volumes -]]
 [[- $conditionalVolumes := $operator.Deployment.ConditionalVolumes -]]
@@ -59,6 +60,16 @@ spec:
       [[- range $key, $value := $customPodLabels ]]
       [[ $key ]]: [[ $value ]]
       [[- end ]]
+[[- if and $deploymentStrategy ]]
+  strategy:
+[[- if and $deploymentStrategy.Type ]]
+    type: [[ $deploymentStrategy.Type ]]
+[[- end ]]
+[[- if $deploymentStrategy.RollingUpdate ]]
+    rollingUpdate:
+[[ toYaml $deploymentStrategy.RollingUpdate | indent 6 ]]
+[[- end ]]
+[[- end ]]
   template:
     metadata:
       labels:
