@@ -60,9 +60,9 @@ spec:
       [[- range $key, $value := $customPodLabels ]]
       [[ $key ]]: [[ $value ]]
       [[- end ]]
-[[- if and $deploymentStrategy ]]
+[[- if $deploymentStrategy ]]
   strategy:
-[[- if and $deploymentStrategy.Type ]]
+[[- if $deploymentStrategy.Type ]]
     type: [[ $deploymentStrategy.Type ]]
 [[- end ]]
 [[- if $deploymentStrategy.RollingUpdate ]]
