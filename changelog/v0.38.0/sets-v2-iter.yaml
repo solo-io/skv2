@@ -1,0 +1,8 @@
+changelog:
+  - type: BREAKING_CHANGE
+    issueLink: https://github.com/solo-io/skv2/issues/543
+    description: >
+      v2 sets have been refactored to use a slice as the backing data structure, allowing for faster GC time of entire sets,
+      and more efficient iteration over the set. A few methods have been removed, namely `List` and `UnsortedList`, both which have been
+      replaced with a more accurate name: "FilterOutAndCreateList". In addition, a `Filter` and `Iter` method have been added to v2 sets.
+    skipCI: "false"
