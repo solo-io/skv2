@@ -1,29 +1,36 @@
-package resource
+package v2
 
 import (
-	"golang.org/x/exp/maps"
+	"slices"
+	"strings"
+
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/resource"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type GVKSelectorFunc = func(GVK schema.GroupVersionKind) bool
-
-// Deprecated: TypedObject is not needed. use `GetObjectKind().SetGroupVersionKind` instead.
-type TypedObject = client.Object
+type GVKSelectorFunc = resource.GVKSelectorFunc
 
 // Snapshot represents a generic snapshot of client.Objects scoped to a single cluster
-type Snapshot map[schema.GroupVersionKind]map[types.NamespacedName]client.Object
+type Snapshot map[schema.GroupVersionKind][]client.Object
 
 func (s Snapshot) Insert(gvk schema.GroupVersionKind, obj client.Object) {
 	objects, ok := s[gvk]
 	if !ok {
-		objects = map[types.NamespacedName]client.Object{}
+		objects = []client.Object{}
 	}
-	objects[types.NamespacedName{
-		Namespace: obj.GetNamespace(),
-		Name:      obj.GetName(),
-	}] = obj
+	insertIndex, found := slices.BinarySearchFunc(
+		objects,
+		obj,
+		func(a, b client.Object) int { return ezkube.ResourceIdsCompare(a, b) },
+	)
+	if found {
+		objects[insertIndex] = obj
+	} else {
+		objects = slices.Insert(objects, insertIndex, obj)
+	}
 	s[gvk] = objects
 }
 
@@ -32,8 +39,23 @@ func (s Snapshot) Delete(gvk schema.GroupVersionKind, id types.NamespacedName) {
 	if !ok {
 		return
 	}
-	delete(resources, id)
-	s[gvk] = resources
+
+	i, found := slices.BinarySearchFunc(
+		resources,
+		id,
+		func(a client.Object, b types.NamespacedName) int {
+			// compare names
+			if cmp := strings.Compare(a.GetName(), b.Name); cmp != 0 {
+				return cmp
+			}
+
+			// compare namespaces
+			return strings.Compare(a.GetNamespace(), b.Namespace)
+		},
+	)
+	if found {
+		resources = slices.Delete(resources, i, i+1)
+	}
 }
 
 func (s Snapshot) ForEachObject(handleObject func(gvk schema.GroupVersionKind, obj client.Object)) {
@@ -60,10 +82,10 @@ func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Sna
 	for k, v := range s {
 		if len(selectors) == 0 {
 			if deepCopy {
-				clone[k] = copyNnsMap(v)
+				clone[k] = copyNnsSlice(v)
 			} else {
-				clone[k] = make(map[types.NamespacedName]client.Object, len(v))
-				maps.Copy(clone[k], v)
+				clone[k] = make([]client.Object, len(v))
+				copy(clone[k], v)
 			}
 			continue
 		}
@@ -76,34 +98,15 @@ func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Sna
 		}
 		if selected {
 			if deepCopy {
-				clone[k] = copyNnsMap(v)
+				clone[k] = copyNnsSlice(v)
 			} else {
-				clone[k] = make(map[types.NamespacedName]client.Object, len(v))
-				maps.Copy(clone[k], v)
+				clone[k] = make([]client.Object, len(v))
+				copy(clone[k], v)
 			}
 			continue
 		}
 	}
 	return clone
-}
-
-// Merges the Snapshot with a Snapshot passed in as an argument. The values
-// in the passed in Snapshot will take precedence when there is an object mapped
-// to the same gvk and name in both Snapshots.
-func (s Snapshot) Merge(toMerge Snapshot) Snapshot {
-	merged := s.Clone()
-	for gvk, objectsMap := range toMerge {
-		if _, ok := merged[gvk]; ok {
-			for name, object := range objectsMap {
-				// If there is already an object specified here, the object from toMerge
-				// will replace it
-				merged[gvk][name] = object
-			}
-		} else {
-			merged[gvk] = objectsMap
-		}
-	}
-	return merged
 }
 
 // ClusterSnapshot represents a set of snapshots partitioned by cluster
@@ -126,12 +129,12 @@ func (s ClusterSnapshot) ForEachObject(
 	}
 }
 
-func copyNnsMap(m map[types.NamespacedName]client.Object) map[types.NamespacedName]client.Object {
-	nnsMapCopy := make(map[types.NamespacedName]client.Object, len(m))
+func copyNnsSlice(m []client.Object) []client.Object {
+	nsSliceCopy := make([]client.Object, len(m))
 	for k, v := range m {
-		nnsMapCopy[k] = v.DeepCopyObject().(client.Object)
+		nsSliceCopy[k] = v.DeepCopyObject().(client.Object)
 	}
-	return nnsMapCopy
+	return nsSliceCopy
 }
 
 func (cs ClusterSnapshot) Insert(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
@@ -170,20 +173,4 @@ func (cs ClusterSnapshot) ShallowCopy(selectors ...GVKSelectorFunc) ClusterSnaps
 		clone[k] = v.ShallowCopy(selectors...)
 	}
 	return clone
-}
-
-// Merges the ClusterSnapshot with a ClusterSnapshot passed in as an argument.
-// If a cluster exists in both ClusterSnapshots, then both Snapshots for the
-// cluster is merged; with the passed in ClusterSnapshot's corresponding Snapshot
-// taking precedence in case of conflicts.
-func (cs ClusterSnapshot) Merge(toMerge ClusterSnapshot) ClusterSnapshot {
-	merged := cs.Clone()
-	for cluster, snapshot := range toMerge {
-		if baseSnap, ok := merged[cluster]; ok {
-			merged[cluster] = baseSnap.Merge(snapshot)
-		} else {
-			merged[cluster] = snapshot
-		}
-	}
-	return merged
 }
