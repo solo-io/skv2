@@ -173,3 +173,39 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 		return nil, eris.Errorf("could not convert key %s with separator %s into resource id; unexpected number of parts: %d", key, separator, len(parts))
 	}
 }
+
+// ResourceIdsCompare returns an integer comparing two ResourceIds lexicographically.
+// The comparison is based on name, then namespace, then cluster name.
+// The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
+func ResourceIdsCompare(a, b ResourceId) int {
+	// compare names
+	if cmp := strings.Compare(a.GetName(), b.GetName()); cmp != 0 {
+		return cmp
+	}
+
+	// compare namespaces
+	if cmp := strings.Compare(a.GetNamespace(), b.GetNamespace()); cmp != 0 {
+		return cmp
+	}
+
+	// compare cluster names
+	// attempt to cast to ClusterResourceId
+	// if fails, attempt cast to deprecatedClusterResourceId since we might be working with a ClusterObjectRef
+	var (
+		aCluster, bCluster string
+	)
+
+	if a_cri, ok := a.(ClusterResourceId); ok {
+		aCluster = GetClusterName(a_cri)
+	} else {
+		aCluster = getDeprecatedClusterName(a)
+	}
+
+	if b_cri, ok := b.(ClusterResourceId); ok {
+		bCluster = GetClusterName(b_cri)
+	} else {
+		bCluster = getDeprecatedClusterName(b)
+	}
+
+	return strings.Compare(aCluster, bCluster)
+}
