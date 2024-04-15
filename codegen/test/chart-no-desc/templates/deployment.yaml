@@ -34,6 +34,11 @@ spec:
         pod: annotations
     spec:
       serviceAccountName: painter
+      {{- /* Override the default podSecurityContext config if it is set. */}}
+{{- if or ($.Values.painter.podSecurityContext) (eq "map[]" (printf "%v" $.Values.painter.podSecurityContext)) }}
+      securityContext:
+{{ toYaml $.Values.painter.podSecurityContext | indent 8 }}
+{{- end }}
       volumes:
       - emptyDir: {}
         name: paint
