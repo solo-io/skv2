@@ -19,6 +19,7 @@ weight: 2
 |overrideName.image.registry|string|Image registry.|quay.io/solo-io|
 |overrideName.image.repository|string|Image name (repository).|painter|
 |overrideName.image.tag|string|Version tag for the container image.| |
+|overrideName.podSecurityContext|struct|Pod-level security context. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#podsecuritycontext-v1-core).| |
 |overrideName.ports|map[string, uint32]|Service ports as a map from port name to port number.|{}|
 |overrideName.ports.<MAP_KEY>|uint32|Service ports as a map from port name to port number.| |
 |overrideName.resources|struct|Container resource requirements. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#resourcerequirements-v1-core).| |
