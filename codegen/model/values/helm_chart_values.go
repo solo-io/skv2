@@ -56,11 +56,12 @@ type UserValues struct {
 	UserContainerValues `json:",inline"`
 
 	// Required to have an interface value in order to use the `index` function in the template
-	Sidecars       map[string]UserContainerValues `json:"sidecars" desc:"Optional configuration for the deployed containers."`
-	FloatingUserID bool                           `json:"floatingUserId" desc:"Allow the pod to be assigned a dynamic user ID. Required for OpenShift installations."`
-	RunAsUser      uint32                         `json:"runAsUser" desc:"Static user ID to run the containers as. Unused if floatingUserId is 'true'."`
-	ServiceType    v1.ServiceType                 `json:"serviceType" desc:"Kubernetes service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
-	ServicePorts   map[string]uint32              `json:"ports" desc:"Service ports as a map from port name to port number."`
+	Sidecars           map[string]UserContainerValues `json:"sidecars" desc:"Optional configuration for the deployed containers."`
+	FloatingUserID     bool                           `json:"floatingUserId" desc:"Allow the pod to be assigned a dynamic user ID. Required for OpenShift installations."`
+	RunAsUser          uint32                         `json:"runAsUser" desc:"Static user ID to run the containers as. Unused if floatingUserId is 'true'."`
+	ServiceType        v1.ServiceType                 `json:"serviceType" desc:"Kubernetes service type. Can be either \"ClusterIP\", \"NodePort\", \"LoadBalancer\", or \"ExternalName\"."`
+	ServicePorts       map[string]uint32              `json:"ports" desc:"Service ports as a map from port name to port number."`
+	PodSecurityContext *v1.PodSecurityContext         `json:"podSecurityContext,omitempty" desc:"Pod-level security context. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#podsecuritycontext-v1-core)." omitChildren:"true"`
 
 	// Overrides which can be set by the user
 	DeploymentOverrides *appsv1.Deployment `json:"deploymentOverrides" desc:"Arbitrary overrides for the component's [deployment template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)." omitChildren:"true"`
