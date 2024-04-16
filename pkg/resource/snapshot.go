@@ -62,7 +62,7 @@ func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Sna
 			if deepCopy {
 				clone[k] = copyNnsMap(v)
 			} else {
-				clone[k] = map[types.NamespacedName]client.Object{}
+				clone[k] = make(map[types.NamespacedName]client.Object, len(v))
 				maps.Copy(clone[k], v)
 			}
 			continue
@@ -78,7 +78,7 @@ func (s Snapshot) cloneInternal(deepCopy bool, selectors ...GVKSelectorFunc) Sna
 			if deepCopy {
 				clone[k] = copyNnsMap(v)
 			} else {
-				clone[k] = map[types.NamespacedName]client.Object{}
+				clone[k] = make(map[types.NamespacedName]client.Object, len(v))
 				maps.Copy(clone[k], v)
 			}
 			continue
@@ -127,7 +127,7 @@ func (s ClusterSnapshot) ForEachObject(
 }
 
 func copyNnsMap(m map[types.NamespacedName]client.Object) map[types.NamespacedName]client.Object {
-	nnsMapCopy := map[types.NamespacedName]client.Object{}
+	nnsMapCopy := make(map[types.NamespacedName]client.Object, len(m))
 	for k, v := range m {
 		nnsMapCopy[k] = v.DeepCopyObject().(client.Object)
 	}
