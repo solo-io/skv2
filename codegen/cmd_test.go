@@ -1877,7 +1877,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			values := map[string]interface{}{"enabled": true}
+			values := map[string]interface{}{}
 			helmValues := map[string]interface{}{"painter": values}
 
 			renderedManifests := helmTemplate("codegen/test/chart-deployment-strategy", helmValues)
@@ -1965,7 +1965,7 @@ roleRef:
 			err := cmd.Execute()
 			Expect(err).NotTo(HaveOccurred())
 
-			values := map[string]interface{}{"enabled": true, "podSecurityContext": podSecurityContextValues}
+			values := map[string]interface{}{"podSecurityContext": podSecurityContextValues}
 			helmValues := map[string]interface{}{"painter": values}
 
 			renderedManifests := helmTemplate("codegen/test/chart-pod-security-context", helmValues)
