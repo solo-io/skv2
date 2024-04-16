@@ -29,6 +29,11 @@ spec:
         app.kubernetes.io/name: painter
     spec:
       serviceAccountName: painter
+      {{- /* Override the default podSecurityContext config if it is set. */}}
+{{- if or ($.Values.painter.podSecurityContext) (eq "map[]" (printf "%v" $.Values.painter.podSecurityContext)) }}
+      securityContext:
+{{ toYaml $.Values.painter.podSecurityContext | indent 8 }}
+{{- end }}
       containers:
 {{- $painter := $.Values.painter }}
 {{- $painterImage := $painter.image }}
