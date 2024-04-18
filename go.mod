@@ -21,6 +21,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/gnostic-models v0.6.8
 	github.com/google/go-cmp v0.6.0
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.6
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
 	github.com/iancoleman/strcase v0.2.0
@@ -89,8 +90,6 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/grafana/pyroscope-go v1.1.1 // indirect
-	github.com/grafana/pyroscope-go/godeltaprof v0.1.6 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
