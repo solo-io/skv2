@@ -89,6 +89,8 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/grafana/pyroscope-go v1.1.1 // indirect
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.6 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
@@ -98,6 +100,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k0kubun/pp v2.3.0+incompatible // indirect
+	github.com/klauspost/compress v1.17.3 // indirect
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
