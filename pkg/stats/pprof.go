@@ -13,7 +13,7 @@ func AddPprof(mux *http.ServeMux) {
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	mux.HandleFunc("/debug/pprof/delta_heap", deltapprof.Heap)
-	mux.HandleFunc("/debug/pprof/delta_threadcreate", deltapprof.Mutex)
+	mux.HandleFunc("/debug/pprof/delta_mutex", deltapprof.Mutex)
 	mux.HandleFunc("/debug/pprof/delta_block", deltapprof.Block)
 
 
