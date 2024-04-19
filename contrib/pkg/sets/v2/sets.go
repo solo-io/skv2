@@ -67,6 +67,8 @@ type ResourceSet[T client.Object] interface {
 	Generic() sk_sets.ResourceSet
 	// Clone returns a deep copy of the set
 	Clone() ResourceSet[T]
+	// ShallowCopy returns a shallow copy of the set
+	ShallowCopy() ResourceSet[T]
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -333,6 +335,14 @@ func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 		return true
 	})
 	return new
+}
+
+func (oldSet *resourceSet[T]) ShallowCopy() ResourceSet[T] {
+	newSet := make([]T, len(oldSet.set))
+	copy(newSet, oldSet.set)
+	return &resourceSet[T]{
+		set: newSet,
+	}
 }
 
 func (s *resourceSet[T]) Generic() sk_sets.ResourceSet {
