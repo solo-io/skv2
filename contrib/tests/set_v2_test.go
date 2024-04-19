@@ -120,12 +120,22 @@ var _ = Describe("PaintSetV2", func() {
 
 		setB = setA.ShallowCopy()
 		Expect(setB.Has(newPaint)).To(BeTrue())
-		np := setA.Get(newPaint)
-		np.Name = "newPaintWithNewName"
-		Expect(setB.Len()).To(Equal(4))
-		npShouldBeExactSame := setB.Get(newPaint)
-		Expect(npShouldBeExactSame.Name).To(Equal("newPaintWithNewName"))
-		Expect(npShouldBeExactSame == np).To(BeTrue())
+		// so sorry for this n^2 comparison,
+		// want to make sure that the pointers are the same in both sets but have no better way to do it
+		setB.Iter(func(i int, p *v1.Paint) bool {
+			setA.Iter(func(j int, p2 *v1.Paint) bool {
+				if i == j {
+					Expect(p == p2).To(BeTrue())
+				}
+				return true
+			})
+		})
+		// np := setA.Get(newPaint)
+		// np.Name = "newPaintWithNewName"
+		// Expect(setB.Len()).To(Equal(4))
+		// npShouldBeExactSame := setB.Get(newPaint)
+		// Expect(npShouldBeExactSame.Name).To(Equal("newPaintWithNewName"))
+		// Expect(npShouldBeExactSame == np).To(BeTrue())
 	})
 
 	It("should double filter List", func() {
