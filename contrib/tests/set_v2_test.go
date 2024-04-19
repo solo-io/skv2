@@ -110,6 +110,22 @@ var _ = Describe("PaintSetV2", func() {
 		})
 	})
 
+	It("should shallow copy", func() {
+		newPaint := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{Name: "newPaint", Namespace: "newPaint"},
+		}
+		setA.Insert(paintA, paintBCluster2, paintC, newPaint)
+		Expect(setA.Has(newPaint)).To(BeTrue())
+		Expect(setA.Len()).To(Equal(4))
+
+		setB = setA.ShallowCopy()
+		Expect(setB.Has(newPaint)).To(BeTrue())
+		np := setA.Get(newPaint)
+		np.Name = "newPaintWithNewName"
+		Expect(setB.Len()).To(Equal(4))
+		Expect(setB.Get(newPaint).Name).To(Equal("newPaintWithNewName"))
+	})
+
 	It("should double filter List", func() {
 		setA.Insert(paintA, paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
