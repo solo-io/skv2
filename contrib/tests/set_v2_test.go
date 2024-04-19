@@ -110,6 +110,29 @@ var _ = Describe("PaintSetV2", func() {
 		})
 	})
 
+	It("should shallow copy", func() {
+		newPaint := &v1.Paint{
+			ObjectMeta: metav1.ObjectMeta{Name: "newPaint", Namespace: "newPaint"},
+		}
+		setA.Insert(paintA, paintBCluster2, paintC, newPaint)
+		Expect(setA.Has(newPaint)).To(BeTrue())
+		Expect(setA.Len()).To(Equal(4))
+
+		setB = setA.ShallowCopy()
+		Expect(setB.Has(newPaint)).To(BeTrue())
+		// want to make sure that the pointers are the same in both sets
+		// without having to construct a new list, so we just iterate
+		setB.Iter(func(i int, p *v1.Paint) bool {
+			setA.Iter(func(j int, p2 *v1.Paint) bool {
+				if i == j {
+					Expect(p == p2).To(BeTrue())
+				}
+				return true
+			})
+			return true
+		})
+	})
+
 	It("should double filter List", func() {
 		setA.Insert(paintA, paintBCluster2, paintC)
 		Expect(setA.Has(paintA)).To(BeTrue())
