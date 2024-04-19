@@ -123,7 +123,9 @@ var _ = Describe("PaintSetV2", func() {
 		np := setA.Get(newPaint)
 		np.Name = "newPaintWithNewName"
 		Expect(setB.Len()).To(Equal(4))
-		Expect(setB.Get(newPaint).Name).To(Equal("newPaintWithNewName"))
+		npShouldBeExactSame := setB.Get(newPaint)
+		Expect(npShouldBeExactSame.Name).To(Equal("newPaintWithNewName"))
+		Expect(npShouldBeExactSame == np).To(BeTrue())
 	})
 
 	It("should double filter List", func() {
