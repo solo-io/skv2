@@ -114,6 +114,7 @@ type Deployment struct {
 	UseDaemonSet bool
 	Container
 	Strategy                    *appsv1.DeploymentStrategy
+	ConditionalStrategy         []ConditionalStrategy
 	Sidecars                    []Sidecar
 	PodSecurityContext          *corev1.PodSecurityContext
 	Volumes                     []corev1.Volume
@@ -122,6 +123,11 @@ type Deployment struct {
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
 	CustomDeploymentAnnotations map[string]string
+}
+
+type ConditionalStrategy struct {
+	Condition string
+	Strategy  appsv1.DeploymentStrategy
 }
 
 type ConditionalVolume struct {

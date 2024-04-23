@@ -22,9 +22,12 @@ spec:
     matchLabels:
       app: painter
   strategy:
-    rollingUpdate:
-      maxUnavailable: 1
+{{- if $.Values.painter.condition }}
     type: RollingUpdate
+{{- end }}
+{{- if not $.Values.painter.condition }}
+    type: Recreate
+{{- end }}
   template:
     metadata:
       labels:

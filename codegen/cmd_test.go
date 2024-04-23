@@ -1925,6 +1925,118 @@ roleRef:
 			}),
 	)
 
+	DescribeTable("rendering conditional deployment strategy",
+		func(values map[string]any, conditionalStrategy []model.ConditionalStrategy, expectedStrategy appsv1.DeploymentStrategy) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								ConditionalStrategy: conditionalStrategy,
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-conditional-deployment-strategy",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			helmValues := map[string]interface{}{"painter": values}
+			renderedManifests := helmTemplate("codegen/test/chart-conditional-deployment-strategy", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedDeploymentStrategy := renderedDeployment.Spec.Strategy
+			Expect(renderedDeploymentStrategy).To(Equal(expectedStrategy))
+		},
+		Entry("when the conditional strategy is not defined",
+			map[string]any{"enabled": true},
+			nil,
+			appsv1.DeploymentStrategy{},
+		),
+		Entry("when the condition is true",
+			map[string]any{"enabled": true, "condition": true},
+			[]model.ConditionalStrategy{
+				{
+					Condition: "$.Values.painter.condition",
+					Strategy: appsv1.DeploymentStrategy{
+						Type: appsv1.RollingUpdateDeploymentStrategyType,
+					},
+				},
+				{
+					Condition: "not $.Values.painter.condition",
+					Strategy: appsv1.DeploymentStrategy{
+						Type: appsv1.RecreateDeploymentStrategyType,
+					},
+				},
+			},
+			appsv1.DeploymentStrategy{
+				Type: appsv1.RollingUpdateDeploymentStrategyType,
+			},
+		),
+		Entry("when the condition is false",
+			map[string]any{"enabled": true, "condition": false},
+			[]model.ConditionalStrategy{
+				{
+					Condition: "$.Values.painter.condition",
+					Strategy: appsv1.DeploymentStrategy{
+						Type: appsv1.RollingUpdateDeploymentStrategyType,
+					},
+				},
+				{
+					Condition: "not $.Values.painter.condition",
+					Strategy: appsv1.DeploymentStrategy{
+						Type: appsv1.RecreateDeploymentStrategyType,
+					},
+				},
+			},
+			appsv1.DeploymentStrategy{
+				Type: appsv1.RecreateDeploymentStrategyType,
+			},
+		),
+	)
+
 	DescribeTable("rendering pod security context",
 		func(podSecurityContextValues map[string]interface{}, podSecurityContext *v1.PodSecurityContext, expectedPodSecurityContext *v1.PodSecurityContext) {
 			cmd := &Command{
