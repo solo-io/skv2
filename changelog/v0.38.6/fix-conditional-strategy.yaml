@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/15710
+    resolvesIssue: false
+    description: |
+      Avoid setting deployment strategy to null when no condition is evaluated.
+    skipCI: false
