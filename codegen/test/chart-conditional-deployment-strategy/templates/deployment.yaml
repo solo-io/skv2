@@ -21,11 +21,12 @@ spec:
   selector:
     matchLabels:
       app: painter
-  strategy:
 {{- if $.Values.painter.condition }}
+  strategy:
     type: RollingUpdate
 {{- end }}
 {{- if not $.Values.painter.condition }}
+  strategy:
     type: Recreate
 {{- end }}
   template:
