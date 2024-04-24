@@ -65,9 +65,9 @@ spec:
   strategy:
 [[ toYaml $strategy | indent 4 ]]
 [[- else if $conditionalStrategy ]]
-  strategy:
 [[- range $s := $conditionalStrategy ]]
 {{- if [[ $s.Condition ]] }}
+  strategy:
 [[ toYaml $s.Strategy | indent 4 ]]
 {{- end }}
 [[- end ]]
