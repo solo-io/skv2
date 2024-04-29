@@ -21,10 +21,14 @@ spec:
   selector:
     matchLabels:
       app: painter
+{{- if $.Values.painter.condition }}
   strategy:
-    rollingUpdate:
-      maxUnavailable: 1
     type: RollingUpdate
+{{- end }}
+{{- if not $.Values.painter.condition }}
+  strategy:
+    type: Recreate
+{{- end }}
   template:
     metadata:
       labels:
