@@ -1,7 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/15710
-    resolvesIssue: false
-    description: |
-      Adds support for conditional deployment strategy.
-    skipCI: false
