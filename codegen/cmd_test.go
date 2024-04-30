@@ -3,6 +3,7 @@ package codegen_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,27 +11,28 @@ import (
 	"reflect"
 	"strings"
 
-	goyaml "gopkg.in/yaml.v3"
-	rbacv1 "k8s.io/api/rbac/v1"
-	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"k8s.io/utils/pointer"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/skv2/codegen"
-	"github.com/solo-io/skv2/codegen/model"
-	. "github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
-	"github.com/solo-io/skv2/codegen/util"
-	"github.com/solo-io/skv2/contrib"
+	goyaml "gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kubeyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/yaml"
+
+	. "github.com/solo-io/skv2/codegen"
+	"github.com/solo-io/skv2/codegen/model"
+	. "github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/codegen/model/values"
+	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
+	"github.com/solo-io/skv2/codegen/util"
+	"github.com/solo-io/skv2/contrib"
 )
 
 var _ = Describe("Cmd", func() {
@@ -42,6 +44,132 @@ var _ = Describe("Cmd", func() {
 	skv2Imports.External["github.com/solo-io/cue"] = []string{
 		"encoding/protobuf/cue/cue.proto",
 	}
+
+	{
+		type testCase struct {
+			idx            int
+			values         any
+			deploymentName string
+			err            error
+		}
+
+		DescribeTable(
+			"using template name override",
+			func(tc testCase) {
+				cmd := &Command{
+					ManifestRoot: fmt.Sprintf("codegen/test/chart/template-name-override-%d", tc.idx),
+					Chart: &Chart{
+						Data: Data{
+							Name:    "default",
+							Version: "0.0.1",
+						},
+						Operators: []Operator{
+							{
+								Name:                   "gloo-mesh-redis",
+								ValuePath:              "redis",
+								ValuesFileNameOverride: "deployment",
+								CustomEnableCondition:  "and ($.Values.redis.enabled) (not $.Values.store.enabled)",
+								Deployment: Deployment{
+									Container: Container{
+										Image: values.Image{
+											Registry:   "docker.io",
+											Repository: "redis",
+											Tag:        "7.0.4",
+										},
+									},
+								},
+								Service: Service{
+									Type:  corev1.ServiceTypeClusterIP,
+									Ports: []ServicePort{{Name: "redis", DefaultPort: 6379}},
+								},
+								Values: map[string]any{
+									"redis": map[string]any{
+										"enabled": false,
+									},
+								},
+							},
+							{
+								Name:                   "gloo-mesh-redis",
+								ValuePath:              "store.default",
+								ValuesFileNameOverride: "deployment",
+								TemplateNameOverride:   "gloo-mesh-redis-snapshots",
+								CustomEnableCondition:  "and (not $.Values.redis.enabled) ($.Values.store.enabled)",
+								Deployment: Deployment{
+									Container: Container{
+										Image: values.Image{
+											Registry:   "docker.io",
+											Repository: "redis",
+											Tag:        "7.0.4",
+										},
+									},
+								},
+								Service: Service{
+									Type:  corev1.ServiceTypeClusterIP,
+									Ports: []ServicePort{{Name: "redis", DefaultPort: 6379}},
+								},
+								Values: map[string]any{
+									"store": map[string]any{
+										"enabled": false,
+									},
+								},
+							},
+						},
+					},
+				}
+
+				Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+
+				manifest := helmTemplate(fmt.Sprintf("./test/chart/template-name-override-%d", tc.idx), tc.values)
+
+				var (
+					deployment *appsv1.Deployment
+				)
+
+				fmt.Println(string(manifest))
+
+				Expect(yaml.Unmarshal(manifest, &deployment)).NotTo(HaveOccurred())
+				if tc.err != nil && Expect(deployment).To(BeNil()) {
+					return
+				}
+				Expect(deployment).NotTo(BeNil())
+				Expect(deployment.Name).To(Equal(tc.deploymentName))
+			},
+			Entry("redis.enabled should produce single gloo-mesh-redis deployment", testCase{
+				idx:            1,
+				deploymentName: "gloo-mesh-redis",
+				values: map[string]any{
+					"redis": map[string]any{
+						"enabled": true,
+					},
+					"store": map[string]any{
+						"enabled": false,
+					},
+				},
+			}),
+			Entry("store.enabled should produce single gloo-mesh-redis deployment", testCase{
+				idx:            2,
+				deploymentName: "gloo-mesh-redis",
+				values: map[string]any{
+					"store": map[string]any{
+						"enabled": true,
+					},
+				},
+			}),
+			Entry("enabling both shouldn't produce any deployment", testCase{
+				idx: 3,
+				values: map[string]any{
+					"redis": map[string]any{
+						"enabled": true,
+					},
+					"store": map[string]any{
+						"enabled": true,
+					},
+				},
+				err: errors.New("error"),
+			}),
+		)
+	}
+
 	It("install conditional sidecars", func() {
 		agentConditional := "and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar)"
 
@@ -65,19 +193,19 @@ var _ = Describe("Cmd", func() {
 							Sidecars: []Sidecar{
 								{
 									Name: "gloo-agent",
-									Volumes: []v1.Volume{
+									Volumes: []corev1.Volume{
 										{
 											Name: "agent-volume",
-											VolumeSource: v1.VolumeSource{
-												Secret: &v1.SecretVolumeSource{
+											VolumeSource: corev1.VolumeSource{
+												Secret: &corev1.SecretVolumeSource{
 													SecretName: "agent-volume",
 												},
 											},
 										},
 										{
 											Name: "agent-volume-2",
-											VolumeSource: v1.VolumeSource{
-												Secret: &v1.SecretVolumeSource{
+											VolumeSource: corev1.VolumeSource{
+												Secret: &corev1.SecretVolumeSource{
 													SecretName: "agent-volume",
 												},
 											},
@@ -115,17 +243,17 @@ var _ = Describe("Cmd", func() {
 									Name: "stats",
 									Port: "{{ $Values.glooMgmtServer.statsPort }}",
 								}},
-								VolumeMounts: []v1.VolumeMount{{
+								VolumeMounts: []corev1.VolumeMount{{
 									Name:      "license-keys",
 									MountPath: "/etc/gloo-mesh/license-keys",
 									ReadOnly:  true,
 								}},
 							},
-							Volumes: []v1.Volume{
+							Volumes: []corev1.Volume{
 								{
 									Name: "license-keys",
-									VolumeSource: v1.VolumeSource{
-										Secret: &v1.SecretVolumeSource{
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
 											SecretName: "license-keys",
 										},
 									},
@@ -707,7 +835,7 @@ var _ = Describe("Cmd", func() {
 	)
 
 	DescribeTable("supports overriding the container security context",
-		func(securityContext *v1.SecurityContext, omitSecurityContext bool) {
+		func(securityContext *corev1.SecurityContext, omitSecurityContext bool) {
 			cmd := &Command{
 				Chart: &Chart{
 					Operators: []Operator{
@@ -774,13 +902,13 @@ var _ = Describe("Cmd", func() {
 
 			pointerBool := func(b bool) *bool { return &b }
 			pointerInt64 := func(i int64) *int64 { return &i }
-			defaultSecurityContext := v1.SecurityContext{
+			defaultSecurityContext := corev1.SecurityContext{
 				RunAsNonRoot:             pointerBool(true),
 				RunAsUser:                pointerInt64(10101),
 				ReadOnlyRootFilesystem:   pointerBool(true),
 				AllowPrivilegeEscalation: pointerBool(false),
-				Capabilities: &v1.Capabilities{
-					Drop: []v1.Capability{"ALL"},
+				Capabilities: &corev1.Capabilities{
+					Drop: []corev1.Capability{"ALL"},
 				},
 			}
 
@@ -789,15 +917,15 @@ var _ = Describe("Cmd", func() {
 			if securityContext == nil && !omitSecurityContext {
 				Expect(*renderedSecurityContext).To(Equal(defaultSecurityContext))
 			} else if securityContext == nil && omitSecurityContext {
-				Expect(*renderedSecurityContext).To(Equal(v1.SecurityContext{}))
+				Expect(*renderedSecurityContext).To(Equal(corev1.SecurityContext{}))
 			} else {
 				Expect(*renderedSecurityContext).To(Equal(*securityContext))
 			}
 		},
 		Entry("renders default container security context", nil, false),
 		Entry("renders empty map for container security context when set as false via helm cli", nil, true),
-		Entry("overrides container security context with empty map", &v1.SecurityContext{}, false),
-		Entry("overrides container security context", &v1.SecurityContext{
+		Entry("overrides container security context with empty map", &corev1.SecurityContext{}, false),
+		Entry("overrides container security context", &corev1.SecurityContext{
 			RunAsNonRoot: func(b bool) *bool { return &b }(true),
 			RunAsUser:    func(i int64) *int64 { return &i }(20202),
 		}, false),
@@ -819,7 +947,7 @@ var _ = Describe("Cmd", func() {
 								},
 
 								Args: []string{"foo"},
-								Env: []v1.EnvVar{
+								Env: []corev1.EnvVar{
 									{
 										Name:  "FOO",
 										Value: "BAR",
@@ -844,15 +972,15 @@ var _ = Describe("Cmd", func() {
 											PullPolicy: "IfNotPresent",
 										},
 										Args: []string{"bar", "baz"},
-										VolumeMounts: []v1.VolumeMount{
+										VolumeMounts: []corev1.VolumeMount{
 											{
 												Name:      "paint",
 												MountPath: "/etc/paint",
 											},
 										},
-										LivenessProbe: &v1.Probe{
-											ProbeHandler: v1.ProbeHandler{
-												HTTPGet: &v1.HTTPGetAction{
+										LivenessProbe: &corev1.Probe{
+											ProbeHandler: corev1.ProbeHandler{
+												HTTPGet: &corev1.HTTPGetAction{
 													Path: "/",
 													Port: intstr.FromInt(8080),
 												},
@@ -864,11 +992,11 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Volumes: []v1.Volume{
+							Volumes: []corev1.Volume{
 								{
 									Name: "paint",
-									VolumeSource: v1.VolumeSource{
-										EmptyDir: &v1.EmptyDirVolumeSource{},
+									VolumeSource: corev1.VolumeSource{
+										EmptyDir: &corev1.EmptyDirVolumeSource{},
 									},
 								},
 							},
@@ -929,7 +1057,7 @@ var _ = Describe("Cmd", func() {
 		renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
 
 		var (
-			renderedService    *v1.Service
+			renderedService    *corev1.Service
 			renderedDeployment *appsv1.Deployment
 		)
 		decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
@@ -947,7 +1075,7 @@ var _ = Describe("Cmd", func() {
 			case "Service":
 				bytes, err := obj.MarshalJSON()
 				Expect(err).NotTo(HaveOccurred())
-				renderedService = &v1.Service{}
+				renderedService = &corev1.Service{}
 				err = json.Unmarshal(bytes, renderedService)
 				Expect(err).NotTo(HaveOccurred())
 			case "Deployment":
@@ -978,7 +1106,7 @@ var _ = Describe("Cmd", func() {
 								},
 
 								Args: []string{"foo"},
-								Env: []v1.EnvVar{
+								Env: []corev1.EnvVar{
 									{
 										Name:  "FOO",
 										Value: "BAR",
@@ -1003,15 +1131,15 @@ var _ = Describe("Cmd", func() {
 											PullPolicy: "IfNotPresent",
 										},
 										Args: []string{"bar", "baz"},
-										VolumeMounts: []v1.VolumeMount{
+										VolumeMounts: []corev1.VolumeMount{
 											{
 												Name:      "paint",
 												MountPath: "/etc/paint",
 											},
 										},
-										LivenessProbe: &v1.Probe{
-											ProbeHandler: v1.ProbeHandler{
-												HTTPGet: &v1.HTTPGetAction{
+										LivenessProbe: &corev1.Probe{
+											ProbeHandler: corev1.ProbeHandler{
+												HTTPGet: &corev1.HTTPGetAction{
 													Path: "/",
 													Port: intstr.FromInt(8080),
 												},
@@ -1023,11 +1151,11 @@ var _ = Describe("Cmd", func() {
 								},
 							},
 
-							Volumes: []v1.Volume{
+							Volumes: []corev1.Volume{
 								{
 									Name: "paint",
-									VolumeSource: v1.VolumeSource{
-										EmptyDir: &v1.EmptyDirVolumeSource{},
+									VolumeSource: corev1.VolumeSource{
+										EmptyDir: &corev1.EmptyDirVolumeSource{},
 									},
 								},
 							},
@@ -1100,7 +1228,7 @@ var _ = Describe("Cmd", func() {
 		helmValues := map[string]interface{}{
 			"painter": map[string]interface{}{
 				"enabled": true,
-				"serviceOverrides": marshalMap(&v1.Service{
+				"serviceOverrides": marshalMap(&corev1.Service{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
 							// override labels
@@ -1112,7 +1240,7 @@ var _ = Describe("Cmd", func() {
 						},
 					},
 					// override load balancer ip
-					Spec: v1.ServiceSpec{
+					Spec: corev1.ServiceSpec{
 						LoadBalancerIP: loadBalancerIp,
 					},
 				}),
@@ -1130,7 +1258,7 @@ var _ = Describe("Cmd", func() {
 					// override replicas
 					Spec: appsv1.DeploymentSpec{
 						Replicas: &replicas,
-						Template: v1.PodTemplateSpec{
+						Template: corev1.PodTemplateSpec{
 							ObjectMeta: metav1.ObjectMeta{
 								Labels: map[string]string{
 									// override labels
@@ -1150,7 +1278,7 @@ var _ = Describe("Cmd", func() {
 		renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
 
 		var (
-			renderedService    *v1.Service
+			renderedService    *corev1.Service
 			renderedDeployment *appsv1.Deployment
 		)
 		decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
@@ -1168,7 +1296,7 @@ var _ = Describe("Cmd", func() {
 			case "Service":
 				bytes, err := obj.MarshalJSON()
 				Expect(err).NotTo(HaveOccurred())
-				renderedService = &v1.Service{}
+				renderedService = &corev1.Service{}
 				err = json.Unmarshal(bytes, renderedService)
 				Expect(err).NotTo(HaveOccurred())
 			case "Deployment":
@@ -1565,7 +1693,7 @@ roleRef:
 										PullPolicy: "IfNotPresent",
 									},
 									Args: []string{"foo"},
-									Env: []v1.EnvVar{
+									Env: []corev1.EnvVar{
 										{
 											Name:  "FOO",
 											Value: "BAR",
@@ -1589,15 +1717,15 @@ roleRef:
 												PullPolicy: "IfNotPresent",
 											},
 											Args: []string{"bar", "baz"},
-											VolumeMounts: []v1.VolumeMount{
+											VolumeMounts: []corev1.VolumeMount{
 												{
 													Name:      "paint",
 													MountPath: "/etc/paint",
 												},
 											},
-											LivenessProbe: &v1.Probe{
-												ProbeHandler: v1.ProbeHandler{
-													HTTPGet: &v1.HTTPGetAction{
+											LivenessProbe: &corev1.Probe{
+												ProbeHandler: corev1.ProbeHandler{
+													HTTPGet: &corev1.HTTPGetAction{
 														Path: "/",
 														Port: intstr.FromInt(8080),
 													},
@@ -1609,11 +1737,11 @@ roleRef:
 									},
 								},
 
-								Volumes: []v1.Volume{
+								Volumes: []corev1.Volume{
 									{
 										Name: "paint",
-										VolumeSource: v1.VolumeSource{
-											EmptyDir: &v1.EmptyDirVolumeSource{},
+										VolumeSource: corev1.VolumeSource{
+											EmptyDir: &corev1.EmptyDirVolumeSource{},
 										},
 									},
 								},
@@ -1765,7 +1893,7 @@ roleRef:
 	)
 
 	DescribeTable("rendering extra env vars",
-		func(extraEnvs map[string]interface{}, expectedEnvVars []v1.EnvVar) {
+		func(extraEnvs map[string]interface{}, expectedEnvVars []corev1.EnvVar) {
 			cmd := &Command{
 				Chart: &Chart{
 					Operators: []Operator{
@@ -1833,10 +1961,10 @@ roleRef:
 		Entry("no env vars",
 			nil, nil),
 		Entry("value env var",
-			map[string]interface{}{"FOO": map[string]interface{}{"value": "bar"}}, []v1.EnvVar{{Name: "FOO", Value: "bar"}}),
+			map[string]interface{}{"FOO": map[string]interface{}{"value": "bar"}}, []corev1.EnvVar{{Name: "FOO", Value: "bar"}}),
 		Entry("valueFrom env var",
 			map[string]interface{}{"FOO": map[string]interface{}{"valueFrom": map[string]interface{}{"secretKeyRef": map[string]interface{}{"name": "bar", "key": "baz"}}}},
-			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
+			[]corev1.EnvVar{{Name: "FOO", ValueFrom: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{LocalObjectReference: corev1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
 	)
 
 	DescribeTable("rendering deployment strategy",
@@ -2040,7 +2168,7 @@ roleRef:
 	)
 
 	DescribeTable("rendering pod security context",
-		func(podSecurityContextValues map[string]interface{}, podSecurityContext *v1.PodSecurityContext, expectedPodSecurityContext *v1.PodSecurityContext) {
+		func(podSecurityContextValues map[string]interface{}, podSecurityContext *corev1.PodSecurityContext, expectedPodSecurityContext *corev1.PodSecurityContext) {
 			cmd := &Command{
 				Chart: &Chart{
 					Operators: []Operator{
@@ -2113,24 +2241,24 @@ roleRef:
 		Entry("when PodSecurityContext is defined only in values",
 			map[string]interface{}{"fsGroup": 1000},
 			nil,
-			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1000),
+			&corev1.PodSecurityContext{
+				FSGroup: ptr.To[int64](1000),
 			}),
 		Entry("when PodSecurityContext is defined only in the operator",
 			nil,
-			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1000),
+			&corev1.PodSecurityContext{
+				FSGroup: ptr.To[int64](1000),
 			},
-			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1000),
+			&corev1.PodSecurityContext{
+				FSGroup: ptr.To[int64](1000),
 			}),
 		Entry("when PodSecurityContext is defined in both values and the operator",
 			map[string]interface{}{"fsGroup": 1024},
-			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1000),
+			&corev1.PodSecurityContext{
+				FSGroup: ptr.To[int64](1000),
 			},
-			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1024), // should override the value defined in the operator
+			&corev1.PodSecurityContext{
+				FSGroup: ptr.To[int64](1024), // should override the value defined in the operator
 			}),
 	)
 
@@ -2146,7 +2274,7 @@ roleRef:
 		})
 
 		DescribeTable("validation",
-			func(featureGatesVals map[string]string, envs []v1.EnvVar, featureEnvs []TemplateEnvVar, expectedEnvVars []v1.EnvVar) {
+			func(featureGatesVals map[string]string, envs []corev1.EnvVar, featureEnvs []TemplateEnvVar, expectedEnvVars []corev1.EnvVar) {
 				cmd := &Command{
 					Chart: &Chart{
 						Operators: []Operator{
@@ -2232,7 +2360,7 @@ roleRef:
 				nil),
 			Entry("when Env and TemplateEnvVar are specified, true value",
 				map[string]string{"Foo": "true"},
-				[]v1.EnvVar{
+				[]corev1.EnvVar{
 					{
 						Name:  "FOO",
 						Value: "bar",
@@ -2244,13 +2372,13 @@ roleRef:
 						Value: "{{ $.Values.featureGates.Foo | quote }}",
 					},
 				},
-				[]v1.EnvVar{
+				[]corev1.EnvVar{
 					{Name: "FOO", Value: "bar"},
 					{Name: "FEATURE_ENABLE_FOO", Value: "true"},
 				}),
 			Entry("when Env and TemplateEnvVar are specified, false value",
 				map[string]string{"Foo": "false"},
-				[]v1.EnvVar{
+				[]corev1.EnvVar{
 					{
 						Name:  "FOO",
 						Value: "bar",
@@ -2262,13 +2390,13 @@ roleRef:
 						Value: "{{ $.Values.featureGates.Foo | quote }}",
 					},
 				},
-				[]v1.EnvVar{
+				[]corev1.EnvVar{
 					{Name: "FOO", Value: "bar"},
 					{Name: "FEATURE_ENABLE_FOO", Value: "false"},
 				}),
 			Entry("when Env and Conditional TemplateEnvVar are specified, and condition is true",
 				map[string]string{"Foo": "false"},
-				[]v1.EnvVar{
+				[]corev1.EnvVar{
 					{
 						Name:  "FOO",
 						Value: "bar",
@@ -2281,13 +2409,13 @@ roleRef:
 						Value:     "{{ $.Values.featureGates.Foo | quote }}",
 					},
 				},
-				[]v1.EnvVar{
+				[]corev1.EnvVar{
 					{Name: "FOO", Value: "bar"},
 					{Name: "FEATURE_ENABLE_FOO", Value: "false"},
 				}),
 			Entry("when Env and Conditional TemplateEnvVar are specified, and condition is false",
 				map[string]string{"Foo": "false"},
-				[]v1.EnvVar{
+				[]corev1.EnvVar{
 					{
 						Name:  "FOO",
 						Value: "bar",
@@ -2300,7 +2428,7 @@ roleRef:
 						Value:     "{{ $.Values.featureGates.Foo | quote }}",
 					},
 				},
-				[]v1.EnvVar{
+				[]corev1.EnvVar{
 					{Name: "FOO", Value: "bar"},
 				}),
 		)
@@ -2318,7 +2446,7 @@ roleRef:
 		})
 
 		DescribeTable("validation",
-			func(values map[string]any, defaultVolumes []v1.Volume, conditionalVolumes []model.ConditionalVolume, expected []v1.Volume) {
+			func(values map[string]any, defaultVolumes []corev1.Volume, conditionalVolumes []model.ConditionalVolume, expected []corev1.Volume) {
 				cmd := &Command{
 					Chart: &Chart{
 						Operators: []Operator{
@@ -2394,13 +2522,13 @@ roleRef:
 			),
 			Entry("with default volume",
 				map[string]any{"enabled": true},
-				[]v1.Volume{
+				[]corev1.Volume{
 					{
 						Name: "vol-1",
 					},
 				},
 				nil,
-				[]v1.Volume{
+				[]corev1.Volume{
 					{
 						Name: "vol-1",
 					},
@@ -2415,12 +2543,12 @@ roleRef:
 				[]model.ConditionalVolume{
 					{
 						Condition: "$.Values.painter.condition",
-						Volume: v1.Volume{
+						Volume: corev1.Volume{
 							Name: "vol-1",
 						},
 					},
 				},
-				[]v1.Volume{
+				[]corev1.Volume{
 					{
 						Name: "vol-1",
 					},
@@ -2435,7 +2563,7 @@ roleRef:
 				[]model.ConditionalVolume{
 					{
 						Condition: "$.Values.painter.invalidCondition",
-						Volume: v1.Volume{
+						Volume: corev1.Volume{
 							Name: "vol-1",
 						},
 					},
@@ -2447,7 +2575,7 @@ roleRef:
 					"enabled":   true,
 					"condition": "true",
 				},
-				[]v1.Volume{
+				[]corev1.Volume{
 					{
 						Name: "vol-1",
 					},
@@ -2455,12 +2583,12 @@ roleRef:
 				[]model.ConditionalVolume{
 					{
 						Condition: "$.Values.painter.condition",
-						Volume: v1.Volume{
+						Volume: corev1.Volume{
 							Name: "vol-2",
 						},
 					},
 				},
-				[]v1.Volume{
+				[]corev1.Volume{
 					{
 						Name: "vol-1",
 					},
@@ -2484,7 +2612,7 @@ roleRef:
 		})
 
 		DescribeTable("validation",
-			func(values map[string]any, defaultMounts []v1.VolumeMount, conditionalMounts []model.ConditionalVolumeMount, expected []v1.VolumeMount) {
+			func(values map[string]any, defaultMounts []corev1.VolumeMount, conditionalMounts []model.ConditionalVolumeMount, expected []corev1.VolumeMount) {
 				cmd := &Command{
 					Chart: &Chart{
 						Operators: []Operator{
@@ -2562,13 +2690,13 @@ roleRef:
 			),
 			Entry("with default volume mount",
 				map[string]any{"enabled": true},
-				[]v1.VolumeMount{
+				[]corev1.VolumeMount{
 					{
 						Name: "vol-1",
 					},
 				},
 				nil,
-				[]v1.VolumeMount{
+				[]corev1.VolumeMount{
 					{
 						Name: "vol-1",
 					},
@@ -2583,12 +2711,12 @@ roleRef:
 				[]model.ConditionalVolumeMount{
 					{
 						Condition: "$.Values.painter.condition",
-						VolumeMount: v1.VolumeMount{
+						VolumeMount: corev1.VolumeMount{
 							Name: "vol-1",
 						},
 					},
 				},
-				[]v1.VolumeMount{
+				[]corev1.VolumeMount{
 					{
 						Name: "vol-1",
 					},
@@ -2603,7 +2731,7 @@ roleRef:
 				[]model.ConditionalVolumeMount{
 					{
 						Condition: "$.Values.painter.invalidCondition",
-						VolumeMount: v1.VolumeMount{
+						VolumeMount: corev1.VolumeMount{
 							Name: "vol-1",
 						},
 					},
@@ -2615,7 +2743,7 @@ roleRef:
 					"enabled":   true,
 					"condition": "true",
 				},
-				[]v1.VolumeMount{
+				[]corev1.VolumeMount{
 					{
 						Name: "vol-1",
 					},
@@ -2623,12 +2751,12 @@ roleRef:
 				[]model.ConditionalVolumeMount{
 					{
 						Condition: "$.Values.painter.condition",
-						VolumeMount: v1.VolumeMount{
+						VolumeMount: corev1.VolumeMount{
 							Name: "vol-2",
 						},
 					},
 				},
-				[]v1.VolumeMount{
+				[]corev1.VolumeMount{
 					{
 						Name: "vol-1",
 					},
@@ -2693,7 +2821,7 @@ roleRef:
 
 			renderedManifests := helmTemplate("codegen/test/chart-svcport", helmValues)
 
-			var renderedSvc *v1.Service
+			var renderedSvc *corev1.Service
 			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
 			for {
 				obj := &unstructured.Unstructured{}
@@ -2707,7 +2835,7 @@ roleRef:
 
 				bytes, err := obj.MarshalJSON()
 				Expect(err).NotTo(HaveOccurred())
-				renderedSvc = &v1.Service{}
+				renderedSvc = &corev1.Service{}
 				err = json.Unmarshal(bytes, renderedSvc)
 				Expect(err).NotTo(HaveOccurred())
 				break
@@ -2801,7 +2929,7 @@ roleRef:
 
 			renderedManifests := helmTemplate("codegen/test/chart-sidecar-svcport", helmValues)
 
-			var renderedSvc *v1.Service
+			var renderedSvc *corev1.Service
 			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
 			for {
 				obj := &unstructured.Unstructured{}
@@ -2815,7 +2943,7 @@ roleRef:
 
 				bytes, err := obj.MarshalJSON()
 				Expect(err).NotTo(HaveOccurred())
-				renderedSvc = &v1.Service{}
+				renderedSvc = &corev1.Service{}
 				err = json.Unmarshal(bytes, renderedSvc)
 				Expect(err).NotTo(HaveOccurred())
 				break
@@ -3067,6 +3195,10 @@ func helmTemplate(path string, values interface{}) []byte {
 	ExpectWithOffset(0, err).NotTo(HaveOccurred())
 
 	defer os.RemoveAll(helmValuesFile.Name())
+
+	if path, err = filepath.Abs(path); err != nil {
+		ExpectWithOffset(0, err).NotTo(HaveOccurred())
+	}
 
 	cc := exec.Command("helm", "template",
 		path,

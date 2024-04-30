@@ -20,6 +20,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customDeploymentAnnotations := $operator.Deployment.CustomDeploymentAnnotations -]]
 [[- $customServiceLabels := $operator.Service.CustomLabels -]]
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
+[[- $templateName := ($operator.TemplateNameOverride | default $operator.Name) ]]
 
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]] }}
 ---
@@ -28,7 +29,7 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $operatorEnabledCondition = printf "\n{{ if %s }}\n" $operator.CustomEnableCondition ]]
 [[- end ]]
 
-{{- define "[[ $operator.Name ]].deploymentSpec" }}
+{{- define "[[ $templateName ]].deploymentSpec" }}
 [[- $workloadKind := "Deployment" ]]
 [[- if $operator.Deployment.UseDaemonSet ]]
 [[- $workloadKind = "DaemonSet" ]]
@@ -236,16 +237,16 @@ spec:
       imagePullSecrets:
         - name: {{ $[[ $operatorVar ]]Image.pullSecret }}
       {{- end}}
-{{- end }} {{/* define "[[ $operator.Name ]].deploymentSpec" */}}
+{{- end }} {{/* define "[[ $templateName ]].deploymentSpec" */}}
 
-{{/* Render [[ $operator.Name ]] deployment template with overrides from values*/}}
+{{/* Render [[ $templateName ]] deployment template with overrides from values*/}}
 [[- $operatorEnabledCondition -]]
 {{- $[[ $operatorVar ]]DeploymentOverrides := dict }}
 {{- if $[[ $operatorVar ]].deploymentOverrides }}
 {{- $[[ $operatorVar ]]DeploymentOverrides = $[[ $operatorVar ]].deploymentOverrides  }}
 {{- end }}
 ---
-{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $operator.Name ]].deploymentSpec") }}
+{{ include "skv2.utils.merge" (list . $[[ $operatorVar ]]DeploymentOverrides "[[ $templateName ]].deploymentSpec") }}
 {{- end }}
 ---
 
@@ -272,7 +273,7 @@ metadata:
 {{- end }}
 
 
-{{- define "[[ $operator.Name ]].serviceSpec"}}
+{{- define "[[ $templateName ]].serviceSpec"}}
 [[ if gt (len $operator.Service.Ports) 0 ]]
 # Service for [[ $operator.Name ]]
 {{/* Define variables in function scope */}}
@@ -306,7 +307,7 @@ spec:
     port: {{ index $[[ $operatorVar ]] "ports" "[[ $port.Name ]]" }}
   [[- end ]]
 [[ end ]]
-{{- end }} {{/* define "[[ $operator.Name ]].serviceSpec" */}}
+{{- end }} {{/* define "[[ $templateName ]].serviceSpec" */}}
 
 [[- $operatorEnabledCondition -]]
 {{/* Render [[ $operator.Name ]] service template with overrides from values*/}}
