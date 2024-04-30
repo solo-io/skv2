@@ -1,5 +1,5 @@
 changelog:
-  - type: NEW_FEATURE
+  - type: FIX
     issueLink: https://github.com/solo-io/skv2/issues/554
     description: >
       Add support to override naming named templates within helm to support creating manifest bound by different values. 
