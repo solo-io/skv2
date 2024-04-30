@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/554
+    description: >
+      Add support to override naming named templates within helm to support creating manifest bound by different values. 
+      This is useful when users want to use skv2 to generate an operator multiple times while only changing the source of values.
+    skipCI: "false"

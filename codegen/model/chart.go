@@ -67,6 +67,9 @@ type JsonSchema struct {
 type Operator struct {
 	Name string
 
+	// Used to override resources defined under named templates (e.g: {{- define ".TemplateNameOverride.deploymentSpec" }})
+	TemplateNameOverride string
+
 	// (Optional) To change the name referenced in the values file. If not specified a camelcase version of name is used
 	ValuesFileNameOverride string
 
