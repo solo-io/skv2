@@ -13,6 +13,7 @@ import (
 	goyaml "gopkg.in/yaml.v3"
 	rbacv1 "k8s.io/api/rbac/v1"
 	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/utils/pointer"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -1836,6 +1837,301 @@ roleRef:
 		Entry("valueFrom env var",
 			map[string]interface{}{"FOO": map[string]interface{}{"valueFrom": map[string]interface{}{"secretKeyRef": map[string]interface{}{"name": "bar", "key": "baz"}}}},
 			[]v1.EnvVar{{Name: "FOO", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "bar"}, Key: "baz"}}}}),
+	)
+
+	DescribeTable("rendering deployment strategy",
+		func(deploymentStrategy *appsv1.DeploymentStrategy) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Strategy: deploymentStrategy,
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-deployment-strategy",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			values := map[string]interface{}{"enabled": true}
+			helmValues := map[string]interface{}{"painter": values}
+
+			renderedManifests := helmTemplate("codegen/test/chart-deployment-strategy", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedDeploymentStrategy := renderedDeployment.Spec.Strategy
+			if deploymentStrategy == nil {
+				Expect(renderedDeploymentStrategy).To(Equal(appsv1.DeploymentStrategy{}))
+			} else {
+				Expect(renderedDeploymentStrategy).To(Equal(*deploymentStrategy))
+			}
+		},
+		Entry("when the deployment strategy is not defined",
+			nil),
+		Entry("when the deployment strategy is configured to recreate",
+			&appsv1.DeploymentStrategy{
+				Type: appsv1.RecreateDeploymentStrategyType,
+			}),
+		Entry("when the deployment strategy is configured to rolling update",
+			&appsv1.DeploymentStrategy{
+				Type: appsv1.RollingUpdateDeploymentStrategyType,
+				RollingUpdate: &appsv1.RollingUpdateDeployment{
+					MaxUnavailable: &intstr.IntOrString{
+						IntVal: 1,
+					},
+				},
+			}),
+	)
+
+	DescribeTable("rendering conditional deployment strategy",
+		func(values map[string]any, conditionalStrategy []model.ConditionalStrategy, expectedStrategy appsv1.DeploymentStrategy) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								ConditionalStrategy: conditionalStrategy,
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-conditional-deployment-strategy",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			helmValues := map[string]interface{}{"painter": values}
+			renderedManifests := helmTemplate("codegen/test/chart-conditional-deployment-strategy", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedDeploymentStrategy := renderedDeployment.Spec.Strategy
+			Expect(renderedDeploymentStrategy).To(Equal(expectedStrategy))
+		},
+		Entry("when the conditional strategy is not defined",
+			map[string]any{"enabled": true},
+			nil,
+			appsv1.DeploymentStrategy{},
+		),
+		Entry("when the condition is true",
+			map[string]any{"enabled": true, "condition": true},
+			[]model.ConditionalStrategy{
+				{
+					Condition: "$.Values.painter.condition",
+					Strategy: appsv1.DeploymentStrategy{
+						Type: appsv1.RollingUpdateDeploymentStrategyType,
+					},
+				},
+				{
+					Condition: "not $.Values.painter.condition",
+					Strategy: appsv1.DeploymentStrategy{
+						Type: appsv1.RecreateDeploymentStrategyType,
+					},
+				},
+			},
+			appsv1.DeploymentStrategy{
+				Type: appsv1.RollingUpdateDeploymentStrategyType,
+			},
+		),
+		Entry("when the condition is false",
+			map[string]any{"enabled": true, "condition": false},
+			[]model.ConditionalStrategy{
+				{
+					Condition: "$.Values.painter.condition",
+					Strategy: appsv1.DeploymentStrategy{
+						Type: appsv1.RollingUpdateDeploymentStrategyType,
+					},
+				},
+				{
+					Condition: "not $.Values.painter.condition",
+					Strategy: appsv1.DeploymentStrategy{
+						Type: appsv1.RecreateDeploymentStrategyType,
+					},
+				},
+			},
+			appsv1.DeploymentStrategy{
+				Type: appsv1.RecreateDeploymentStrategyType,
+			},
+		),
+	)
+
+	DescribeTable("rendering pod security context",
+		func(podSecurityContextValues map[string]interface{}, podSecurityContext *v1.PodSecurityContext, expectedPodSecurityContext *v1.PodSecurityContext) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+								PodSecurityContext: podSecurityContext,
+							},
+						},
+					},
+
+					Values: nil,
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart-pod-security-context",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			values := map[string]interface{}{"enabled": true, "podSecurityContext": podSecurityContextValues}
+			helmValues := map[string]interface{}{"painter": values}
+
+			renderedManifests := helmTemplate("codegen/test/chart-pod-security-context", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedPodSecurityContext := renderedDeployment.Spec.Template.Spec.SecurityContext
+			Expect(renderedPodSecurityContext).To(Equal(expectedPodSecurityContext))
+		},
+		Entry("when PodSecurityContext is neither defined in values nor in the operator",
+			nil,
+			nil,
+			nil),
+		Entry("when PodSecurityContext is defined only in values",
+			map[string]interface{}{"fsGroup": 1000},
+			nil,
+			&v1.PodSecurityContext{
+				FSGroup: pointer.Int64(1000),
+			}),
+		Entry("when PodSecurityContext is defined only in the operator",
+			nil,
+			&v1.PodSecurityContext{
+				FSGroup: pointer.Int64(1000),
+			},
+			&v1.PodSecurityContext{
+				FSGroup: pointer.Int64(1000),
+			}),
+		Entry("when PodSecurityContext is defined in both values and the operator",
+			map[string]interface{}{"fsGroup": 1024},
+			&v1.PodSecurityContext{
+				FSGroup: pointer.Int64(1000),
+			},
+			&v1.PodSecurityContext{
+				FSGroup: pointer.Int64(1024), // should override the value defined in the operator
+			}),
 	)
 
 	Describe("rendering template env vars", func() {

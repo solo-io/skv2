@@ -21,6 +21,14 @@ spec:
   selector:
     matchLabels:
       app: painter
+{{- if $.Values.painter.condition }}
+  strategy:
+    type: RollingUpdate
+{{- end }}
+{{- if not $.Values.painter.condition }}
+  strategy:
+    type: Recreate
+{{- end }}
   template:
     metadata:
       labels:
@@ -80,53 +88,6 @@ spec:
             drop:
             - ALL
 {{- end }}
-{{ if true }}
-{{- $sidecarPainter := $.Values.painter.sidecars.sidecarPainter }}
-{{- $sidecarPainterImage := $sidecarPainter.image }}
-      - name: sidecar-painter
-        image: {{ $sidecarPainterImage.registry }}/{{ $sidecarPainterImage.repository }}:{{ $sidecarPainterImage.tag }}
-        imagePullPolicy: {{ $sidecarPainterImage.pullPolicy }}
-{{- if $sidecarPainter.env }}
-        env:
-{{ toYaml $sidecarPainter.env | indent 10 }}
-{{- else if $sidecarPainter.extraEnvs }}
-        env:
-{{- end }}
-{{- range $name, $item := $sidecarPainter.extraEnvs }}
-          - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
-{{- end }}
-        resources:
-{{- if $sidecarPainter.resources }}
-{{ toYaml $sidecarPainter.resources | indent 10}}
-{{- else}}
-          requests:
-            cpu: 500m
-            memory: 256Mi
-{{- end }}
-        {{- /*
-          Render securityContext configs if it is set.
-          If securityContext is not set, render the default securityContext.
-          If securityContext is set to 'false', render an empty map.
-        */}}
-        securityContext:
-{{- if or ($sidecarPainter.securityContext) (eq "map[]" (printf "%v" $sidecarPainter.securityContext)) }}
-{{ toYaml $sidecarPainter.securityContext | indent 10}}
-{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
-{{- else if eq (ternary $sidecarPainter.securityContext true (eq "bool" (printf "%T" $sidecarPainter.securityContext))) false }}
-          {}
-{{- else}}
-          runAsNonRoot: true
-          {{- if not $painter.floatingUserId }}
-          runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
-          {{- end }}
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-{{- end }}
-{{- end }}
       {{- if $painterImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $painterImage.pullSecret }}
@@ -164,26 +125,6 @@ metadata:
 
 {{- define "painter.serviceSpec"}}
 
-# Service for painter
-{{/* Define variables in function scope */}}
-{{- $painter := $.Values.painter}}
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: painter
-  annotations:
-    app.kubernetes.io/name: painter
-  name: painter
-  namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
-spec:
-  selector:
-    app: painter
-  type: {{ $painter.serviceType }}
-  ports:
-  - name: foo-bar
-    port: {{ index $painter "ports" "foo-bar" }}
-
 {{- end }} {{/* define "painter.serviceSpec" */}}
 {{ if $painter.enabled }}
 {{/* Render painter service template with overrides from values*/}}
@@ -195,27 +136,5 @@ spec:
 ---
 
 {{ include "skv2.utils.merge" (list . $painterServiceOverrides "painter.serviceSpec") }}
-{{- end }}
-
----
-
-{{- $sidecarPainter := $.Values.painter.sidecars.sidecarPainter }}
-{{ if true }}
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: sidecar-painter
-  annotations:
-    app.kubernetes.io/name: sidecar-painter
-  name: sidecar-painter
-  namespace: {{ default .Release.Namespace $painter.namespace }}
-spec:
-  selector:
-    app: painter
-  type: {{ $sidecarPainter.serviceType }}
-  ports:
-  - name: foo-bar
-    port: {{ index $sidecarPainter "ports" "foo-bar" }}
 {{- end }}
 

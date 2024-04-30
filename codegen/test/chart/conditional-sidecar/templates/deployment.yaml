@@ -29,6 +29,11 @@ spec:
         app.kubernetes.io/name: gloo-mgmt-server
     spec:
       serviceAccountName: gloo-mgmt-server
+      {{- /* Override the default podSecurityContext config if it is set. */}}
+{{- if or ($.Values.glooMgmtServer.podSecurityContext) (eq "map[]" (printf "%v" $.Values.glooMgmtServer.podSecurityContext)) }}
+      securityContext:
+{{ toYaml $.Values.glooMgmtServer.podSecurityContext | indent 8 }}
+{{- end }}
       volumes:
       - name: license-keys
         secret:
@@ -261,6 +266,11 @@ spec:
         app.kubernetes.io/name: gloo-agent
     spec:
       serviceAccountName: gloo-agent
+      {{- /* Override the default podSecurityContext config if it is set. */}}
+{{- if or ($.Values.glooAgent.podSecurityContext) (eq "map[]" (printf "%v" $.Values.glooAgent.podSecurityContext)) }}
+      securityContext:
+{{ toYaml $.Values.glooAgent.podSecurityContext | indent 8 }}
+{{- end }}
       containers:
 {{- $glooAgent := $.Values.glooAgent }}
 {{- $glooAgentImage := $glooAgent.image }}

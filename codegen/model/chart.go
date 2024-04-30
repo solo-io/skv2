@@ -9,6 +9,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/doc"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 )
@@ -112,13 +113,21 @@ type Deployment struct {
 	// TODO support use of a DaemonSet instead of a Deployment
 	UseDaemonSet bool
 	Container
+	Strategy                    *appsv1.DeploymentStrategy
+	ConditionalStrategy         []ConditionalStrategy
 	Sidecars                    []Sidecar
+	PodSecurityContext          *corev1.PodSecurityContext
 	Volumes                     []corev1.Volume
 	ConditionalVolumes          []ConditionalVolume
 	CustomPodLabels             map[string]string
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
 	CustomDeploymentAnnotations map[string]string
+}
+
+type ConditionalStrategy struct {
+	Condition string
+	Strategy  appsv1.DeploymentStrategy
 }
 
 type ConditionalVolume struct {
