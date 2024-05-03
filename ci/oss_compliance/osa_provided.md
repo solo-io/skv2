@@ -14,7 +14,7 @@ Name|Version|License
 [groupcache/lru](https://github.com/golang/groupcache)|v0.0.0-20210331224755-41bb18bfe9da|Apache License 2.0
 [golang/protobuf](https://github.com/golang/protobuf)|v1.5.3|BSD 3-clause "New" or "Revised" License
 [google/gnostic-models](https://github.com/google/gnostic-models)|v0.6.8|Apache License 2.0
-[cmp/internal](https://github.com/google/go-cmp)|v0.5.9|BSD 3-clause "New" or "Revised" License
+[cmp/internal](https://github.com/google/go-cmp)|v0.6.0|BSD 3-clause "New" or "Revised" License
 [gofuzz/bytesource](https://github.com/google/gofuzz)|v1.2.0|Apache License 2.0
 [google/uuid](https://github.com/google/uuid)|v1.3.0|BSD 3-clause "New" or "Revised" License
 [pyroscope-go/godeltaprof](https://github.com/grafana/pyroscope-go)|v0.1.6|Apache License 2.0
