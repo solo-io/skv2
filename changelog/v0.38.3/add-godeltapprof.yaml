@@ -1,5 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: >
-      "adds godeltapprof to the debug endpoints, to be used with pyroscope or grafana cloud profiler"
-    skipCI: "false"
