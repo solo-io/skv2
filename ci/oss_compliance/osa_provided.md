@@ -14,11 +14,13 @@ Name|Version|License
 [groupcache/lru](https://github.com/golang/groupcache)|v0.0.0-20210331224755-41bb18bfe9da|Apache License 2.0
 [golang/protobuf](https://github.com/golang/protobuf)|v1.5.3|BSD 3-clause "New" or "Revised" License
 [google/gnostic](https://github.com/google/gnostic)|v0.5.7-v3refs|Apache License 2.0
-[cmp/internal](https://github.com/google/go-cmp)|v0.5.9|BSD 3-clause "New" or "Revised" License
+[cmp/internal](https://github.com/google/go-cmp)|v0.6.0|BSD 3-clause "New" or "Revised" License
 [google/gofuzz](https://github.com/google/gofuzz)|v1.1.0|Apache License 2.0
 [google/uuid](https://github.com/google/uuid)|v1.3.0|BSD 3-clause "New" or "Revised" License
+[pyroscope-go/godeltaprof](https://github.com/grafana/pyroscope-go)|v0.1.6|Apache License 2.0
 [josharian/intern](https://github.com/josharian/intern)|v1.0.0|MIT License
 [json-iterator/go](https://github.com/json-iterator/go)|v1.1.12|MIT License
+[klauspost/compress](https://github.com/klauspost/compress)|v1.17.3|Apache License 2.0
 [mailru/easyjson](https://github.com/mailru/easyjson)|v0.7.7|MIT License
 [golang_protobuf_extensions/pbutil](https://github.com/matttproud/golang_protobuf_extensions)|v1.0.4|Apache License 2.0
 [modern-go/concurrent](https://github.com/modern-go/concurrent)|v0.0.0-20180306012644-bacd9c7ef1dd|Apache License 2.0
