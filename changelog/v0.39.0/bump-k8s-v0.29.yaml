@@ -1,7 +1,6 @@
 changelog:
 - type: BREAKING_CHANGE
-  description: >
-  Bump dependencies to support Kubernetes 1.29
+  description: "Bump dependencies to support Kubernetes 1.29"
 - type: DEPENDENCY_BUMP
   dependencyOwner: sigs.k8s.io
   dependencyRepo: controller-runtime
