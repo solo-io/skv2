@@ -173,7 +173,7 @@ func (c *clusterWatcher) removeCluster(clusterName string) {
 func (c *clusterWatcher) managerOptionsWithDefaults() manager.Options {
 	managerOptions := c.managerOptions
 	managerOptions.HealthProbeBindAddress = "0"
-	managerOptions.MetricsBindAddress = "0"
+	managerOptions.Metrics.BindAddress = "0"
 	return managerOptions
 }
 
