@@ -1,0 +1,25 @@
+changelog:
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: sigs.k8s.io
+    dependencyRepo: controller-runtime
+    dependencyTag: v0.17.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: k8s.io
+    dependencyRepo: api
+    dependencyTag: v0.29.2
+    description: pulled in by sigs.k8s.io/sontroller-runtime
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: k8s.io
+    dependencyRepo: apiextensions-apiserver
+    dependencyTag: v0.29.2
+    description: pulled in by sigs.k8s.io/sontroller-runtime
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: k8s.io
+    dependencyRepo: client-go
+    dependencyTag: v0.29.2
+    description: pulled in by sigs.k8s.io/sontroller-runtime
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: k8s.io
+    dependencyRepo: code-generator
+    dependencyTag: v0.29.2
+    description: pulled in by sigs.k8s.io/sontroller-runtime
