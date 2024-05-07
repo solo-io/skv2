@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"sigs.k8s.io/controller-runtime/pkg/event"
+
 	"github.com/rotisserie/eris"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -145,8 +147,32 @@ func (r *runner[T]) RunReconciler(
 		return err
 	}
 
+	var typedPredicates []predicate.TypedPredicate[T]
+	for _, p := range predicates {
+		typedPredicates = append(typedPredicates, predicate.TypedFuncs[T]{
+			CreateFunc: func(e event.TypedCreateEvent[T]) bool {
+				return p.Create(event.TypedCreateEvent[client.Object]{
+					Object: e.Object,
+				})
+			},
+			DeleteFunc: func(e event.TypedDeleteEvent[T]) bool {
+				return p.Delete(event.TypedDeleteEvent[client.Object]{
+					Object: e.Object,
+				})
+			},
+			UpdateFunc: func(e event.TypedUpdateEvent[T]) bool {
+				return p.Update(event.TypedUpdateEvent[client.Object]{ObjectOld: e.ObjectOld, ObjectNew: e.ObjectNew})
+			},
+			GenericFunc: func(e event.TypedGenericEvent[T]) bool {
+				return p.Generic(event.TypedGenericEvent[client.Object]{
+					Object: e.Object,
+				})
+			},
+		})
+	}
+
 	// send us watch events
-	if err := ctl.Watch(source.Kind(r.mgr.GetCache(), obj), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	if err := ctl.Watch(source.Kind(r.mgr.GetCache(), obj, &handler.TypedEnqueueRequestForObject[T]{}, typedPredicates...)); err != nil {
 		return err
 	}
 
