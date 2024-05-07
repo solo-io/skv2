@@ -367,6 +367,24 @@
                     }
                   },
                   "type": "object"
+                },
+                "appArmorProfile": {
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "localhostProfile": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "object"
                 }
               },
               "type": "object"
@@ -751,6 +769,24 @@
                                 }
                               },
                               "type": "object"
+                            },
+                            "appArmorProfile": {
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "localhostProfile": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "type": "object"
                             }
                           },
                           "type": "object"
@@ -961,6 +997,31 @@
                   ]
                 },
                 "seccompProfile": {
+                  "anyOf": [
+                    {
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "localhostProfile": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "appArmorProfile": {
                   "anyOf": [
                     {
                       "properties": {
@@ -3577,6 +3638,16 @@
                                                 "readOnly": {
                                                   "type": "boolean"
                                                 },
+                                                "recursiveReadOnly": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                },
                                                 "mountPath": {
                                                   "type": "string"
                                                 },
@@ -4433,6 +4504,24 @@
                                                 "type": "string"
                                               },
                                               "seccompProfile": {
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string"
+                                                  },
+                                                  "localhostProfile": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "type": "object"
+                                              },
+                                              "appArmorProfile": {
                                                 "properties": {
                                                   "type": {
                                                     "type": "string"
@@ -4860,6 +4949,16 @@
                                                 "readOnly": {
                                                   "type": "boolean"
                                                 },
+                                                "recursiveReadOnly": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                },
                                                 "mountPath": {
                                                   "type": "string"
                                                 },
@@ -5732,6 +5831,24 @@
                                                   }
                                                 },
                                                 "type": "object"
+                                              },
+                                              "appArmorProfile": {
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string"
+                                                  },
+                                                  "localhostProfile": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "type": "object"
                                               }
                                             },
                                             "type": "object"
@@ -6135,6 +6252,16 @@
                                                 },
                                                 "readOnly": {
                                                   "type": "boolean"
+                                                },
+                                                "recursiveReadOnly": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
                                                 },
                                                 "mountPath": {
                                                   "type": "string"
@@ -6980,6 +7107,24 @@
                                                   }
                                                 },
                                                 "type": "object"
+                                              },
+                                              "appArmorProfile": {
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string"
+                                                  },
+                                                  "localhostProfile": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "type": "object"
                                               }
                                             },
                                             "type": "object"
@@ -7256,6 +7401,31 @@
                                       ]
                                     },
                                     "seccompProfile": {
+                                      "anyOf": [
+                                        {
+                                          "properties": {
+                                            "type": {
+                                              "type": "string"
+                                            },
+                                            "localhostProfile": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "type": "object"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "appArmorProfile": {
                                       "anyOf": [
                                         {
                                           "properties": {
@@ -9302,6 +9472,16 @@
                       ]
                     },
                     "internalTrafficPolicy": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "trafficDistribution": {
                       "anyOf": [
                         {
                           "type": "string"
