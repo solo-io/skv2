@@ -229,6 +229,11 @@ func (s *resourceSet[T]) Delete(resource ezkube.ResourceId) {
 }
 
 func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
+
+	if s == nil {
+		return set.ShallowCopy()
+	}
+
 	merged := make([]T, 0, len(s.set)+set.Len())
 	idx := 0
 
