@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"sigs.k8s.io/controller-runtime/pkg/event"
+
 	"github.com/rotisserie/eris"
 
 	"github.com/solo-io/skv2/pkg/verifier"
@@ -122,8 +124,32 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 		return err
 	}
 
+	var typedPredicates []predicate.TypedPredicate[ezkube.Object]
+	for _, p := range predicates {
+		typedPredicates = append(typedPredicates, predicate.TypedFuncs[ezkube.Object]{
+			CreateFunc: func(e event.TypedCreateEvent[ezkube.Object]) bool {
+				return p.Create(event.TypedCreateEvent[client.Object]{
+					Object: e.Object,
+				})
+			},
+			DeleteFunc: func(e event.TypedDeleteEvent[ezkube.Object]) bool {
+				return p.Delete(event.TypedDeleteEvent[client.Object]{
+					Object: e.Object,
+				})
+			},
+			UpdateFunc: func(e event.TypedUpdateEvent[ezkube.Object]) bool {
+				return p.Update(event.TypedUpdateEvent[client.Object]{ObjectOld: e.ObjectOld, ObjectNew: e.ObjectNew})
+			},
+			GenericFunc: func(e event.TypedGenericEvent[ezkube.Object]) bool {
+				return p.Generic(event.TypedGenericEvent[client.Object]{
+					Object: e.Object,
+				})
+			},
+		})
+	}
+
 	// send us watch events
-	if err := ctl.Watch(source.Kind(r.mgr.GetCache(), r.resource), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	if err := ctl.Watch(source.Kind(r.mgr.GetCache(), r.resource, &handler.TypedEnqueueRequestForObject[ezkube.Object]{}, typedPredicates...)); err != nil {
 		return err
 	}
 
