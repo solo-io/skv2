@@ -58,7 +58,7 @@ func (w *watcher) Watch(ctx context.Context, eventHandler EventHandler, predicat
 	}
 
 	// create a source for the resource type
-	src := source.Kind(w.mgr.GetCache(), w.resource, eventHandler, predicates...)
+	src := source.Kind(w.mgr.GetCache(), w.resource, reconciler.events, predicates...)
 
 	// send watch events to the Cache
 	if err := ctl.Watch(src); err != nil {
