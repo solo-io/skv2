@@ -253,7 +253,7 @@ func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
 		merged = append(merged, s.set[idx:]...)
 	}
 
-	return &resourceSet[T]{set: merged, lock: sync.RWMutex{}}
+	return &resourceSet[T]{set: merged}
 }
 
 func (s *resourceSet[T]) Difference(set ResourceSet[T]) ResourceSet[T] {
