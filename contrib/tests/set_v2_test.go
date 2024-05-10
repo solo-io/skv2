@@ -365,5 +365,59 @@ var _ = Describe("PaintSetV2", func() {
 			Expect(unionSetBA.Has(paintA) && unionSetBA.Has(paintB)).To(BeTrue())
 		})
 
+		Context("Sorted Order Preservation after Union", func() {
+			var (
+				setA, setB, unionSet   sets_v2.ResourceSet[*v1.Paint]
+				paint1, paint2, paint3 *v1.Paint
+			)
+
+			BeforeEach(func() {
+				setA = sets_v2.NewResourceSet[*v1.Paint]()
+				setB = sets_v2.NewResourceSet[*v1.Paint]()
+				paint1 = &v1.Paint{
+					ObjectMeta: metav1.ObjectMeta{Name: "C", Namespace: "1"},
+				}
+				paint2 = &v1.Paint{
+					ObjectMeta: metav1.ObjectMeta{Name: "A", Namespace: "3"},
+				}
+				paint3 = &v1.Paint{
+					ObjectMeta: metav1.ObjectMeta{Name: "B", Namespace: "2"},
+				}
+				setA.Insert(paint1)
+				setB.Insert(paint2, paint3)
+				unionSet = setA.Union(setB)
+			})
+
+			It("should maintain sorted order in Iter after union", func() {
+				expectedOrder := []*v1.Paint{paint2, paint3, paint1} // Expected sorted by namespace
+				var actualOrder []*v1.Paint
+				unionSet.Iter(func(_ int, p *v1.Paint) bool {
+					actualOrder = append(actualOrder, p)
+					return true
+				})
+				Expect(actualOrder).To(Equal(expectedOrder))
+			})
+
+			It("should maintain sorted order in Filter after union", func() {
+				var filteredOrder []*v1.Paint
+				filterFunc := func(p *v1.Paint) bool {
+					return true // Select all
+				}
+				unionSet.Filter(filterFunc)(func(_ int, p *v1.Paint) bool {
+					filteredOrder = append(filteredOrder, p)
+					return true
+				})
+				Expect(filteredOrder).To(Equal([]*v1.Paint{paint2, paint3, paint1})) // Should match expected sorted order
+			})
+
+			It("should maintain sorted order in FilterOutAndCreateList after union", func() {
+				filterOutFunc := func(p *v1.Paint) bool {
+					return false // Do not filter out any items
+				}
+				filteredList := unionSet.FilterOutAndCreateList(filterOutFunc)
+				Expect(filteredList).To(Equal([]*v1.Paint{paint2, paint3, paint1})) // Should match expected sorted order
+			})
+		})
+
 	})
 })
