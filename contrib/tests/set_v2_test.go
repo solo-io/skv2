@@ -301,4 +301,69 @@ var _ = Describe("PaintSetV2", func() {
 			Expect(paintList2[i]).To(Equal(paint))
 		}
 	})
+	Context("Union", func() {
+		var (
+			setA, setB, setC sets_v2.ResourceSet[*v1.Paint]
+			paintA           *v1.Paint
+			paintB           *v1.Paint
+		)
+		BeforeEach(func() {
+			setA = sets_v2.NewResourceSet[*v1.Paint]()
+			setB = sets_v2.NewResourceSet[*v1.Paint]()
+			setC = sets_v2.NewResourceSet[*v1.Paint]()
+			paintA = &v1.Paint{
+				ObjectMeta: metav1.ObjectMeta{Name: "nameA", Namespace: "nsA"},
+			}
+			paintB = &v1.Paint{
+				ObjectMeta: metav1.ObjectMeta{Name: "nameB", Namespace: "nsB"},
+			}
+		})
+		It("should correctly perform union of a set with itself", func() {
+			setA.Insert(paintA)
+			unionSet := setA.Union(setA)
+			Expect(unionSet.Len()).To(Equal(1))
+			Expect(unionSet.Has(paintA)).To(BeTrue())
+		})
+
+		It("should correctly perform union of two distinct sets", func() {
+			setA.Insert(paintA)
+			setB.Insert(paintB)
+			unionSet := setA.Union(setB)
+			Expect(unionSet.Len()).To(Equal(2))
+			Expect(unionSet.Has(paintA)).To(BeTrue())
+			Expect(unionSet.Has(paintB)).To(BeTrue())
+		})
+
+		It("should handle union with an empty set", func() {
+			setA.Insert(paintA)
+			unionSet := setA.Union(setC) // setC is empty
+			Expect(unionSet.Len()).To(Equal(1))
+			Expect(unionSet.Has(paintA)).To(BeTrue())
+		})
+
+		It("should return an empty set when unioning two empty sets", func() {
+			unionSet := setC.Union(setB) // both setC and setB are empty
+			Expect(unionSet.Len()).To(Equal(0))
+		})
+
+		It("should maintain distinct elements when unioning sets with overlap", func() {
+			setA.Insert(paintA)
+			setB.Insert(paintA, paintB)
+			unionSet := setA.Union(setB)
+			Expect(unionSet.Len()).To(Equal(2))
+			Expect(unionSet.Has(paintA)).To(BeTrue())
+			Expect(unionSet.Has(paintB)).To(BeTrue())
+		})
+
+		It("should be commutative (A union B = B union A)", func() {
+			setA.Insert(paintA)
+			setB.Insert(paintB)
+			unionSetAB := setA.Union(setB)
+			unionSetBA := setB.Union(setA)
+			Expect(unionSetAB.Len()).To(Equal(unionSetBA.Len()))
+			Expect(unionSetAB.Has(paintA) && unionSetAB.Has(paintB)).To(BeTrue())
+			Expect(unionSetBA.Has(paintA) && unionSetBA.Has(paintB)).To(BeTrue())
+		})
+
+	})
 })
