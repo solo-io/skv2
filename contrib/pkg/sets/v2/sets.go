@@ -69,6 +69,10 @@ type ResourceSet[T client.Object] interface {
 	Clone() ResourceSet[T]
 	// ShallowCopy returns a shallow copy of the set
 	ShallowCopy() ResourceSet[T]
+
+	// Guarantees that when running Iter, Filter, or FilterOutAndCreateList, elements in the set will be processed in a
+	// sorted order by ResourceId. See ezkube.ResourceIdsCompare for the definition of ResourceId sorting.
+	IsSortedByResourceId() bool
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -89,6 +93,10 @@ func (r *ResourceDelta[T]) DeltaV1() sk_sets.ResourceDelta {
 type resourceSet[T client.Object] struct {
 	lock sync.RWMutex
 	set  []T
+}
+
+func (s *resourceSet[T]) IsSortedByResourceId() bool {
+	return true
 }
 
 func NewResourceSet[T client.Object](
@@ -233,7 +241,29 @@ func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
 	if s == nil {
 		return set.ShallowCopy()
 	}
+	if set == nil {
+		return s.ShallowCopy()
+	}
 
+	// if we can use the sets `Iter` method to iterate over the set in a sorted order,
+	// we can use that to iterate over the set and add the elements to the new set.
+	if set.IsSortedByResourceId() {
+		return s.unionSortedSet(set)
+	}
+
+	// fallback to generic union, and sort after the fact (in NewResourceSet())
+	list := []T{}
+	for _, resource := range s.Generic().Union(set.Generic()).List() {
+		list = append(list, resource.(T))
+	}
+	return NewResourceSet[T](
+		list...,
+	)
+}
+
+// Assuming that the argument set is sorted by resource id (via the SortedByResourceId method),
+// this method will efficiently union the two sets together and return the unioned set.
+func (s *resourceSet[T]) unionSortedSet(set ResourceSet[T]) *resourceSet[T] {
 	merged := make([]T, 0, len(s.set)+set.Len())
 	idx := 0
 
