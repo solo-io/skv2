@@ -10,6 +10,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	ResourceId SortType = iota
+)
+
+type SortType int
+
 // ResourceSet is a thread-safe container for a set of resources.
 // It provides a set of operations for working with the set of resources, typically used for managing Kubernetes resources.
 // The ResourceSet is a generic interface that can be used with any type that satisfies the client.Object interface.
@@ -72,7 +78,7 @@ type ResourceSet[T client.Object] interface {
 
 	// Guarantees that when running Iter, Filter, or FilterOutAndCreateList, elements in the set will be processed in a
 	// sorted order by ResourceId. See ezkube.ResourceIdsCompare for the definition of ResourceId sorting.
-	IsSortedByResourceId() bool
+	IsSortedBy(SortType) bool
 }
 
 // ResourceDelta represents the set of changes between two ResourceSets.
@@ -95,8 +101,12 @@ type resourceSet[T client.Object] struct {
 	set  []T
 }
 
-func (s *resourceSet[T]) IsSortedByResourceId() bool {
-	return true
+func (s *resourceSet[T]) IsSortedBy(r SortType) bool {
+	switch r {
+	case ResourceId:
+		return true
+	}
+	return false
 }
 
 func NewResourceSet[T client.Object](
@@ -250,7 +260,7 @@ func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
 
 	// if we can use the sets `Iter` method to iterate over the set in a sorted order,
 	// we can use that to iterate over the set and add the elements to the new set.
-	if set.IsSortedByResourceId() {
+	if set.IsSortedBy(ResourceId) {
 		return s.unionSortedSet(set)
 	}
 
