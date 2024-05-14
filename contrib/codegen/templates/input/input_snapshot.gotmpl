@@ -236,22 +236,26 @@ func (s *snapshot{{ $snapshotName }}) SyncStatusesMultiCluster(ctx context.Conte
     {{/* generate calls to update status here */}}
     {{- range $group := $groups }}
     {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+    {{- $types_import_prefix := printf "%v_types" (group_import_name $group) }}
     {{- range $resource := $group.Resources }}
     {{- $kindPlural := pluralize $resource.Kind }}
     {{- $kindLowerCamel := lower_camel $resource.Kind }}
     {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
     {{- if $resource.Status }}
     if opts.{{ $resource.Kind }} {
-        for _, obj := range s.{{ $kindPlural }}().List() {
-            clusterClient, err := mcClient.Cluster(ezkube.GetClusterName(obj))
-            if err != nil {
-                errs = multierror.Append(errs, err)
-                continue
-            }
-            if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-                errs = multierror.Append(errs, err)
-            }
-        }
+
+        s.{{ $kindPlural }}().Iter(func(_ int, obj *{{ $types_import_prefix }}.{{ $resource.Kind }}) bool {
+			clusterClient, err := mcClient.Cluster(ezkube.GetClusterName(obj))
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				return true
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+			return true
+		})
+
     }
     {{- end }}
     {{- end }}
