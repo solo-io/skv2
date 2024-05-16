@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: "Fix snapshot template"
+  issueLink: https://github.com/solo-io/skv2/issues/563

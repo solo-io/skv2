@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      "Makes the `Union` method in v2 sets more efficient. If the input set is sorted by resource ID, we can take advantage of this to 
+      do a more efficient Union while keeping the Unioned set in sorted order. 
