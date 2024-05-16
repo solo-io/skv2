@@ -229,13 +229,48 @@ func (s *resourceSet[T]) Delete(resource ezkube.ResourceId) {
 }
 
 func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
-	list := []T{}
-	for _, resource := range s.Generic().Union(set.Generic()).List() {
-		list = append(list, resource.(T))
+
+	if s == nil && set == nil {
+		return NewResourceSet[T]()
 	}
-	return NewResourceSet[T](
-		list...,
-	)
+	if s == nil {
+		return set.ShallowCopy()
+	}
+	if set == nil {
+		return s.ShallowCopy()
+	}
+
+	return s.unionSortedSet(set)
+}
+
+// Assuming that the argument set is sorted by resource id,
+// this method will efficiently union the two sets together and return the unioned set.
+func (s *resourceSet[T]) unionSortedSet(set ResourceSet[T]) *resourceSet[T] {
+	merged := make([]T, 0, len(s.set)+set.Len())
+	idx := 0
+
+	// Iterate through the second set
+	set.Iter(func(_ int, resource T) bool {
+		// Ensure all elements from s.set are added in sorted order
+		for idx < len(s.set) && ezkube.ResourceIdsCompare(s.set[idx], resource) < 0 {
+			merged = append(merged, s.set[idx])
+			idx++
+		}
+		// If elements are equal, skip the element from s.set and use the element from the argument set
+		if idx < len(s.set) && ezkube.ResourceIdsCompare(s.set[idx], resource) == 0 {
+			idx++ // Increment to skip the element in s.set since it's equal and we use the one from set
+		}
+		// Add the current element from the second set
+		merged = append(merged, resource)
+		return true
+	})
+
+	// Append any remaining elements from s.set that were not added
+	if idx < len(s.set) {
+		merged = append(merged, s.set[idx:]...)
+	}
+
+	return &resourceSet[T]{set: merged}
 }
 
 func (s *resourceSet[T]) Difference(set ResourceSet[T]) ResourceSet[T] {
