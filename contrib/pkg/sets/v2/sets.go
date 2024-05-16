@@ -10,7 +10,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-
 // ResourceSet is a thread-safe container for a set of resources.
 // It provides a set of operations for working with the set of resources, typically used for managing Kubernetes resources.
 // The ResourceSet is a generic interface that can be used with any type that satisfies the client.Object interface.
