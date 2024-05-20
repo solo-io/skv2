@@ -246,6 +246,8 @@ func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
 // Assuming that the argument set is sorted by resource id,
 // this method will efficiently union the two sets together and return the unioned set.
 func (s *resourceSet[T]) unionSortedSet(set ResourceSet[T]) *resourceSet[T] {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	merged := make([]T, 0, len(s.set)+set.Len())
 	idx := 0
 
@@ -373,6 +375,8 @@ func (oldSet *resourceSet[T]) Clone() ResourceSet[T] {
 }
 
 func (oldSet *resourceSet[T]) ShallowCopy() ResourceSet[T] {
+	oldSet.lock.RLock()
+	defer oldSet.lock.RUnlock()
 	newSet := make([]T, len(oldSet.set))
 	copy(newSet, oldSet.set)
 	return &resourceSet[T]{
