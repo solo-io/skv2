@@ -227,6 +227,8 @@ func (s *resourceSet[T]) Delete(resource ezkube.ResourceId) {
 }
 
 func (s *resourceSet[T]) Union(set ResourceSet[T]) ResourceSet[T] {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	list := []T{}
 	for _, resource := range s.Generic().Union(set.Generic()).List() {
 		list = append(list, resource.(T))
