@@ -5,7 +5,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    crd.solo.io/specHash: 2c0000aa4677e683
+    crd.solo.io/specHash: 161f04e4f9a8e8b5
   labels:
     app: ""
     app.kubernetes.io/name: ""
@@ -33,7 +33,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    crd.solo.io/specHash: 80e7931efac2214e
+    crd.solo.io/specHash: 79c1b971140a53a6
   labels:
     app: ""
     app.kubernetes.io/name: ""

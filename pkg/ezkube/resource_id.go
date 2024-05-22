@@ -174,9 +174,10 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 	}
 }
 
-// ResourceIdsCompare returns an integer comparing two ResourceIds lexicographically.
-// The comparison is based on name, then namespace, then cluster name.
-// The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
+// ResourceIdsCompare compares two ResourceId instances, first by name, then by namespace, and finally by cluster name.
+// If the names or namespaces differ, the comparison returns the result of strings.Compare on those values.
+// If the names and namespaces are the same, it attempts to cast the ResourceId instances to ClusterResourceId
+// and compares the cluster names. If the cast fails, it falls back to using the deprecated cluster name retrieval.
 func ResourceIdsCompare(a, b ResourceId) int {
 	// compare names
 	if cmp := strings.Compare(a.GetName(), b.GetName()); cmp != 0 {

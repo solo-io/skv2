@@ -7,8 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/contextutils"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -41,9 +39,7 @@ type cachedSource struct {
 
 // the args with which the dynamic source was started
 type startArgs struct {
-	h  handler.EventHandler
-	i  workqueue.RateLimitingInterface
-	ps []predicate.Predicate
+	i workqueue.RateLimitingInterface
 }
 
 // DynamicSource implements Dynamic
@@ -59,9 +55,6 @@ type DynamicSource struct {
 
 	// has source started?
 	started *startArgs
-
-	// the channel to which to push events
-	output source.Channel
 }
 
 func NewDynamicSource(ctx context.Context) *DynamicSource {
@@ -72,7 +65,7 @@ func NewDynamicSource(ctx context.Context) *DynamicSource {
 }
 
 // start all the sources
-func (s *DynamicSource) Start(ctx context.Context, h handler.EventHandler, i workqueue.RateLimitingInterface, ps ...predicate.Predicate) error {
+func (s *DynamicSource) Start(ctx context.Context, i workqueue.RateLimitingInterface) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -82,15 +75,13 @@ func (s *DynamicSource) Start(ctx context.Context, h handler.EventHandler, i wor
 
 	for _, src := range s.cache {
 
-		if err := src.source.Start(ctx, h, i, ps...); err != nil {
+		if err := src.source.Start(ctx, i); err != nil {
 			return err
 		}
 	}
 
 	s.started = &startArgs{
-		h:  h,
-		i:  i,
-		ps: ps,
+		i: i,
 	}
 
 	return nil
@@ -112,7 +103,7 @@ func (s *DynamicSource) Add(id string, src Stoppable) error {
 	}
 
 	if s.started != nil {
-		if err := src.Start(ctx, s.started.h, s.started.i, s.started.ps...); err != nil {
+		if err := src.Start(ctx, s.started.i); err != nil {
 			return errors.Wrapf(err, "failed to start source %v", id)
 		}
 	}

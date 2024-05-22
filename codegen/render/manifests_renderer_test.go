@@ -251,7 +251,7 @@ var _ = Describe("ManifestsRenderer", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(outFiles).To(HaveLen(2)) // legacy and templated manifests
 			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
-			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": b6ec737002f7d02e"))
+			Expect(outFiles[0].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": 13a71ec8b0049565"))
 			// only alpha versioned CRDs contain logic to conditionally render templates
 			Expect(outFiles[0].Content).To(Equal(outFiles[0].Content))
 		})
@@ -302,7 +302,7 @@ var _ = Describe("ManifestsRenderer", func() {
 			Expect(outFiles[1].Content).To(HavePrefix("\n{{- if has \"kinds.things.test.io/v1alpha1\" $.Values.enabledExperimentalApi }}"))
 			Expect(outFiles[1].Content).To(ContainSubstring("{{- end  }}"))
 			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDVersionKey + ": 1.0.0"))
-			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": 80c06d3e2484e4c8"))
+			Expect(outFiles[1].Content).To(ContainSubstring(crdutils.CRDSpecHashKey + ": 105d1e4c78cac3c"))
 		})
 	})
 
