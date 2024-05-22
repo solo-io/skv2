@@ -52,7 +52,7 @@ spec:
         - foo
 {{- if $painter.env }}
         env:
-{{ toYaml $painter.env | indent 10 }}
+{{ toYaml $painter.env | indent 10 }} 
 {{- else if $painter.extraEnvs }}
         env:
 {{- end }}
@@ -107,7 +107,7 @@ spec:
         - baz
 {{- if $palette.env }}
         env:
-{{ toYaml $palette.env | indent 10 }}
+{{ toYaml $palette.env | indent 10 }} 
 {{- else if $palette.extraEnvs }}
         env:
 {{- end }}

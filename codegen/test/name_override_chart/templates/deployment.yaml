@@ -44,7 +44,7 @@ spec:
         - foo
 {{- if $painterOriginalName.env }}
         env:
-{{ toYaml $painterOriginalName.env | indent 10 }}
+{{ toYaml $painterOriginalName.env | indent 10 }} 
 {{- else if $painterOriginalName.extraEnvs }}
         env:
 {{- end }}
