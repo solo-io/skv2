@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/565
+    description: >
+      Add support for other sources in templated env vars field.
+    skipCI: "false"
