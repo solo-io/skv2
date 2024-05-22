@@ -1,8 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: >
-      Reorder the priority of the environment variables to be loaded in the following order:
-      1. Templated environment variables
-      2. Environment variables
-      3. Extra environment variables
-    skipCI: "false"

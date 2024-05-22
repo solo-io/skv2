@@ -55,9 +55,17 @@ spec:
         ports:
         - name: stats
           containerPort: {{ $Values.glooMgmtServer.statsPort }}
-  {{- if or $glooMgmtServer.env $glooMgmtServer.extraEnvs }}
         env:
-  {{- end }}
+          - name: USERNAME
+            valueFrom: 
+              secretKeyRef:
+                key: '{{ $.Values.usernameKey }}'
+                name: '{{ $.Values.someSecret }}'
+          - name: PASSWORD
+            valueFrom: 
+              configMapKeyRef:
+                key: '{{ $.Values.passwordKey }}'
+                name: '{{ $.Values.someConfigMap }}'
 {{- if $glooMgmtServer.env }}
 {{- toYaml $glooMgmtServer.env | nindent 10 }}
 {{- end }}

@@ -173,6 +173,9 @@ type TemplateEnvVar struct {
 	// Helm value
 	// E.g. {{ .Values.foo.bar }}
 	Value string
+
+	//
+	ValueFrom corev1.EnvVarSource
 }
 
 type ContainerPort struct {
