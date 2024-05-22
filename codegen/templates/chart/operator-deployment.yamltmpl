@@ -147,12 +147,17 @@ spec:
 [[- if $f.Condition ]]
 {{- if [[ $f.Condition ]] }}
 [[- end]]
+          [[- if $f.Value ]]
           - name: [[ $f.Name ]]
             value: [[ $f.Value ]]
+          [[- else if $f.ValueFrom ]]
+          - name: [[ $f.Name ]]
+            valueFrom: [[ $f.ValueFrom | toYaml | nindent 14 ]]
+          [[- end ]]
 [[- if $f.Condition ]]
 {{- end }}
-[[- end]]
-[[- end ]]
+[[- end ]] [[/* end Condition */]]
+[[- end ]] [[/* end TemplateEnvVars */]]
 {{- else if [[ $containerVar ]].extraEnvs }}
         env:
 {{- end }}

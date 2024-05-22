@@ -42,7 +42,7 @@ spec:
         imagePullPolicy: {{ $painterImage.pullPolicy }}
 {{- if $painter.env }}
         env:
-{{ toYaml $painter.env | indent 10 }}
+{{ toYaml $painter.env | indent 10 }} 
 {{- else if $painter.extraEnvs }}
         env:
 {{- end }}

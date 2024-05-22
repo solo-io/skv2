@@ -58,6 +58,16 @@ spec:
 {{- if $glooMgmtServer.env }}
         env:
 {{ toYaml $glooMgmtServer.env | indent 10 }}
+          - name: USERNAME
+            valueFrom: 
+              secretKeyRef:
+                key: '{{ $.Values.usernameKey }}'
+                name: '{{ $.Values.someSecret }}' 
+          - name: PASSWORD
+            valueFrom: 
+              configMapKeyRef:
+                key: '{{ $.Values.passwordKey }}'
+                name: '{{ $.Values.someConfigMap }}'  
 {{- else if $glooMgmtServer.extraEnvs }}
         env:
 {{- end }}
@@ -107,7 +117,7 @@ spec:
         imagePullPolicy: {{ $glooAgentImage.pullPolicy }}
 {{- if $glooAgent.env }}
         env:
-{{ toYaml $glooAgent.env | indent 10 }}
+{{ toYaml $glooAgent.env | indent 10 }} 
 {{- else if $glooAgent.extraEnvs }}
         env:
 {{- end }}
@@ -279,7 +289,7 @@ spec:
         imagePullPolicy: {{ $glooAgentImage.pullPolicy }}
 {{- if $glooAgent.env }}
         env:
-{{ toYaml $glooAgent.env | indent 10 }}
+{{ toYaml $glooAgent.env | indent 10 }} 
 {{- else if $glooAgent.extraEnvs }}
         env:
 {{- end }}
