@@ -5,7 +5,7 @@ changelog:
     description: |
       Adds support for disabling kubebuilder markers and validations to omit them from the generated OpenAPI schema.
   - type: DEPENDENCY_BUMP
-    description: Updates protoc-gen-openapi to v0.2.4 to pick up the disable_kube_markers option.
+    description: Updates protoc-gen-openapi to v0.2.4, though this is not explicitly necessary to pick up the disable_kube_markers option.
     dependencyOwner: solo-io
     dependencyRepo: protoc-gen-openapi
     dependencyTag: v0.2.4
