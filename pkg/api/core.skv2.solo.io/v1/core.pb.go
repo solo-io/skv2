@@ -10,11 +10,11 @@ import (
 	reflect "reflect"
 	sync "sync"
 
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	_ "github.com/solo-io/protoc-gen-ext/extproto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 const (
@@ -343,9 +343,9 @@ type TypedObjectRef struct {
 	unknownFields protoimpl.UnknownFields
 
 	// API group of the resource being referenced
-	ApiGroup *wrappers.StringValue `protobuf:"bytes,1,opt,name=api_group,json=apiGroup,proto3" json:"api_group,omitempty"`
+	ApiGroup *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=api_group,json=apiGroup,proto3" json:"api_group,omitempty"`
 	// Kind of the resource being referenced
-	Kind *wrappers.StringValue `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Kind *wrapperspb.StringValue `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
 	// name of the resource being referenced
 	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	// namespace of the resource being referenced
@@ -384,14 +384,14 @@ func (*TypedObjectRef) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *TypedObjectRef) GetApiGroup() *wrappers.StringValue {
+func (x *TypedObjectRef) GetApiGroup() *wrapperspb.StringValue {
 	if x != nil {
 		return x.ApiGroup
 	}
 	return nil
 }
 
-func (x *TypedObjectRef) GetKind() *wrappers.StringValue {
+func (x *TypedObjectRef) GetKind() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Kind
 	}
@@ -419,9 +419,9 @@ type TypedClusterObjectRef struct {
 	unknownFields protoimpl.UnknownFields
 
 	// API group of the resource being referenced
-	ApiGroup *wrappers.StringValue `protobuf:"bytes,1,opt,name=api_group,json=apiGroup,proto3" json:"api_group,omitempty"`
+	ApiGroup *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=api_group,json=apiGroup,proto3" json:"api_group,omitempty"`
 	// Kind of the resource being referenced
-	Kind *wrappers.StringValue `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Kind *wrapperspb.StringValue `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
 	// name of the resource being referenced
 	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	// namespace of the resource being referenced
@@ -462,14 +462,14 @@ func (*TypedClusterObjectRef) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_skv2_api_core_v1_core_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *TypedClusterObjectRef) GetApiGroup() *wrappers.StringValue {
+func (x *TypedClusterObjectRef) GetApiGroup() *wrapperspb.StringValue {
 	if x != nil {
 		return x.ApiGroup
 	}
 	return nil
 }
 
-func (x *TypedClusterObjectRef) GetKind() *wrappers.StringValue {
+func (x *TypedClusterObjectRef) GetKind() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Kind
 	}
@@ -511,10 +511,10 @@ type Status struct {
 	// a kubernetes resource
 	ObservedGeneration int64 `protobuf:"varint,3,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The time at which this status was recorded
-	ProcessingTime *timestamp.Timestamp `protobuf:"bytes,4,opt,name=processing_time,json=processingTime,proto3" json:"processing_time,omitempty"`
+	ProcessingTime *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=processing_time,json=processingTime,proto3" json:"processing_time,omitempty"`
 	// (optional) The owner of the status, this value can be used to identify the entity which wrote this status.
 	// This is useful in situations where a given resource may have multiple owners.
-	Owner *wrappers.StringValue `protobuf:"bytes,5,opt,name=owner,proto3" json:"owner,omitempty"`
+	Owner *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=owner,proto3" json:"owner,omitempty"`
 }
 
 func (x *Status) Reset() {
@@ -570,14 +570,14 @@ func (x *Status) GetObservedGeneration() int64 {
 	return 0
 }
 
-func (x *Status) GetProcessingTime() *timestamp.Timestamp {
+func (x *Status) GetProcessingTime() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ProcessingTime
 	}
 	return nil
 }
 
-func (x *Status) GetOwner() *wrappers.StringValue {
+func (x *Status) GetOwner() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Owner
 	}
@@ -669,7 +669,7 @@ type PolicyTargetReference struct {
 	Kind  string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
 	Name  string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	// Optional, if unspecified, the local namespace of the policy is inferred.
-	Namespace *wrappers.StringValue `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Namespace *wrapperspb.StringValue `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"`
 }
 
 func (x *PolicyTargetReference) Reset() {
@@ -725,7 +725,7 @@ func (x *PolicyTargetReference) GetName() string {
 	return ""
 }
 
-func (x *PolicyTargetReference) GetNamespace() *wrappers.StringValue {
+func (x *PolicyTargetReference) GetNamespace() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Namespace
 	}
@@ -747,10 +747,10 @@ type PolicyTargetReferenceWithSectionName struct {
 	Kind  string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
 	Name  string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	// Optional, if unspecified, the local namespace of the policy is inferred.
-	Namespace *wrappers.StringValue `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Namespace *wrapperspb.StringValue `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// Name of the section within the targeted resource to attach to. For `Gateway` resources, this refers to a `Listener` name.
 	// Optional, if unspecified, the entire object referenced is selected.
-	SectionName *wrappers.StringValue `protobuf:"bytes,5,opt,name=section_name,json=sectionName,proto3" json:"section_name,omitempty"`
+	SectionName *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=section_name,json=sectionName,proto3" json:"section_name,omitempty"`
 }
 
 func (x *PolicyTargetReferenceWithSectionName) Reset() {
@@ -806,14 +806,14 @@ func (x *PolicyTargetReferenceWithSectionName) GetName() string {
 	return ""
 }
 
-func (x *PolicyTargetReferenceWithSectionName) GetNamespace() *wrappers.StringValue {
+func (x *PolicyTargetReferenceWithSectionName) GetNamespace() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Namespace
 	}
 	return nil
 }
 
-func (x *PolicyTargetReferenceWithSectionName) GetSectionName() *wrappers.StringValue {
+func (x *PolicyTargetReferenceWithSectionName) GetSectionName() *wrapperspb.StringValue {
 	if x != nil {
 		return x.SectionName
 	}
@@ -1052,8 +1052,8 @@ var file_github_com_solo_io_skv2_api_core_v1_core_proto_goTypes = []interface{}{
 	(*PolicyTargetReferenceWithSectionName)(nil), // 10: core.skv2.solo.io.PolicyTargetReferenceWithSectionName
 	nil,                               // 11: core.skv2.solo.io.ObjectSelector.LabelsEntry
 	(*ObjectSelector_Expression)(nil), // 12: core.skv2.solo.io.ObjectSelector.Expression
-	(*wrappers.StringValue)(nil),      // 13: google.protobuf.StringValue
-	(*timestamp.Timestamp)(nil),       // 14: google.protobuf.Timestamp
+	(*wrapperspb.StringValue)(nil),    // 13: google.protobuf.StringValue
+	(*timestamppb.Timestamp)(nil),     // 14: google.protobuf.Timestamp
 }
 var file_github_com_solo_io_skv2_api_core_v1_core_proto_depIdxs = []int32{
 	2,  // 0: core.skv2.solo.io.ObjectRefList.refs:type_name -> core.skv2.solo.io.ObjectRef
