@@ -85,39 +85,33 @@ func upsert(
 	if ObjectsEqual(existing, obj) {
 		return controllerutil.OperationResultNone, nil
 	}
+	yml, _ := serializeToYAML(obj)
+	fmt.Printf("UUU updating. serialized yaml is %s", yml)
 
-	if owner, ok := obj.GetAnnotations()["ssa"]; ok {
-		yml, _ := serializeToYAML(obj)
-		contextutils.LoggerFrom(ctx).Infof("UUU updating. serialized yaml is %s", yml)
-
-		err := c.Patch(ctx, obj, client.Apply, client.ForceOwnership, client.FieldOwner(owner))
-		if err != nil {
-			return controllerutil.OperationResultNone, err
-		}
-	} else {
-		if err := c.Update(ctx, obj); err != nil {
-			return controllerutil.OperationResultNone, err
-		}
+	err = c.Patch(ctx, obj, client.Apply, client.ForceOwnership, client.FieldOwner("foo"))
+	if err != nil {
+		return controllerutil.OperationResultNone, err
 	}
+
 	return controllerutil.OperationResultUpdated, nil
 }
 
 func serializeToYAML(obj client.Object) (string, error) {
-    // Use reflection to get the underlying value of the interface
-    value := reflect.ValueOf(obj)
+	// Use reflection to get the underlying value of the interface
+	value := reflect.ValueOf(obj)
 
-    // Ensure the value is not nil and is a pointer
-    if value.Kind() != reflect.Ptr || value.IsNil() {
-        return "", fmt.Errorf("expected a non-nil pointer to a client.Object")
-    }
+	// Ensure the value is not nil and is a pointer
+	if value.Kind() != reflect.Ptr || value.IsNil() {
+		return "", fmt.Errorf("expected a non-nil pointer to a client.Object")
+	}
 
-    // Convert the value to a YAML byte slice
-    yamlData, err := yaml.Marshal(value.Interface())
-    if err != nil {
-        return "", fmt.Errorf("failed to serialize object to YAML: %v", err)
-    }
+	// Convert the value to a YAML byte slice
+	yamlData, err := yaml.Marshal(value.Interface())
+	if err != nil {
+		return "", fmt.Errorf("failed to serialize object to YAML: %v", err)
+	}
 
-    return string(yamlData), nil
+	return string(yamlData), nil
 }
 
 func transition(existing, desired runtime.Object, transitionFuncs []TransitionFunc) error {
