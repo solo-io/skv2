@@ -78,8 +78,15 @@ func upsert(
 		return controllerutil.OperationResultNone, nil
 	}
 
-	if err := c.Update(ctx, obj); err != nil {
-		return controllerutil.OperationResultNone, err
+	if owner, ok := obj.GetAnnotations()["ssa"]; ok {
+		err := c.Patch(ctx, obj, client.Apply, client.ForceOwnership, client.FieldOwner(owner))
+		if err != nil {
+			return controllerutil.OperationResultNone, err
+		}
+	} else {
+		if err := c.Update(ctx, obj); err != nil {
+			return controllerutil.OperationResultNone, err
+		}
 	}
 	return controllerutil.OperationResultUpdated, nil
 }
