@@ -2,14 +2,17 @@ package controllerutils
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
+	"github.com/solo-io/go-utils/contextutils"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/yaml"
 )
 
 // TransitionFunc performs a comparison of the the existing object with the desired object before a desired object is Upserted to kube storage.
@@ -28,6 +31,11 @@ func Upsert(
 	obj client.Object,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
+	if _, ok := obj.GetAnnotations()["ssa"]; ok {
+		yml, _ := serializeToYAML(obj)
+		contextutils.LoggerFrom(ctx).Infof("UUU called upsert. serialized yaml is %s", yml)
+	}
+
 	return upsert(ctx, c, obj, transitionFuncs...)
 }
 
@@ -79,6 +87,9 @@ func upsert(
 	}
 
 	if owner, ok := obj.GetAnnotations()["ssa"]; ok {
+		yml, _ := serializeToYAML(obj)
+		contextutils.LoggerFrom(ctx).Infof("UUU updating. serialized yaml is %s", yml)
+
 		err := c.Patch(ctx, obj, client.Apply, client.ForceOwnership, client.FieldOwner(owner))
 		if err != nil {
 			return controllerutil.OperationResultNone, err
@@ -89,6 +100,24 @@ func upsert(
 		}
 	}
 	return controllerutil.OperationResultUpdated, nil
+}
+
+func serializeToYAML(obj client.Object) (string, error) {
+    // Use reflection to get the underlying value of the interface
+    value := reflect.ValueOf(obj)
+
+    // Ensure the value is not nil and is a pointer
+    if value.Kind() != reflect.Ptr || value.IsNil() {
+        return "", fmt.Errorf("expected a non-nil pointer to a client.Object")
+    }
+
+    // Convert the value to a YAML byte slice
+    yamlData, err := yaml.Marshal(value.Interface())
+    if err != nil {
+        return "", fmt.Errorf("failed to serialize object to YAML: %v", err)
+    }
+
+    return string(yamlData), nil
 }
 
 func transition(existing, desired runtime.Object, transitionFuncs []TransitionFunc) error {
