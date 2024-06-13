@@ -85,11 +85,14 @@ func upsert(
 		if _, ok := obj.GetLabels()["ssa"]; ok {
 			fmt.Printf("UUU objects are equal\n")
 		}
-		
+
 		return controllerutil.OperationResultNone, nil
 	}
-	yml, _ := serializeToYAML(obj)
-	fmt.Printf("UUU updating. serialized yaml is %s\n", yml)
+
+	if _, ok := obj.GetLabels()["ssa"]; ok {
+		yml, _ := serializeToYAML(obj)
+		fmt.Printf("UUU updating. serialized yaml is %s\n", yml)
+	}
 
 	err = c.Patch(ctx, obj, client.Apply, client.ForceOwnership, client.FieldOwner("foo"))
 	if err != nil {

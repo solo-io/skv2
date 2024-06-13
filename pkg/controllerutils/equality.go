@@ -1,6 +1,7 @@
 package controllerutils
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/solo-io/skv2/pkg/equalityutils"
@@ -56,6 +57,7 @@ func ObjectsEqual(obj1, obj2 runtime.Object) bool {
 		if !equalityutils.DeepEqual(field1, field2) {
 			return false
 		}
+		fmt.Printf("UUU field1: %v equal to field2: %v\n", field1, field2)
 	}
 
 	return true
