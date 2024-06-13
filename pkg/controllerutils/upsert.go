@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/solo-io/go-utils/contextutils"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,9 +30,9 @@ func Upsert(
 	obj client.Object,
 	transitionFuncs ...TransitionFunc,
 ) (controllerutil.OperationResult, error) {
-	if _, ok := obj.GetAnnotations()["ssa"]; ok {
+	if _, ok := obj.GetLabels()["ssa"]; ok {
 		yml, _ := serializeToYAML(obj)
-		contextutils.LoggerFrom(ctx).Infof("UUU called upsert. serialized yaml is %s", yml)
+		fmt.Printf("UUU called upsert. serialized yaml is %s\n", yml)
 	}
 
 	return upsert(ctx, c, obj, transitionFuncs...)
@@ -83,10 +82,14 @@ func upsert(
 	}
 
 	if ObjectsEqual(existing, obj) {
+		if _, ok := obj.GetLabels()["ssa"]; ok {
+			fmt.Printf("UUU objects are equal\n")
+		}
+		
 		return controllerutil.OperationResultNone, nil
 	}
 	yml, _ := serializeToYAML(obj)
-	fmt.Printf("UUU updating. serialized yaml is %s", yml)
+	fmt.Printf("UUU updating. serialized yaml is %s\n", yml)
 
 	err = c.Patch(ctx, obj, client.Apply, client.ForceOwnership, client.FieldOwner("foo"))
 	if err != nil {
