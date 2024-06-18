@@ -41,6 +41,39 @@ var _ = Describe("Cmd", func() {
 	skv2Imports.External["github.com/solo-io/cue"] = []string{
 		"encoding/protobuf/cue/cue.proto",
 	}
+	It("env variable priority", func() {
+		cmd := &Command{
+			Chart: &Chart{
+				Operators: []Operator{{
+					Name: "server",
+					Deployment: Deployment{
+						Container: Container{
+							Image: Image{Repository: "server", Tag: "v0.0.1"},
+							Env:   []v1.EnvVar{{Name: "ENV_VAR", Value: "default"}},
+							TemplateEnvVars: []TemplateEnvVar{
+								{
+									Condition: "$.Values.server.secret.enabled",
+									Name:      "ENV_VAR",
+									Value:     "templated",
+								},
+							},
+						},
+					},
+				}},
+			},
+			ManifestRoot: "codegen/test/chart/env-priority",
+		}
+		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+
+		absPath, err := filepath.Abs("./test/chart/env-priority/templates/deployment.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to get abs path")
+
+		deployment, err := os.ReadFile(absPath)
+		Expect(err).NotTo(HaveOccurred(), "failed to read deployment.yaml")
+
+		Expect(deployment).To(ContainSubstring("value: templated"))
+		Expect(deployment).To(ContainSubstring("{{- toYaml $server.env | nindent 10 -}}"))
+	})
 	It("install conditional sidecars", func() {
 		agentConditional := "and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar)"
 
