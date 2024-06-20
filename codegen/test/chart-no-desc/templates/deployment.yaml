@@ -50,15 +50,13 @@ spec:
         imagePullPolicy: {{ $painterImage.pullPolicy }}
         args:
         - foo
+        env:
 {{- if $painter.env }}
-        env:
-{{ toYaml $painter.env | indent 10 }} 
-{{- else if $painter.extraEnvs }}
-        env:
+{{- toYaml $painter.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $painter.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $painter.resources }}
@@ -105,15 +103,15 @@ spec:
         args:
         - bar
         - baz
+  {{- if or $palette.env $palette.extraEnvs }}
+        env:
+  {{- end }}
 {{- if $palette.env }}
-        env:
-{{ toYaml $palette.env | indent 10 }} 
-{{- else if $palette.extraEnvs }}
-        env:
+{{- toYaml $palette.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $palette.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         volumeMounts:
         - mountPath: /etc/paint

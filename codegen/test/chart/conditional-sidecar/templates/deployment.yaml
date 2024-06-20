@@ -55,25 +55,23 @@ spec:
         ports:
         - name: stats
           containerPort: {{ $Values.glooMgmtServer.statsPort }}
-{{- if $glooMgmtServer.env }}
         env:
-{{ toYaml $glooMgmtServer.env | indent 10 }}
           - name: USERNAME
             valueFrom: 
               secretKeyRef:
                 key: '{{ $.Values.usernameKey }}'
-                name: '{{ $.Values.someSecret }}' 
+                name: '{{ $.Values.someSecret }}'
           - name: PASSWORD
             valueFrom: 
               configMapKeyRef:
                 key: '{{ $.Values.passwordKey }}'
-                name: '{{ $.Values.someConfigMap }}'  
-{{- else if $glooMgmtServer.extraEnvs }}
-        env:
+                name: '{{ $.Values.someConfigMap }}'
+{{- if $glooMgmtServer.env }}
+{{- toYaml $glooMgmtServer.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $glooMgmtServer.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         volumeMounts:
         - mountPath: /etc/gloo-mesh/license-keys
@@ -115,15 +113,15 @@ spec:
       - name: gloo-agent
         image: {{ $glooAgentImage.registry }}/{{ $glooAgentImage.repository }}:{{ $glooAgentImage.tag }}
         imagePullPolicy: {{ $glooAgentImage.pullPolicy }}
+  {{- if or $glooAgent.env $glooAgent.extraEnvs }}
+        env:
+  {{- end }}
 {{- if $glooAgent.env }}
-        env:
-{{ toYaml $glooAgent.env | indent 10 }} 
-{{- else if $glooAgent.extraEnvs }}
-        env:
+{{- toYaml $glooAgent.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $glooAgent.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $glooAgent.resources }}
@@ -287,15 +285,15 @@ spec:
       - name: gloo-agent
         image: {{ $glooAgentImage.registry }}/{{ $glooAgentImage.repository }}:{{ $glooAgentImage.tag }}
         imagePullPolicy: {{ $glooAgentImage.pullPolicy }}
+  {{- if or $glooAgent.env $glooAgent.extraEnvs }}
+        env:
+  {{- end }}
 {{- if $glooAgent.env }}
-        env:
-{{ toYaml $glooAgent.env | indent 10 }} 
-{{- else if $glooAgent.extraEnvs }}
-        env:
+{{- toYaml $glooAgent.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $glooAgent.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $glooAgent.resources }}
