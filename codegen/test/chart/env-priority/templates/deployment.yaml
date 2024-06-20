@@ -40,8 +40,10 @@ spec:
       - name: painter
         image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
         imagePullPolicy: {{ $painterImage.pullPolicy }}
-  {{- if or $painter.env $painter.extraEnvs }}
         env:
+  {{- if $.Values.secret }}
+          - name: ENV_VAR
+            value: templated
   {{- end }}
 {{- if $painter.env }}
 {{- toYaml $painter.env | nindent 10 }}
