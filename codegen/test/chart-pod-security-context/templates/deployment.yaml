@@ -43,15 +43,15 @@ spec:
       - name: painter
         image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
         imagePullPolicy: {{ $painterImage.pullPolicy }}
+  {{- if or $painter.env $painter.extraEnvs }}
+        env:
+  {{- end }}
 {{- if $painter.env }}
-        env:
-{{ toYaml $painter.env | indent 10 }} 
-{{- else if $painter.extraEnvs }}
-        env:
+{{- toYaml $painter.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $painter.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $painter.resources }}

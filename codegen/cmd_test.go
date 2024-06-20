@@ -44,15 +44,25 @@ var _ = Describe("Cmd", func() {
 	It("env variable priority", func() {
 		cmd := &Command{
 			Chart: &Chart{
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
 				Operators: []Operator{{
-					Name: "server",
+					Name: "painter",
 					Deployment: Deployment{
 						Container: Container{
-							Image: Image{Repository: "server", Tag: "v0.0.1"},
+							Image: Image{Repository: "painter", Tag: "v0.0.1"},
 							Env:   []v1.EnvVar{{Name: "ENV_VAR", Value: "default"}},
 							TemplateEnvVars: []TemplateEnvVar{
 								{
-									Condition: "$.Values.server.secret.enabled",
+									Condition: "$.Values.secret",
 									Name:      "ENV_VAR",
 									Value:     "templated",
 								},
@@ -65,15 +75,32 @@ var _ = Describe("Cmd", func() {
 		}
 		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
 
-		absPath, err := filepath.Abs("./test/chart/env-priority/templates/deployment.yaml")
-		Expect(err).NotTo(HaveOccurred(), "failed to get abs path")
+		manifests := helmTemplate("./test/chart/env-priority", map[string]any{"painter": map[string]any{"enabled": true}, "secret": true})
+		var renderedDeployment *appsv1.Deployment
+		decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(manifests), 4096)
+		for {
+			obj := &unstructured.Unstructured{}
+			err := decoder.Decode(obj)
+			if err != nil {
+				break
+			}
+			if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+				continue
+			}
 
-		deployment, err := os.ReadFile(absPath)
-		Expect(err).NotTo(HaveOccurred(), "failed to read deployment.yaml")
+			bytes, err := obj.MarshalJSON()
+			Expect(err).NotTo(HaveOccurred())
+			renderedDeployment = &appsv1.Deployment{}
+			err = json.Unmarshal(bytes, renderedDeployment)
+			Expect(err).NotTo(HaveOccurred())
+		}
+		Expect(renderedDeployment).NotTo(BeNil())
 
-		Expect(deployment).To(ContainSubstring("value: templated"))
-		Expect(deployment).To(ContainSubstring("{{- toYaml $server.env | nindent 10 -}}"))
+		Expect(renderedDeployment.Spec.Template.Spec.Containers[0].Env).To(HaveLen(2))
+		Expect(renderedDeployment.Spec.Template.Spec.Containers[0].Env[0]).To(Equal(v1.EnvVar{Name: "ENV_VAR", Value: "templated"}))
+		Expect(renderedDeployment.Spec.Template.Spec.Containers[0].Env[1]).To(Equal(v1.EnvVar{Name: "ENV_VAR", Value: "default"}))
 	})
+
 	It("install conditional sidecars", func() {
 		agentConditional := "and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar)"
 
@@ -2288,7 +2315,9 @@ roleRef:
 						Value: "{{ $.Values.featureGates.Foo | quote }}",
 					},
 				},
-				nil),
+				[]v1.EnvVar{
+					{Name: "FEATURE_ENABLE_FOO", Value: "true"},
+				}),
 			Entry("when Env and TemplateEnvVar are specified, true value",
 				map[string]string{"Foo": "true"},
 				[]v1.EnvVar{

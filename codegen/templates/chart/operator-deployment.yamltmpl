@@ -142,7 +142,12 @@ spec:
 [[- end ]]
 [[- if or $container.Env $container.TemplateEnvVars ]]
         env:
-  [[- range $f := $container.TemplateEnvVars ]]
+[[- else ]]
+  {{- if or [[ $containerVar ]].env [[ $containerVar ]].extraEnvs }}
+        env:
+  {{- end }}
+[[- end ]]
+[[- range $f := $container.TemplateEnvVars ]]
   [[- if $f.Condition ]]
   {{- if [[ $f.Condition ]] }}
   [[- end ]]
@@ -156,13 +161,14 @@ spec:
   [[- if $f.Condition ]]
   {{- end }}
   [[- end ]]
-  [[- end ]]        
-  {{- toYaml [[ $containerVar ]].env | nindent 10 -}}
-  {{- range $name, $item := [[ $containerVar ]].extraEnvs }}
+[[- end ]]
+{{- if [[ $containerVar ]].env }}
+{{- toYaml [[ $containerVar ]].env | nindent 10 }}
+{{- end }}
+{{- range $name, $item := [[ $containerVar ]].extraEnvs }}
           - name: {{ $name }}
   {{- $item | toYaml | nindent 12 }}
-  {{- end }}
-[[- end ]]
+{{- end }}
 [[- if $container.VolumeMounts ]]
         volumeMounts:
 [[ toYaml $container.VolumeMounts | indent 8 ]]
