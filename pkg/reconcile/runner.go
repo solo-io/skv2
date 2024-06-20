@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/utils"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -71,6 +72,8 @@ type Options struct {
 
 	// If provided, attempt to verify the resource before beginning the reconcile loop
 	Verifier verifier.ServerResourceVerifier
+
+	UseUnmanagedController bool
 }
 
 func NewLoop(
@@ -117,9 +120,16 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 		reconciler: reconciler,
 	}
 
-	ctl, err := controller.New(r.name, r.mgr, controller.Options{
-		Reconciler: rec,
-	})
+	var ctl controller.Controller
+	if r.options.UseUnmanagedController {
+		ctl, err = controller.NewUnmanaged(r.name, r.mgr, controller.Options{
+			Reconciler: rec,
+		})
+	} else {
+		ctl, err = controller.New(r.name, r.mgr, controller.Options{
+			Reconciler: rec,
+		})
+	}
 	if err != nil {
 		return err
 	}
@@ -151,6 +161,23 @@ func (r *runner) RunReconciler(ctx context.Context, reconciler Reconciler, predi
 	// send us watch events
 	if err := ctl.Watch(source.Kind(r.mgr.GetCache(), r.resource, &handler.TypedEnqueueRequestForObject[ezkube.Object]{}, typedPredicates...)); err != nil {
 		return err
+	}
+
+	if r.options.UseUnmanagedController {
+		// Start our controller in a goroutine so that we do not block.
+		go func() {
+			// Block until our controller manager is elected leader. We presume our
+			// entire process will terminate if we lose leadership, so we don't need
+			// to handle that.
+			<-r.mgr.Elected()
+
+			// Start our controller. This will block until the stop channel is
+			// closed, or the controller returns an error.
+			if err := ctl.Start(ctx); err != nil {
+				contextutils.LoggerFrom(ctx).Error(err)
+				return
+			}
+		}()
 	}
 
 	// Only wait for cache sync if specified in options
