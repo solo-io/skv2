@@ -1,6 +1,13 @@
 changelog:
-  - type: NON_USER_FACING
-    issueLink: 
+  - type: FIX
+    issueLink: https://github.com/solo-io/skv2/issues/565
     description: >
-      ""
+      Add support for other sources in templated env vars field.
+    skipCI: "false"
+  - type: NON_USER_FACING
+    description: >
+      Reorder the priority of the environment variables to be loaded in the following order:
+      1. Templated environment variables
+      2. Environment variables
+      3. Extra environment variables
     skipCI: "false"
