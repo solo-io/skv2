@@ -140,25 +140,34 @@ spec:
           containerPort: [[ $port.Port ]]
         [[- end ]]
 [[- end ]]
-{{- if [[ $containerVar ]].env }}
+[[- if or $container.Env $container.TemplateEnvVars ]]
         env:
-{{ toYaml [[ $containerVar ]].env | indent 10 }}
+[[- else ]]
+  {{- if or [[ $containerVar ]].env [[ $containerVar ]].extraEnvs }}
+        env:
+  {{- end }}
+[[- end ]]
 [[- range $f := $container.TemplateEnvVars ]]
-[[- if $f.Condition ]]
-{{- if [[ $f.Condition ]] }}
-[[- end]]
+  [[- if $f.Condition ]]
+  {{- if [[ $f.Condition ]] }}
+  [[- end ]]
+        [[- if $f.Value ]]
           - name: [[ $f.Name ]]
             value: [[ $f.Value ]]
-[[- if $f.Condition ]]
-{{- end }}
-[[- end]]
+        [[- else if $f.ValueFrom ]]
+          - name: [[ $f.Name ]]
+            valueFrom: [[ $f.ValueFrom | toYaml | nindent 14 ]]
+        [[- end ]]
+  [[- if $f.Condition ]]
+  {{- end }}
+  [[- end ]]
 [[- end ]]
-{{- else if [[ $containerVar ]].extraEnvs }}
-        env:
+{{- if [[ $containerVar ]].env }}
+{{- toYaml [[ $containerVar ]].env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := [[ $containerVar ]].extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
 [[- if $container.VolumeMounts ]]
         volumeMounts:

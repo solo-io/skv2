@@ -10,27 +10,26 @@ import (
 	"reflect"
 	"strings"
 
-	goyaml "gopkg.in/yaml.v3"
-	rbacv1 "k8s.io/api/rbac/v1"
-	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"k8s.io/utils/pointer"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/skv2/codegen"
-	"github.com/solo-io/skv2/codegen/model"
-	. "github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
-	"github.com/solo-io/skv2/codegen/util"
-	"github.com/solo-io/skv2/contrib"
+	goyaml "gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	v12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kubeyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/yaml"
+
+	. "github.com/solo-io/skv2/codegen"
+	. "github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
+	"github.com/solo-io/skv2/codegen/util"
+	"github.com/solo-io/skv2/contrib"
 )
 
 var _ = Describe("Cmd", func() {
@@ -42,6 +41,66 @@ var _ = Describe("Cmd", func() {
 	skv2Imports.External["github.com/solo-io/cue"] = []string{
 		"encoding/protobuf/cue/cue.proto",
 	}
+	It("env variable priority", func() {
+		cmd := &Command{
+			Chart: &Chart{
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
+				Operators: []Operator{{
+					Name: "painter",
+					Deployment: Deployment{
+						Container: Container{
+							Image: Image{Repository: "painter", Tag: "v0.0.1"},
+							Env:   []v1.EnvVar{{Name: "ENV_VAR", Value: "default"}},
+							TemplateEnvVars: []TemplateEnvVar{
+								{
+									Condition: "$.Values.secret",
+									Name:      "ENV_VAR",
+									Value:     "templated",
+								},
+							},
+						},
+					},
+				}},
+			},
+			ManifestRoot: "codegen/test/chart/env-priority",
+		}
+		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+
+		manifests := helmTemplate("./test/chart/env-priority", map[string]any{"painter": map[string]any{"enabled": true}, "secret": true})
+		var renderedDeployment *appsv1.Deployment
+		decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(manifests), 4096)
+		for {
+			obj := &unstructured.Unstructured{}
+			err := decoder.Decode(obj)
+			if err != nil {
+				break
+			}
+			if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+				continue
+			}
+
+			bytes, err := obj.MarshalJSON()
+			Expect(err).NotTo(HaveOccurred())
+			renderedDeployment = &appsv1.Deployment{}
+			err = json.Unmarshal(bytes, renderedDeployment)
+			Expect(err).NotTo(HaveOccurred())
+		}
+		Expect(renderedDeployment).NotTo(BeNil())
+
+		Expect(renderedDeployment.Spec.Template.Spec.Containers[0].Env).To(HaveLen(2))
+		Expect(renderedDeployment.Spec.Template.Spec.Containers[0].Env[0]).To(Equal(v1.EnvVar{Name: "ENV_VAR", Value: "templated"}))
+		Expect(renderedDeployment.Spec.Template.Spec.Containers[0].Env[1]).To(Equal(v1.EnvVar{Name: "ENV_VAR", Value: "default"}))
+	})
+
 	It("install conditional sidecars", func() {
 		agentConditional := "and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar)"
 
@@ -111,6 +170,30 @@ var _ = Describe("Cmd", func() {
 									Repository: "gloo-mesh-mgmt-server",
 									Tag:        "0.0.1",
 								},
+								TemplateEnvVars: []TemplateEnvVar{
+									{
+										Name: "USERNAME",
+										ValueFrom: v1.EnvVarSource{
+											SecretKeyRef: &v1.SecretKeySelector{
+												LocalObjectReference: v1.LocalObjectReference{
+													Name: "{{ $.Values.someSecret }}",
+												},
+												Key: "{{ $.Values.usernameKey }}",
+											},
+										},
+									},
+									{
+										Name: "PASSWORD",
+										ValueFrom: v1.EnvVarSource{
+											ConfigMapKeyRef: &v1.ConfigMapKeySelector{
+												LocalObjectReference: v1.LocalObjectReference{
+													Name: "{{ $.Values.someConfigMap }}",
+												},
+												Key: "{{ $.Values.passwordKey }}",
+											},
+										},
+									},
+								},
 								ContainerPorts: []ContainerPort{{
 									Name: "stats",
 									Port: "{{ $Values.glooMgmtServer.statsPort }}",
@@ -155,6 +238,11 @@ var _ = Describe("Cmd", func() {
 		Expect(deployment).To(ContainSubstring("name: agent-volume"))
 		Expect(deployment).To(ContainSubstring(`{{ index $glooAgent "ports" "grpc" }}`))
 		Expect(deployment).To(ContainSubstring("{{ $Values.glooMgmtServer.statsPort }}"))
+
+		Expect(deployment).To(ContainSubstring("{{ $.Values.usernameKey }}"))
+		Expect(deployment).To(ContainSubstring("{{ $.Values.passwordKey }}"))
+		Expect(deployment).To(ContainSubstring("{{ $.Values.someSecret }}"))
+		Expect(deployment).To(ContainSubstring("{{ $.Values.someConfigMap }}"))
 	})
 	It("generates conditional crds", func() {
 		cmd := &Command{
@@ -774,13 +862,11 @@ var _ = Describe("Cmd", func() {
 			}
 			Expect(renderedDeployment).NotTo(BeNil())
 
-			pointerBool := func(b bool) *bool { return &b }
-			pointerInt64 := func(i int64) *int64 { return &i }
 			defaultSecurityContext := v1.SecurityContext{
-				RunAsNonRoot:             pointerBool(true),
-				RunAsUser:                pointerInt64(10101),
-				ReadOnlyRootFilesystem:   pointerBool(true),
-				AllowPrivilegeEscalation: pointerBool(false),
+				RunAsNonRoot:             ptr.To(true),
+				RunAsUser:                ptr.To[int64](10101),
+				ReadOnlyRootFilesystem:   ptr.To(true),
+				AllowPrivilegeEscalation: ptr.To(false),
 				Capabilities: &v1.Capabilities{
 					Drop: []v1.Capability{"ALL"},
 				},
@@ -800,8 +886,8 @@ var _ = Describe("Cmd", func() {
 		Entry("renders empty map for container security context when set as false via helm cli", nil, true),
 		Entry("overrides container security context with empty map", &v1.SecurityContext{}, false),
 		Entry("overrides container security context", &v1.SecurityContext{
-			RunAsNonRoot: func(b bool) *bool { return &b }(true),
-			RunAsUser:    func(i int64) *int64 { return &i }(20202),
+			RunAsNonRoot: ptr.To(true),
+			RunAsUser:    ptr.To[int64](20202),
 		}, false),
 	)
 
@@ -1926,7 +2012,7 @@ roleRef:
 	)
 
 	DescribeTable("rendering conditional deployment strategy",
-		func(values map[string]any, conditionalStrategy []model.ConditionalStrategy, expectedStrategy appsv1.DeploymentStrategy) {
+		func(values map[string]any, conditionalStrategy []ConditionalStrategy, expectedStrategy appsv1.DeploymentStrategy) {
 			cmd := &Command{
 				Chart: &Chart{
 					Operators: []Operator{
@@ -1997,7 +2083,7 @@ roleRef:
 		),
 		Entry("when the condition is true",
 			map[string]any{"enabled": true, "condition": true},
-			[]model.ConditionalStrategy{
+			[]ConditionalStrategy{
 				{
 					Condition: "$.Values.painter.condition",
 					Strategy: appsv1.DeploymentStrategy{
@@ -2017,7 +2103,7 @@ roleRef:
 		),
 		Entry("when the condition is false",
 			map[string]any{"enabled": true, "condition": false},
-			[]model.ConditionalStrategy{
+			[]ConditionalStrategy{
 				{
 					Condition: "$.Values.painter.condition",
 					Strategy: appsv1.DeploymentStrategy{
@@ -2112,23 +2198,23 @@ roleRef:
 			map[string]interface{}{"fsGroup": 1000},
 			nil,
 			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1000),
+				FSGroup: ptr.To[int64](1000),
 			}),
 		Entry("when PodSecurityContext is defined only in the operator",
 			nil,
 			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1000),
+				FSGroup: ptr.To[int64](1000),
 			},
 			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1000),
+				FSGroup: ptr.To[int64](1000),
 			}),
 		Entry("when PodSecurityContext is defined in both values and the operator",
 			map[string]interface{}{"fsGroup": 1024},
 			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1000),
+				FSGroup: ptr.To[int64](1000),
 			},
 			&v1.PodSecurityContext{
-				FSGroup: pointer.Int64(1024), // should override the value defined in the operator
+				FSGroup: ptr.To[int64](1024), // should override the value defined in the operator
 			}),
 	)
 
@@ -2227,7 +2313,9 @@ roleRef:
 						Value: "{{ $.Values.featureGates.Foo | quote }}",
 					},
 				},
-				nil),
+				[]v1.EnvVar{
+					{Name: "FEATURE_ENABLE_FOO", Value: "true"},
+				}),
 			Entry("when Env and TemplateEnvVar are specified, true value",
 				map[string]string{"Foo": "true"},
 				[]v1.EnvVar{
@@ -2316,7 +2404,7 @@ roleRef:
 		})
 
 		DescribeTable("validation",
-			func(values map[string]string, defaultVolumes []v1.Volume, conditionalVolumes []model.ConditionalVolume, expected []v1.Volume) {
+			func(values map[string]string, defaultVolumes []v1.Volume, conditionalVolumes []ConditionalVolume, expected []v1.Volume) {
 				cmd := &Command{
 					Chart: &Chart{
 						Operators: []Operator{
@@ -2409,7 +2497,7 @@ roleRef:
 					"condition": "true",
 				},
 				nil,
-				[]model.ConditionalVolume{
+				[]ConditionalVolume{
 					{
 						Condition: "$.Values.painter.condition",
 						Volume: v1.Volume{
@@ -2428,7 +2516,7 @@ roleRef:
 					"condition": "true",
 				},
 				nil,
-				[]model.ConditionalVolume{
+				[]ConditionalVolume{
 					{
 						Condition: "$.Values.painter.invalidCondition",
 						Volume: v1.Volume{
@@ -2447,7 +2535,7 @@ roleRef:
 						Name: "vol-1",
 					},
 				},
-				[]model.ConditionalVolume{
+				[]ConditionalVolume{
 					{
 						Condition: "$.Values.painter.condition",
 						Volume: v1.Volume{
@@ -2479,7 +2567,7 @@ roleRef:
 		})
 
 		DescribeTable("validation",
-			func(values map[string]string, defaultMounts []v1.VolumeMount, conditionalMounts []model.ConditionalVolumeMount, expected []v1.VolumeMount) {
+			func(values map[string]string, defaultMounts []v1.VolumeMount, conditionalMounts []ConditionalVolumeMount, expected []v1.VolumeMount) {
 				cmd := &Command{
 					Chart: &Chart{
 						Operators: []Operator{
@@ -2574,7 +2662,7 @@ roleRef:
 					"condition": "true",
 				},
 				nil,
-				[]model.ConditionalVolumeMount{
+				[]ConditionalVolumeMount{
 					{
 						Condition: "$.Values.painter.condition",
 						VolumeMount: v1.VolumeMount{
@@ -2593,7 +2681,7 @@ roleRef:
 					"condition": "true",
 				},
 				nil,
-				[]model.ConditionalVolumeMount{
+				[]ConditionalVolumeMount{
 					{
 						Condition: "$.Values.painter.invalidCondition",
 						VolumeMount: v1.VolumeMount{
@@ -2612,7 +2700,7 @@ roleRef:
 						Name: "vol-1",
 					},
 				},
-				[]model.ConditionalVolumeMount{
+				[]ConditionalVolumeMount{
 					{
 						Condition: "$.Values.painter.condition",
 						VolumeMount: v1.VolumeMount{

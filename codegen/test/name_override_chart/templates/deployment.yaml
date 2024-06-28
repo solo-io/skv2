@@ -42,15 +42,15 @@ spec:
         imagePullPolicy: {{ $painterOriginalNameImage.pullPolicy }}
         args:
         - foo
+  {{- if or $painterOriginalName.env $painterOriginalName.extraEnvs }}
+        env:
+  {{- end }}
 {{- if $painterOriginalName.env }}
-        env:
-{{ toYaml $painterOriginalName.env | indent 10 }}
-{{- else if $painterOriginalName.extraEnvs }}
-        env:
+{{- toYaml $painterOriginalName.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $painterOriginalName.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $painterOriginalName.resources }}
