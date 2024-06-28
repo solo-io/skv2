@@ -51,7 +51,7 @@ Name|Version|License
 [config/v1alpha1](https://k8s.io/component-base/config/v1alpha1)|v0.28.3|Apache License 2.0
 [v2/internal](https://k8s.io/klog/v2/internal)|v2.100.1|Apache License 2.0
 [kube-openapi/pkg](https://k8s.io/kube-openapi/pkg)|v0.0.0-20230717233707-2695361300d9|Apache License 2.0
-[k8s.io/utils](https://k8s.io/utils)|v0.0.0-20230406110748-d93618cff8a2|Apache License 2.0
+[k8s.io/utils](https://k8s.io/utils)|v0.0.0-20240502163921-fe8a2dddb1d0|Apache License 2.0
 [controller-runtime/pkg](https://sigs.k8s.io/controller-runtime/pkg)|v0.16.3|Apache License 2.0
 [encoding/json](https://sigs.k8s.io/json/internal/golang/encoding/json)|v0.0.0-20221116044647-bc3834ca7abd|Apache License 2.0
 [structured-merge-diff/v4](https://sigs.k8s.io/structured-merge-diff/v4)|v4.2.3|Apache License 2.0
