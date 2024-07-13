@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 	"strings"
@@ -30,6 +31,7 @@ import (
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/util"
 	goyaml "gopkg.in/yaml.v3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
 
@@ -141,6 +143,20 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 		"render_inner_conditional_crd_template": func(crd kuberesource.GlooCustomResourceDefinition, currentVersion string, skips map[string]bool) bool {
 			return len(crd.Spec.Versions) > 1 && strings.Contains(currentVersion, "alpha") && !skips[crd.Spec.Group+"/"+currentVersion]
 		},
+
+		"handle_resource": func(o client.Object) any {
+			data, err := json.Marshal(o)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			var aux map[string]any
+
+			if err = json.Unmarshal(data, &aux); err != nil {
+				log.Fatal(err)
+			}
+			return prune(aux)
+		},
 	}
 
 	for k, v := range skv2Funcs {
@@ -152,6 +168,17 @@ func makeTemplateFuncs(customFuncs template.FuncMap) template.FuncMap {
 	}
 
 	return f
+}
+
+// Prune removes extra fields from a list of client objects (e.g: metadata.creationTimestamp, status, etc ...)
+func prune(data map[string]any) any {
+	meta, ok := data["metadata"].(map[string]any)
+	if ok {
+		delete(meta, "creationTimestamp")
+	}
+	delete(data, "status")
+
+	return data
 }
 
 func toListItem(item interface{}) []interface{} {

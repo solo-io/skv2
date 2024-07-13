@@ -1,0 +1,7 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: 
+    description: >
+      Support extra conditional kubernetes resources via `ConditionalResources` field
+      available at the operator level.
+    skipCI: "false"

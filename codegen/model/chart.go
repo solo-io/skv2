@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/solo-io/skv2/codegen/model/values"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/doc"
@@ -98,6 +99,14 @@ type Operator struct {
 	//
 	// E.g: `and (.Values.operator.customValueA) (.Values.operator.customValueB)`
 	CustomEnableCondition string
+
+	ConditionalResources []ConditionalResource
+}
+
+type ConditionalResource struct {
+	client.Object
+
+	Condition string
 }
 
 func (o Operator) FormattedName() string {
