@@ -161,7 +161,9 @@ spec:
 {{- if $glooMgmtServer.imagePullSecrets }}
   {{- $pullSecrets = concat $pullSecrets $glooMgmtServer.imagePullSecrets -}}
 {{- end }}
-{{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- if gt (len $pullSecrets) 0 -}}
+  {{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- end }}
 {{- end }} {{/* define "gloo-mgmt-server.deploymentSpec" */}}
 
 {{/* Render gloo-mgmt-server deployment template with overrides from values*/}}
@@ -336,7 +338,9 @@ spec:
 {{- if $glooAgent.imagePullSecrets }}
   {{- $pullSecrets = concat $pullSecrets $glooAgent.imagePullSecrets -}}
 {{- end }}
-{{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- if gt (len $pullSecrets) 0 -}}
+  {{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- end }}
 {{- end }} {{/* define "gloo-agent.deploymentSpec" */}}
 
 {{/* Render gloo-agent deployment template with overrides from values*/}}

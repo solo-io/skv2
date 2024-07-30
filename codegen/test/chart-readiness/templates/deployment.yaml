@@ -94,7 +94,9 @@ spec:
 {{- if $painter.imagePullSecrets }}
   {{- $pullSecrets = concat $pullSecrets $painter.imagePullSecrets -}}
 {{- end }}
-{{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- if gt (len $pullSecrets) 0 -}}
+  {{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- end }}
 {{- end }} {{/* define "painter.deploymentSpec" */}}
 
 {{/* Render painter deployment template with overrides from values*/}}

@@ -81,7 +81,7 @@ var _ = Describe("Cmd", func() {
 		})
 		DescribeTable(
 			"using",
-			func(values any, expected ...v1.LocalObjectReference) {
+			func(values any, shouldBeEmpty bool, expected ...v1.LocalObjectReference) {
 				manifests := helmTemplate("./test/chart/image-pull-secrets", values)
 
 				var (
@@ -100,9 +100,23 @@ var _ = Describe("Cmd", func() {
 					}
 				}
 				Expect(renderedDeployment).NotTo(BeNil())
+				if shouldBeEmpty {
+					Expect(renderedDeployment.Spec.Template.Spec.ImagePullSecrets).To(BeEmpty())
+					return
+				}
+
 				Expect(renderedDeployment.Spec.Template.Spec.ImagePullSecrets).To(ContainElements(expected))
 			},
-
+			Entry(
+				"empty",
+				map[string]any{
+					"painter": map[string]any{
+						"enabled": true,
+					},
+				},
+				true,
+				nil,
+			),
 			Entry(
 				"legacy pullSecret field",
 				map[string]any{
@@ -113,6 +127,7 @@ var _ = Describe("Cmd", func() {
 						},
 					},
 				},
+				false,
 				v1.LocalObjectReference{Name: "a-registry"},
 			),
 			Entry(
@@ -125,6 +140,7 @@ var _ = Describe("Cmd", func() {
 						}},
 					},
 				},
+				false,
 				v1.LocalObjectReference{Name: "b-registry"},
 			),
 			Entry(
@@ -140,6 +156,7 @@ var _ = Describe("Cmd", func() {
 						}},
 					},
 				},
+				false,
 				v1.LocalObjectReference{Name: "a-registry"}, v1.LocalObjectReference{Name: "b-registry"},
 			),
 		)
