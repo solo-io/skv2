@@ -123,6 +123,7 @@ type Deployment struct {
 	CustomPodAnnotations        map[string]string
 	CustomDeploymentLabels      map[string]string
 	CustomDeploymentAnnotations map[string]string
+	ImagePullSecrets            []corev1.LocalObjectReference
 }
 
 type ConditionalStrategy struct {

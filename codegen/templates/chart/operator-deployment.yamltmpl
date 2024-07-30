@@ -241,10 +241,14 @@ spec:
 {{- end }}
 [[- end ]]
 [[- end ]]
-      {{- if $[[ $operatorVar ]]Image.pullSecret }}
-      imagePullSecrets:
-        - name: {{ $[[ $operatorVar ]]Image.pullSecret }}
-      {{- end}}
+{{- $pullSecrets := (list) -}}
+{{- if $[[ $operatorVar ]]Image.pullSecret }}
+  {{- $pullSecrets = concat $pullSecrets (list (dict "name" $[[ $operatorVar ]]Image.pullSecret)) -}}
+{{- end }}
+{{- if $[[ $operatorVar ]].imagePullSecrets }}
+  {{- $pullSecrets = concat $pullSecrets $[[ $operatorVar ]].imagePullSecrets -}}
+{{- end }}
+{{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
 {{- end }} {{/* define "[[ $operator.Name ]].deploymentSpec" */}}
 
 {{/* Render [[ $operator.Name ]] deployment template with overrides from values*/}}
