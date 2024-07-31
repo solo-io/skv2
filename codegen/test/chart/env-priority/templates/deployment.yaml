@@ -82,10 +82,16 @@ spec:
             drop:
             - ALL
 {{- end }}
-      {{- if $painterImage.pullSecret }}
-      imagePullSecrets:
-        - name: {{ $painterImage.pullSecret }}
-      {{- end}}
+{{- $pullSecrets := (list) -}}
+{{- if $painterImage.pullSecret }}
+  {{- $pullSecrets = concat $pullSecrets (list (dict "name" $painterImage.pullSecret)) -}}
+{{- end }}
+{{- if $painter.imagePullSecrets }}
+  {{- $pullSecrets = concat $pullSecrets $painter.imagePullSecrets -}}
+{{- end }}
+{{- if gt (len $pullSecrets) 0 -}}
+  {{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- end }}
 {{- end }} {{/* define "painter.deploymentSpec" */}}
 
 {{/* Render painter deployment template with overrides from values*/}}

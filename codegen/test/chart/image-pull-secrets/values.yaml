@@ -2,15 +2,15 @@
 
 painter:
   deploymentOverrides: null
-  env:
-    - name: ENV_VAR
-      value: default
+  env: null
   extraEnvs: {}
   floatingUserId: false
   image:
-    registry: gcr.io/painter
+    pullPolicy: IfNotPresent
+    registry: quay.io/solo-io
     repository: painter
-    tag: v0.0.1
+    tag: v0.0.0
+  imagePullSecrets: []
   ports: {}
   runAsUser: 10101
   serviceOverrides: null

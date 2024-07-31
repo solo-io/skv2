@@ -154,10 +154,16 @@ spec:
             - ALL
 {{- end }}
 {{- end }}
-      {{- if $glooMgmtServerImage.pullSecret }}
-      imagePullSecrets:
-        - name: {{ $glooMgmtServerImage.pullSecret }}
-      {{- end}}
+{{- $pullSecrets := (list) -}}
+{{- if $glooMgmtServerImage.pullSecret }}
+  {{- $pullSecrets = concat $pullSecrets (list (dict "name" $glooMgmtServerImage.pullSecret)) -}}
+{{- end }}
+{{- if $glooMgmtServer.imagePullSecrets }}
+  {{- $pullSecrets = concat $pullSecrets $glooMgmtServer.imagePullSecrets -}}
+{{- end }}
+{{- if gt (len $pullSecrets) 0 -}}
+  {{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- end }}
 {{- end }} {{/* define "gloo-mgmt-server.deploymentSpec" */}}
 
 {{/* Render gloo-mgmt-server deployment template with overrides from values*/}}
@@ -325,10 +331,16 @@ spec:
             drop:
             - ALL
 {{- end }}
-      {{- if $glooAgentImage.pullSecret }}
-      imagePullSecrets:
-        - name: {{ $glooAgentImage.pullSecret }}
-      {{- end}}
+{{- $pullSecrets := (list) -}}
+{{- if $glooAgentImage.pullSecret }}
+  {{- $pullSecrets = concat $pullSecrets (list (dict "name" $glooAgentImage.pullSecret)) -}}
+{{- end }}
+{{- if $glooAgent.imagePullSecrets }}
+  {{- $pullSecrets = concat $pullSecrets $glooAgent.imagePullSecrets -}}
+{{- end }}
+{{- if gt (len $pullSecrets) 0 -}}
+  {{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- end }}
 {{- end }} {{/* define "gloo-agent.deploymentSpec" */}}
 
 {{/* Render gloo-agent deployment template with overrides from values*/}}

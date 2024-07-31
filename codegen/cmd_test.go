@@ -3,7 +3,9 @@ package codegen_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -41,6 +43,125 @@ var _ = Describe("Cmd", func() {
 	skv2Imports.External["github.com/solo-io/cue"] = []string{
 		"encoding/protobuf/cue/cue.proto",
 	}
+
+	Describe("image pull secrets", Ordered, func() {
+		BeforeAll(func() {
+			cmd := &Command{
+				Chart: &Chart{
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+					Operators: []Operator{{
+						Name: "painter",
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+							},
+						},
+						Values: map[string]any{
+							"imagePullSecrets": []v1.LocalObjectReference{},
+						},
+					}},
+				},
+				ManifestRoot: "codegen/test/chart/image-pull-secrets",
+			}
+			Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+		})
+		DescribeTable(
+			"using",
+			func(values any, shouldBeEmpty bool, expected ...v1.LocalObjectReference) {
+				manifests := helmTemplate("./test/chart/image-pull-secrets", values)
+
+				var (
+					renderedDeployment *appsv1.Deployment
+					decoder            = kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(manifests), 4096)
+				)
+				for {
+					var deployment appsv1.Deployment
+					if err := decoder.Decode(&deployment); errors.Is(err, io.EOF) {
+						break
+					}
+
+					if deployment.GetName() == "painter" && deployment.Kind == "Deployment" {
+						renderedDeployment = &deployment
+						break
+					}
+				}
+				Expect(renderedDeployment).NotTo(BeNil())
+				if shouldBeEmpty {
+					Expect(renderedDeployment.Spec.Template.Spec.ImagePullSecrets).To(BeEmpty())
+					return
+				}
+
+				Expect(renderedDeployment.Spec.Template.Spec.ImagePullSecrets).To(ContainElements(expected))
+			},
+			Entry(
+				"empty",
+				map[string]any{
+					"painter": map[string]any{
+						"enabled": true,
+					},
+				},
+				true,
+				nil,
+			),
+			Entry(
+				"legacy pullSecret field",
+				map[string]any{
+					"painter": map[string]any{
+						"enabled": true,
+						"image": map[string]any{
+							"pullSecret": "a-registry",
+						},
+					},
+				},
+				false,
+				v1.LocalObjectReference{Name: "a-registry"},
+			),
+			Entry(
+				"imagePullSecrets field",
+				map[string]any{
+					"painter": map[string]any{
+						"enabled": true,
+						"imagePullSecrets": []v1.LocalObjectReference{{
+							Name: "b-registry",
+						}},
+					},
+				},
+				false,
+				v1.LocalObjectReference{Name: "b-registry"},
+			),
+			Entry(
+				"imagePullSecrets field with legacy",
+				map[string]any{
+					"painter": map[string]any{
+						"enabled": true,
+						"image": map[string]any{
+							"pullSecret": "a-registry",
+						},
+						"imagePullSecrets": []v1.LocalObjectReference{{
+							Name: "b-registry",
+						}},
+					},
+				},
+				false,
+				v1.LocalObjectReference{Name: "a-registry"}, v1.LocalObjectReference{Name: "b-registry"},
+			),
+		)
+	})
+
 	It("env variable priority", func() {
 		cmd := &Command{
 			Chart: &Chart{
@@ -58,7 +179,7 @@ var _ = Describe("Cmd", func() {
 					Name: "painter",
 					Deployment: Deployment{
 						Container: Container{
-							Image: Image{Repository: "painter", Tag: "v0.0.1"},
+							Image: Image{Repository: "painter", Registry: "gcr.io/painter", Tag: "v0.0.1"},
 							Env:   []v1.EnvVar{{Name: "ENV_VAR", Value: "default"}},
 							TemplateEnvVars: []TemplateEnvVar{
 								{
@@ -3156,18 +3277,19 @@ func helmTemplate(path string, values interface{}) []byte {
 
 	defer os.RemoveAll(helmValuesFile.Name())
 
-	cc := exec.Command("helm", "template",
+	args := []string{
+		"template",
 		path,
 		"--values", helmValuesFile.Name(),
-	)
-	out, err := cc.CombinedOutput()
-	defer func(e error) {
-		if e == nil {
-			return
-		}
-		fmt.Printf("[Cameron]: failed to run %s\n", cc.String())
-	}(err)
+	}
 
+	if os.Getenv("HELM_DEBUG") != "" {
+		args = append(args, "--debug")
+	}
+
+	cc := exec.Command("helm", args...)
+
+	out, err := cc.CombinedOutput()
 	ExpectWithOffset(0, err).NotTo(HaveOccurred(), string(out))
 	return out
 }
