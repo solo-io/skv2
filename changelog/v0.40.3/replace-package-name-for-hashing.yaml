@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/17070
+    resolvesIssue: false
+    description: >
+      Add option to find and replace portion of the package name of a proto as it is used in the hash function.
+      It is used to provide an option for users to maintain the hashing logic when the package name of a proto changes.

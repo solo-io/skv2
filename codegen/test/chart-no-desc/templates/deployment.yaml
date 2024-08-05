@@ -50,15 +50,13 @@ spec:
         imagePullPolicy: {{ $painterImage.pullPolicy }}
         args:
         - foo
+        env:
 {{- if $painter.env }}
-        env:
-{{ toYaml $painter.env | indent 10 }} 
-{{- else if $painter.extraEnvs }}
-        env:
+{{- toYaml $painter.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $painter.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $painter.resources }}
@@ -105,15 +103,15 @@ spec:
         args:
         - bar
         - baz
+  {{- if or $palette.env $palette.extraEnvs }}
+        env:
+  {{- end }}
 {{- if $palette.env }}
-        env:
-{{ toYaml $palette.env | indent 10 }} 
-{{- else if $palette.extraEnvs }}
-        env:
+{{- toYaml $palette.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $palette.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         volumeMounts:
         - mountPath: /etc/paint
@@ -154,10 +152,16 @@ spec:
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 60
-      {{- if $painterImage.pullSecret }}
-      imagePullSecrets:
-        - name: {{ $painterImage.pullSecret }}
-      {{- end}}
+{{- $pullSecrets := (list) -}}
+{{- if $painterImage.pullSecret }}
+  {{- $pullSecrets = concat $pullSecrets (list (dict "name" $painterImage.pullSecret)) -}}
+{{- end }}
+{{- if $painter.imagePullSecrets }}
+  {{- $pullSecrets = concat $pullSecrets $painter.imagePullSecrets -}}
+{{- end }}
+{{- if gt (len $pullSecrets) 0 -}}
+  {{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- end }}
 {{- end }} {{/* define "painter.deploymentSpec" */}}
 
 {{/* Render painter deployment template with overrides from values*/}}

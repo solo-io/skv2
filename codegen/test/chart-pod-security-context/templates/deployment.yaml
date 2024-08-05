@@ -43,15 +43,15 @@ spec:
       - name: painter
         image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
         imagePullPolicy: {{ $painterImage.pullPolicy }}
+  {{- if or $painter.env $painter.extraEnvs }}
+        env:
+  {{- end }}
 {{- if $painter.env }}
-        env:
-{{ toYaml $painter.env | indent 10 }} 
-{{- else if $painter.extraEnvs }}
-        env:
+{{- toYaml $painter.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $painter.extraEnvs }}
           - name: {{ $name }}
-{{- $item | toYaml | nindent 12 }}
+  {{- $item | toYaml | nindent 12 }}
 {{- end }}
         resources:
 {{- if $painter.resources }}
@@ -83,10 +83,16 @@ spec:
             drop:
             - ALL
 {{- end }}
-      {{- if $painterImage.pullSecret }}
-      imagePullSecrets:
-        - name: {{ $painterImage.pullSecret }}
-      {{- end}}
+{{- $pullSecrets := (list) -}}
+{{- if $painterImage.pullSecret }}
+  {{- $pullSecrets = concat $pullSecrets (list (dict "name" $painterImage.pullSecret)) -}}
+{{- end }}
+{{- if $painter.imagePullSecrets }}
+  {{- $pullSecrets = concat $pullSecrets $painter.imagePullSecrets -}}
+{{- end }}
+{{- if gt (len $pullSecrets) 0 -}}
+  {{- (dict "imagePullSecrets" $pullSecrets) | toYaml | nindent 6 }}
+{{- end }}
 {{- end }} {{/* define "painter.deploymentSpec" */}}
 
 {{/* Render painter deployment template with overrides from values*/}}

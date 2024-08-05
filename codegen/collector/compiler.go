@@ -56,6 +56,10 @@ type ProtocOptions struct {
 
 	// Extra flags to provide to invocations of protoc
 	ProtocExtraFlags []string
+
+	// When set, it will replace the value before the "=" with the value after it in the hash function of the generated code.
+	// This is use to maintain backward compatibility of the hash function in the case where the package name changes.
+	TransformPackageForHash string
 }
 
 type protoCompiler struct {
@@ -198,9 +202,13 @@ func (p *protoCompiler) writeDescriptors(protoFile, toFile string, imports []str
 	gogoArgs := append(defaultGogoArgs, p.customArgs...)
 
 	if compileProtos {
+		extArgs := gogoArgs
+		if p.protocOptions.TransformPackageForHash != "" {
+			extArgs = append(extArgs, fmt.Sprintf("transform_package_for_hash=%s", p.protocOptions.TransformPackageForHash))
+		}
 		cmd.Args = append(cmd.Args,
 			"--go_out="+strings.Join(gogoArgs, ",")+":"+p.descriptorOutDir,
-			"--ext_out="+strings.Join(gogoArgs, ",")+":"+p.descriptorOutDir,
+			"--ext_out="+strings.Join(extArgs, ",")+":"+p.descriptorOutDir,
 		)
 
 		// Externally specify mappings between proto files and generated Go code, for proto source files that do not specify `go_package`

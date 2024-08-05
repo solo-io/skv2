@@ -10,12 +10,12 @@ import (
 	reflect "reflect"
 	sync "sync"
 
-	any1 "github.com/golang/protobuf/ptypes/any"
-	_struct "github.com/golang/protobuf/ptypes/struct"
-	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	_ "github.com/solo-io/cue/encoding/protobuf/cue"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	anypb "google.golang.org/protobuf/types/known/anypb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 const (
@@ -85,7 +85,7 @@ type PaintSpec struct {
 	//	*PaintSpec_Acrylic
 	//	*PaintSpec_Oil
 	PaintType  isPaintSpec_PaintType `protobuf_oneof:"paintType"`
-	MyFavorite *any1.Any             `protobuf:"bytes,4,opt,name=my_favorite,json=myFavorite,proto3" json:"my_favorite,omitempty"`
+	MyFavorite *anypb.Any            `protobuf:"bytes,4,opt,name=my_favorite,json=myFavorite,proto3" json:"my_favorite,omitempty"`
 	// OpenAPI gen test for recursive fields
 	RecursiveType *PaintSpec_RecursiveType `protobuf:"bytes,5,opt,name=recursive_type,json=recursiveType,proto3" json:"recursive_type,omitempty"`
 }
@@ -150,7 +150,7 @@ func (x *PaintSpec) GetOil() *OilType {
 	return nil
 }
 
-func (x *PaintSpec) GetMyFavorite() *any1.Any {
+func (x *PaintSpec) GetMyFavorite() *anypb.Any {
 	if x != nil {
 		return x.MyFavorite
 	}
@@ -439,7 +439,7 @@ type ClusterResourceSpec struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Imported *wrappers.StringValue `protobuf:"bytes,1,opt,name=imported,proto3" json:"imported,omitempty"`
+	Imported *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=imported,proto3" json:"imported,omitempty"`
 }
 
 func (x *ClusterResourceSpec) Reset() {
@@ -474,7 +474,7 @@ func (*ClusterResourceSpec) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_skv2_codegen_test_test_api_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *ClusterResourceSpec) GetImported() *wrappers.StringValue {
+func (x *ClusterResourceSpec) GetImported() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Imported
 	}
@@ -487,7 +487,7 @@ type PaintSpec_RecursiveType struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ProtobufValue          *_struct.Value             `protobuf:"bytes,4,opt,name=protobuf_value,json=protobufValue,proto3" json:"protobuf_value,omitempty"`
+	ProtobufValue          *structpb.Value            `protobuf:"bytes,4,opt,name=protobuf_value,json=protobufValue,proto3" json:"protobuf_value,omitempty"`
 	RecursiveField         *PaintSpec_RecursiveType   `protobuf:"bytes,1,opt,name=recursive_field,json=recursiveField,proto3" json:"recursive_field,omitempty"`
 	RepeatedRecursiveField []*PaintSpec_RecursiveType `protobuf:"bytes,2,rep,name=repeated_recursive_field,json=repeatedRecursiveField,proto3" json:"repeated_recursive_field,omitempty"`
 	// Ensure that FieldOptions can be defined using package name resolution that starts from the
@@ -527,7 +527,7 @@ func (*PaintSpec_RecursiveType) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_skv2_codegen_test_test_api_proto_rawDescGZIP(), []int{0, 0}
 }
 
-func (x *PaintSpec_RecursiveType) GetProtobufValue() *_struct.Value {
+func (x *PaintSpec_RecursiveType) GetProtobufValue() *structpb.Value {
 	if x != nil {
 		return x.ProtobufValue
 	}
@@ -746,9 +746,9 @@ var file_github_com_solo_io_skv2_codegen_test_test_api_proto_goTypes = []interfa
 	(*PaintSpec_RecursiveType)(nil), // 7: things.test.io.PaintSpec.RecursiveType
 	nil,                             // 8: things.test.io.PaintStatus.NearbyPaintsEntry
 	(*PaintStatus_Location)(nil),    // 9: things.test.io.PaintStatus.Location
-	(*any1.Any)(nil),                // 10: google.protobuf.Any
-	(*wrappers.StringValue)(nil),    // 11: google.protobuf.StringValue
-	(*_struct.Value)(nil),           // 12: google.protobuf.Value
+	(*anypb.Any)(nil),               // 10: google.protobuf.Any
+	(*wrapperspb.StringValue)(nil),  // 11: google.protobuf.StringValue
+	(*structpb.Value)(nil),          // 12: google.protobuf.Value
 }
 var file_github_com_solo_io_skv2_codegen_test_test_api_proto_depIdxs = []int32{
 	2,  // 0: things.test.io.PaintSpec.color:type_name -> things.test.io.PaintColor

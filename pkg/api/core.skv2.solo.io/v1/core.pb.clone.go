@@ -13,9 +13,9 @@ import (
 	"github.com/solo-io/protoc-gen-ext/pkg/clone"
 	"google.golang.org/protobuf/proto"
 
-	github_com_golang_protobuf_ptypes_timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	google_golang_org_protobuf_types_known_timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 
-	github_com_golang_protobuf_ptypes_wrappers "github.com/golang/protobuf/ptypes/wrappers"
+	google_golang_org_protobuf_types_known_wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // ensure the imports are used
@@ -94,15 +94,15 @@ func (m *TypedObjectRef) Clone() proto.Message {
 	target = &TypedObjectRef{}
 
 	if h, ok := interface{}(m.GetApiGroup()).(clone.Cloner); ok {
-		target.ApiGroup = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.ApiGroup = h.Clone().(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	} else {
-		target.ApiGroup = proto.Clone(m.GetApiGroup()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.ApiGroup = proto.Clone(m.GetApiGroup()).(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	}
 
 	if h, ok := interface{}(m.GetKind()).(clone.Cloner); ok {
-		target.Kind = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Kind = h.Clone().(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	} else {
-		target.Kind = proto.Clone(m.GetKind()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Kind = proto.Clone(m.GetKind()).(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	}
 
 	target.Name = m.GetName()
@@ -121,15 +121,15 @@ func (m *TypedClusterObjectRef) Clone() proto.Message {
 	target = &TypedClusterObjectRef{}
 
 	if h, ok := interface{}(m.GetApiGroup()).(clone.Cloner); ok {
-		target.ApiGroup = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.ApiGroup = h.Clone().(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	} else {
-		target.ApiGroup = proto.Clone(m.GetApiGroup()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.ApiGroup = proto.Clone(m.GetApiGroup()).(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	}
 
 	if h, ok := interface{}(m.GetKind()).(clone.Cloner); ok {
-		target.Kind = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Kind = h.Clone().(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	} else {
-		target.Kind = proto.Clone(m.GetKind()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Kind = proto.Clone(m.GetKind()).(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	}
 
 	target.Name = m.GetName()
@@ -156,15 +156,15 @@ func (m *Status) Clone() proto.Message {
 	target.ObservedGeneration = m.GetObservedGeneration()
 
 	if h, ok := interface{}(m.GetProcessingTime()).(clone.Cloner); ok {
-		target.ProcessingTime = h.Clone().(*github_com_golang_protobuf_ptypes_timestamp.Timestamp)
+		target.ProcessingTime = h.Clone().(*google_golang_org_protobuf_types_known_timestamppb.Timestamp)
 	} else {
-		target.ProcessingTime = proto.Clone(m.GetProcessingTime()).(*github_com_golang_protobuf_ptypes_timestamp.Timestamp)
+		target.ProcessingTime = proto.Clone(m.GetProcessingTime()).(*google_golang_org_protobuf_types_known_timestamppb.Timestamp)
 	}
 
 	if h, ok := interface{}(m.GetOwner()).(clone.Cloner); ok {
-		target.Owner = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Owner = h.Clone().(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	} else {
-		target.Owner = proto.Clone(m.GetOwner()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Owner = proto.Clone(m.GetOwner()).(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	}
 
 	return target
@@ -227,9 +227,9 @@ func (m *PolicyTargetReference) Clone() proto.Message {
 	target.Name = m.GetName()
 
 	if h, ok := interface{}(m.GetNamespace()).(clone.Cloner); ok {
-		target.Namespace = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Namespace = h.Clone().(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	} else {
-		target.Namespace = proto.Clone(m.GetNamespace()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Namespace = proto.Clone(m.GetNamespace()).(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	}
 
 	return target
@@ -250,15 +250,15 @@ func (m *PolicyTargetReferenceWithSectionName) Clone() proto.Message {
 	target.Name = m.GetName()
 
 	if h, ok := interface{}(m.GetNamespace()).(clone.Cloner); ok {
-		target.Namespace = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Namespace = h.Clone().(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	} else {
-		target.Namespace = proto.Clone(m.GetNamespace()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.Namespace = proto.Clone(m.GetNamespace()).(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	}
 
 	if h, ok := interface{}(m.GetSectionName()).(clone.Cloner); ok {
-		target.SectionName = h.Clone().(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.SectionName = h.Clone().(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	} else {
-		target.SectionName = proto.Clone(m.GetSectionName()).(*github_com_golang_protobuf_ptypes_wrappers.StringValue)
+		target.SectionName = proto.Clone(m.GetSectionName()).(*google_golang_org_protobuf_types_known_wrapperspb.StringValue)
 	}
 
 	return target
