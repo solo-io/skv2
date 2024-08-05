@@ -83,6 +83,8 @@ type OpenApiProtocExecutor struct {
 	// Whether to exclude kubebuilder markers and validations (such as PreserveUnknownFields, MinItems, default, and all CEL rules)
 	// Type and Required markers will be included regardless
 	DisableKubeMarkers bool
+
+	IgnoredKubeMarkers []string
 }
 
 func (o *OpenApiProtocExecutor) Execute(protoFile string, toFile string, imports []string) error {
@@ -109,11 +111,13 @@ func (o *OpenApiProtocExecutor) Execute(protoFile string, toFile string, imports
 	_ = os.Mkdir(directoryPath, os.ModePerm)
 
 	cmd.Args = append(cmd.Args,
-		fmt.Sprintf("--openapi_out=yaml=true,single_file=false,include_description=true,multiline_description=true,enum_as_int_or_string=%v,proto_oneof=true,int_native=true,additional_empty_schema=%v,disable_kube_markers=%v:%s",
+		fmt.Sprintf("--openapi_out=yaml=true,single_file=false,include_description=true,multiline_description=true,enum_as_int_or_string=%v,proto_oneof=true,int_native=true,additional_empty_schema=%v,disable_kube_markers=%v:%s,ignored_kube_markers=%s",
 			o.EnumAsIntOrString,
 			strings.Join(o.MessagesWithEmptySchema, "+"),
 			o.DisableKubeMarkers,
-			directoryPath),
+			directoryPath,
+			strings.Join(o.IgnoredKubeMarkers, "+"),
+		),
 	)
 
 	cmd.Args = append(cmd.Args,

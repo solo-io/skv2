@@ -22,6 +22,8 @@ type ValidationSchemaOptions struct {
 	// Type and Required markers will be included regardless
 	// Default: false
 	DisableKubeMarkers bool
+
+	IgnoredKubeMarkers []string
 }
 
 // prevent k8s from validating proto.Any fields (since it's unstructured)
