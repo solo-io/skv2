@@ -84,6 +84,7 @@ type OpenApiProtocExecutor struct {
 	// Type and Required markers will be included regardless
 	DisableKubeMarkers bool
 
+	// A list of kube markers that should be ignored while generating an open api schema
 	IgnoredKubeMarkers []string
 }
 
@@ -106,19 +107,16 @@ func (o *OpenApiProtocExecutor) Execute(protoFile string, toFile string, imports
 	_, fileName := filepath.Split(protoFile)
 	directoryName := fileName[0 : len(fileName)-len(filepath.Ext(fileName))]
 
+	baseArgument := "--openapi_out=yaml=true,single_file=false,include_description=true,multiline_description=true,proto_oneof=true,int_native=true"
+	baseArgument = fmt.Sprintf("%s,enum_as_int_or_string=%v", baseArgument, o.EnumAsIntOrString)
+	baseArgument = fmt.Sprintf("%s,additional_empty_schema=%v", baseArgument, strings.Join(o.MessagesWithEmptySchema, "+"))
+	baseArgument = fmt.Sprintf("%s,disable_kube_markers=%v", baseArgument, o.DisableKubeMarkers)
+	baseArgument = fmt.Sprintf("%s,ignored_kube_markers=%v", baseArgument, strings.Join(o.IgnoredKubeMarkers, "+"))
+
 	// Create the directory
 	directoryPath := filepath.Join(o.OutputDir, directoryName)
 	_ = os.Mkdir(directoryPath, os.ModePerm)
-
-	cmd.Args = append(cmd.Args,
-		fmt.Sprintf("--openapi_out=yaml=true,single_file=false,include_description=true,multiline_description=true,enum_as_int_or_string=%v,proto_oneof=true,int_native=true,additional_empty_schema=%v,disable_kube_markers=%v:%s,ignored_kube_markers=%s",
-			o.EnumAsIntOrString,
-			strings.Join(o.MessagesWithEmptySchema, "+"),
-			o.DisableKubeMarkers,
-			directoryPath,
-			strings.Join(o.IgnoredKubeMarkers, "+"),
-		),
-	)
+	cmd.Args = append(cmd.Args, fmt.Sprintf("%s:%s", baseArgument, directoryPath))
 
 	cmd.Args = append(cmd.Args,
 		"-o",
