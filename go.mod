@@ -44,7 +44,7 @@ require (
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.1
 	github.com/solo-io/protoc-gen-ext v0.0.20
-	github.com/solo-io/protoc-gen-openapi v0.2.4
+	github.com/solo-io/protoc-gen-openapi v0.2.5
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.26.0
 	golang.org/x/exp v0.0.0-20220921164117-439092de6870
