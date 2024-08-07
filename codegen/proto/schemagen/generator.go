@@ -23,6 +23,7 @@ type ValidationSchemaOptions struct {
 	// Default: false
 	DisableKubeMarkers bool
 
+	// A list of kube markers that should be ignored while generating an open api schema
 	IgnoredKubeMarkers []string
 }
 
