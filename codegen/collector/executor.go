@@ -84,7 +84,7 @@ type OpenApiProtocExecutor struct {
 	// Type and Required markers will be included regardless
 	DisableKubeMarkers bool
 
-	// A list of kube markers that should be ignored while generating an open api schema
+	// A list of kube markers that should be ignored while generating an open api schema. If empty, no kube markers will be ignored.
 	IgnoredKubeMarkers []string
 }
 
