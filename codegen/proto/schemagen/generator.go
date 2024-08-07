@@ -23,7 +23,7 @@ type ValidationSchemaOptions struct {
 	// Default: false
 	DisableKubeMarkers bool
 
-	// A list of substrings will be used to identify kubebuilder markers to ignore. When multiple are
+	// when set, this list of substrings will be used to identify kubebuilder markers to ignore. When multiple are
 	// supplied, this will function as a logical OR i.e. any rule which contains a provided substring will be ignored
 	IgnoredKubeMarkerSubstrings []string
 }
