@@ -21,6 +21,11 @@ Expressions evaluating SKv2 Config use "[[" and "]]"
 [[- $customServiceLabels := $operator.Service.CustomLabels -]]
 [[- $customServiceAnnotations := $operator.Service.CustomAnnotations ]]
 
+[[/* optional values */]]
+[[- $globalFloatingUserIdPath := "false" -]]
+[[- if $.Values -]]
+    [[ $globalFloatingUserIdPath = $.Values.globalFloatingUserIdPath ]]
+[[- end ]]
 {{- $[[ $operatorVar ]] := [[ (opVar $operator) ]] }}
 ---
 [[- $operatorEnabledCondition := printf "\n{{ if $%s.enabled }}\n" $operatorVar ]]
@@ -192,7 +197,7 @@ spec:
           {}
 {{- else}}
           runAsNonRoot: true
-          {{- if not $[[ $operatorVar ]].floatingUserId }}
+          {{- if not (or $[[ $operatorVar ]].floatingUserId [[ $globalFloatingUserIdPath ]]) }}
           runAsUser: {{ printf "%.0f" (float64 $[[ $operatorVar ]].runAsUser) }}
           {{- end }}
           readOnlyRootFilesystem: true
