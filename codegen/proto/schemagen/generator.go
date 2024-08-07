@@ -23,8 +23,9 @@ type ValidationSchemaOptions struct {
 	// Default: false
 	DisableKubeMarkers bool
 
-	// A list of kube markers that should be ignored while generating an open api schema. If empty, no kube markers will be ignored.
-	IgnoredKubeMarkers []string
+	// A list of substrings will be used to identify kubebuilder markers to ignore. When multiple are
+	// supplied, this will function as a logical OR i.e. any rule which contains a provided substring will be ignored
+	IgnoredKubeMarkerSubstrings []string
 }
 
 // prevent k8s from validating proto.Any fields (since it's unstructured)
