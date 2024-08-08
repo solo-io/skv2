@@ -1,0 +1,9 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo/issues/5034
+    resolvesIssue: false
+    description: |
+      Adds the ability to render deployments templates with a reference global floatingUserId field. This field is used to globally unset
+      the runAsUser field in container securityContexts (like the painter's floatingUserId) and supresses the rendering of the
+      pod's securityContext. This feature is enabled by setting the GlobalFloatingUserIdPath in the Operator to the path of the global field,
+      and defaults to an empty string.
