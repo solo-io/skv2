@@ -22,6 +22,10 @@ type ValidationSchemaOptions struct {
 	// Type and Required markers will be included regardless
 	// Default: false
 	DisableKubeMarkers bool
+
+	// when set, this list of substrings will be used to identify kubebuilder markers to ignore. When multiple are
+	// supplied, this will function as a logical OR i.e. any rule which contains a provided substring will be ignored
+	IgnoredKubeMarkerSubstrings []string
 }
 
 // prevent k8s from validating proto.Any fields (since it's unstructured)
