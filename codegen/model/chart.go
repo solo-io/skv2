@@ -98,6 +98,9 @@ type Operator struct {
 	//
 	// E.g: `and (.Values.operator.customValueA) (.Values.operator.customValueB)`
 	CustomEnableCondition string
+
+	// Optional: if specified, will use this path in rendering template logic
+	GlobalFloatingUserIdPath string
 }
 
 func (o Operator) FormattedName() string {
