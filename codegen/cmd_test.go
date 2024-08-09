@@ -2134,6 +2134,105 @@ roleRef:
 			}),
 	)
 
+	DescribeTable("rendering with GlobalFloatingUserId",
+		func(floatingUserId bool) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+							GlobalFloatingUserIdPath: ".Values.global.securitySettings.floatingUserId",
+						},
+					},
+					// Because the global override comes from .Values it has to be set here, not on the painter
+					Values: map[string]interface{}{
+						"global": map[string]interface{}{
+							"securitySettings": map[string]interface{}{
+								"floatingUserId": floatingUserId,
+							},
+						},
+					},
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			runAsUser := 202020
+			runAsGroup := 999
+			painterValues := map[string]interface{}{
+				"enabled":   true,
+				"runAsUser": runAsUser,
+				"podSecurityContext": map[string]interface{}{
+					"runAsUser": runAsUser,
+					"fsGroup":   runAsGroup,
+				},
+			}
+
+			helmValues := map[string]interface{}{"painter": painterValues}
+
+			renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedRunAsUser := renderedDeployment.Spec.Template.Spec.Containers[0].SecurityContext.RunAsUser
+			renderedPodSecurityContext := renderedDeployment.Spec.Template.Spec.SecurityContext
+
+			// When using the global floatingUserId, the container runAsUser and RunAsUser should not be set
+			if floatingUserId {
+				Expect(renderedRunAsUser).To(BeNil())
+				Expect(renderedPodSecurityContext).To(BeNil())
+			} else {
+				Expect(*renderedRunAsUser).To(Equal(int64(runAsUser)))
+				Expect(*renderedPodSecurityContext.RunAsUser).To(Equal(int64(runAsUser)))
+				Expect(*renderedPodSecurityContext.FSGroup).To(Equal(int64(runAsGroup)))
+			}
+
+		},
+		Entry("Global floatingUserId is true", true),
+		Entry("Global floatingUserId is false", false),
+	)
+
 	Describe("rendering template env vars", func() {
 		var tmpDir string
 
