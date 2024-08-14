@@ -10,11 +10,15 @@ import (
 
 const ClusterAnnotation = "cluster.solo.io/cluster"
 
-var builderPool = sync.Pool{
-	New: func() any {
-		return &strings.Builder{}
-	},
-}
+var (
+	builderPool = sync.Pool{
+		New: func() any {
+			return &strings.Builder{}
+		},
+	}
+	// global lock for get/set cluster name annotation
+	clusterNameLock = &sync.Mutex{}
+)
 
 // ResourceId represents a global identifier for a k8s resource.
 type ResourceId interface {
@@ -61,6 +65,7 @@ func (c clusterResourceId) GetAnnotations() map[string]string {
 	return c.annotations
 }
 
+// this is specifically to support k8s <= 1.23
 type deprecatedClusterResourceId interface {
 	GetName() string
 	GetNamespace() string
@@ -74,24 +79,32 @@ type deprecatedZZZClusterResourceId interface {
 	GetZZZ_DeprecatedClusterName() string
 }
 
-// ConvertRefToId converts a ClusterObjectRef to a struct that implements the ClusterResourceId interface
-// Will not set an empty cluster name over an existing cluster name
+// ConvertRefToId converts a ClusterObjectRef to a struct that implements the ClusterResourceId interface.
+// Will not set an empty cluster name over an existing cluster name.
 func ConvertRefToId(ref deprecatedClusterResourceId) ClusterResourceId {
-	// if ref is already stores annotations then we need to store the updates
-	anno := map[string]string{}
+	// if ref already stores annotations then we need to store the updates
+	annotations := map[string]string{}
 
-	if cri, ok := ref.(ClusterResourceId); ok {
-		anno = cri.GetAnnotations()
+	cri, isCri := ref.(ClusterResourceId)
+	if isCri {
+		annotations = cri.GetAnnotations()
 	}
-	cn := ref.GetClusterName()
-	if cn != "" {
-		anno[ClusterAnnotation] = cn
+
+	clusterName := ref.GetClusterName()
+	if clusterName != "" {
+		if isCri {
+			clusterNameLock.Lock()
+			annotations[ClusterAnnotation] = clusterName
+			clusterNameLock.Unlock()
+		} else {
+			annotations[ClusterAnnotation] = clusterName
+		}
 	}
 
 	return clusterResourceId{
 		name:        ref.GetName(),
 		namespace:   ref.GetNamespace(),
-		annotations: anno,
+		annotations: annotations,
 	}
 }
 
@@ -104,20 +117,35 @@ func getDeprecatedClusterName(id ResourceId) string {
 	return ""
 }
 
+// GetClusterName returns the cluster name defined in the given object's cluster annotation.
+// If annotations is nil or the cluster annotation value is empty, then the object is checked for the deprecated metadata cluster fields.
 func GetClusterName(id ClusterResourceId) string {
 	annotations := id.GetAnnotations()
-	if annotations == nil || annotations[ClusterAnnotation] == "" {
+
+	clusterNameLock.Lock()
+	clusterName := annotations[ClusterAnnotation]
+	clusterNameLock.Unlock()
+
+	if annotations == nil {
+		return getDeprecatedClusterName(id)
+	}
+	if clusterName == "" {
 		return getDeprecatedClusterName(id)
 	}
 
-	return annotations[ClusterAnnotation]
+	return clusterName
 }
 
 func SetClusterName(obj client.Object, cluster string) {
 	if obj.GetAnnotations() == nil {
 		obj.SetAnnotations(map[string]string{})
 	}
-	obj.GetAnnotations()[ClusterAnnotation] = cluster
+
+	annotations := obj.GetAnnotations()
+
+	clusterNameLock.Lock()
+	annotations[ClusterAnnotation] = cluster
+	clusterNameLock.Unlock()
 }
 
 // KeyWithSeparator constructs a string consisting of the field values of the given resource id,
