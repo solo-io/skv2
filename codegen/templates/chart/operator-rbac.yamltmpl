@@ -91,10 +91,11 @@ Prefixed with '#' to avoid printing variable values in yaml, per https://github.
 [[- end ]]
 
 {{- range $entry := $[[ $operatorVar ]].namespacedRbac }}
-# If resources were chosen but no namespaces were chosen, default to restricting those resources to the Release.Namespace.
-  {{ if and (eq (len $.Values.entry.namespaces) 0) (ge (len ($.Values.entry.resources) 0)) }}
-    {{- set $[[ $operatorVar ]]NsToResources {{ .Release.Namespace }} (concat $entry.resources (get $[[ $operatorVar ]]NsToResources {{ .Release.Namespace }} | default list) | mustUniq) }}
+  # If resources were chosen but no namespaces were chosen, default to restricting those resources to the Release.Namespace.
+  {{ if and (eq (len $entry.namespaces) 0) (ge (len ($entry.resources) 0)) }}
+    {{- set $[[ $operatorVar ]]NsToResources $.Release.Namespace (concat $entry.resources (get $[[ $operatorVar ]]NsToResources $.Release.Namespace | default list) | mustUniq) }}
   {{- end }}
+  # Otherwise, iterate through each of the namespaces and resources listed
   {{- range $ns := $entry.namespaces }}
     {{- set $[[ $operatorVar ]]NsToResources $ns (concat $entry.resources (get $[[ $operatorVar ]]NsToResources $ns | default list) | mustUniq) }}
   {{- end }}
