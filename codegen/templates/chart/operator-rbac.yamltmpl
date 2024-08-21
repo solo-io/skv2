@@ -92,7 +92,7 @@ Prefixed with '#' to avoid printing variable values in yaml, per https://github.
 
 {{- range $entry := $[[ $operatorVar ]].namespacedRbac }}
 [[- /*  If resources were chosen but no namespaces were chosen, default to restricting those resources to the Release.Namespace. */]]
-  {{- if and (eq (len $entry.namespaces) 0) (ge (len $entry.resources) 0) }}
+  {{- if and (eq (len $entry.namespaces) 0) (ge (len $entry.resources) 1) }}
     {{- set $[[ $operatorVar ]]NsToResources $.Release.Namespace ($entry.resources | mustUniq) }}
   {{- end }}
 [[- /*  Otherwise, iterate through each of the namespaces and resources listed */]]
