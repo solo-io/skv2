@@ -42,6 +42,9 @@ roleRef:
 {{- $painterSupportedResources = append $painterSupportedResources "secrets" }}
 
 {{- range $entry := $painter.namespacedRbac }}
+  {{- if and (eq (len $entry.namespaces) 0) (ge (len $entry.resources) 1) }}
+    {{- set $painterNsToResources $.Release.Namespace ($entry.resources | mustUniq) }}
+  {{- end }}
   {{- range $ns := $entry.namespaces }}
     {{- set $painterNsToResources $ns (concat $entry.resources (get $painterNsToResources $ns | default list) | mustUniq) }}
   {{- end }}
