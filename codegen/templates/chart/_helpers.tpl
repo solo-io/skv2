@@ -61,6 +61,9 @@ version, which merges two named templates.
 {{- $resourcesToNamespaces := dict }}
 {{- range $entry := [[ (opVar $operator) ]].namespacedRbac }}
   {{- range $resource := $entry.resources }}
+    {{- if eq (len $entry.namespaces) 0 }}
+      {{- $_ := set $resourcesToNamespaces $resource (concat $.Release.Namespace (get $resourcesToNamespaces $resource | default list) | mustUniq) }}
+    {{- end }}
     {{- $_ := set $resourcesToNamespaces $resource (concat $entry.namespaces (get $resourcesToNamespaces $resource | default list) | mustUniq) }}
   {{- end }}
 {{- end }}
