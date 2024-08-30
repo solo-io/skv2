@@ -28,7 +28,7 @@ overrideName:
   ports: {}
   # Static user ID to run the containers as. Unused if floatingUserId is 'true'.
   runAsUser: 10101
-  # Arbitrary overrides for the component's [service
+  # Arbitrary overrides for the component's [service spec
   # template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).
   serviceOverrides: null
   # Kubernetes service type. Can be either "ClusterIP", "NodePort", "LoadBalancer",

@@ -25,7 +25,7 @@ weight: 2
 |overrideName.resources|struct|Container resource requirements. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#resourcerequirements-v1-core).| |
 |overrideName.runAsUser|uint32|Static user ID to run the containers as. Unused if floatingUserId is 'true'.|10101|
 |overrideName.securityContext|struct|Container security context. Set to 'false' to omit the security context entirely. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#securitycontext-v1-core).| |
-|overrideName.serviceOverrides|struct|Arbitrary overrides for the component's [service template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).| |
+|overrideName.serviceOverrides|struct|Arbitrary overrides for the component's [service spec template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).| |
 |overrideName.serviceType|string|Kubernetes service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".| |
 |overrideName.sidecars|map[string, struct]|Optional configuration for the deployed containers.|{}|
 |overrideName.sidecars.<MAP_KEY>|struct|Optional configuration for the deployed containers.| |

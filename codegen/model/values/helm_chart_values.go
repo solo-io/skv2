@@ -65,7 +65,7 @@ type UserValues struct {
 
 	// Overrides which can be set by the user
 	DeploymentOverrides *appsv1.Deployment `json:"deploymentOverrides" desc:"Arbitrary overrides for the component's [deployment spec template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/), such as to set resource limits and requests. Format the overrides as YAML or JSON." omitChildren:"true"`
-	ServiceOverrides    *v1.Service        `json:"serviceOverrides" desc:"Arbitrary overrides for the component's [service template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/)." omitChildren:"true"`
+	ServiceOverrides    *v1.Service        `json:"serviceOverrides" desc:"Arbitrary overrides for the component's [service spec template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/)." omitChildren:"true"`
 }
 
 // document values structure for a container
