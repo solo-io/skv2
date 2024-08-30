@@ -599,7 +599,7 @@ var _ = Describe("Cmd", func() {
 
 		painterNode := node.Content[0].Content[1]
 		enabledMapField := painterNode.Content[0]
-		Expect(enabledMapField.HeadComment).To(ContainSubstring("Arbitrary overrides for the component's [deployment spec"))
+		Expect(enabledMapField.HeadComment).To(ContainSubstring("Arbitrary overrides for the component's [deployment"))
 	})
 
 	It("generates from templates using a name override", func() {
