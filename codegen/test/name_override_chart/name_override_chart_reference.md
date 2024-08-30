@@ -9,7 +9,7 @@ weight: 2
 |------|----|-----------|-------------|
 |overrideName|struct|| |
 |overrideName|struct|Configuration for the overrideName deployment.| |
-|overrideName.deploymentOverrides|struct|Arbitrary overrides for the component's [deployment spec template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/), such as to set resource limits and requests. Format the overrides as YAML or JSON.| |
+|overrideName.deploymentOverrides|struct|Arbitrary overrides for the component's [deployment spec](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/), such as to set resource limits and requests. Format the overrides as YAML or JSON.| |
 |overrideName.env[]|slice|Environment variables for the container. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core).|null|
 |overrideName.extraEnvs|struct|Extra environment variables for the container| |
 |overrideName.floatingUserId|bool|Allow the pod to be assigned a dynamic user ID. Required for OpenShift installations.|false|
@@ -25,7 +25,7 @@ weight: 2
 |overrideName.resources|struct|Container resource requirements. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#resourcerequirements-v1-core).| |
 |overrideName.runAsUser|uint32|Static user ID to run the containers as. Unused if floatingUserId is 'true'.|10101|
 |overrideName.securityContext|struct|Container security context. Set to 'false' to omit the security context entirely. For more info, see the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#securitycontext-v1-core).| |
-|overrideName.serviceOverrides|struct|Arbitrary overrides for the component's [service spec template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).| |
+|overrideName.serviceOverrides|struct|Arbitrary overrides for the component's [service spec](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).| |
 |overrideName.serviceType|string|Kubernetes service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".| |
 |overrideName.sidecars|map[string, struct]|Optional configuration for the deployed containers.|{}|
 |overrideName.sidecars.<MAP_KEY>|struct|Optional configuration for the deployed containers.| |
