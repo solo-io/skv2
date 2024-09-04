@@ -3217,10 +3217,39 @@ roleRef:
 		cmd := &Command{
 			RenderProtos: false,
 			Chart: &Chart{
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
 				Operators: []Operator{
 					{
 						Name:                  "painter",
 						CustomEnableCondition: "$painter.enabled",
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+							},
+						},
+						Values: map[string]any{
+							"painter": map[string]any{
+								"enabled": true,
+								"namespacedRbac": map[string]any{
+									"resources":  []string{"secrets"},
+									"namespaces": []string{},
+								},
+							},
+						},
 						ClusterRbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
@@ -3235,26 +3264,14 @@ roleRef:
 								},
 							},
 						},
-					},
-				},
-				Values: nil,
-				Data: Data{
-					ApiVersion:  "v1",
-					Description: "",
-					Name:        "Painting Operator",
-					Version:     "v0.0.1",
-					Home:        "https://docs.solo.io/skv2/latest",
-					Sources: []string{
-						"https://github.com/solo-io/skv2",
-					},
-				},
+					}},
 			},
-			ManifestRoot: "codegen/test/chart",
+			ManifestRoot: "codegen/test/chart/namespaced-rbac",
 		}
 
 		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
 
-		absPath, err := filepath.Abs("./codegen/test/chart/templates/rbac.yaml")
+		absPath, err := filepath.Abs("./codegen/test/chart/namespaced-rbac/templates/rbac.yaml")
 		Expect(err).NotTo(HaveOccurred(), "failed to get abs path")
 
 		rbac, err := os.ReadFile(absPath)
@@ -3358,6 +3375,54 @@ roleRef:
 		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding2Tmpl))
 		Expect(string(rbac)).To(ContainSubstring(roleTmpl))
 		Expect(string(rbac)).To(ContainSubstring(roleBindingTmpl))
+
+		helmValues := map[string]interface{}{
+			"painter": map[string]any{
+				"enabled": true,
+				"namespacedRbac": []any{
+					map[string]any{
+						"resources":  []string{"secrets"},
+						"namespaces": []string{},
+					},
+				},
+			},
+		}
+		renderedManifests := helmTemplate("codegen/test/chart/namespaced-rbac", helmValues)
+		renderedRole := `
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-release-name-default-namespaced
+  namespace: default
+  labels:
+    app: painter
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - GET
+  - LIST
+  - WATCH`
+		renderedRoleBinding := `
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-release-name-default-namespaced
+  namespace: default
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: default
+roleRef:
+  kind: Role
+  name: painter-release-name-default-namespaced
+  apiGroup: rbac.authorization.k8s.io`
+		Expect(string(renderedManifests)).To(ContainSubstring(renderedRole))
+		Expect(string(renderedManifests)).To(ContainSubstring(renderedRoleBinding))
 	})
 })
 
