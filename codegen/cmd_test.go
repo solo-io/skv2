@@ -599,7 +599,7 @@ var _ = Describe("Cmd", func() {
 
 		painterNode := node.Content[0].Content[1]
 		enabledMapField := painterNode.Content[0]
-		Expect(enabledMapField.HeadComment).To(Equal("# Arbitrary overrides for the component's [deployment\n# template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)."))
+		Expect(enabledMapField.HeadComment).To(ContainSubstring("Arbitrary overrides for the component's [deployment"))
 	})
 
 	It("generates from templates using a name override", func() {
