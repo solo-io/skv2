@@ -1,0 +1,30 @@
+changelog:
+- type: BREAKING_CHANGE
+  description: >
+    Bump dependencies to support Kubernetes 1.31
+  issueLink: https://github.com/solo-io/skv2/pull/581
+  resolvesIssue: false
+- type: DEPENDENCY_BUMP
+  dependencyOwner: k8s.io
+  dependencyRepo: api
+  dependencyTag: v0.31.0
+- type: DEPENDENCY_BUMP
+  dependencyOwner: k8s.io
+  dependencyRepo: apiextensions-apiserver
+  dependencyTag: v0.31.0
+- type: DEPENDENCY_BUMP
+  dependencyOwner: k8s.io
+  dependencyRepo: apimachinery
+  dependencyTag: v0.31.0
+- type: DEPENDENCY_BUMP
+  dependencyOwner: k8s.io
+  dependencyRepo: client-go
+  dependencyTag: v0.31.0
+- type: DEPENDENCY_BUMP
+  dependencyOwner: sigs.k8s.io
+  dependencyRepo: code-generator
+  dependencyTag: v0.31.0
+- type: DEPENDENCY_BUMP
+  dependencyOwner: sigs.k8s.io
+  dependencyRepo: controller-runtime
+  dependencyTag: v0.19.0
