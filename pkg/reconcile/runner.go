@@ -89,7 +89,6 @@ func NewLoop(
 }
 
 type runnerReconciler struct {
-	ctx        context.Context
 	mgr        manager.Manager
 	resource   ezkube.Object
 	logger     logr.Logger
