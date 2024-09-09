@@ -105,9 +105,15 @@ spec:
 [[- end ]]
 [[- if $volumes ]]
       volumes:
-[[ toYaml $volumes | indent 6 ]]
+      [[- toYaml $volumes | nindent 6 ]]
+      {{- if [[ (opVar $operator) ]].extraVolumes }}
+        {{- tpl (toYaml [[ (opVar $operator) ]].extraVolumes) . | nindent 6 }}
+      {{- end }}
 [[- else if $conditionalVolumes ]]
       volumes:
+      {{- if [[ (opVar $operator) ]].extraVolumes }}
+        {{- tpl (toYaml [[ (opVar $operator) ]].extraVolumes) . | nindent 6 }}
+      {{- end }}     
 [[- end ]]
 [[- range $v := $conditionalVolumes ]]
 {{- if [[ $v.Condition ]] }}
@@ -178,9 +184,15 @@ spec:
 {{- end }}
 [[- if $container.VolumeMounts ]]
         volumeMounts:
-[[ toYaml $container.VolumeMounts | indent 8 ]]
+        [[- toYaml $container.VolumeMounts | nindent 8 ]]
+        {{- if [[ (opVar $operator) ]].extraVolumeMounts }}
+          {{- tpl (toYaml [[ (opVar $operator) ]].extraVolumeMounts) . | nindent 8 }}
+        {{- end }}        
 [[- else if $container.ConditionalVolumeMounts ]]
         volumeMounts:
+        {{- if [[ (opVar $operator) ]].extraVolumeMounts }}
+          {{- tpl (toYaml [[ (opVar $operator) ]].extraVolumeMounts) . | nindent 8 }}
+        {{- end }}        
 [[- end ]]
 [[- range $v := $container.ConditionalVolumeMounts ]]
 {{- if [[ $v.Condition ]] }}

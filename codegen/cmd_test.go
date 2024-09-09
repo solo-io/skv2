@@ -44,6 +44,240 @@ var _ = Describe("Cmd", func() {
 		"encoding/protobuf/cue/cue.proto",
 	}
 
+	{
+		type TestEntry struct {
+			name                    string
+			values                  any
+			staticVolumes           []v1.Volume
+			conditionalVolumes      []ConditionalVolume
+			staticVolumeMounts      []v1.VolumeMount
+			conditionalVolumeMounts []ConditionalVolumeMount
+		}
+
+		DescribeTable(
+			"extraVolume/extraVolumeMounts",
+			Ordered, func(entry TestEntry, expectedVolumes, expectedVolumeMounts int) {
+				cmd := &Command{
+					Chart: &Chart{
+						Data: Data{
+							ApiVersion:  "v1",
+							Description: "",
+							Name:        "Painting Operator",
+							Version:     "v0.0.1",
+							Home:        "https://docs.solo.io/skv2/latest",
+							Sources: []string{
+								"https://github.com/solo-io/skv2",
+							},
+						},
+						Operators: []Operator{{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+									VolumeMounts:            entry.staticVolumeMounts,
+									ConditionalVolumeMounts: entry.conditionalVolumeMounts,
+								},
+								Volumes:            entry.staticVolumes,
+								ConditionalVolumes: entry.conditionalVolumes,
+							},
+						}},
+					},
+					ManifestRoot: fmt.Sprintf("codegen/test/chart/%s", entry.name),
+				}
+				Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+
+				manifests := helmTemplate(fmt.Sprintf("./test/chart/%s", entry.name), entry.values)
+
+				var (
+					renderedDeployment *appsv1.Deployment
+					decoder            = kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(manifests), 4096)
+				)
+				for {
+					var deployment appsv1.Deployment
+					if err := decoder.Decode(&deployment); errors.Is(err, io.EOF) {
+						break
+					}
+
+					if deployment.GetName() == "painter" && deployment.Kind == "Deployment" {
+						renderedDeployment = &deployment
+						break
+					}
+				}
+
+				Expect(renderedDeployment.Spec.Template.Spec.Volumes).To(HaveLen(expectedVolumes))
+
+				Expect(renderedDeployment.Spec.Template.Spec.Containers).To(HaveLen(1))
+
+				Expect(renderedDeployment.Spec.Template.Spec.Containers[0].VolumeMounts).To(HaveLen(expectedVolumes))
+			},
+			Entry(
+				"empty with no volumes",
+				TestEntry{
+					name: "extra-volumes",
+					values: map[string]any{
+						"painter": map[string]any{
+							"enabled": true,
+							"extraVolumes": []v1.Volume{{
+								Name: "extra-certs",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "extra-secret",
+									},
+								},
+							}},
+							"extraVolumeMounts": []v1.VolumeMount{{
+								Name:      "extra-certs",
+								MountPath: "/etc/ssl/certs",
+							}},
+						},
+					},
+				},
+				0,
+				0,
+			),
+			Entry(
+				"with static volumes",
+				TestEntry{
+					name: "static-volumes",
+					values: map[string]any{
+						"painter": map[string]any{
+							"enabled": true,
+							"extraVolumes": []v1.Volume{{
+								Name: "extra-certs",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "extra-secret",
+									},
+								},
+							}},
+							"extraVolumeMounts": []v1.VolumeMount{{
+								Name:      "extra-certs",
+								MountPath: "/etc/ssl/extra",
+							}},
+						},
+					},
+					staticVolumes: []v1.Volume{{
+						Name: "static-certs",
+						VolumeSource: v1.VolumeSource{
+							Secret: &v1.SecretVolumeSource{
+								SecretName: "static-secret",
+							},
+						},
+					}},
+					staticVolumeMounts: []v1.VolumeMount{{
+						Name:      "static-certs",
+						MountPath: "/var/run/secret/static",
+					}},
+				},
+				2,
+				2,
+			),
+			Entry(
+				"with conditional volumes",
+				TestEntry{
+					name: "conditional-volumes",
+					values: map[string]any{
+						"painter": map[string]any{
+							"enabled": true,
+							"extraVolumes": []v1.Volume{{
+								Name: "extra-certs",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "extra-secret",
+									},
+								},
+							}},
+							"extraVolumeMounts": []v1.VolumeMount{{
+								Name:      "extra-certs",
+								MountPath: "/etc/ssl/extra",
+							}},
+						},
+					},
+					conditionalVolumes: []ConditionalVolume{{
+						Condition: ".Values.painter.enabled",
+						Volume: v1.Volume{
+							Name: "conditional-certs",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "conditional-secret",
+								},
+							},
+						},
+					}},
+					conditionalVolumeMounts: []ConditionalVolumeMount{{
+						Condition: ".Values.painter.enabled",
+						VolumeMount: v1.VolumeMount{
+							Name:      "conditional-certs",
+							MountPath: "/var/run/secret/conditional",
+						},
+					}},
+				},
+				2,
+				2,
+			),
+			Entry(
+				"with all volumes",
+				TestEntry{
+					name: "all-volumes",
+					values: map[string]any{
+						"painter": map[string]any{
+							"enabled": true,
+							"extraVolumes": []v1.Volume{{
+								Name: "extra-certs",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "extra-secret",
+									},
+								},
+							}},
+							"extraVolumeMounts": []v1.VolumeMount{{
+								Name:      "extra-certs",
+								MountPath: "/etc/ssl/extra",
+							}},
+						},
+					},
+					staticVolumes: []v1.Volume{{
+						Name: "static-certs",
+						VolumeSource: v1.VolumeSource{
+							Secret: &v1.SecretVolumeSource{
+								SecretName: "static-secret",
+							},
+						},
+					}},
+					conditionalVolumes: []ConditionalVolume{{
+						Condition: ".Values.painter.enabled",
+						Volume: v1.Volume{
+							Name: "conditional-certs",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "conditional-secret",
+								},
+							},
+						},
+					}},
+					staticVolumeMounts: []v1.VolumeMount{{
+						Name:      "static-certs",
+						MountPath: "/var/run/secret/static",
+					}},
+					conditionalVolumeMounts: []ConditionalVolumeMount{{
+						Condition: ".Values.painter.enabled",
+						VolumeMount: v1.VolumeMount{
+							Name:      "conditional-certs",
+							MountPath: "/var/run/secret/conditional",
+						},
+					}},
+				},
+				3,
+				3,
+			),
+		)
+	}
+
 	Describe("image pull secrets", Ordered, func() {
 		BeforeAll(func() {
 			cmd := &Command{

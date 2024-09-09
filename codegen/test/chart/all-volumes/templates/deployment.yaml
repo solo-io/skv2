@@ -13,25 +13,20 @@ kind: Deployment
 metadata:
   labels:
     app: painter
-    deployment: labels
   annotations:
     app.kubernetes.io/name: painter
-    deployment: annotation
   name: painter
   namespace: {{ default .Release.Namespace $.Values.painter.namespace }}
 spec:
   selector:
     matchLabels:
       app: painter
-      pod: labels
   template:
     metadata:
       labels:
         app: painter
-        pod: labels
       annotations:
         app.kubernetes.io/name: painter
-        pod: annotations
     spec:
       serviceAccountName: painter
       {{- /* Override the default podSecurityContext config if it is set. */}}
@@ -40,26 +35,42 @@ spec:
 {{ toYaml $.Values.painter.podSecurityContext | indent 8 }}
 {{- end }}
       volumes:
-      - emptyDir: {}
-        name: paint
+      - name: static-certs
+        secret:
+          secretName: static-secret
       {{- if $.Values.painter.extraVolumes }}
         {{- tpl (toYaml $.Values.painter.extraVolumes) . | nindent 6 }}
       {{- end }}
+{{- if .Values.painter.enabled }}
+      - name: conditional-certs
+        secret:
+          secretName: conditional-secret
+{{- end }}
       containers:
 {{- $painter := $.Values.painter }}
 {{- $painterImage := $painter.image }}
       - name: painter
         image: {{ $painterImage.registry }}/{{ $painterImage.repository }}:{{ $painterImage.tag }}
         imagePullPolicy: {{ $painterImage.pullPolicy }}
-        args:
-        - foo
+  {{- if or $painter.env $painter.extraEnvs }}
         env:
+  {{- end }}
 {{- if $painter.env }}
 {{- toYaml $painter.env | nindent 10 }}
 {{- end }}
 {{- range $name, $item := $painter.extraEnvs }}
           - name: {{ $name }}
   {{- $item | toYaml | nindent 12 }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /var/run/secret/static
+          name: static-certs
+        {{- if $.Values.painter.extraVolumeMounts }}
+          {{- tpl (toYaml $.Values.painter.extraVolumeMounts) . | nindent 8 }}
+        {{- end }}
+{{- if .Values.painter.enabled }}
+        - mountPath: /var/run/secret/conditional
+          name: conditional-certs
 {{- end }}
         resources:
 {{- if $painter.resources }}
@@ -91,73 +102,6 @@ spec:
             drop:
             - ALL
 {{- end }}
-        readinessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
-          initialDelaySeconds: 5
-          periodSeconds: 10
-{{- $palette := $.Values.painter.sidecars.palette }}
-{{- $paletteImage := $palette.image }}
-      - name: palette
-        image: {{ $paletteImage.registry }}/{{ $paletteImage.repository }}:{{ $paletteImage.tag }}
-        imagePullPolicy: {{ $paletteImage.pullPolicy }}
-        args:
-        - bar
-        - baz
-  {{- if or $palette.env $palette.extraEnvs }}
-        env:
-  {{- end }}
-{{- if $palette.env }}
-{{- toYaml $palette.env | nindent 10 }}
-{{- end }}
-{{- range $name, $item := $palette.extraEnvs }}
-          - name: {{ $name }}
-  {{- $item | toYaml | nindent 12 }}
-{{- end }}
-        volumeMounts:
-        - mountPath: /etc/paint
-          name: paint
-        {{- if $.Values.painter.extraVolumeMounts }}
-          {{- tpl (toYaml $.Values.painter.extraVolumeMounts) . | nindent 8 }}
-        {{- end }}
-        resources:
-{{- if $palette.resources }}
-{{ toYaml $palette.resources | indent 10}}
-{{- else}}
-          requests:
-            cpu: 500m
-            memory: 256Mi
-{{- end }}
-        {{- /*
-          Render securityContext configs if it is set.
-          If securityContext is not set, render the default securityContext.
-          If securityContext is set to 'false', render an empty map.
-        */}}
-        securityContext:
-{{- if or ($palette.securityContext) (eq "map[]" (printf "%v" $palette.securityContext)) }}
-{{ toYaml $palette.securityContext | indent 10}}
-{{/* Because securityContext is nil by default we can only perform following conversion if it is a boolean. Skip conditional otherwise. */}}
-{{- else if eq (ternary $palette.securityContext true (eq "bool" (printf "%T" $palette.securityContext))) false }}
-          {}
-{{- else}}
-          runAsNonRoot: true
-          {{- if not $painter.floatingUserId }}
-          runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
-          {{- end }}
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-{{- end }}
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 60
 {{- $pullSecrets := (list) -}}
 {{- if $painterImage.pullSecret }}
   {{- $pullSecrets = concat $pullSecrets (list (dict "name" $painterImage.pullSecret)) -}}
