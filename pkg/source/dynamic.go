@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/contextutils"
 	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -39,7 +40,7 @@ type cachedSource struct {
 
 // the args with which the dynamic source was started
 type startArgs struct {
-	i workqueue.RateLimitingInterface
+	i workqueue.TypedRateLimitingInterface[reconcile.Request]
 }
 
 // DynamicSource implements Dynamic
@@ -65,7 +66,7 @@ func NewDynamicSource(ctx context.Context) *DynamicSource {
 }
 
 // start all the sources
-func (s *DynamicSource) Start(ctx context.Context, i workqueue.RateLimitingInterface) error {
+func (s *DynamicSource) Start(ctx context.Context, i workqueue.TypedRateLimitingInterface[reconcile.Request]) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 

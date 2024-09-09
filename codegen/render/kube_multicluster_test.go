@@ -27,8 +27,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -124,7 +126,7 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 			It("works", func() {
 				cw := watch.NewClusterWatcher(ctx, manager.Options{
 					Cache: cache.Options{
-						DefaultNamespaces: map[string]cache.Config{ns: cache.Config{}},
+						DefaultNamespaces: map[string]cache.Config{ns: {}},
 					},
 				}, watch.RetryOptions{}, nil)
 				err := cw.Run(masterManager)
@@ -194,8 +196,15 @@ var _ = WithRemoteClusterContextDescribe("Multicluster", func() {
 
 			BeforeEach(func() {
 				cw = watch.NewClusterWatcher(ctx, manager.Options{
+					Controller: config.Controller{
+						// see https://github.com/kubernetes-sigs/controller-runtime/issues/2937
+						// in short, our tests reuse the same name (reasonably so) and the controller-runtime
+						// package does not reset the stack of controller names between tests, so we disable
+						// the name validation here.
+						SkipNameValidation: ptr.To(true),
+					},
 					Cache: cache.Options{
-						DefaultNamespaces: map[string]cache.Config{ns: cache.Config{}},
+						DefaultNamespaces: map[string]cache.Config{ns: {}},
 					},
 				}, watch.RetryOptions{}, nil)
 			})
