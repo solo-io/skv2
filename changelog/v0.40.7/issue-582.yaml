@@ -1,0 +1,6 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/skv2/issues/582
+    description: >
+      Support extraVolumes/extraVolumeMounts fields which can be passed in by the user from helm values.
+    skipCI: "false"
