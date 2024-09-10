@@ -19,7 +19,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/google/gnostic-models v0.6.8
 	github.com/google/go-cmp v0.6.0
-	github.com/grafana/pyroscope-go/godeltaprof v0.1.6
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.8
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
 	github.com/iancoleman/strcase v0.2.0
@@ -98,7 +98,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k0kubun/pp v2.3.0+incompatible // indirect
-	github.com/klauspost/compress v1.17.3 // indirect
+	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

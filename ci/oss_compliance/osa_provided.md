@@ -18,10 +18,10 @@ Name|Version|License
 [cmp/internal](https://github.com/google/go-cmp)|v0.6.0|BSD 3-clause "New" or "Revised" License
 [gofuzz/bytesource](https://github.com/google/gofuzz)|v1.2.0|Apache License 2.0
 [google/uuid](https://github.com/google/uuid)|v1.6.0|BSD 3-clause "New" or "Revised" License
-[pyroscope-go/godeltaprof](https://github.com/grafana/pyroscope-go)|v0.1.6|Apache License 2.0
+[pyroscope-go/godeltaprof](https://github.com/grafana/pyroscope-go)|v0.1.8|Apache License 2.0
 [josharian/intern](https://github.com/josharian/intern)|v1.0.0|MIT License
 [json-iterator/go](https://github.com/json-iterator/go)|v1.1.12|MIT License
-[klauspost/compress](https://github.com/klauspost/compress)|v1.17.3|Apache License 2.0
+[klauspost/compress](https://github.com/klauspost/compress)|v1.17.8|Apache License 2.0
 [mailru/easyjson](https://github.com/mailru/easyjson)|v0.7.7|MIT License
 [modern-go/concurrent](https://github.com/modern-go/concurrent)|v0.0.0-20180306012644-bacd9c7ef1dd|Apache License 2.0
 [modern-go/reflect2](https://github.com/modern-go/reflect2)|v1.0.2|Apache License 2.0
