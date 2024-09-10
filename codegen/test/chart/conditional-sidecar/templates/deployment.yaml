@@ -38,6 +38,9 @@ spec:
       - name: license-keys
         secret:
           secretName: license-keys
+      {{- if $.Values.glooMgmtServer.extraVolumes }}
+        {{- tpl (toYaml $.Values.glooMgmtServer.extraVolumes) . | nindent 6 }}
+      {{- end }}
 {{ if and ($.Values.glooAgent.enabled) ($.Values.glooAgent.runAsSidecar) }}
       - name: agent-volume
         secret:
@@ -77,6 +80,9 @@ spec:
         - mountPath: /etc/gloo-mesh/license-keys
           name: license-keys
           readOnly: true
+        {{- if $.Values.glooMgmtServer.extraVolumeMounts }}
+          {{- tpl (toYaml $.Values.glooMgmtServer.extraVolumeMounts) . | nindent 8 }}
+        {{- end }}
         resources:
 {{- if $glooMgmtServer.resources }}
 {{ toYaml $glooMgmtServer.resources | indent 10}}

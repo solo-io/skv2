@@ -23,6 +23,7 @@ install-go-tools: mod-download
 	go install github.com/golang/mock/mockgen@v1.4.4
 	go install github.com/onsi/ginkgo/v2/ginkgo@v2.9.5
 	go install golang.org/x/tools/cmd/goimports
+	go install sigs.k8s.io/kind/cmd/kind@v0.17.0
 
 # proto compiler installation
 PROTOC_VERSION:=3.15.8
@@ -74,18 +75,26 @@ generate-changelog:
 # set TEST_PKG to run a specific test package
 .PHONY: run-tests
 run-tests:
-	PATH=$(DEPSGOBIN):$$PATH ginkgo -r -failFast -trace -progress \
-		-progress \
+	PATH=$(DEPSGOBIN):$$PATH ginkgo -r --fail-fast -trace \
+		--show-node-events \
 		-compilers=4 \
-		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG) \
+		$(GINKGO_FLAGS) \
+		--skip-package=$(SKIP_PACKAGES) $(TEST_PKG) \
 		-failOnPending \
 		-randomizeAllSpecs \
 		-randomizeSuites \
 		-keepGoing
 	$(DEPSGOBIN)/goimports -w .
 
-run-test:
-	PATH=$(DEPSGOBIN):$$PATH ginkgo $(GINKGO_FLAGS) $(TEST_PKG)
+test-clusters:
+	@kind create cluster --name skv2-test-master 2> /dev/null || true
+	@kind create cluster --name skv2-test-remote 2> /dev/null || true
+
+# CI workflow for running tests
+run-all: REMOTE_CLUSTER_CONTEXT ?= kind-skv2-test-remote
+run-all: test-clusters
+	@go test ./...
+	@goimports -w .
 
 #----------------------------------------------------------------------------------
 # Third Party License Management
