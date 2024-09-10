@@ -22,18 +22,18 @@ type MultiClusterRequestTracker struct {
 	Requests *request.MultiClusterRequests
 }
 
-func (h *MultiClusterRequestTracker) Create(ctx context.Context, evt event.CreateEvent, queue workqueue.RateLimitingInterface) {
+func (h *MultiClusterRequestTracker) Create(ctx context.Context, evt event.CreateEvent, queue workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	h.Requests.Append(h.Cluster, RequestForObject(evt.Object))
 }
 
-func (h *MultiClusterRequestTracker) Delete(ctx context.Context, evt event.DeleteEvent, queue workqueue.RateLimitingInterface) {
+func (h *MultiClusterRequestTracker) Delete(ctx context.Context, evt event.DeleteEvent, queue workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	h.Requests.Remove(h.Cluster, RequestForObject(evt.Object))
 }
 
-func (h *MultiClusterRequestTracker) Update(context.Context, event.UpdateEvent, workqueue.RateLimitingInterface) {
+func (h *MultiClusterRequestTracker) Update(context.Context, event.UpdateEvent, workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 }
 
-func (h *MultiClusterRequestTracker) Generic(context.Context, event.GenericEvent, workqueue.RateLimitingInterface) {
+func (h *MultiClusterRequestTracker) Generic(context.Context, event.GenericEvent, workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 }
 
 func RequestForObject(meta v1.Object) reconcile.Request {

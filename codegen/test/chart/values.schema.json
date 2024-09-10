@@ -218,6 +218,9 @@
                     "properties": {
                       "name": {
                         "type": "string"
+                      },
+                      "request": {
+                        "type": "string"
                       }
                     },
                     "type": "object"
@@ -615,6 +618,9 @@
                                     "properties": {
                                       "name": {
                                         "type": "string"
+                                      },
+                                      "request": {
+                                        "type": "string"
                                       }
                                     },
                                     "type": "object"
@@ -949,6 +955,16 @@
                         "type": "integer"
                       },
                       "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "supplementalGroupsPolicy": {
+                  "anyOf": [
+                    {
+                      "type": "string"
                     },
                     {
                       "type": "null"
@@ -3245,6 +3261,17 @@
                                           }
                                         },
                                         "type": "object"
+                                      },
+                                      "image": {
+                                        "properties": {
+                                          "reference": {
+                                            "type": "string"
+                                          },
+                                          "pullPolicy": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "type": "object"
                                       }
                                     },
                                     "type": "object"
@@ -3581,6 +3608,9 @@
                                                 "items": {
                                                   "properties": {
                                                     "name": {
+                                                      "type": "string"
+                                                    },
+                                                    "request": {
                                                       "type": "string"
                                                     }
                                                   },
@@ -4893,6 +4923,9 @@
                                                   "properties": {
                                                     "name": {
                                                       "type": "string"
+                                                    },
+                                                    "request": {
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "type": "object"
@@ -6204,6 +6237,9 @@
                                                   "properties": {
                                                     "name": {
                                                       "type": "string"
+                                                    },
+                                                    "request": {
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "type": "object"
@@ -7353,6 +7389,16 @@
                                             "type": "integer"
                                           },
                                           "type": "array"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "supplementalGroupsPolicy": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
                                         },
                                         {
                                           "type": "null"
@@ -8857,30 +8903,25 @@
                                       "name": {
                                         "type": "string"
                                       },
-                                      "source": {
-                                        "properties": {
-                                          "resourceClaimName": {
-                                            "anyOf": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
+                                      "resourceClaimName": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
                                           },
-                                          "resourceClaimTemplateName": {
-                                            "anyOf": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
+                                          {
+                                            "type": "null"
                                           }
-                                        },
-                                        "type": "object"
+                                        ]
+                                      },
+                                      "resourceClaimTemplateName": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
                                       }
                                     },
                                     "type": "object"
