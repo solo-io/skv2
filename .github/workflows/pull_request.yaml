@@ -35,13 +35,13 @@ jobs:
         uses: helm/kind-action@v1.5.0
         with:
           install_only: true
-          version: v0.17.0
+          version: v0.24.0
       - name: Setup Kind
         run: |
           ./ci/setup-kind.sh skv2-test-remote
       - uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.24.7'
+          version: 'v1.31.0'
       - name: Install deps for codegen
         run: |
           make install-tools
