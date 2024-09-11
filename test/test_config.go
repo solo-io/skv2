@@ -9,9 +9,11 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	clientconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
+	"sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
@@ -26,7 +28,7 @@ var (
 )
 
 func MustConfig(context string) *rest.Config {
-	cfg, err := config.GetConfigWithContext(context)
+	cfg, err := clientconfig.GetConfigWithContext(context)
 	Expect(err).NotTo(HaveOccurred())
 	return cfg
 }
@@ -36,6 +38,13 @@ func MustManager(ctx context.Context, ns string) manager.Manager {
 	return ManagerWithOpts(ctx, cfg, manager.Options{
 		Cache: cache.Options{
 			DefaultNamespaces: map[string]cache.Config{ns: cache.Config{}},
+		},
+		Controller: config.Controller{
+			// see https://github.com/kubernetes-sigs/controller-runtime/issues/2937
+			// in short, our tests reuse the same name (reasonably so) and the controller-runtime
+			// package does not reset the stack of controller names between tests, so we disable
+			// the name validation here.
+			SkipNameValidation: ptr.To(true),
 		},
 		// Disable metrics and health probe to allow tests to run in parallel.
 		Metrics: server.Options{

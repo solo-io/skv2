@@ -76,7 +76,7 @@ func NewCache() *cache {
 	return &cache{cache: make(map[string]eventType)}
 }
 
-func (c *cache) handleEvent(evt eventType, q workqueue.RateLimitingInterface) {
+func (c *cache) handleEvent(evt eventType, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 
 	// use a UUID so the reconciler can claim this event with
 	// the reconcile request
@@ -95,19 +95,19 @@ func (c *cache) handleEvent(evt eventType, q workqueue.RateLimitingInterface) {
 	}})
 }
 
-func (c *cache) Create(ctx context.Context, evt event.CreateEvent, q workqueue.RateLimitingInterface) {
+func (c *cache) Create(ctx context.Context, evt event.CreateEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	c.handleEvent(createEvent(evt), q)
 }
 
-func (c *cache) Update(ctx context.Context, evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
+func (c *cache) Update(ctx context.Context, evt event.UpdateEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	c.handleEvent(updateEvent(evt), q)
 }
 
-func (c *cache) Delete(ctx context.Context, evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
+func (c *cache) Delete(ctx context.Context, evt event.DeleteEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	c.handleEvent(deleteEvent(evt), q)
 }
 
-func (c *cache) Generic(ctx context.Context, evt event.GenericEvent, q workqueue.RateLimitingInterface) {
+func (c *cache) Generic(ctx context.Context, evt event.GenericEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	c.handleEvent(genericEvent(evt), q)
 }
 

@@ -42,6 +42,9 @@ spec:
       volumes:
       - emptyDir: {}
         name: paint
+      {{- if $.Values.painter.extraVolumes }}
+        {{- tpl (toYaml $.Values.painter.extraVolumes) . | nindent 6 }}
+      {{- end }}
       containers:
 {{- $painter := $.Values.painter }}
 {{- $painterImage := $painter.image }}
@@ -116,6 +119,9 @@ spec:
         volumeMounts:
         - mountPath: /etc/paint
           name: paint
+        {{- if $.Values.painter.extraVolumeMounts }}
+          {{- tpl (toYaml $.Values.painter.extraVolumeMounts) . | nindent 8 }}
+        {{- end }}
         resources:
 {{- if $palette.resources }}
 {{ toYaml $palette.resources | indent 10}}

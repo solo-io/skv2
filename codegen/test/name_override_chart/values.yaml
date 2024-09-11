@@ -2,7 +2,9 @@
 
 overrideName:
   # Arbitrary overrides for the component's [deployment
-  # template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/).
+  # spec](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/),
+  # such as to set resource limits and requests. Format the overrides as YAML or
+  # JSON.
   deploymentOverrides: null
   # Environment variables for the container. For more info, see the [Kubernetes
   # documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#envvarsource-v1-core).
@@ -27,7 +29,7 @@ overrideName:
   # Static user ID to run the containers as. Unused if floatingUserId is 'true'.
   runAsUser: 10101
   # Arbitrary overrides for the component's [service
-  # template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).
+  # spec](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).
   serviceOverrides: null
   # Kubernetes service type. Can be either "ClusterIP", "NodePort", "LoadBalancer",
   # or "ExternalName".

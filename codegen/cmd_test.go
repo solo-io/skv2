@@ -44,6 +44,240 @@ var _ = Describe("Cmd", func() {
 		"encoding/protobuf/cue/cue.proto",
 	}
 
+	{
+		type TestEntry struct {
+			name                    string
+			values                  any
+			staticVolumes           []v1.Volume
+			conditionalVolumes      []ConditionalVolume
+			staticVolumeMounts      []v1.VolumeMount
+			conditionalVolumeMounts []ConditionalVolumeMount
+		}
+
+		DescribeTable(
+			"extraVolume/extraVolumeMounts",
+			Ordered, func(entry TestEntry, expectedVolumes, expectedVolumeMounts int) {
+				cmd := &Command{
+					Chart: &Chart{
+						Data: Data{
+							ApiVersion:  "v1",
+							Description: "",
+							Name:        "Painting Operator",
+							Version:     "v0.0.1",
+							Home:        "https://docs.solo.io/skv2/latest",
+							Sources: []string{
+								"https://github.com/solo-io/skv2",
+							},
+						},
+						Operators: []Operator{{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+									VolumeMounts:            entry.staticVolumeMounts,
+									ConditionalVolumeMounts: entry.conditionalVolumeMounts,
+								},
+								Volumes:            entry.staticVolumes,
+								ConditionalVolumes: entry.conditionalVolumes,
+							},
+						}},
+					},
+					ManifestRoot: fmt.Sprintf("codegen/test/chart/%s", entry.name),
+				}
+				Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
+
+				manifests := helmTemplate(fmt.Sprintf("./test/chart/%s", entry.name), entry.values)
+
+				var (
+					renderedDeployment *appsv1.Deployment
+					decoder            = kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(manifests), 4096)
+				)
+				for {
+					var deployment appsv1.Deployment
+					if err := decoder.Decode(&deployment); errors.Is(err, io.EOF) {
+						break
+					}
+
+					if deployment.GetName() == "painter" && deployment.Kind == "Deployment" {
+						renderedDeployment = &deployment
+						break
+					}
+				}
+
+				Expect(renderedDeployment.Spec.Template.Spec.Volumes).To(HaveLen(expectedVolumes))
+
+				Expect(renderedDeployment.Spec.Template.Spec.Containers).To(HaveLen(1))
+
+				Expect(renderedDeployment.Spec.Template.Spec.Containers[0].VolumeMounts).To(HaveLen(expectedVolumes))
+			},
+			Entry(
+				"empty with no volumes",
+				TestEntry{
+					name: "extra-volumes",
+					values: map[string]any{
+						"painter": map[string]any{
+							"enabled": true,
+							"extraVolumes": []v1.Volume{{
+								Name: "extra-certs",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "extra-secret",
+									},
+								},
+							}},
+							"extraVolumeMounts": []v1.VolumeMount{{
+								Name:      "extra-certs",
+								MountPath: "/etc/ssl/certs",
+							}},
+						},
+					},
+				},
+				0,
+				0,
+			),
+			Entry(
+				"with static volumes",
+				TestEntry{
+					name: "static-volumes",
+					values: map[string]any{
+						"painter": map[string]any{
+							"enabled": true,
+							"extraVolumes": []v1.Volume{{
+								Name: "extra-certs",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "extra-secret",
+									},
+								},
+							}},
+							"extraVolumeMounts": []v1.VolumeMount{{
+								Name:      "extra-certs",
+								MountPath: "/etc/ssl/extra",
+							}},
+						},
+					},
+					staticVolumes: []v1.Volume{{
+						Name: "static-certs",
+						VolumeSource: v1.VolumeSource{
+							Secret: &v1.SecretVolumeSource{
+								SecretName: "static-secret",
+							},
+						},
+					}},
+					staticVolumeMounts: []v1.VolumeMount{{
+						Name:      "static-certs",
+						MountPath: "/var/run/secret/static",
+					}},
+				},
+				2,
+				2,
+			),
+			Entry(
+				"with conditional volumes",
+				TestEntry{
+					name: "conditional-volumes",
+					values: map[string]any{
+						"painter": map[string]any{
+							"enabled": true,
+							"extraVolumes": []v1.Volume{{
+								Name: "extra-certs",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "extra-secret",
+									},
+								},
+							}},
+							"extraVolumeMounts": []v1.VolumeMount{{
+								Name:      "extra-certs",
+								MountPath: "/etc/ssl/extra",
+							}},
+						},
+					},
+					conditionalVolumes: []ConditionalVolume{{
+						Condition: ".Values.painter.enabled",
+						Volume: v1.Volume{
+							Name: "conditional-certs",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "conditional-secret",
+								},
+							},
+						},
+					}},
+					conditionalVolumeMounts: []ConditionalVolumeMount{{
+						Condition: ".Values.painter.enabled",
+						VolumeMount: v1.VolumeMount{
+							Name:      "conditional-certs",
+							MountPath: "/var/run/secret/conditional",
+						},
+					}},
+				},
+				2,
+				2,
+			),
+			Entry(
+				"with all volumes",
+				TestEntry{
+					name: "all-volumes",
+					values: map[string]any{
+						"painter": map[string]any{
+							"enabled": true,
+							"extraVolumes": []v1.Volume{{
+								Name: "extra-certs",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "extra-secret",
+									},
+								},
+							}},
+							"extraVolumeMounts": []v1.VolumeMount{{
+								Name:      "extra-certs",
+								MountPath: "/etc/ssl/extra",
+							}},
+						},
+					},
+					staticVolumes: []v1.Volume{{
+						Name: "static-certs",
+						VolumeSource: v1.VolumeSource{
+							Secret: &v1.SecretVolumeSource{
+								SecretName: "static-secret",
+							},
+						},
+					}},
+					conditionalVolumes: []ConditionalVolume{{
+						Condition: ".Values.painter.enabled",
+						Volume: v1.Volume{
+							Name: "conditional-certs",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "conditional-secret",
+								},
+							},
+						},
+					}},
+					staticVolumeMounts: []v1.VolumeMount{{
+						Name:      "static-certs",
+						MountPath: "/var/run/secret/static",
+					}},
+					conditionalVolumeMounts: []ConditionalVolumeMount{{
+						Condition: ".Values.painter.enabled",
+						VolumeMount: v1.VolumeMount{
+							Name:      "conditional-certs",
+							MountPath: "/var/run/secret/conditional",
+						},
+					}},
+				},
+				3,
+				3,
+			),
+		)
+	}
+
 	Describe("image pull secrets", Ordered, func() {
 		BeforeAll(func() {
 			cmd := &Command{
@@ -599,7 +833,7 @@ var _ = Describe("Cmd", func() {
 
 		painterNode := node.Content[0].Content[1]
 		enabledMapField := painterNode.Content[0]
-		Expect(enabledMapField.HeadComment).To(Equal("# Arbitrary overrides for the component's [deployment\n# template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)."))
+		Expect(enabledMapField.HeadComment).To(ContainSubstring("Arbitrary overrides for the component's [deployment"))
 	})
 
 	It("generates from templates using a name override", func() {
@@ -2341,6 +2575,105 @@ roleRef:
 			}),
 	)
 
+	DescribeTable("rendering with GlobalFloatingUserId",
+		func(floatingUserId bool) {
+			cmd := &Command{
+				Chart: &Chart{
+					Operators: []Operator{
+						{
+							Name: "painter",
+							Deployment: Deployment{
+								Container: Container{
+									Image: Image{
+										Tag:        "v0.0.0",
+										Repository: "painter",
+										Registry:   "quay.io/solo-io",
+										PullPolicy: "IfNotPresent",
+									},
+								},
+							},
+							GlobalFloatingUserIdPath: ".Values.global.securitySettings.floatingUserId",
+						},
+					},
+					// Because the global override comes from .Values it has to be set here, not on the painter
+					Values: map[string]interface{}{
+						"global": map[string]interface{}{
+							"securitySettings": map[string]interface{}{
+								"floatingUserId": floatingUserId,
+							},
+						},
+					},
+					Data: Data{
+						ApiVersion:  "v1",
+						Description: "",
+						Name:        "Painting Operator",
+						Version:     "v0.0.1",
+						Home:        "https://docs.solo.io/skv2/latest",
+						Sources: []string{
+							"https://github.com/solo-io/skv2",
+						},
+					},
+				},
+
+				ManifestRoot: "codegen/test/chart",
+			}
+
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			runAsUser := 202020
+			runAsGroup := 999
+			painterValues := map[string]interface{}{
+				"enabled":   true,
+				"runAsUser": runAsUser,
+				"podSecurityContext": map[string]interface{}{
+					"runAsUser": runAsUser,
+					"fsGroup":   runAsGroup,
+				},
+			}
+
+			helmValues := map[string]interface{}{"painter": painterValues}
+
+			renderedManifests := helmTemplate("./codegen/test/chart", helmValues)
+
+			var renderedDeployment *appsv1.Deployment
+			decoder := kubeyaml.NewYAMLOrJSONDecoder(bytes.NewBuffer(renderedManifests), 4096)
+			for {
+				obj := &unstructured.Unstructured{}
+				err := decoder.Decode(obj)
+				if err != nil {
+					break
+				}
+				if obj.GetName() != "painter" || obj.GetKind() != "Deployment" {
+					continue
+				}
+
+				bytes, err := obj.MarshalJSON()
+				Expect(err).NotTo(HaveOccurred())
+				renderedDeployment = &appsv1.Deployment{}
+				err = json.Unmarshal(bytes, renderedDeployment)
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			Expect(renderedDeployment).NotTo(BeNil())
+			renderedRunAsUser := renderedDeployment.Spec.Template.Spec.Containers[0].SecurityContext.RunAsUser
+			renderedPodSecurityContext := renderedDeployment.Spec.Template.Spec.SecurityContext
+
+			// When using the global floatingUserId, the container runAsUser and RunAsUser should not be set
+			if floatingUserId {
+				Expect(renderedRunAsUser).To(BeNil())
+				Expect(renderedPodSecurityContext).To(BeNil())
+			} else {
+				Expect(*renderedRunAsUser).To(Equal(int64(runAsUser)))
+				Expect(*renderedPodSecurityContext.RunAsUser).To(Equal(int64(runAsUser)))
+				Expect(*renderedPodSecurityContext.FSGroup).To(Equal(int64(runAsGroup)))
+			}
+
+		},
+		Entry("Global floatingUserId is true", true),
+		Entry("Global floatingUserId is false", false),
+	)
+
 	Describe("rendering template env vars", func() {
 		var tmpDir string
 
@@ -3118,10 +3451,39 @@ roleRef:
 		cmd := &Command{
 			RenderProtos: false,
 			Chart: &Chart{
+				Data: Data{
+					ApiVersion:  "v1",
+					Description: "",
+					Name:        "Painting Operator",
+					Version:     "v0.0.1",
+					Home:        "https://docs.solo.io/skv2/latest",
+					Sources: []string{
+						"https://github.com/solo-io/skv2",
+					},
+				},
 				Operators: []Operator{
 					{
 						Name:                  "painter",
 						CustomEnableCondition: "$painter.enabled",
+						Deployment: Deployment{
+							Container: Container{
+								Image: Image{
+									Tag:        "v0.0.0",
+									Repository: "painter",
+									Registry:   "quay.io/solo-io",
+									PullPolicy: "IfNotPresent",
+								},
+							},
+						},
+						Values: map[string]any{
+							"painter": map[string]any{
+								"enabled": true,
+								"namespacedRbac": map[string]any{
+									"resources":  []string{"secrets"},
+									"namespaces": []string{},
+								},
+							},
+						},
 						ClusterRbac: []rbacv1.PolicyRule{
 							{
 								Verbs: []string{"GET"},
@@ -3136,26 +3498,14 @@ roleRef:
 								},
 							},
 						},
-					},
-				},
-				Values: nil,
-				Data: Data{
-					ApiVersion:  "v1",
-					Description: "",
-					Name:        "Painting Operator",
-					Version:     "v0.0.1",
-					Home:        "https://docs.solo.io/skv2/latest",
-					Sources: []string{
-						"https://github.com/solo-io/skv2",
-					},
-				},
+					}},
 			},
-			ManifestRoot: "codegen/test/chart",
+			ManifestRoot: "codegen/test/chart/namespaced-rbac",
 		}
 
 		Expect(cmd.Execute()).NotTo(HaveOccurred(), "failed to execute command")
 
-		absPath, err := filepath.Abs("./codegen/test/chart/templates/rbac.yaml")
+		absPath, err := filepath.Abs("./codegen/test/chart/namespaced-rbac/templates/rbac.yaml")
 		Expect(err).NotTo(HaveOccurred(), "failed to get abs path")
 
 		rbac, err := os.ReadFile(absPath)
@@ -3259,6 +3609,54 @@ roleRef:
 		Expect(string(rbac)).To(ContainSubstring(clusterRoleBinding2Tmpl))
 		Expect(string(rbac)).To(ContainSubstring(roleTmpl))
 		Expect(string(rbac)).To(ContainSubstring(roleBindingTmpl))
+
+		helmValues := map[string]interface{}{
+			"painter": map[string]any{
+				"enabled": true,
+				"namespacedRbac": []any{
+					map[string]any{
+						"resources":  []string{"secrets"},
+						"namespaces": []string{},
+					},
+				},
+			},
+		}
+		renderedManifests := helmTemplate("codegen/test/chart/namespaced-rbac", helmValues)
+		renderedRole := `
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-release-name-default-namespaced
+  namespace: default
+  labels:
+    app: painter
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - GET
+  - LIST
+  - WATCH`
+		renderedRoleBinding := `
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: painter-release-name-default-namespaced
+  namespace: default
+  labels:
+    app: painter
+subjects:
+- kind: ServiceAccount
+  name: painter
+  namespace: default
+roleRef:
+  kind: Role
+  name: painter-release-name-default-namespaced
+  apiGroup: rbac.authorization.k8s.io`
+		Expect(string(renderedManifests)).To(ContainSubstring(renderedRole))
+		Expect(string(renderedManifests)).To(ContainSubstring(renderedRoleBinding))
 	})
 })
 

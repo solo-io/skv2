@@ -30,9 +30,11 @@ spec:
     spec:
       serviceAccountName: painter
       {{- /* Override the default podSecurityContext config if it is set. */}}
+{{- if not .Values.global.securitySettings.floatingUserId }}
 {{- if or ($.Values.painter.podSecurityContext) (eq "map[]" (printf "%v" $.Values.painter.podSecurityContext)) }}
       securityContext:
 {{ toYaml $.Values.painter.podSecurityContext | indent 8 }}
+{{- end }} 
 {{- end }}
       containers:
 {{- $painter := $.Values.painter }}
@@ -71,7 +73,7 @@ spec:
           {}
 {{- else}}
           runAsNonRoot: true
-          {{- if not $painter.floatingUserId }}
+          {{- if not (or $painter.floatingUserId .Values.global.securitySettings.floatingUserId) }}
           runAsUser: {{ printf "%.0f" (float64 $painter.runAsUser) }}
           {{- end }}
           readOnlyRootFilesystem: true

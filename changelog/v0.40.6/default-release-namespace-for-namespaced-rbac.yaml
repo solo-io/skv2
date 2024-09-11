@@ -1,0 +1,4 @@
+changelog:
+- type: NEW_FEATURE
+  description: "If namespacedRbac.namespaces is an empty list but namespacedRbac.resources is not, we will use a sane default of the Release.Namespace instead of ignoring the namespacedRbac.resources input."
+  issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/15739

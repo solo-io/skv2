@@ -83,6 +83,10 @@ type OpenApiProtocExecutor struct {
 	// Whether to exclude kubebuilder markers and validations (such as PreserveUnknownFields, MinItems, default, and all CEL rules)
 	// Type and Required markers will be included regardless
 	DisableKubeMarkers bool
+
+	// when set, this list of substrings will be used to identify kubebuilder markers to ignore. When multiple are
+	// supplied, this will function as a logical OR i.e. any rule which contains a provided substring will be ignored
+	IgnoredKubeMarkerSubstrings []string
 }
 
 func (o *OpenApiProtocExecutor) Execute(protoFile string, toFile string, imports []string) error {
@@ -104,23 +108,17 @@ func (o *OpenApiProtocExecutor) Execute(protoFile string, toFile string, imports
 	_, fileName := filepath.Split(protoFile)
 	directoryName := fileName[0 : len(fileName)-len(filepath.Ext(fileName))]
 
+	baseArgument := "--openapi_out=yaml=true,single_file=false,multiline_description=true,proto_oneof=true,int_native=true"
+	baseArgument = fmt.Sprintf("%s,enum_as_int_or_string=%v", baseArgument, o.EnumAsIntOrString)
+	baseArgument = fmt.Sprintf("%s,additional_empty_schema=%v", baseArgument, strings.Join(o.MessagesWithEmptySchema, "+"))
+	baseArgument = fmt.Sprintf("%s,disable_kube_markers=%v", baseArgument, o.DisableKubeMarkers)
+	baseArgument = fmt.Sprintf("%s,ignored_kube_marker_substrings=%v", baseArgument, strings.Join(o.IgnoredKubeMarkerSubstrings, "+"))
+	baseArgument = fmt.Sprintf("%s,include_description=%v", baseArgument, o.IncludeDescriptionsInSchema)
+
 	// Create the directory
 	directoryPath := filepath.Join(o.OutputDir, directoryName)
 	_ = os.Mkdir(directoryPath, os.ModePerm)
-
-	args := fmt.Sprintf("--openapi_out=yaml=true,single_file=false,multiline_description=true,enum_as_int_or_string=%v,proto_oneof=true,int_native=true,additional_empty_schema=%v,disable_kube_markers=%v",
-		o.EnumAsIntOrString,
-		strings.Join(o.MessagesWithEmptySchema, "+"),
-		o.DisableKubeMarkers,
-	)
-
-	if !o.IncludeDescriptionsInSchema {
-		args += ",include_description=false"
-	}
-
-	args = fmt.Sprintf("%s:%s", args, directoryPath)
-
-	cmd.Args = append(cmd.Args, args)
+	cmd.Args = append(cmd.Args, fmt.Sprintf("%s:%s", baseArgument, directoryPath))
 
 	cmd.Args = append(cmd.Args,
 		"-o",

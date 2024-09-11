@@ -45,6 +45,7 @@ func (p *protocGenerator) GetJSONSchemas(protoFiles []string, imports []string, 
 		MessagesWithEmptySchema:     p.validationSchemaOptions.MessagesWithEmptySchema,
 		DisableKubeMarkers:          p.validationSchemaOptions.DisableKubeMarkers,
 		IncludeDescriptionsInSchema: p.validationSchemaOptions.IncludeDescriptionsInSchema,
+		IgnoredKubeMarkerSubstrings: p.validationSchemaOptions.IgnoredKubeMarkerSubstrings,
 	}
 
 	// 1. Generate the openApiSchemas for the project, writing them to a temp directory (schemaOutputDir)

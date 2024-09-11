@@ -87,6 +87,10 @@ spec:
     spec:
       serviceAccountName: [[ $operator.Name ]]
       {{- /* Override the default podSecurityContext config if it is set. */}}
+[[- /* the GlobalFloatingUserId is expected to disable the pod security context */ -]]
+[[- if $operator.GlobalFloatingUserIdPath ]]
+{{- if not [[ $operator.GlobalFloatingUserIdPath ]] }}
+[[- end ]]
 {{- if or ([[ (opVar $operator) ]].podSecurityContext) (eq "map[]" (printf "%v" [[ (opVar $operator) ]].podSecurityContext)) }}
       securityContext:
 {{ toYaml [[ (opVar $operator) ]].podSecurityContext | indent 8 }}
@@ -96,11 +100,20 @@ spec:
 [[ toYaml $podSecurityContext | indent 8 ]]
 [[- end ]]
 {{- end }}
+[[- if $operator.GlobalFloatingUserIdPath ]] [[/* end the "if" if GlobalFloatingUserId is being checked */]]
+{{- end }}
+[[- end ]]
 [[- if $volumes ]]
       volumes:
-[[ toYaml $volumes | indent 6 ]]
+      [[- toYaml $volumes | nindent 6 ]]
+      {{- if [[ (opVar $operator) ]].extraVolumes }}
+        {{- tpl (toYaml [[ (opVar $operator) ]].extraVolumes) . | nindent 6 }}
+      {{- end }}
 [[- else if $conditionalVolumes ]]
       volumes:
+      {{- if [[ (opVar $operator) ]].extraVolumes }}
+        {{- tpl (toYaml [[ (opVar $operator) ]].extraVolumes) . | nindent 6 }}
+      {{- end }}     
 [[- end ]]
 [[- range $v := $conditionalVolumes ]]
 {{- if [[ $v.Condition ]] }}
@@ -171,9 +184,15 @@ spec:
 {{- end }}
 [[- if $container.VolumeMounts ]]
         volumeMounts:
-[[ toYaml $container.VolumeMounts | indent 8 ]]
+        [[- toYaml $container.VolumeMounts | nindent 8 ]]
+        {{- if [[ (opVar $operator) ]].extraVolumeMounts }}
+          {{- tpl (toYaml [[ (opVar $operator) ]].extraVolumeMounts) . | nindent 8 }}
+        {{- end }}        
 [[- else if $container.ConditionalVolumeMounts ]]
         volumeMounts:
+        {{- if [[ (opVar $operator) ]].extraVolumeMounts }}
+          {{- tpl (toYaml [[ (opVar $operator) ]].extraVolumeMounts) . | nindent 8 }}
+        {{- end }}        
 [[- end ]]
 [[- range $v := $container.ConditionalVolumeMounts ]]
 {{- if [[ $v.Condition ]] }}
@@ -201,7 +220,12 @@ spec:
           {}
 {{- else}}
           runAsNonRoot: true
+          [[- /* if there is a GlobalFloatingUserIdPath add it to the runAsuser logic */ -]]
+          [[- if $operator.GlobalFloatingUserIdPath ]]
+          {{- if not (or $[[ $operatorVar ]].floatingUserId [[ $operator.GlobalFloatingUserIdPath ]]) }}
+          [[- else ]]
           {{- if not $[[ $operatorVar ]].floatingUserId }}
+          [[- end ]]
           runAsUser: {{ printf "%.0f" (float64 $[[ $operatorVar ]].runAsUser) }}
           {{- end }}
           readOnlyRootFilesystem: true
