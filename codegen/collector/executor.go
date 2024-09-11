@@ -70,7 +70,7 @@ type OpenApiProtocExecutor struct {
 	OutputDir string
 
 	// Whether to include descriptions in validation schemas
-	IncludeDescriptionsInSchema bool
+	ExcludeDescriptionsInSchema bool
 
 	// Whether to assign Enum fields the `x-kubernetes-int-or-string` property
 	// which allows the value to either be an integer or a string
@@ -113,7 +113,7 @@ func (o *OpenApiProtocExecutor) Execute(protoFile string, toFile string, imports
 	baseArgument = fmt.Sprintf("%s,additional_empty_schema=%v", baseArgument, strings.Join(o.MessagesWithEmptySchema, "+"))
 	baseArgument = fmt.Sprintf("%s,disable_kube_markers=%v", baseArgument, o.DisableKubeMarkers)
 	baseArgument = fmt.Sprintf("%s,ignored_kube_marker_substrings=%v", baseArgument, strings.Join(o.IgnoredKubeMarkerSubstrings, "+"))
-	baseArgument = fmt.Sprintf("%s,include_description=%v", baseArgument, o.IncludeDescriptionsInSchema)
+	baseArgument = fmt.Sprintf("%s,include_description=%v", baseArgument, !o.ExcludeDescriptionsInSchema)
 
 	// Create the directory
 	directoryPath := filepath.Join(o.OutputDir, directoryName)

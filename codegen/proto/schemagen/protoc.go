@@ -44,7 +44,7 @@ func (p *protocGenerator) GetJSONSchemas(protoFiles []string, imports []string, 
 		EnumAsIntOrString:           p.validationSchemaOptions.EnumAsIntOrString,
 		MessagesWithEmptySchema:     p.validationSchemaOptions.MessagesWithEmptySchema,
 		DisableKubeMarkers:          p.validationSchemaOptions.DisableKubeMarkers,
-		IncludeDescriptionsInSchema: p.validationSchemaOptions.IncludeDescriptionsInSchema,
+		ExcludeDescriptionsInSchema: p.validationSchemaOptions.ExcludeDescriptionsInSchema,
 		IgnoredKubeMarkerSubstrings: p.validationSchemaOptions.IgnoredKubeMarkerSubstrings,
 	}
 
