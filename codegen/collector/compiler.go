@@ -95,7 +95,7 @@ func (p *protoCompiler) CompileDescriptorsFromRoot(root string, skipDirs []strin
 		sem = make(chan struct{}, maxProtocs)
 		limitConcurrency = true
 	}
-	for _, dir := range append([]string{root}) {
+	for _, dir := range []string{root} {
 		absoluteDir, err := filepath.Abs(dir)
 		if err != nil {
 			return nil, err
