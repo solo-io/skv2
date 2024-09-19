@@ -69,7 +69,7 @@ func (d *DefaultProtocExecutor) Execute(protoFile string, toFile string, imports
 type OpenApiProtocExecutor struct {
 	OutputDir string
 
-	// Whether to include descriptions in validation schemas
+	// Whether to include descriptions in schemas
 	ExcludeDescriptionsInSchema bool
 
 	// Whether to assign Enum fields the `x-kubernetes-int-or-string` property

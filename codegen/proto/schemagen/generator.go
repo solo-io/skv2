@@ -8,9 +8,6 @@ const (
 )
 
 type ValidationSchemaOptions struct {
-	// Whether to include descriptions in validation schemas
-	ExcludeDescriptionsInSchema bool
-
 	// Whether to assign Enum fields the `x-kubernetes-int-or-string` property
 	// which allows the value to either be an integer or a string
 	// If this is false, only string values are allowed

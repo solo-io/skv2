@@ -139,7 +139,7 @@ func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Optio
 }
 
 // Use protoc-gen-openapi for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
-func generateOpenApiFromProtocGen(grp model.Group, protoDir string, _ protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
+func generateOpenApiFromProtocGen(grp model.Group, _ string, _ protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
 	// Collect all protobuf definitions including transitive dependencies.
 	var imports []string
 	for _, fileDescriptor := range grp.Descriptors {
@@ -152,7 +152,7 @@ func generateOpenApiFromProtocGen(grp model.Group, protoDir string, _ protoutil.
 	for i, fileDescriptor := range grp.Descriptors {
 		protoFiles[i] = fileDescriptor.ProtoFilePath
 	}
-	protoGen := schemagen.NewProtocGenerator(&groupOptions.SchemaValidationOpts)
+	protoGen := schemagen.NewProtocGenerator(&groupOptions.SchemaValidationOpts, grp.SkipSchemaDescriptions)
 	gvkSchemas, err := protoGen.GetJSONSchemas(protoFiles, imports, grp.GroupVersion)
 	if err != nil {
 		return nil, err

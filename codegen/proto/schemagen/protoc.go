@@ -19,12 +19,14 @@ import (
 
 // Implementation of JsonSchemaGenerator that uses a plugin for the protocol buffer compiler
 type protocGenerator struct {
-	validationSchemaOptions *ValidationSchemaOptions
+	validationSchemaOptions     *ValidationSchemaOptions
+	excludeDescriptionsInSchema bool
 }
 
-func NewProtocGenerator(validationSchemaOptions *ValidationSchemaOptions) *protocGenerator {
+func NewProtocGenerator(validationSchemaOptions *ValidationSchemaOptions, excludeDescriptionsInSchema bool) *protocGenerator {
 	return &protocGenerator{
-		validationSchemaOptions: validationSchemaOptions,
+		validationSchemaOptions:     validationSchemaOptions,
+		excludeDescriptionsInSchema: excludeDescriptionsInSchema,
 	}
 }
 
@@ -44,7 +46,7 @@ func (p *protocGenerator) GetJSONSchemas(protoFiles []string, imports []string, 
 		EnumAsIntOrString:           p.validationSchemaOptions.EnumAsIntOrString,
 		MessagesWithEmptySchema:     p.validationSchemaOptions.MessagesWithEmptySchema,
 		DisableKubeMarkers:          p.validationSchemaOptions.DisableKubeMarkers,
-		ExcludeDescriptionsInSchema: p.validationSchemaOptions.ExcludeDescriptionsInSchema,
+		ExcludeDescriptionsInSchema: p.excludeDescriptionsInSchema,
 		IgnoredKubeMarkerSubstrings: p.validationSchemaOptions.IgnoredKubeMarkerSubstrings,
 	}
 
