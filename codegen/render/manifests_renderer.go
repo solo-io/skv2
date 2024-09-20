@@ -133,13 +133,13 @@ func (r ManifestsRenderer) RenderManifests(grps []*Group, protoOpts protoutil.Op
 
 func generateOpenApi(grp model.Group, protoDir string, protoOpts protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
 	if groupOptions.SchemaGenerator == schemagen.ProtocGenOpenAPI {
-		return generateOpenApiFromProtocGen(grp, protoDir, protoOpts, groupOptions)
+		return generateOpenApiFromProtocGen(grp, groupOptions)
 	}
 	return generateOpenApiFromCue(grp, protoDir, protoOpts, groupOptions)
 }
 
 // Use protoc-gen-openapi for transpiling protobuf schemas to openapi v3 with k8s structural schema constraints.
-func generateOpenApiFromProtocGen(grp model.Group, _ string, _ protoutil.Options, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
+func generateOpenApiFromProtocGen(grp model.Group, groupOptions model.GroupOptions) (model.OpenApiSchemas, error) {
 	// Collect all protobuf definitions including transitive dependencies.
 	var imports []string
 	for _, fileDescriptor := range grp.Descriptors {
