@@ -39,8 +39,8 @@ require (
 	github.com/solo-io/anyvendor v0.0.4
 	github.com/solo-io/cue v0.4.7
 	github.com/solo-io/go-list-licenses v0.0.4
-	github.com/solo-io/go-utils v0.26.0
-	github.com/solo-io/k8s-utils v0.8.0
+	github.com/solo-io/go-utils v0.27.4
+	github.com/solo-io/k8s-utils v0.9.0
 	github.com/solo-io/protoc-gen-ext v0.0.20
 	github.com/solo-io/protoc-gen-openapi v0.2.5
 	github.com/spf13/pflag v1.0.5

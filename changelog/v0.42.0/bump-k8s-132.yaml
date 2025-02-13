@@ -40,3 +40,15 @@ changelog:
   dependencyOwner: go.uber.org
   dependencyRepo: zap
   dependencyTag: v1.27.0
+- type: DEPENDENCY_BUMP
+  dependencyOwner: google
+  dependencyRepo: protobuf
+  dependencyTag: v1.35.1
+- type: DEPENDENCY_BUMP
+  dependencyOwner: solo-io
+  dependencyRepo: go-utils
+  dependencyTag: v0.27.4
+- type: DEPENDENCY_BUMP
+  dependencyOwner: solo-io
+  dependencyRepo: k8s-utils
+  dependencyTag: v0.9.0
