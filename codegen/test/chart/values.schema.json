@@ -1061,6 +1061,16 @@
                       "type": "null"
                     }
                   ]
+                },
+                "seLinuxChangePolicy": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "type": "object"
@@ -7495,6 +7505,16 @@
                                           "type": "null"
                                         }
                                       ]
+                                    },
+                                    "seLinuxChangePolicy": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
                                     }
                                   },
                                   "type": "object"
@@ -8927,6 +8947,83 @@
                                     "type": "object"
                                   },
                                   "type": "array"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "resources": {
+                              "anyOf": [
+                                {
+                                  "properties": {
+                                    "limits": {
+                                      "anyOf": [
+                                        {
+                                          "patternProperties": {
+                                            ".*": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "number"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "type": "object"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "requests": {
+                                      "anyOf": [
+                                        {
+                                          "patternProperties": {
+                                            ".*": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "number"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "type": "object"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "claims": {
+                                      "anyOf": [
+                                        {
+                                          "items": {
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "request": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "type": "object"
+                                          },
+                                          "type": "array"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "type": "object"
                                 },
                                 {
                                   "type": "null"
