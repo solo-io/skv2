@@ -36,13 +36,13 @@ require (
 	github.com/rogpeppe/go-internal v1.12.0
 	github.com/rotisserie/eris v0.1.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/solo-io/anyvendor v0.0.4
+	github.com/solo-io/anyvendor v0.2.0
 	github.com/solo-io/cue v0.4.7
 	github.com/solo-io/go-list-licenses v0.0.4
-	github.com/solo-io/go-utils v0.27.4
-	github.com/solo-io/k8s-utils v0.9.0
-	github.com/solo-io/protoc-gen-ext v0.0.20
-	github.com/solo-io/protoc-gen-openapi v0.2.5
+	github.com/solo-io/go-utils v0.28.4
+	github.com/solo-io/k8s-utils v0.10.0
+	github.com/solo-io/protoc-gen-ext v0.1.0
+	github.com/solo-io/protoc-gen-openapi v0.3.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
