@@ -68,7 +68,7 @@ func (v HelmValues) ToMarkdown(title string) string {
 	fmt.Fprintln(result, "|Option|Type|Description|Default Value|")
 	fmt.Fprintln(result, "|------|----|-----------|-------------|")
 	for _, uniqueRow := range uniques {
-		fmt.Fprintf(result, uniqueRow)
+		fmt.Fprint(result, uniqueRow)
 	}
 	return result.String()
 }
