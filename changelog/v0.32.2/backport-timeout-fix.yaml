@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: 
+    Backporting timeout fix from 0.34.5.
