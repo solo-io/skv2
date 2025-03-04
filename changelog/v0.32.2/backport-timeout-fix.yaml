@@ -1,4 +1,5 @@
 changelog:
 - type: FIX
-  description: 
-    Backporting timeout fix from 0.34.5.
+  description: Backporting timeout fix from 0.34.5.
+  issueLink: https://github.com/solo-io/solo-projects/issues/7909
+  resolvesIssue: false
