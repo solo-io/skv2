@@ -86,7 +86,7 @@ func RegisterMultiCluster{{ $snapshotName }}Reconciler(
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-    multicluster_reconcile_v2.NewLoop("das", clusters, &{{ $types_import_prefix }}.{{ $resource.Kind }}{}, reconcile_v2.Options(options.{{ $kindPlural }})).
+    multicluster_reconcile_v2.NewLoop("{{$kindLowerCamel}}", clusters, &{{ $types_import_prefix }}.{{ $resource.Kind }}{}, reconcile_v2.Options(options.{{ $kindPlural }})).
         AddReconciler(ctx, &multicluster_v2.ReconcilerFuncs[*{{ $types_import_prefix }}.{{ $resource.Kind }}]{
             ReconcileFunc: func(ctx context.Context, clusterName string, obj *{{ $types_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error) {
                 ezkube.SetClusterName(obj, clusterName)
@@ -143,7 +143,7 @@ func RegisterSingleCluster{{ $snapshotName }}Reconciler(
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-    if err := reconcile_v2.NewLoop("Service", "", mgr, &{{ $types_import_prefix }}.{{ $resource.Kind }}{}, options).
+    if err := reconcile_v2.NewLoop("{{$kindLowerCamel}}", "", mgr, &{{ $types_import_prefix }}.{{ $resource.Kind }}{}, options).
         RunReconciler(ctx, &reconcile_v2.ReconcileFuncs[*{{ $types_import_prefix }}.{{ $resource.Kind }}]{
         ReconcileFunc:func(ctx context.Context, object *{{ $types_import_prefix }}.{{ $resource.Kind }}) (reconcile.Result, error){
             return r.base.ReconcileRemoteGeneric(object)
