@@ -28,6 +28,7 @@ var _ = Describe("ResourceId", func() {
 							annotations: map[string]string{
 								ezkube.ClusterAnnotation: cluster,
 							},
+							generateName: cluster,
 						}
 					}
 				} else {
@@ -104,7 +105,33 @@ var _ = Describe("ResourceId", func() {
 			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-annotation"))
 		})
 
-		It("defaults to the k8s >= v1.25 metadata.GetAnnotations() approach", func() {
+		It("prioritizes the new GenerateName approach over annotations", func() {
+			resource := &testClusterK8sObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:         "test",
+					Namespace:    "test-ns",
+					GenerateName: "cluster-generate-name",
+					Annotations: map[string]string{
+						ezkube.ClusterAnnotation: "cluster-annotation",
+					},
+				},
+			}
+			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-generate-name"))
+		})
+
+		It("prioritizes the new GenerateName approach over deprecated fields", func() {
+			resource := &pre_v1_24_K8sObjectWithGenerateName{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:         "test",
+					Namespace:    "test-ns",
+					GenerateName: "cluster-generate-name",
+				},
+				clusterName: "cluster-field",
+			}
+			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-generate-name"))
+		})
+
+		It("defaults to the k8s >= v1.25 metadata.GetAnnotations() approach if generateName is not set", func() {
 			resource := &v1_24_K8sObject{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
@@ -135,6 +162,7 @@ func (id testResourceId) GetNamespace() string {
 type testClusterResourceId struct {
 	name, namespace string
 	annotations     map[string]string
+	generateName    string
 }
 
 func (id testClusterResourceId) GetName() string {
@@ -147,6 +175,10 @@ func (id testClusterResourceId) GetNamespace() string {
 
 func (id testClusterResourceId) GetAnnotations() map[string]string {
 	return id.annotations
+}
+
+func (id testClusterResourceId) GetGenerateName() string {
+	return id.generateName
 }
 
 type testDeprecatedClusterResourceId struct {
@@ -174,6 +206,19 @@ func (o *pre_v1_24_K8sObject) GetClusterName() string {
 	return o.clusterName
 }
 
+type pre_v1_24_K8sObjectWithGenerateName struct {
+	metav1.ObjectMeta
+	clusterName string
+}
+
+func (o *pre_v1_24_K8sObjectWithGenerateName) GetClusterName() string {
+	return o.clusterName
+}
+
+func (o *pre_v1_24_K8sObjectWithGenerateName) GetGenerateName() string {
+	return o.ObjectMeta.GenerateName
+}
+
 type v1_24_K8sObject struct {
 	metav1.ObjectMeta
 	clusterName string
@@ -181,4 +226,12 @@ type v1_24_K8sObject struct {
 
 func (o *v1_24_K8sObject) GetZZZ_DeprecatedClusterName() string {
 	return o.clusterName
+}
+
+type testClusterK8sObject struct {
+	metav1.ObjectMeta
+}
+
+func (o *testClusterK8sObject) GetGenerateName() string {
+	return o.ObjectMeta.GenerateName
 }
