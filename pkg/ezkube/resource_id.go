@@ -119,12 +119,18 @@ func GetClusterName(id ClusterResourceId) string {
 		return id.GetGenerateName()
 	}
 
-	// Fall back to deprecated fields if generatedName is not set
+	// For backward compatibility, try annotations next
+	annotations := id.GetAnnotations()
+	if annotations != nil && annotations[ClusterAnnotation] != "" {
+		return annotations[ClusterAnnotation]
+	}
+
+	// Finally, try deprecated fields
 	return getDeprecatedClusterName(id)
 }
 
 func SetClusterName(obj client.Object, cluster string) {
-	// Set cluster name in generatedName field only
+	// Set cluster name in generatedName field
 	obj.SetGenerateName(cluster)
 }
 
@@ -174,7 +180,6 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 			name:         parts[0],
 			namespace:    parts[1],
 			generateName: parts[2],
-			annotations:  map[string]string{},
 		}, nil
 	} else {
 		return nil, eris.Errorf("could not convert key %s with separator %s into resource id; unexpected number of parts: %d", key, separator, len(parts))
