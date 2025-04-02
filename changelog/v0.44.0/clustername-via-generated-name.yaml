@@ -1,0 +1,7 @@
+changelog:
+    - type: FIX
+      issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/5158
+      description: >
+        Updated the ClusterResourceId interface to use the metadata.generatedName field for storing cluster names
+        instead of annotations. This fixes race conditions when reading/writing the annotations map and
+        maintains backward compatibility for a seamless migration. 
