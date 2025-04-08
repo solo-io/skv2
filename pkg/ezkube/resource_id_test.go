@@ -23,11 +23,10 @@ var _ = Describe("ResourceId", func() {
 						}
 					} else {
 						id = testClusterResourceId{
-							name:      name,
-							namespace: namespace,
-							annotations: map[string]string{
-								ezkube.ClusterAnnotation: cluster,
-							},
+							name:         name,
+							namespace:    namespace,
+							generateName: cluster,
+							annotations:  map[string]string{}, // Empty map
 						}
 					}
 				} else {
@@ -69,53 +68,73 @@ var _ = Describe("ResourceId", func() {
 	})
 
 	Context("GetClusterName()", func() {
-		It("supports k8s < v1.24 metadata.GetClusterName() approach", func() {
-			resource := &pre_v1_24_K8sObject{
+		It("supports generatedName approach as primary method", func() {
+			resource := &testClusterK8sObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:         "test",
+					Namespace:    "test-ns",
+					GenerateName: "cluster-generate-name",
+				},
+			}
+			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-generate-name"))
+		})
+
+		It("falls back to annotations if generatedName is not set", func() {
+			resource := &testClusterK8sObject{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "test",
 					Namespace:   "test-ns",
-					Annotations: map[string]string{},
-				},
-				clusterName: "cluster-field",
-			}
-			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-field"))
-		})
-
-		It("supports k8s == v1.24 GetZZZ_DeprecatedClusterName() approach", func() {
-			resource := &v1_24_K8sObject{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        "test",
-					Namespace:   "test-ns",
-					Annotations: map[string]string{},
-				},
-				clusterName: "cluster-field",
-			}
-			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-field"))
-		})
-
-		It("supports k8s >= 1.25 metadata.GetAnnotations() approach", func() {
-			resource := &metav1.ObjectMeta{
-				Name:      "test",
-				Namespace: "test-ns",
-				Annotations: map[string]string{
-					ezkube.ClusterAnnotation: "cluster-annotation",
+					Annotations: map[string]string{ezkube.ClusterAnnotation: "annotation-cluster-name"},
 				},
 			}
-			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-annotation"))
+			Expect(ezkube.GetClusterName(resource)).To(Equal("annotation-cluster-name"))
 		})
 
-		It("defaults to the k8s >= v1.25 metadata.GetAnnotations() approach", func() {
+		It("falls back to deprecated fields if generatedName and annotations are not set", func() {
 			resource := &v1_24_K8sObject{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "test-ns",
-					Annotations: map[string]string{
-						ezkube.ClusterAnnotation: "cluster-annotation",
-					},
 				},
 				clusterName: "cluster-field",
 			}
-			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-annotation"))
+			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-field"))
+		})
+
+		It("prioritizes the GeneratName approach over annotations", func() {
+			resource := &testClusterK8sObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:         "test",
+					Namespace:    "test-ns",
+					GenerateName: "cluster-generate-name",
+					Annotations:  map[string]string{ezkube.ClusterAnnotation: "annotation-cluster-name"},
+				},
+			}
+			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-generate-name"))
+		})
+
+		It("prioritizes the GenerateName approach over deprecated fields", func() {
+			resource := &v1_24_K8sObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:         "test",
+					Namespace:    "test-ns",
+					GenerateName: "cluster-generate-name",
+				},
+				clusterName: "cluster-field",
+			}
+			Expect(ezkube.GetClusterName(resource)).To(Equal("cluster-generate-name"))
+		})
+
+		It("prioritizes annotations over deprecated fields", func() {
+			resource := &v1_24_K8sObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "test",
+					Namespace:   "test-ns",
+					Annotations: map[string]string{ezkube.ClusterAnnotation: "annotation-cluster-name"},
+				},
+				clusterName: "cluster-field",
+			}
+			Expect(ezkube.GetClusterName(resource)).To(Equal("annotation-cluster-name"))
 		})
 	})
 })
@@ -135,6 +154,7 @@ func (id testResourceId) GetNamespace() string {
 type testClusterResourceId struct {
 	name, namespace string
 	annotations     map[string]string
+	generateName    string
 }
 
 func (id testClusterResourceId) GetName() string {
@@ -147,6 +167,10 @@ func (id testClusterResourceId) GetNamespace() string {
 
 func (id testClusterResourceId) GetAnnotations() map[string]string {
 	return id.annotations
+}
+
+func (id testClusterResourceId) GetGenerateName() string {
+	return id.generateName
 }
 
 type testDeprecatedClusterResourceId struct {
@@ -165,15 +189,6 @@ func (id testDeprecatedClusterResourceId) GetClusterName() string {
 	return id.cluster
 }
 
-type pre_v1_24_K8sObject struct {
-	metav1.ObjectMeta
-	clusterName string
-}
-
-func (o *pre_v1_24_K8sObject) GetClusterName() string {
-	return o.clusterName
-}
-
 type v1_24_K8sObject struct {
 	metav1.ObjectMeta
 	clusterName string
@@ -181,4 +196,12 @@ type v1_24_K8sObject struct {
 
 func (o *v1_24_K8sObject) GetZZZ_DeprecatedClusterName() string {
 	return o.clusterName
+}
+
+type testClusterK8sObject struct {
+	metav1.ObjectMeta
+}
+
+func (o *testClusterK8sObject) GetGenerateName() string {
+	return o.ObjectMeta.GenerateName
 }
