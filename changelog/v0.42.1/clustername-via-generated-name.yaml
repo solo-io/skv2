@@ -1,0 +1,8 @@
+changelog:
+    - type: FIX
+      issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/16342
+      description: >
+        Updated the ClusterResourceId interface to exclusively use the metadata.generatedName field for storing 
+        cluster names, completely eliminating access to the annotations map which was causing race conditions.
+        This avoids the race condition when multiple goroutines read/write to the annotations map concurrently.
+      resolvesIssue: false

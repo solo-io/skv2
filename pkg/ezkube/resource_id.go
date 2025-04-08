@@ -27,6 +27,7 @@ type ClusterResourceId interface {
 	GetName() string
 	GetNamespace() string
 	GetAnnotations() map[string]string
+	GetGenerateName() string
 }
 
 // internal struct that satisfies ResourceId interface
@@ -47,6 +48,7 @@ func (id resourceId) GetNamespace() string {
 type clusterResourceId struct {
 	name, namespace string
 	annotations     map[string]string
+	generateName    string
 }
 
 func (c clusterResourceId) GetName() string {
@@ -59,6 +61,10 @@ func (c clusterResourceId) GetNamespace() string {
 
 func (c clusterResourceId) GetAnnotations() map[string]string {
 	return c.annotations
+}
+
+func (c clusterResourceId) GetGenerateName() string {
+	return c.generateName
 }
 
 type deprecatedClusterResourceId interface {
@@ -79,19 +85,22 @@ type deprecatedZZZClusterResourceId interface {
 func ConvertRefToId(ref deprecatedClusterResourceId) ClusterResourceId {
 	// if ref is already stores annotations then we need to store the updates
 	anno := map[string]string{}
+	var generateName string
 
 	if cri, ok := ref.(ClusterResourceId); ok {
 		anno = cri.GetAnnotations()
+		generateName = cri.GetGenerateName()
 	}
 	cn := ref.GetClusterName()
 	if cn != "" {
-		anno[ClusterAnnotation] = cn
+		generateName = cn
 	}
 
 	return clusterResourceId{
-		name:        ref.GetName(),
-		namespace:   ref.GetNamespace(),
-		annotations: anno,
+		name:         ref.GetName(),
+		namespace:    ref.GetNamespace(),
+		annotations:  anno,
+		generateName: generateName,
 	}
 }
 
@@ -105,19 +114,24 @@ func getDeprecatedClusterName(id ResourceId) string {
 }
 
 func GetClusterName(id ClusterResourceId) string {
-	annotations := id.GetAnnotations()
-	if annotations == nil || annotations[ClusterAnnotation] == "" {
-		return getDeprecatedClusterName(id)
+	// First try to get the cluster name from generateName
+	if id.GetGenerateName() != "" {
+		return id.GetGenerateName()
 	}
 
-	return annotations[ClusterAnnotation]
+	// For backward compatibility, try annotations next
+	annotations := id.GetAnnotations()
+	if annotations != nil && annotations[ClusterAnnotation] != "" {
+		return annotations[ClusterAnnotation]
+	}
+
+	// Finally, try deprecated fields
+	return getDeprecatedClusterName(id)
 }
 
 func SetClusterName(obj client.Object, cluster string) {
-	if obj.GetAnnotations() == nil {
-		obj.SetAnnotations(map[string]string{})
-	}
-	obj.GetAnnotations()[ClusterAnnotation] = cluster
+	// Set cluster name in generatedName field
+	obj.SetGenerateName(cluster)
 }
 
 // KeyWithSeparator constructs a string consisting of the field values of the given resource id,
@@ -137,12 +151,12 @@ func KeyWithSeparator(id ResourceId, separator string) string {
 	b.WriteString(separator)
 	b.WriteString(id.GetNamespace())
 	b.WriteString(separator)
-	// handle the possibility that clusterName could be set either as an annotation (new way)
-	// or as a field (old way pre-k8s 1.25)
+	// handle the possibility that clusterName could be set either as generatedName (new way),
+	// annotation (old way), or as a field (older way pre-k8s 1.25)
 	if clusterId, ok := id.(ClusterResourceId); ok {
-		clusterNameByAnnotation := GetClusterName(clusterId)
-		if clusterNameByAnnotation != "" {
-			b.WriteString(clusterNameByAnnotation)
+		clusterName := GetClusterName(clusterId)
+		if clusterName != "" {
+			b.WriteString(clusterName)
 			return b.String()
 		}
 	}
@@ -163,11 +177,9 @@ func ResourceIdFromKeyWithSeparator(key string, separator string) (ResourceId, e
 		}, nil
 	} else if len(parts) == 3 {
 		return clusterResourceId{
-			name:      parts[0],
-			namespace: parts[1],
-			annotations: map[string]string{
-				ClusterAnnotation: parts[2],
-			},
+			name:         parts[0],
+			namespace:    parts[1],
+			generateName: parts[2],
 		}, nil
 	} else {
 		return nil, eris.Errorf("could not convert key %s with separator %s into resource id; unexpected number of parts: %d", key, separator, len(parts))
