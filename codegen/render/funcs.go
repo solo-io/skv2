@@ -693,7 +693,7 @@ func toJSONSchema(values values.UserHelmValues) string {
 		panic(err)
 	}
 
-	return indentJson(string(jsonSchema))
+	return string(jsonSchema)
 }
 
 type customTypeMapper func(reflect.Type, *jsonschema.Schema) *jsonschema.Schema
@@ -1037,15 +1037,6 @@ func nestSchemaAtPath(schema *jsonschema.Schema, path ...string) *jsonschema.Sch
 	}
 
 	return schema
-}
-
-func indentJson(src string) string {
-	var buf bytes.Buffer
-	err := json.Indent(&buf, []byte(src), "", "  ")
-	if err != nil {
-		panic(err)
-	}
-	return buf.String()
 }
 
 // reverse mutates a slice of strings to reverse the order.
