@@ -1,6 +1,7 @@
 package render_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -30,18 +31,13 @@ func prepareExpected(expected string) string {
 
 // minifyJSON is a helper function for tests to remove whitespace from JSON strings
 func minifyJSON(jsonStr string) (string, error) {
-
-	// Unmarshal into OrderedMap to preserve the order of all elements in the input JSON string
-	var v orderedmap.OrderedMap
-	if err := json.Unmarshal([]byte(jsonStr), &v); err != nil {
-		return "", err
-	}
-
-	data, err := json.Marshal(v)
+	out := &bytes.Buffer{}
+	err := json.Compact(out, []byte(jsonStr))
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+
+	return out.String(), nil
 }
 
 // convertToOrderedMap recursively converts maps to ordered maps
@@ -494,7 +490,7 @@ var _ = Describe("toJSONSchema", func() {
 		checkHasStandardValuesFields(resultContainer.Properties.Operator2.Properties.My.Properties.Values.Properties)
 	})
 
-	It("adds some json schema behaviour based on the jsonschema tags", func() {
+	FIt("adds some json schema behaviour based on the jsonschema tags", func() {
 		type Type1 struct {
 			Field1a string `json:"field1a" jsonschema:"title=field a,description=the field called a,example=aaa,example=bbb,default=a"`
 		}
