@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"sort"
 	"strings"
 
 	structpb "github.com/golang/protobuf/ptypes/struct"
-	"github.com/iancoleman/orderedmap"
 	"github.com/lithammer/dedent"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -38,33 +36,6 @@ func minifyJSON(jsonStr string) (string, error) {
 	}
 
 	return out.String(), nil
-}
-
-// convertToOrderedMap recursively converts maps to ordered maps
-func convertToOrderedMap(v interface{}) interface{} {
-	switch val := v.(type) {
-	case map[string]interface{}:
-		ordered := orderedmap.New()
-		// Get all keys and sort them
-		keys := make([]string, 0, len(val))
-		for k := range val {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		// Add keys in sorted order
-		for _, k := range keys {
-			ordered.Set(k, convertToOrderedMap(val[k]))
-		}
-		return ordered
-	case []interface{}:
-		result := make([]interface{}, len(val))
-		for i, v := range val {
-			result[i] = convertToOrderedMap(v)
-		}
-		return result
-	default:
-		return v
-	}
 }
 
 var _ = Describe("toYAMLWithComments", func() {
