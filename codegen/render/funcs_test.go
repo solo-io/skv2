@@ -490,7 +490,7 @@ var _ = Describe("toJSONSchema", func() {
 		checkHasStandardValuesFields(resultContainer.Properties.Operator2.Properties.My.Properties.Values.Properties)
 	})
 
-	FIt("adds some json schema behaviour based on the jsonschema tags", func() {
+	It("adds some json schema behaviour based on the jsonschema tags", func() {
 		type Type1 struct {
 			Field1a string `json:"field1a" jsonschema:"title=field a,description=the field called a,example=aaa,example=bbb,default=a"`
 		}
