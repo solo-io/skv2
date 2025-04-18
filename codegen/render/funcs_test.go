@@ -1,6 +1,7 @@
 package render_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -24,6 +25,17 @@ func prepareExpected(expected string) string {
 	expected = dedent.Dedent(expected)
 	expected = strings.ReplaceAll(expected, "\t", "  ")
 	return expected
+}
+
+// minifyJSON is a helper function for tests to remove whitespace from JSON strings
+func minifyJSON(jsonStr string) (string, error) {
+	out := &bytes.Buffer{}
+	err := json.Compact(out, []byte(jsonStr))
+	if err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
 }
 
 var _ = Describe("toYAMLWithComments", func() {
@@ -454,7 +466,7 @@ var _ = Describe("toJSONSchema", func() {
 			Field1a string `json:"field1a" jsonschema:"title=field a,description=the field called a,example=aaa,example=bbb,default=a"`
 		}
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
-		expected := prepareExpected(`
+		expected, err := minifyJSON(`
 			{
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
@@ -470,6 +482,7 @@ var _ = Describe("toJSONSchema", func() {
 					}
 				}
 			}`)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(expected))
 	})
 
@@ -482,7 +495,7 @@ var _ = Describe("toJSONSchema", func() {
 		}
 
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
-		expected := prepareExpected(`
+		expected, err := minifyJSON(`
 			{
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
@@ -516,6 +529,7 @@ var _ = Describe("toJSONSchema", func() {
 					}
 				}
 			}`)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(expected))
 	})
 
@@ -528,7 +542,7 @@ var _ = Describe("toJSONSchema", func() {
 		}
 
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type2{}})
-		expected := prepareExpected(`
+		expected, err := minifyJSON(`
 			{
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
@@ -556,6 +570,7 @@ var _ = Describe("toJSONSchema", func() {
 					}
 				}
 			}`)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(expected).To(Equal(result))
 	})
 
@@ -564,7 +579,7 @@ var _ = Describe("toJSONSchema", func() {
 			Field1 *structpb.Value
 		}
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
-		expected := prepareExpected(`
+		expected, err := minifyJSON(`
 			{
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
@@ -592,6 +607,7 @@ var _ = Describe("toJSONSchema", func() {
 					}
 				}
 			}`)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(expected))
 	})
 
@@ -600,7 +616,7 @@ var _ = Describe("toJSONSchema", func() {
 			Field1 metav1.Time `json:"metatime"`
 		}
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
-		expected := prepareExpected(`
+		expected, err := minifyJSON(`
 			{
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
@@ -617,6 +633,7 @@ var _ = Describe("toJSONSchema", func() {
 					}
 				}
 			}`)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(expected))
 	})
 
@@ -625,7 +642,7 @@ var _ = Describe("toJSONSchema", func() {
 			Field1 resource.Quantity
 		}
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
-		expected := prepareExpected(`
+		expected, err := minifyJSON(`
 			{
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
@@ -641,6 +658,7 @@ var _ = Describe("toJSONSchema", func() {
 					}
 				}
 			}`)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(expected))
 	})
 
@@ -649,7 +667,7 @@ var _ = Describe("toJSONSchema", func() {
 			Field1 intstr.IntOrString
 		}
 		result := render.ToJSONSchema(values.UserHelmValues{CustomValues: &Type1{}})
-		expected := prepareExpected(`
+		expected, err := minifyJSON(`
 			{
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
@@ -665,6 +683,7 @@ var _ = Describe("toJSONSchema", func() {
 					}
 				}
 			}`)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(expected))
 	})
 
@@ -700,7 +719,7 @@ var _ = Describe("toJSONSchema", func() {
 		result := render.ToJSONSchema(values.UserHelmValues{
 			CustomValues: &Type1{},
 		})
-		expected := prepareExpected(`
+		expected, err := minifyJSON(`
 		{
 			"$schema": "https://json-schema.org/draft/2020-12/schema",
 			"properties": {
@@ -712,6 +731,7 @@ var _ = Describe("toJSONSchema", func() {
 				"Field1"
 			]
 		}`)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(expected))
 
 	})
@@ -747,7 +767,7 @@ var _ = Describe("toJSONSchema", func() {
 					CustomTypeMapper: typeMapper,
 				},
 			})
-			expected := prepareExpected(`
+			expected, err := minifyJSON(`
 				{
 					"$schema": "https://json-schema.org/draft/2020-12/schema",
 					"properties": {
@@ -756,6 +776,7 @@ var _ = Describe("toJSONSchema", func() {
 						}
 					}
 				}`)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(result).To(Equal(expected))
 		})
 
@@ -787,7 +808,7 @@ var _ = Describe("toJSONSchema", func() {
 					CustomTypeMapper: typeMapper,
 				},
 			})
-			expected := prepareExpected(`
+			expected, err := minifyJSON(`
 				{
 					"$schema": "https://json-schema.org/draft/2020-12/schema",
 					"properties": {
@@ -804,6 +825,7 @@ var _ = Describe("toJSONSchema", func() {
 						}
 					}
 				}`)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(result).To(Equal(expected))
 		})
 
@@ -833,7 +855,7 @@ var _ = Describe("toJSONSchema", func() {
 					},
 				},
 			})
-			expected := prepareExpected(`
+			expected, err := minifyJSON(`
 			{
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"properties": {
@@ -842,6 +864,7 @@ var _ = Describe("toJSONSchema", func() {
 					}
 				}
 			}`)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(result).To(Equal(expected))
 		})
 	})

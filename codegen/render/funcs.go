@@ -24,7 +24,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/iancoleman/orderedmap"
 	"github.com/iancoleman/strcase"
 	"github.com/solo-io/skv2/codegen/model"
@@ -208,42 +207,6 @@ func opVar(op model.Operator) string {
 	return opVar
 }
 
-/*
-Find the proto messages for a given set of descriptors which need proto_deepcopoy funcs and whose types are not in
-the API root package
-
-return true if the descriptor corresponds to the Spec or the Status field
-*/
-func shouldDeepCopyExternalMessage(resources []model.Resource, desc *descriptor.DescriptorProto) bool {
-	for _, resource := range resources {
-		if resource.Spec.Type.Name == desc.GetName() ||
-			(resource.Status != nil && resource.Status.Type.Name == desc.GetName()) {
-			return true
-		}
-	}
-	return false
-}
-
-/*
-Find the proto messages for a given set of descriptors which need proto_deepcopoy funcs.
-The two cases are as follows:
-
-1. One of the subfields has an external type
-2. There is a oneof present
-*/
-func shouldDeepCopyInternalMessage(packageName string, desc *descriptor.DescriptorProto) bool {
-	var shouldGenerate bool
-	// case 1 above
-	for _, v := range desc.GetField() {
-		if v.TypeName != nil && !strings.Contains(v.GetTypeName(), packageName) {
-			shouldGenerate = true
-			break
-		}
-	}
-	// case 2 above
-	return len(desc.GetOneofDecl()) > 0 || shouldGenerate
-}
-
 // toYAML takes an interface, marshals it to yaml, and returns a string. It will
 // always return a string, even on marshal error (empty string).
 //
@@ -406,6 +369,8 @@ func (yc *yamlCommenter) addYamlComments(
 
 					nextValue = value.MapIndex(mapKeysByName[keyNode.Value])
 				}
+			default:
+				// nothing to do
 			}
 
 			// continue traversing the object
@@ -693,7 +658,7 @@ func toJSONSchema(values values.UserHelmValues) string {
 		panic(err)
 	}
 
-	return indentJson(string(jsonSchema))
+	return string(jsonSchema)
 }
 
 type customTypeMapper func(reflect.Type, *jsonschema.Schema) *jsonschema.Schema
@@ -1037,15 +1002,6 @@ func nestSchemaAtPath(schema *jsonschema.Schema, path ...string) *jsonschema.Sch
 	}
 
 	return schema
-}
-
-func indentJson(src string) string {
-	var buf bytes.Buffer
-	err := json.Indent(&buf, []byte(src), "", "  ")
-	if err != nil {
-		panic(err)
-	}
-	return buf.String()
 }
 
 // reverse mutates a slice of strings to reverse the order.
