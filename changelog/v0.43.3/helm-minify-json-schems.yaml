@@ -1,0 +1,9 @@
+changelog:
+- type: FIX
+  issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/20411
+  description: >
+    With this change, the `values.schema.json` file generated as part of the Helm chart generation is no longer 
+    prettified. This drastically reduces the size of the file and minimizes the changes of the new maximum file size 
+    limit [introduced by Helm](https://github.com/helm/helm/commit/e4da49785aa6e6ee2b86efd5dd9e43400318262b) in `v3.17.3`.
+    There are no functional changes. Human users can still prettify the file using external tools (e.g. `jq`) if necessary.
+  resolvesIssue: false
