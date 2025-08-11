@@ -1,6 +1,6 @@
 module github.com/solo-io/skv2
 
-go 1.24.4
+go 1.24.6
 
 require (
 	github.com/BurntSushi/toml v1.4.0
@@ -39,8 +39,8 @@ require (
 	github.com/solo-io/anyvendor v0.2.0
 	github.com/solo-io/cue v0.4.7
 	github.com/solo-io/go-list-licenses v0.0.4
-	github.com/solo-io/go-utils v0.28.5
-	github.com/solo-io/k8s-utils v0.11.0
+	github.com/solo-io/go-utils v0.28.6
+	github.com/solo-io/k8s-utils v0.11.1
 	github.com/solo-io/protoc-gen-ext v0.1.0
 	github.com/solo-io/protoc-gen-openapi v0.3.0
 	github.com/spf13/pflag v1.0.5
