@@ -29,6 +29,7 @@ Name|Version|License
 [prometheus/client_golang](https://github.com/prometheus/client_golang)|v1.22.0|Apache License 2.0
 [client_model/go](https://github.com/prometheus/client_model)|v0.6.1|Apache License 2.0
 [prometheus/common](https://github.com/prometheus/common)|v0.62.0|Apache License 2.0
+[procfs/internal](https://github.com/prometheus/procfs)|v0.15.1|Apache License 2.0
 [rotisserie/eris](https://github.com/rotisserie/eris)|v0.1.1|MIT License
 [x448/float16](https://github.com/x448/float16)|v0.8.4|MIT License
 [go.uber.org/multierr](https://go.uber.org/multierr)|v1.11.0|MIT License
