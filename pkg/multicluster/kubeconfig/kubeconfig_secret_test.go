@@ -28,7 +28,6 @@ contexts:
   name: test-name
 current-context: test-name
 kind: Config
-preferences: {}
 users:
 - name: test-name
   user:
