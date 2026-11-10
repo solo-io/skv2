@@ -1,0 +1,6 @@
+changelog:
+- type: FIX
+  description: >
+    Helm values inline docs handle embedded structs tagged `json:""`. Kubernetes 1.37 tags
+    embedded structs this way, e.g. corev1.Probe's ProbeHandler, and rendering values that
+    contain them panicked with "reflect: call of reflect.Value.IsZero on zero Value".
