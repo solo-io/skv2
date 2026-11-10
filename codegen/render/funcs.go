@@ -410,13 +410,19 @@ func newYamlFieldMapping(valueType reflect.Type) yamlFieldMapping {
 			jsonTagSegments := strings.Split(jsonTag, ",")
 			jsonFieldName := jsonTagSegments[0]
 
-			// handle inlined struct. encoding/json also inlines an embedded struct whose
-			// json name is empty, which is how k8s.io/api tags embedded structs from 1.37.
-			if (field.Anonymous && jsonFieldName == "") ||
+			// encoding/json inlines an embedded struct, or pointer to struct, whose json
+			// name is empty. k8s.io/api tags embedded structs this way from 1.37 on.
+			embedded, isEmbeddedStruct := embeddedStructType(field)
+
+			// handle inlined struct
+			if (isEmbeddedStruct && jsonFieldName == "") ||
 				(len(jsonTagSegments) > 1 && slices.Contains(jsonTagSegments[1:], "inline")) {
-				for k, v := range newYamlFieldMapping(field.Type) {
+				for k, v := range newYamlFieldMapping(embedded) {
 					result[k] = v
 				}
+			} else if jsonFieldName == "" {
+				// encoding/json uses the Go field name when the json name is empty
+				result[field.Name] = field.Name
 			} else {
 				result[jsonFieldName] = field.Name
 			}
@@ -434,6 +440,19 @@ func newYamlFieldMapping(valueType reflect.Type) yamlFieldMapping {
 	}
 
 	return result
+}
+
+// embeddedStructType returns the struct type of an embedded field that is a struct or
+// a pointer to a struct, and the field's own type with false for any other field.
+func embeddedStructType(field reflect.StructField) (reflect.Type, bool) {
+	t := field.Type
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	if field.Anonymous && t.Kind() == reflect.Struct {
+		return t, true
+	}
+	return field.Type, false
 }
 
 // wrapWords inserts newline characters in the string between words to try to

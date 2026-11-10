@@ -226,6 +226,35 @@ var _ = Describe("toYAMLWithComments", func() {
 		`)))
 	})
 
+	It("handles nested pointer types inlined with an empty json name", func() {
+		type NestedType struct {
+			FieldN1 string `json:"fieldN1" desc:"nested field 1"`
+		}
+		type TestType struct {
+			*NestedType `json:""`
+		}
+		node := render.ToNode(&TestType{
+			NestedType: &NestedType{
+				FieldN1: "Hello",
+			},
+		}, &values.UserValuesInlineDocs{})
+		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
+			# nested field 1
+			fieldN1: Hello
+		`)))
+	})
+
+	It("handles fields with an empty json name and options", func() {
+		type TestType struct {
+			FieldOne string `json:",omitempty" desc:"field one"`
+		}
+		node := render.ToNode(&TestType{FieldOne: "Hello"}, &values.UserValuesInlineDocs{})
+		Expect(render.FromNode(node)).To(Equal(prepareExpected(`
+			# field one
+			FieldOne: Hello
+		`)))
+	})
+
 	It("handles case where the type is an interface", func() {
 		type NestedType struct {
 			FieldN1 string `desc:"nested field 1"`
