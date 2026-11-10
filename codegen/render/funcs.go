@@ -410,8 +410,10 @@ func newYamlFieldMapping(valueType reflect.Type) yamlFieldMapping {
 			jsonTagSegments := strings.Split(jsonTag, ",")
 			jsonFieldName := jsonTagSegments[0]
 
-			// handle inlined struct
-			if len(jsonTagSegments) > 1 && slices.Contains(jsonTagSegments[1:], "inline") {
+			// handle inlined struct. encoding/json also inlines an embedded struct whose
+			// json name is empty, which is how k8s.io/api tags embedded structs from 1.37.
+			if (field.Anonymous && jsonFieldName == "") ||
+				(len(jsonTagSegments) > 1 && slices.Contains(jsonTagSegments[1:], "inline")) {
 				for k, v := range newYamlFieldMapping(field.Type) {
 					result[k] = v
 				}
